@@ -1,0 +1,15 @@
+{
+  "_uitleg": "Kamers met nummer, een naam (mag je weglaten) en bewoners. ALLEEN VOORNAMEN, geen achternamen. Twee mensen met dezelfde naam? Schrijf dan bijvoorbeeld 'Lisa' en 'Lisa 2'. Iedereen kiest in de app zijn naam uit deze lijst.",
+  "verblijf": "Chalet Tweeslag (voorbeeld)",
+  "kamers": [
+    { "nummer": "101", "naam": "Gletsjer", "bewoners": ["Anouk", "Sanne", "Lotte", "Eva"] },
+    { "nummer": "102", "naam": "Poedersneeuw", "bewoners": ["Daan", "Bram", "Joris", "Thijs"] },
+    { "nummer": "103", "naam": "Zwarte piste", "bewoners": ["Fleur", "Iris", "Noor", "Maud", "Julia"] },
+    { "nummer": "104", "naam": "Skilift", "bewoners": ["Ruben", "Sem", "Lucas", "Milan"] },
+    { "nummer": "105", "naam": "Après-ski", "bewoners": ["Lisa", "Lisa 2", "Femke", "Roos"] },
+    { "nummer": "106", "naam": "Sneeuwpop", "bewoners": ["Tim", "Jesse", "Stijn", "Koen", "Niels"] },
+    { "nummer": "107", "naam": "Berghut", "bewoners": ["Merel", "Esmee", "Sophie", "Tessa"] },
+    { "nummer": "108", "naam": "Gondel", "bewoners": ["Jeroen", "Mark", "Pieter", "Wouter"] },
+    { "nummer": "201", "naam": "Reisleiding", "bewoners": ["Marieke", "Hans"] }
+  ]
+}

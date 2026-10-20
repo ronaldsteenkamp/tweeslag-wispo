@@ -1,0 +1,40 @@
+{
+  "_uitleg": "Categorieën met items. Een item is gewoon een tekst. Let op: als je de tekst van een item verandert, is het vinkje bij dat item weg.",
+  "categorieen": [
+    {
+      "naam": "Papieren en geld",
+      "icoon": "🪪",
+      "items": ["Paspoort of ID-kaart", "Zorgpas en EHIC-kaart", "Bankpas", "Reisverzekering (polisnummer)", "Wat contant geld in euro's"]
+    },
+    {
+      "naam": "Skikleding",
+      "icoon": "🎿",
+      "items": ["Skijas", "Skibroek", "Thermoshirt (2x)", "Thermobroek", "Fleece of midlayer", "Skisokken (3 paar)", "Handschoenen", "Extra paar dunne handschoenen", "Muts", "Nekwarmer of buff"]
+    },
+    {
+      "naam": "Bescherming",
+      "icoon": "🥽",
+      "items": ["Helm", "Skibril", "Zonnebril", "Zonnebrand (factor 50)", "Lippenbalsem met SPF"]
+    },
+    {
+      "naam": "Kleding voor 's avonds",
+      "icoon": "👕",
+      "items": ["Warme trui", "Spijkerbroek of joggingbroek", "Ondergoed", "Pyjama", "Snowboots of warme schoenen", "Slippers voor de douche", "Tweeslag-clubshirt", "Outfit voor het themafeest (jaren 80)"]
+    },
+    {
+      "naam": "Toilettas",
+      "icoon": "🧴",
+      "items": ["Tandenborstel en tandpasta", "Douchegel en shampoo", "Deodorant", "Handdoek", "Medicijnen", "Pleisters en blarenpleisters"]
+    },
+    {
+      "naam": "Voor de busreis",
+      "icoon": "🚌",
+      "items": ["Nekkussen", "Oordopjes", "Slaapmasker", "Eten en drinken voor onderweg", "Oplader en powerbank", "Koptelefoon"]
+    },
+    {
+      "naam": "Handig",
+      "icoon": "🎒",
+      "items": ["Kleine rugzak voor op de piste", "Drinkfles", "Dekbedovertrek en kussensloop", "Hoeslaken", "Wasknijpers voor natte kleding", "Spelletjes of kaarten"]
+    }
+  ]
+}

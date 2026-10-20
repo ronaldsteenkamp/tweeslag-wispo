@@ -1,0 +1,86 @@
+/*
+ * HUISSTIJL VAN DE APP
+ * Kleuren en lettertypen volgens de Tweeslag-stijlgids. Pas ze hier aan;
+ * daaronder staat hoe ze gebruikt worden (licht en donker).
+ */
+
+:root {
+  /* Clubkleuren uit de Tweeslag-stijlgids */
+  --tweeslag-donkerblauw: #0d0058; /* primaire kleur 1, PMS Reflex Blue C */
+  --tweeslag-lichtblauw: #099fc4; /* primaire kleur 2, PMS 2925 C */
+
+  /* Lettertypen uit de stijlgids: Trebuchet MS voor titels, Georgia voor tekst.
+     Android heeft deze niet; daar valt de app terug op het standaardlettertype. */
+  --font-kop: 'Trebuchet MS', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --font-tekst: Georgia, Cambria, 'Times New Roman', serif;
+
+  /* Winterkleuren */
+  --sneeuw: #f2f7fb;
+  --ijs: #e2f2f8;
+
+  /* ---- Licht (overdag, fel sneeuwlicht: veel contrast) ---- */
+  color-scheme: light;
+  --achtergrond: var(--sneeuw);
+  --oppervlak: #ffffff;
+  --oppervlak-2: var(--ijs);
+  --tekst: #0d0058;
+  --tekst-zacht: #3f4670;
+  --rand: #c7d7e4;
+
+  --primair: var(--tweeslag-donkerblauw); /* hoofdknoppen */
+  --primair-tekst: #ffffff;
+  --accent: var(--tweeslag-lichtblauw); /* markeringen, 'vandaag', bingo */
+  --accent-tekst: var(--tweeslag-donkerblauw);
+  --accent-zacht: #d3eff7;
+  --opvallend: var(--tweeslag-lichtblauw); /* knop naar de Les 2 Alpes-app, zoekresultaat */
+  --opvallend-tekst: var(--tweeslag-donkerblauw);
+
+  --succes: #0e7a55;
+  --succes-zacht: #d8f3e8;
+  --gevaar: #b3261e;
+
+  --hero: var(--tweeslag-donkerblauw);
+  --hero-tekst: #ffffff;
+  --golf: var(--tweeslag-lichtblauw);
+
+  --link: var(--tweeslag-donkerblauw); /* tekstknoppen en actief tabblad */
+  --voortgang: linear-gradient(90deg, var(--tweeslag-lichtblauw), var(--tweeslag-donkerblauw));
+  --kaart-achtergrond: #dfe8ef;
+
+  --tabbalk: rgba(255, 255, 255, 0.96);
+  --schaduw: 0 2px 12px rgba(13, 0, 88, 0.08);
+}
+
+/* ---- Donker (volgt de instelling van de telefoon) ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --achtergrond: #05031c;
+    --oppervlak: #110a3a;
+    --oppervlak-2: #1b1450;
+    --tekst: #eef3ff;
+    --tekst-zacht: #b0b3d6;
+    --rand: #2c2566;
+
+    --primair: var(--tweeslag-lichtblauw);
+    --primair-tekst: var(--tweeslag-donkerblauw);
+    --accent: #2fc0e4;
+    --accent-tekst: #05031c;
+    --accent-zacht: #0c3049;
+    --opvallend: #2fc0e4;
+    --opvallend-tekst: #05031c;
+
+    --succes: #3ccf91;
+    --succes-zacht: #0f3a2b;
+    --gevaar: #ff6b6b;
+
+    --hero: var(--tweeslag-donkerblauw);
+
+    --link: var(--accent);
+    --voortgang: var(--accent);
+    --kaart-achtergrond: #05031c;
+
+    --tabbalk: rgba(10, 6, 40, 0.96);
+    --schaduw: 0 2px 12px rgba(0, 0, 0, 0.35);
+  }
+}

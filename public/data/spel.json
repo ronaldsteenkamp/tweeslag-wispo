@@ -1,0 +1,128 @@
+{
+  "_uitleg": "Inhoud van het spel. Challenges gaan open op de 'datum' (vanaf 'openOm', standaard 07:00). Elke challenge heeft een uniek 'id' (kleine letters, geen spaties): verander dat niet meer tijdens de reis, anders raken mensen hun vinkje kwijt. Bingo: zet er minstens 24 vakjes in; bij meer kiest de app per telefoon willekeurig 24 vakjes. Het middelste vakje is een vrij vakje.",
+  "punten": {
+    "bingoVakje": 2,
+    "bingoRij": 10,
+    "bingoVolleKaart": 50
+  },
+  "challenges": [
+    {
+      "datum": "2027-03-05",
+      "openOm": "18:00",
+      "items": [
+        { "id": "bus-selfie", "titel": "Bus-selfie", "omschrijving": "Maak een selfie met minstens 5 mensen in de bus.", "punten": 10 },
+        { "id": "bus-lied", "titel": "Buslied", "omschrijving": "Krijg de hele bus mee in een meezinger.", "punten": 15 }
+      ]
+    },
+    {
+      "datum": "2027-03-06",
+      "items": [
+        { "id": "eerste-croissant", "titel": "Bonjour!", "omschrijving": "Bestel je ontbijt helemaal in het Frans.", "punten": 10 },
+        { "id": "kamerfoto", "titel": "Kamerfoto", "omschrijving": "Maak een foto met al je kamergenoten.", "punten": 10 },
+        { "id": "eerste-sneeuwbal", "titel": "Eerste sneeuwbal", "omschrijving": "Raak iemand van een andere kamer met een sneeuwbal.", "punten": 5 }
+      ]
+    },
+    {
+      "datum": "2027-03-07",
+      "items": [
+        { "id": "eerste-afdaling", "titel": "Eerste afdaling", "omschrijving": "Kom zonder vallen de eerste piste af.", "punten": 10 },
+        { "id": "lift-gesprek", "titel": "Liftpraatje", "omschrijving": "Maak een praatje met een onbekende in de stoeltjeslift.", "punten": 10 },
+        { "id": "pistebord", "titel": "Pistebord", "omschrijving": "Maak een foto bij een bord met de naam van een piste.", "punten": 5 }
+      ]
+    },
+    {
+      "datum": "2027-03-08",
+      "items": [
+        { "id": "gletsjer-groepsfoto", "titel": "Top van de gletsjer", "omschrijving": "Maak een groepsfoto bij de top van de gletsjer.", "punten": 20 },
+        { "id": "ijsgrot", "titel": "IJskoud", "omschrijving": "Bezoek de ijsgrot.", "punten": 10 },
+        { "id": "quiz-winnaar", "titel": "Slimste skiër", "omschrijving": "Zit in het winnende team van de pubquiz.", "punten": 15 }
+      ]
+    },
+    {
+      "datum": "2027-03-09",
+      "items": [
+        { "id": "sneeuwvolleybal-punt", "titel": "Ace in de sneeuw", "omschrijving": "Scoor een ace tijdens het sneeuwvolleybal.", "punten": 15 },
+        { "id": "duik", "titel": "Sneeuwduik", "omschrijving": "Duik voor een bal in de sneeuw (met bewijs op foto).", "punten": 10 },
+        { "id": "rode-piste", "titel": "Rood is het nieuwe blauw", "omschrijving": "Rijd een rode piste die je nog niet kende.", "punten": 10 }
+      ]
+    },
+    {
+      "datum": "2027-03-10",
+      "items": [
+        { "id": "venosc", "titel": "Dorpje Venosc", "omschrijving": "Maak een foto in Venosc.", "punten": 15 },
+        { "id": "fondue-brood", "titel": "Verloren in de fondue", "omschrijving": "Laat géén stukje brood in de fondue vallen. Eerlijk zijn!", "punten": 10 },
+        { "id": "lokale-kaas", "titel": "Kaaskenner", "omschrijving": "Noem drie Franse kazen zonder je telefoon.", "punten": 5 }
+      ]
+    },
+    {
+      "datum": "2027-03-11",
+      "items": [
+        { "id": "clubkleuren", "titel": "Clubkleuren", "omschrijving": "Sta op de groepsfoto in je Tweeslag-shirt.", "punten": 10 },
+        { "id": "jaren80", "titel": "Fout maar goed", "omschrijving": "Kom in volledige jaren 80-outfit naar het themafeest.", "punten": 20 },
+        { "id": "dansje", "titel": "Pistedans", "omschrijving": "Doe een dansje met ski's aan. Iemand filmt.", "punten": 10 }
+      ]
+    },
+    {
+      "datum": "2027-03-12",
+      "items": [
+        { "id": "eerste-lift", "titel": "Vroege vogel", "omschrijving": "Zit in de eerste gondel van de dag.", "punten": 15 },
+        { "id": "laatste-afdaling", "titel": "Laatste afdaling", "omschrijving": "Rijd de laatste afdaling samen met je kamer.", "punten": 10 },
+        { "id": "compliment", "titel": "Complimentje", "omschrijving": "Geef de reisleiding een compliment. Gemeend.", "punten": 5 }
+      ]
+    },
+    {
+      "datum": "2027-03-13",
+      "items": [
+        { "id": "kamer-schoon", "titel": "Bezemschoon", "omschrijving": "Jullie kamer is als eerste schoon en goedgekeurd.", "punten": 15 },
+        { "id": "souvenir", "titel": "Souvenir", "omschrijving": "Koop het meest foute souvenir van het dorp.", "punten": 10 }
+      ]
+    },
+    {
+      "datum": "2027-03-14",
+      "items": [
+        { "id": "thuis", "titel": "Weer thuis", "omschrijving": "Stuur een foto van je eerste stamppot in de groepsapp.", "punten": 5 }
+      ]
+    }
+  ],
+  "bingo": {
+    "vrijVakje": "🏐 Vrij!",
+    "vakjes": [
+      "🐕 Hond op de piste",
+      "🦄 Skiën in onesie",
+      "🧤 Want kwijt",
+      "🏂 Boarder zit",
+      "🦞 Rode kop",
+      "🕶️ Brilkop",
+      "🎤 Hey Baby",
+      "💃 Tafeldans",
+      "🍷 Glühwein",
+      "🚜 Ratrac",
+      "🚁 Heli",
+      "🧭 Foute lift",
+      "👶 Kind te snel",
+      "🔁 Nog één!",
+      "⛄ Sneeuw-pop",
+      "😴 Dutje in de lift",
+      "☁️ Wolkenzee",
+      "🇳🇱 NL in de lift",
+      "🤳 Selfie-stok",
+      "🛒 Spar in skipak",
+      "🙃 Val bij stilstand",
+      "❄️ Verse sneeuw",
+      "🏐 2slag-vlag",
+      "🧀 Raclette",
+      "🗺️ Verdwaald",
+      "🎧 Dove boarder",
+      "🥶 IJspegels",
+      "🎿 Ski's gekruist",
+      "🪑 Vast in de lift",
+      "📸 Val op video",
+      "🥖 Stokbrood",
+      "🌄 Boven de wolken",
+      "🏐 Bump in sneeuw",
+      "🐧 Pinguïn-loopje",
+      "🚿 Koude douche",
+      "🔦 Hoofd-lamp"
+    ]
+  }
+}

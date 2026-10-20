@@ -1,0 +1,33 @@
+{
+  "name": "tweeslag-wispo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "homepage": "https://ronaldsteenkamp.github.io/tweeslag-wispo/",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && vite build",
+    "preview": "vite preview",
+    "qr": "node scripts/make-qr.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vite-pwa/assets-generator": "^0.2.6",
+    "@vitejs/plugin-react": "^4.3.4",
+    "qrcode": "^1.5.4",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.7",
+    "vite-plugin-pwa": "^0.21.1"
+  },
+  "allowScripts": {
+    "sharp@0.32.6": true,
+    "esbuild@0.25.12": true
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "_uitleg": "Per dag een lijst items. 'datum' is JJJJ-MM-DD, 'tijd' is UU:MM (24-uurs). 'locatie' mag je weglaten. De volgorde van de dagen bepaalt 'Dag X van 10'.",
+  "dagen": [
+    {
+      "datum": "2027-03-05",
+      "titel": "Vertrek",
+      "items": [
+        { "tijd": "18:30", "titel": "Verzamelen", "omschrijving": "Bagage inladen. Skischoenen in de handbagage, dan heb je ze zeker bij aankomst.", "locatie": "Parkeerplaats bij de sporthal" },
+        { "tijd": "19:30", "titel": "Vertrek bus", "omschrijving": "Op tijd zijn! De bus wacht niet.", "locatie": "Parkeerplaats bij de sporthal" },
+        { "tijd": "23:00", "titel": "Eerste stop", "omschrijving": "Plaspauze en koffie. Daarna gaan de lichten uit." }
+      ]
+    },
+    {
+      "datum": "2027-03-06",
+      "titel": "Aankomst",
+      "items": [
+        { "tijd": "09:00", "titel": "Aankomst in Les Deux Alpes", "omschrijving": "Bagage in de bagageruimte van het verblijf. Daarna ontbijten in het dorp." },
+        { "tijd": "11:00", "titel": "Ski's huren", "omschrijving": "Neem je schoenmaat en lengte mee. De verhuur is gereserveerd op naam van Tweeslag.", "locatie": "Skiverhuur in het centrum" },
+        { "tijd": "13:00", "titel": "Skipassen ophalen", "omschrijving": "De reisleiding deelt ze uit. Zet je pas direct in de app van Les 2 Alpes.", "locatie": "Kassa bij de Jandri Express" },
+        { "tijd": "16:00", "titel": "Inchecken", "omschrijving": "Kamers zijn vanaf nu beschikbaar. Kijk in het tabblad Kamers waar je slaapt." },
+        { "tijd": "19:00", "titel": "Welkomstdiner", "omschrijving": "Samen eten en het weekprogramma doornemen." }
+      ]
+    },
+    {
+      "datum": "2027-03-07",
+      "titel": "Skidag 1",
+      "items": [
+        { "tijd": "08:30", "titel": "Ontbijt", "omschrijving": "Smeer een lunchpakket als je op de berg wilt eten." },
+        { "tijd": "09:30", "titel": "Inskiën in groepjes", "omschrijving": "Beginners, gevorderden en de snelle groep. Rustig beginnen op de blauwe pistes.", "locatie": "Onderstation Jandri Express" },
+        { "tijd": "12:30", "titel": "Lunch op de berg", "omschrijving": "Verzamelen op het terras halverwege de berg." },
+        { "tijd": "16:30", "titel": "Après-ski", "omschrijving": "Eerste drankje van de week, op het terras onderaan de piste." },
+        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 101 en 102." }
+      ]
+    },
+    {
+      "datum": "2027-03-08",
+      "titel": "Skidag 2",
+      "items": [
+        { "tijd": "08:30", "titel": "Ontbijt" },
+        { "tijd": "09:00", "titel": "Naar de gletsjer", "omschrijving": "Vroeg omhoog, dan is de sneeuw boven het mooist. Warme laag aan, het kan koud zijn op 3200 meter.", "locatie": "Jandri Express" },
+        { "tijd": "11:00", "titel": "IJsgrot", "omschrijving": "Wie wil, gaat mee naar de ijsgrot bij de gletsjer.", "locatie": "Gletsjer" },
+        { "tijd": "16:30", "titel": "Après-ski" },
+        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 103 en 104." },
+        { "tijd": "21:00", "titel": "Spelletjesavond", "omschrijving": "Pubquiz in de gemeenschappelijke ruimte." }
+      ]
+    },
+    {
+      "datum": "2027-03-09",
+      "titel": "Skidag 3",
+      "items": [
+        { "tijd": "08:30", "titel": "Ontbijt" },
+        { "tijd": "09:30", "titel": "Vrij skiën", "omschrijving": "Ga met je eigen groepje op pad. Spreek een vast verzamelpunt af." },
+        { "tijd": "14:00", "titel": "Sneeuwvolleybal", "omschrijving": "Het Tweeslag-toernooi in de sneeuw! Teams worden ter plekke gemaakt.", "locatie": "Sneeuwveld bij het centrum" },
+        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 105 en 106." }
+      ]
+    },
+    {
+      "datum": "2027-03-10",
+      "titel": "Skidag 4",
+      "items": [
+        { "tijd": "08:30", "titel": "Ontbijt" },
+        { "tijd": "09:30", "titel": "Afdaling naar Venosc", "omschrijving": "Voor de gevorderden: naar het dorpje Venosc en met de gondel terug.", "locatie": "Venosc" },
+        { "tijd": "16:30", "titel": "Après-ski" },
+        { "tijd": "19:00", "titel": "Fondue-avond", "omschrijving": "Uit eten in het dorp. Reservering op naam van Tweeslag.", "locatie": "Restaurant in het centrum" }
+      ]
+    },
+    {
+      "datum": "2027-03-11",
+      "titel": "Skidag 5",
+      "items": [
+        { "tijd": "08:30", "titel": "Ontbijt" },
+        { "tijd": "09:30", "titel": "Vrij skiën" },
+        { "tijd": "16:00", "titel": "Groepsfoto", "omschrijving": "Iedereen in clubkleuren! Neem je Tweeslag-shirt mee.", "locatie": "Onderaan de piste bij het centrum" },
+        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 107 en 108." },
+        { "tijd": "21:30", "titel": "Themafeest", "omschrijving": "Thema: foute skikleding uit de jaren 80." }
+      ]
+    },
+    {
+      "datum": "2027-03-12",
+      "titel": "Skidag 6",
+      "items": [
+        { "tijd": "08:30", "titel": "Ontbijt" },
+        { "tijd": "09:30", "titel": "Laatste volle skidag", "omschrijving": "Nog één keer naar boven. Geniet ervan!" },
+        { "tijd": "16:30", "titel": "Après-ski en prijsuitreiking", "omschrijving": "Uitslag van het spel en het sneeuwvolleybaltoernooi." },
+        { "tijd": "19:30", "titel": "Afscheidsdiner" }
+      ]
+    },
+    {
+      "datum": "2027-03-13",
+      "titel": "Terugreis",
+      "items": [
+        { "tijd": "09:00", "titel": "Ski's inleveren", "omschrijving": "Of skiën tot de middag en daarna inleveren. Uiterlijk 15:00.", "locatie": "Skiverhuur in het centrum" },
+        { "tijd": "10:00", "titel": "Uitchecken", "omschrijving": "Kamer leeg, bedden afgehaald, sleutel bij de reisleiding. Bagage in de bagageruimte." },
+        { "tijd": "17:00", "titel": "Douchen en omkleden", "omschrijving": "In de sanitaire ruimte van het verblijf." },
+        { "tijd": "19:00", "titel": "Vertrek bus", "omschrijving": "Tel je tassen: ski's, schoenen, helm, rugzak." }
+      ]
+    },
+    {
+      "datum": "2027-03-14",
+      "titel": "Thuiskomst",
+      "items": [
+        { "tijd": "08:00", "titel": "Aankomst", "omschrijving": "Verwachte aankomsttijd. De reisleiding stuurt onderweg een update in de groepsapp.", "locatie": "Parkeerplaats bij de sporthal" }
+      ]
+    }
+  ]
+}
