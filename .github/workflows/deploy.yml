@@ -28,6 +28,10 @@ jobs:
         env:
           # De site staat op https://<gebruiker>.github.io/<repo-naam>/
           BASE_PATH: /${{ github.event.repository.name }}/
+          # Supabase (Settings → Secrets and variables → Actions → tabblad Variables).
+          # Alleen de URL en de publieke anon/publishable key; nooit de service-role key.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

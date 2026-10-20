@@ -13,13 +13,14 @@ import Kaart from './screens/Kaart'
 import Spel from './screens/Spel'
 import Verdelen from './screens/Verdelen'
 import Weer from './screens/Weer'
+import Beheer from './screens/Beheer'
 
 /** Schermen die niet in de tabbalk staan */
-type Scherm = Tab | 'verdelen' | 'weer'
+type Scherm = Tab | 'verdelen' | 'weer' | 'beheer'
 
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
-  if (h === 'verdelen' || h === 'weer') return h
+  if (h === 'verdelen' || h === 'weer' || h === 'beheer') return h
   return TABS.some((t) => t.id === h) ? (h as Tab) : 'home'
 }
 
@@ -65,17 +66,22 @@ export default function App() {
       <main className={`inhoud inhoud--${tab}`}>
         {tab === 'home' && <Home naarTab={kies} naarWeer={() => kies('weer')} />}
         {tab === 'weer' && <Weer terug={() => kies('home')} />}
+        {tab === 'beheer' && <Beheer terug={() => kies('kamers')} />}
         {tab === 'planning' && <Planning />}
         {tab === 'paklijst' && <Paklijst />}
-        {tab === 'kamers' && <Kamers naarVerdelen={() => kies('verdelen')} />}
+        {tab === 'kamers' && <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />}
         {tab === 'kaart' && <Kaart />}
         {tab === 'spel' && <Spel />}
         {tab === 'verdelen' &&
-          (magVerdelen ? <Verdelen terug={() => kies('kamers')} /> : <Kamers naarVerdelen={() => kies('verdelen')} />)}
+          (magVerdelen ? (
+            <Verdelen terug={() => kies('kamers')} />
+          ) : (
+            <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />
+          ))}
       </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <UpdateMelding />
-      <TabBalk actief={tab === 'verdelen' ? 'kamers' : tab === 'weer' ? 'home' : tab} onKies={kies} />
+      <TabBalk actief={tab === 'verdelen' || tab === 'beheer' ? 'kamers' : tab === 'weer' ? 'home' : tab} onKies={kies} />
     </>
   )
 }

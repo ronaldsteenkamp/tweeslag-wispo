@@ -11,6 +11,7 @@
     "qr": "node scripts/make-qr.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.117.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

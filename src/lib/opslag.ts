@@ -24,6 +24,16 @@ export function schrijf<T>(sleutel: string, waarde: T): void {
 const luisteraars = new Map<string, Set<(waarde: unknown) => void>>()
 const GEEN = Symbol('geen')
 
+/** Buiten React luisteren naar wijzigingen van een bewaarde waarde (bijv. de naam) */
+export function abonneer(sleutel: string, f: (waarde: unknown) => void): () => void {
+  const set = luisteraars.get(sleutel) ?? new Set()
+  luisteraars.set(sleutel, set)
+  set.add(f)
+  return () => {
+    set.delete(f)
+  }
+}
+
 /** useState dat in localStorage bewaard wordt en gelijk blijft tussen schermen */
 export function useOpgeslagen<T>(sleutel: string, standaard: T) {
   const [waarde, setWaarde] = useState<T>(() => lees(sleutel, standaard))

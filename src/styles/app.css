@@ -1458,6 +1458,88 @@ button {
   white-space: nowrap;
 }
 
+/* ---------- Verbinding en beheer ---------- */
+
+.verbinding {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--oppervlak-2);
+  font-family: var(--font-kop);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.verbinding__stip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tekst-zacht);
+}
+
+.verbinding--verbonden .verbinding__stip {
+  background: var(--succes);
+}
+
+.verbinding--offline .verbinding__stip {
+  background: var(--gevaar);
+}
+
+.verbinding--verbinden .verbinding__stip {
+  background: var(--accent);
+  animation: knipper 1s ease-in-out infinite alternate;
+}
+
+@keyframes knipper {
+  to {
+    opacity: 0.3;
+  }
+}
+
+.beheer > .tekstknop:first-child {
+  align-self: flex-start;
+}
+
+.beheer code {
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+}
+
+.beheer__feiten {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.beheer__feiten dt {
+  font-family: var(--font-kop);
+  font-size: 0.8rem;
+  color: var(--tekst-zacht);
+}
+
+.beheer__feiten dd {
+  margin: 0;
+  font-family: var(--font-kop);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.beheer__formulier {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.beheer__code {
+  font-size: 1.4rem;
+  letter-spacing: 0.2em;
+  text-align: center;
+}
+
 /* ---------- Kaart ---------- */
 
 .inhoud--kaart {

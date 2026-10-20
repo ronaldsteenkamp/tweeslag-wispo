@@ -6,7 +6,7 @@ import { config } from '../config'
 import { useData, type Kamer } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
 
-export default function Kamers({ naarVerdelen }: { naarVerdelen: () => void }) {
+export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () => void; naarBeheer: () => void }) {
   const { data, fout } = useData('kamers')
   const [naam, setNaam] = useOpgeslagen<string | null>('naam', null)
   const [wijzigen, setWijzigen] = useState(false)
@@ -107,9 +107,14 @@ export default function Kamers({ naarVerdelen }: { naarVerdelen: () => void }) {
       ))}
 
       {isReisleiding && (
-        <button type="button" className="knop knop--secundair knop--breed" onClick={naarVerdelen}>
-          🛏️ Kamerverdeling maken (reisleiding)
-        </button>
+        <>
+          <button type="button" className="knop knop--secundair knop--breed" onClick={naarVerdelen}>
+            🛏️ Kamerverdeling maken (reisleiding)
+          </button>
+          <button type="button" className="knop knop--secundair knop--breed" onClick={naarBeheer}>
+            ⚙️ Beheer (reisleiding)
+          </button>
+        </>
       )}
     </div>
   )

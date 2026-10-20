@@ -134,6 +134,49 @@ De app staat dan op `https://<gebruikersnaam>.github.io/<repo-naam>/`. De workfl
 
 Na een update krijgen gebruikers bij de volgende keer openen de melding *"Er is een nieuwe versie van de app"* met een knop **Vernieuwen**. Nieuwe JSON-data komt direct door zodra er internet is; daar is geen update voor nodig.
 
+## Backend (Supabase)
+
+De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er gedeelde functies bij: scorebord, dagelijkse stemming, pushmeldingen en een fotomuur. Is Supabase niet ingesteld of niet bereikbaar, dan staat er bij die onderdelen *Geen verbinding* en werkt de rest gewoon door.
+
+**Hoe het werkt**
+- Deelnemers loggen niet in. Elk apparaat krijgt stil een eigen anonieme gebruiker (*Anonymous Sign-ins*). De gekozen naam en de kamer uit `kamers.json` worden daaraan gekoppeld.
+- Kiest iemand op een tweede apparaat dezelfde naam (bijvoorbeeld Safari én de app op het beginscherm van dezelfde iPhone), dan neemt het nieuwe apparaat de naam over. Elke telefoon bewaart zijn eigen voortgang en stuurt die steeds opnieuw, dus dat herstelt zichzelf.
+- De reisleiding logt in via *Kamers → ⚙️ Beheer (reisleiding)* met een inlogmail (link én code). Wie beheerder is, staat in de tabel `beheerders`.
+- Elke tabel heeft Row Level Security: iedereen leest alleen wat nodig is, schrijft alleen eigen rijen; alleen beheerders mogen corrigeren en verwijderen.
+- Alle SQL staat in `supabase/migrations/` (op volgorde uitvoeren; elk bestand mag vaker gedraaid worden).
+
+### Eenmalig instellen (stap voor stap)
+
+1. **Project aanmaken.** Ga naar [supabase.com](https://supabase.com), maak een account en kies *New project*. Naam: `tweeslag-wispo`. Regio: een EU-regio, bijvoorbeeld *Central EU (Frankfurt)* of *West EU (Ireland)*. Kies een sterk databasewachtwoord en bewaar het in je wachtwoordmanager. Abonnement: *Free*.
+2. **Tabellen maken.** Open *SQL Editor → New query*, plak de inhoud van `supabase/migrations/0001_basis.sql` en klik op *Run*. Zet daarna jezelf en Sten als beheerder (met jullie eigen adressen):
+   ```sql
+   insert into public.beheerders (email) values ('ronald@voorbeeld.nl'), ('sten@voorbeeld.nl');
+   ```
+   E-mailadressen in kleine letters.
+3. **Anoniem inloggen aanzetten.** *Authentication → Sign In / Providers* → zet **Allow anonymous sign-ins** aan. *Email* staat standaard al aan; laat dat zo.
+4. **Adressen van de app.** *Authentication → URL Configuration*:
+   - *Site URL*: `https://ronaldsteenkamp.github.io/tweeslag-wispo/`
+   - *Redirect URLs*: dezelfde, plus `http://localhost:4173/tweeslag-wispo/` en `http://localhost:5173/tweeslag-wispo/` (voor lokaal testen).
+5. **Inlogcode in de mail.** *Authentication → Emails → Templates → Magic Link*: zet onder de link de regel `Of vul deze code in de app in: {{ .Token }}`. Op een iPhone opent de link in Safari, dat een andere opslag heeft dan de app op het beginscherm; met de code log je in ín de app.
+6. **Keys opzoeken.** *Project Settings → Data API*: kopieer de **Project URL**. *Project Settings → API Keys*: kopieer de **anon public** key (of de *publishable* key). ⚠️ Gebruik nooit de *service_role*- of *secret*-key in de app of in GitHub: die omzeilt alle beveiliging.
+7. **In GitHub zetten.** Repository → *Settings → Secrets and variables → Actions* → tabblad **Variables** → *New repository variable*:
+   - `VITE_SUPABASE_URL` = de Project URL
+   - `VITE_SUPABASE_ANON_KEY` = de anon/publishable key
+
+   Start daarna de deploy opnieuw: *Actions → Deploy naar GitHub Pages → Run workflow* (of push een wijziging). De anon key is bedoeld om publiek te zijn; de beveiliging zit in de Row Level Security.
+8. **Lokaal (optioneel).** Kopieer `.env.example` naar `.env.local` en vul dezelfde twee waarden in. `.env.local` gaat niet mee naar GitHub.
+9. **Controleren.** Open de app, kies je naam en ga naar *Kamers → ⚙️ Beheer (reisleiding)*. Daar moet *Verbonden* staan en *Gekoppeld als Ronald · kamer …*. Log in met je e-mail; bij *Beheerder* hoort dan *Ja ✓* te staan. In Supabase zie je onder *Table Editor → deelnemers* een rij per apparaat.
+
+### Let op: gratis project pauzeert
+Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
+
+Verder handig om te weten over het gratis abonnement: de standaard-mailserver van Supabase verstuurt maar een paar inlogmails per uur (genoeg voor de reisleiding), en per internetverbinding kunnen standaard zo'n 30 anonieme aanmeldingen per uur. Zitten veel mensen tegelijk op één wifi, dan kun je dat verhogen onder *Authentication → Rate Limits*.
+
+### Privacy en opruimen na de reis
+- Alleen voornamen en kamernummers gaan naar de server, in een EU-regio. Geen e-mailadressen van deelnemers; alleen de beheerders loggen in met e-mail.
+- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers en via de koppelingen alles wat eraan hangt) en leeg de foto-bucket onder *Storage*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
+- Haal daarna in GitHub de twee variabelen weg; de app werkt dan weer zonder backend.
+
 ## QR-code
 
 ```bash
