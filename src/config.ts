@@ -20,6 +20,9 @@ export const config = {
     android: 'https://play.google.com/store/apps/details?id=com.lumiplan.montagne.LesDeuxAlpes',
   },
 
+  /** Alleen deze namen zien de knop 'Kamerverdeling maken'. Let op: geen echte beveiliging, iedereen kan in de app elke naam kiezen. */
+  reisleiding: ['Ronald', 'Sten'] as readonly string[],
+
   /** Hier plak je een nieuwe kamers.json uit de kamerverdeling (bewerken op GitHub) */
   kamersBewerkenOpGithub: 'https://github.com/ronaldsteenkamp/tweeslag-wispo/edit/main/public/data/kamers.json',
 } as const

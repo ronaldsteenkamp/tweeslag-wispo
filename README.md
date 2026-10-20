@@ -57,7 +57,7 @@ Verander je de tekst van een item, dan verdwijnt het vinkje bij dat ene item. Ie
 ```
 Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn eigen kamer bovenaan.
 
-**Kamerverdeling maken zonder JSON te typen:** open in de app *Kamers* en tik onderaan op **Kamerverdeling maken (reisleiding)**. Voeg deelnemers en kamers toe, stel het aantal bedden in en tik een naam en daarna een kamer aan (of gebruik *Automatisch verdelen*). Tik daarna op *Kopieer kamers.json*, open *kamers.json op GitHub* via de knop, plak de tekst eroverheen en kies *Commit changes*. Je werk wordt tussendoor op je telefoon bewaard; de groep ziet de nieuwe verdeling pas na de commit. `bedden` is optioneel; staat het erin, dan ziet iedereen hoeveel plekken er nog vrij zijn.
+**Kamerverdeling maken zonder JSON te typen:** open in de app *Kamers* en tik onderaan op **Kamerverdeling maken (reisleiding)**. Die knop zien alleen de namen in `reisleiding` in `src/config.ts` (nu Ronald en Sten). Dat is geen echte beveiliging, want iedereen kan in de app elke naam kiezen; de echte drempel is dat je schrijfrechten op de GitHub-repo nodig hebt om de verdeling online te zetten. Voeg deelnemers en kamers toe, stel het aantal bedden in en tik een naam en daarna een kamer aan (of gebruik *Automatisch verdelen*). Tik daarna op *Kopieer kamers.json*, open *kamers.json op GitHub* via de knop, plak de tekst eroverheen en kies *Commit changes*. Je werk wordt tussendoor op je telefoon bewaard; de groep ziet de nieuwe verdeling pas na de commit. `bedden` is optioneel; staat het erin, dan ziet iedereen hoeveel plekken er nog vrij zijn.
 
 ### spel.json
 ```json

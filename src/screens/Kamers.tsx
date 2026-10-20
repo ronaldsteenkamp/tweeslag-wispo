@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { NaamKiezer, normaal, useAlleNamen } from '../components/NaamKiezer'
+import { config } from '../config'
 import { useData, type Kamer } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
 
@@ -12,6 +13,7 @@ export default function Kamers({ naarVerdelen }: { naarVerdelen: () => void }) {
   const [zoek, setZoek] = useState('')
 
   const alleNamen = useAlleNamen(data)
+  const isReisleiding = naam !== null && config.reisleiding.includes(naam)
 
   if (!data) {
     return (
@@ -47,9 +49,7 @@ export default function Kamers({ naarVerdelen }: { naarVerdelen: () => void }) {
             Annuleren
           </button>
         )}
-        <button type="button" className="tekstknop" onClick={naarVerdelen}>
-          Kamerverdeling maken (reisleiding)
-        </button>
+
       </div>
     )
   }
@@ -106,9 +106,11 @@ export default function Kamers({ naarVerdelen }: { naarVerdelen: () => void }) {
         </section>
       ))}
 
-      <button type="button" className="knop knop--secundair knop--breed" onClick={naarVerdelen}>
-        🛏️ Kamerverdeling maken (reisleiding)
-      </button>
+      {isReisleiding && (
+        <button type="button" className="knop knop--secundair knop--breed" onClick={naarVerdelen}>
+          🛏️ Kamerverdeling maken (reisleiding)
+        </button>
+      )}
     </div>
   )
 }

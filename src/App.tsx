@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { TabBalk, TABS, type Tab } from './components/TabBalk'
 import { UpdateMelding } from './components/UpdateMelding'
 import { Welkom } from './components/Welkom'
+import { config } from './config'
 import { haalAllesVooraf } from './lib/data'
 import { lees, useOpgeslagen } from './lib/opslag'
 import Home from './screens/Home'
@@ -26,6 +27,9 @@ export default function App() {
   // Wie al een naam heeft gekozen (van voor het welkomstscherm bestond) hoeft het niet te zien
   const [welkomGehad, setWelkomGehad] = useOpgeslagen('welkom.gehad', lees<string | null>('naam', null) !== null)
   const welkomKlaar = useCallback(() => setWelkomGehad(true), [setWelkomGehad])
+  const [naam] = useOpgeslagen<string | null>('naam', null)
+  // De kamerverdeling is alleen voor de reisleiding (zie config.ts)
+  const magVerdelen = naam !== null && config.reisleiding.includes(naam)
 
   useEffect(() => {
     const opHash = () => setTab(tabUitAdres())
@@ -64,7 +68,8 @@ export default function App() {
         {tab === 'kamers' && <Kamers naarVerdelen={() => kies('verdelen')} />}
         {tab === 'kaart' && <Kaart />}
         {tab === 'spel' && <Spel />}
-        {tab === 'verdelen' && <Verdelen terug={() => kies('kamers')} />}
+        {tab === 'verdelen' &&
+          (magVerdelen ? <Verdelen terug={() => kies('kamers')} /> : <Kamers naarVerdelen={() => kies('verdelen')} />)}
       </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <UpdateMelding />
