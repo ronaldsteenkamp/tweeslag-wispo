@@ -147,6 +147,8 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 
 ### Eenmalig instellen (stap voor stap)
 
+> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd, ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
+
 1. **Project aanmaken.** Ga naar [supabase.com](https://supabase.com), maak een account en kies *New project*. Naam: `tweeslag-wispo`. Regio: een EU-regio, bijvoorbeeld *Central EU (Frankfurt)* of *West EU (Ireland)*. Kies een sterk databasewachtwoord en bewaar het in je wachtwoordmanager. Abonnement: *Free*.
 2. **Tabellen maken.** Open *SQL Editor → New query*, plak de inhoud van `supabase/migrations/0001_basis.sql` en klik op *Run*. Zet daarna jezelf en Sten als beheerder (met jullie eigen adressen):
    ```sql
@@ -157,7 +159,7 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 4. **Adressen van de app.** *Authentication → URL Configuration*:
    - *Site URL*: `https://ronaldsteenkamp.github.io/tweeslag-wispo/`
    - *Redirect URLs*: dezelfde, plus `http://localhost:4173/tweeslag-wispo/` en `http://localhost:5173/tweeslag-wispo/` (voor lokaal testen).
-5. **Inlogcode in de mail.** *Authentication → Emails → Templates → Magic Link*: zet onder de link de regel `Of vul deze code in de app in: {{ .Token }}`. Op een iPhone opent de link in Safari, dat een andere opslag heeft dan de app op het beginscherm; met de code log je in ín de app.
+5. **Inlogmail.** Standaard bevat de mail alleen een inloglink. Op Android werkt die ook voor de geïnstalleerde app; op een iPhone opent hij in Safari, dus daar doe je het beheer in Safari. Wil je ook een code in de mail (zodat je in de app op het beginscherm kunt inloggen), stel dan een eigen mailserver in (*Authentication → Emails → SMTP Settings*, bijvoorbeeld met Resend of een Gmail-app-wachtwoord) en zet in het sjabloon *Magic link or OTP* de regel `Of vul deze code in de app in: {{ .Token }}`. Het beheerscherm heeft daar al een invulveld voor.
 6. **Keys opzoeken.** *Project Settings → Data API*: kopieer de **Project URL**. *Project Settings → API Keys*: kopieer de **anon public** key (of de *publishable* key). ⚠️ Gebruik nooit de *service_role*- of *secret*-key in de app of in GitHub: die omzeilt alle beveiliging.
 7. **In GitHub zetten.** Repository → *Settings → Secrets and variables → Actions* → tabblad **Variables** → *New repository variable*:
    - `VITE_SUPABASE_URL` = de Project URL

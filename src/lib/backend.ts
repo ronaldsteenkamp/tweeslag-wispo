@@ -134,8 +134,29 @@ async function kamerVan(naam: string): Promise<string | null> {
   }
 }
 
-/** Stuurt de gekozen naam (en de kamer uit kamers.json) naar de server, als dat nog niet gebeurd is */
-export async function stuurProfiel(forceer = false) {
+let profielBezig: Promise<void> | null = null
+let profielNogmaals = false
+
+/**
+ * Stuurt de gekozen naam (en de kamer uit kamers.json) naar de server, als dat nog niet gebeurd is.
+ * Nooit twee tegelijk: komt er een verzoek bij terwijl er één loopt, dan volgt er daarna nog één.
+ */
+export function stuurProfiel(forceer = false): Promise<void> {
+  if (profielBezig) {
+    profielNogmaals = true
+    return profielBezig
+  }
+  profielBezig = stuurProfielNu(forceer).finally(() => {
+    profielBezig = null
+    if (profielNogmaals) {
+      profielNogmaals = false
+      void stuurProfiel()
+    }
+  })
+  return profielBezig
+}
+
+async function stuurProfielNu(forceer: boolean) {
   const cb = supabase()
   const naam = lees<string | null>('naam', null)
   if (!cb || !naam || !stand.userId || stand.status === 'offline') return

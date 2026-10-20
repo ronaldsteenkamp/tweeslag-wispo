@@ -97,8 +97,9 @@ export default function Beheer({ terug }: { terug: () => void }) {
         <section className="kaartje">
           <h2>Inloggen als reisleiding</h2>
           <p>
-            Je krijgt een mail met een inloglink én een code. Gebruik je de app op het beginscherm van een iPhone,
-            typ dan de code over: de link opent in Safari, en dat is een andere opslag dan de app.
+            Je krijgt een mail met een inloglink. Tik erop in de browser waarin je wilt beheren. Op Android werkt dat
+            ook voor de geïnstalleerde app. Op een iPhone opent de link in Safari: doe het beheer dan in Safari (de app
+            op het beginscherm heeft een eigen opslag).
           </p>
           {!mailVerstuurd ? (
             <form className="beheer__formulier" onSubmit={verstuur}>
@@ -122,7 +123,7 @@ export default function Beheer({ terug }: { terug: () => void }) {
             </form>
           ) : (
             <form className="beheer__formulier" onSubmit={logIn}>
-              <p className="klein">Mail verstuurd naar {email}. Tik op de link, of vul hier de code in.</p>
+              <p className="klein">Mail verstuurd naar {email}. Tik op de link in de mail. Staat er een code in, dan kun je die hier invullen.</p>
               <label className="verborgen" htmlFor="beheer-code">
                 Code uit de mail
               </label>

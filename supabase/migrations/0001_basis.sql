@@ -98,6 +98,9 @@ begin
     raise exception 'ongeldige naam';
   end if;
 
+  -- Gelijktijdige aanvragen voor dezelfde naam na elkaar afhandelen
+  perform pg_advisory_xact_lock(hashtext(lower(v_naam)));
+
   delete from public.deelnemers
   where lower(naam) = lower(v_naam) and user_id <> auth.uid();
 
@@ -110,3 +113,12 @@ $$;
 
 revoke all on function public.kies_naam(text, text) from public, anon;
 grant execute on function public.kies_naam(text, text) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Rechten. Het project staat op "nieuwe tabellen niet automatisch openzetten";
+-- daarom hier expliciet. Niet-ingelogd (anon) krijgt niets, ingelogde apparaten
+-- (ook anoniem) krijgen alleen wat de RLS-regels hierboven toestaan.
+-- ---------------------------------------------------------------------------
+revoke all on public.deelnemers, public.beheerders from anon;
+grant select, insert, update, delete on public.deelnemers to authenticated;
+grant select on public.beheerders to authenticated;
