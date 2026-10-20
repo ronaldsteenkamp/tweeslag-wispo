@@ -12,13 +12,14 @@ import Kamers from './screens/Kamers'
 import Kaart from './screens/Kaart'
 import Spel from './screens/Spel'
 import Verdelen from './screens/Verdelen'
+import Weer from './screens/Weer'
 
 /** Schermen die niet in de tabbalk staan */
-type Scherm = Tab | 'verdelen'
+type Scherm = Tab | 'verdelen' | 'weer'
 
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
-  if (h === 'verdelen') return 'verdelen'
+  if (h === 'verdelen' || h === 'weer') return h
   return TABS.some((t) => t.id === h) ? (h as Tab) : 'home'
 }
 
@@ -62,7 +63,8 @@ export default function App() {
   return (
     <>
       <main className={`inhoud inhoud--${tab}`}>
-        {tab === 'home' && <Home naarTab={kies} />}
+        {tab === 'home' && <Home naarTab={kies} naarWeer={() => kies('weer')} />}
+        {tab === 'weer' && <Weer terug={() => kies('home')} />}
         {tab === 'planning' && <Planning />}
         {tab === 'paklijst' && <Paklijst />}
         {tab === 'kamers' && <Kamers naarVerdelen={() => kies('verdelen')} />}
@@ -73,7 +75,7 @@ export default function App() {
       </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <UpdateMelding />
-      <TabBalk actief={tab === 'verdelen' ? 'kamers' : tab} onKies={kies} />
+      <TabBalk actief={tab === 'verdelen' ? 'kamers' : tab === 'weer' ? 'home' : tab} onKies={kies} />
     </>
   )
 }

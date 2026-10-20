@@ -1242,6 +1242,222 @@ button {
   resize: vertical;
 }
 
+/* ---------- Weer en sneeuw ---------- */
+
+.weerkaart {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.weerkaart:active {
+  transform: scale(0.99);
+}
+
+.weerkaart__plekken {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.weerkaart__plek {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--oppervlak-2);
+}
+
+.weerkaart__naam {
+  font-family: var(--font-kop);
+  font-weight: 800;
+}
+
+.weerkaart__naam span {
+  display: block;
+  font-weight: 600;
+  color: var(--tekst-zacht);
+  font-size: 0.85rem;
+}
+
+.weerkaart__hoofd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weerkaart__icoon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.weerkaart__temp {
+  font-family: var(--font-kop);
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.weerkaart__temp small {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--tekst-zacht);
+}
+
+.weerkaart__tekst {
+  font-size: 0.9rem;
+}
+
+.weerkaart__regel {
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  color: var(--tekst-zacht);
+}
+
+.weerkaart__voet,
+.weer__bron {
+  font-family: var(--font-kop);
+  font-size: 0.8rem;
+  color: var(--tekst-zacht);
+}
+
+.weer > .tekstknop:first-child {
+  align-self: flex-start;
+}
+
+.weer__groot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.weer__icoon {
+  font-size: 3.2rem;
+  line-height: 1;
+}
+
+.weer__temp {
+  font-family: var(--font-kop);
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.weer__temp small {
+  font-size: 1.2rem;
+  color: var(--tekst-zacht);
+}
+
+.weer__feiten {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin: 4px 0 0;
+}
+
+.weer__feiten dt {
+  font-family: var(--font-kop);
+  font-size: 0.8rem;
+  color: var(--tekst-zacht);
+}
+
+.weer__feiten dd {
+  margin: 0;
+  font-family: var(--font-kop);
+  font-weight: 700;
+}
+
+.weer__feiten small {
+  font-weight: 400;
+  color: var(--tekst-zacht);
+}
+
+.weer__delen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.weer__deel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 4px;
+  border-radius: 14px;
+  background: var(--oppervlak-2);
+  text-align: center;
+  font-family: var(--font-kop);
+}
+
+.weer__deel p {
+  font-family: var(--font-kop);
+}
+
+.weer__deelnaam {
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.weer__deelicoon {
+  font-size: 1.8rem;
+  line-height: 1.2;
+}
+
+.weer__dag {
+  gap: 4px;
+  padding: 12px 16px;
+}
+
+.weer__dag.is-reisdag {
+  border: 2px solid var(--accent);
+}
+
+.weer__dagkop {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.weer__datum {
+  font-family: var(--font-kop);
+  font-weight: 800;
+}
+
+.weer__dagicoon {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.weer__dagtemp {
+  min-width: 72px;
+  text-align: right;
+  font-family: var(--font-kop);
+}
+
+.weer__dagregel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  color: var(--tekst-zacht);
+}
+
+.dag__weer {
+  margin-left: auto;
+  margin-right: 8px;
+  font-family: var(--font-kop);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* ---------- Kaart ---------- */
 
 .inhoud--kaart {

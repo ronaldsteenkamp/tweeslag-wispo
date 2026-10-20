@@ -4,6 +4,7 @@ import { Icoon } from '../components/Icoon'
 import { useData, type Dag } from '../lib/data'
 import { useNu } from '../lib/nu'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
+import { graden, useWeer, weerIcoon, weerTekst } from '../lib/weer'
 
 /** De items van één dag als tijdlijn. Met nuTijd worden voorbije items gedimd en is 'straks' gemarkeerd. */
 export function Programma({ dag, nuTijd }: { dag: Dag; nuTijd?: string }) {
@@ -63,6 +64,9 @@ export default function Planning() {
   const { data, fout } = useData('planning')
   const nu = useNu(30000)
   const vandaag = datumISO(nu)
+  const { weer } = useWeer()
+  // Weer in het dorp, per datum (alleen voor dagen binnen de verwachting)
+  const weerPerDag = new Map((weer?.locaties[0]?.dagen ?? []).map((d) => [d.datum, d]))
   const dagRefs = useRef(new Map<string, HTMLElement>())
   const chipRefs = useRef(new Map<string, HTMLButtonElement>())
   const balk = useRef<HTMLDivElement>(null)
@@ -167,6 +171,12 @@ export default function Planning() {
               <p className="dag__nummer">
                 Dag {i + 1} · {datumLabel(dag.datum)}
               </p>
+              {weerPerDag.has(dag.datum) && (
+                <span className="dag__weer" title={`${weerTekst(weerPerDag.get(dag.datum)!.code)} in het dorp`}>
+                  <span aria-hidden="true">{weerIcoon(weerPerDag.get(dag.datum)!.code)}</span>{' '}
+                  {graden(weerPerDag.get(dag.datum)!.tMax)}
+                </span>
+              )}
               {isVandaag && <span className="label label--accent">Vandaag</span>}
             </div>
             <h2>{dag.titel}</h2>

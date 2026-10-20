@@ -5,6 +5,7 @@ import { Icoon } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
 import { NaamWijzigen } from '../components/NaamWijzigen'
 import { Sneeuw } from '../components/Sneeuw'
+import { WeerKaart } from '../components/WeerKaart'
 import type { Tab } from '../components/TabBalk'
 import { config } from '../config'
 import { useData, type Dag } from '../lib/data'
@@ -17,7 +18,7 @@ import { Programma } from './Planning'
 const vertrek = lokaalNaarDate(config.vertrek)
 const thuiskomst = lokaalNaarDate(config.thuiskomst)
 
-export default function Home({ naarTab }: { naarTab: (t: Tab) => void }) {
+export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void; naarWeer: () => void }) {
   const nu = useNu(1000)
   const { data: planning, fout } = useData('planning')
   const [naam] = useOpgeslagen<string | null>('naam', null)
@@ -79,6 +80,8 @@ export default function Home({ naarTab }: { naarTab: (t: Tab) => void }) {
           <p className="hero__tekst">Welkom thuis! Wat was het een mooie week. Tot de volgende wispo ❄️</p>
         )}
       </header>
+
+      {fase !== 'na' && <WeerKaart nu={nu} voorVertrek={nu < vertrek} onOpen={naarWeer} />}
 
       <InstallatieBanner />
 

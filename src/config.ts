@@ -20,6 +20,21 @@ export const config = {
     android: 'https://play.google.com/store/apps/details?id=com.lumiplan.montagne.LesDeuxAlpes',
   },
 
+  /**
+   * Weerbericht via Open-Meteo (gratis, geen key). De hoogte (elevation) zorgt dat
+   * de temperatuur klopt voor die plek. Gecontroleerd met OpenStreetMap en de
+   * hoogtekaart van Open-Meteo: dorp ≈ 1663 m, Dôme de Puy Salié ≈ 3408 m.
+   */
+  weer: {
+    locaties: [
+      { id: 'dorp', naam: 'Dorp', latitude: 45.01, longitude: 6.1238, hoogte: 1650 },
+      { id: 'gletsjer', naam: 'Gletsjer', latitude: 44.9972, longitude: 6.2226, hoogte: 3400 },
+    ],
+    tijdzone: 'Europe/Paris',
+    /** Hooguit zo vaak opnieuw ophalen */
+    verversMinuten: 60,
+  },
+
   /** Alleen deze namen zien de knop 'Kamerverdeling maken'. Let op: geen echte beveiliging, iedereen kan in de app elke naam kiezen. */
   reisleiding: ['Ronald', 'Sten'] as readonly string[],
 

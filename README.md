@@ -75,6 +75,14 @@ Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn 
 - De bingokaart heeft 24 vakjes plus een vrij vakje in het midden. Zet er minstens 24 in. Bij meer kiest elke telefoon er willekeurig 24, in een eigen volgorde die daarna vast blijft.
 - Het spel gaat open op vrijdag 5 maart 2027 om 18:00.
 
+### Weer en sneeuw
+Het weerbericht komt van [Open-Meteo](https://open-meteo.com) (gratis, geen key nodig) voor twee plekken: het **dorp** (45,010 N 6,124 E, 1650 m) en de **gletsjer** bij de Dôme de Puy Salié (44,997 N 6,223 E, 3400 m). De coördinaten en hoogtes staan in `src/config.ts` onder `weer`; de hoogte wordt meegestuurd, zodat de temperatuur klopt voor die plek.
+
+- **Home:** een compacte weerkaart met dorp en gletsjer naast elkaar. Voor vertrek staat er *Zo is het nu in Les Deux Alpes* (de actuele situatie); tijdens de reis de verwachting voor vandaag. Na thuiskomst verdwijnt de kaart. Tik erop voor het detailscherm.
+- **Detailscherm:** vandaag met verwachting per dagdeel (ochtend, middag, avond), daarna de komende dagen met min/max, verse sneeuw, wind en de nulgradengrens. Reisdagen zijn gemarkeerd.
+- **Planning:** bij elke dag die al in de verwachting zit een klein icoon met de maximumtemperatuur in het dorp. Open-Meteo kijkt ongeveer 16 dagen vooruit, dus voor de reis verschijnen die vanaf eind februari.
+- **Offline:** het laatste gelukte bericht wordt op de telefoon bewaard en getoond met *Bijgewerkt om …*. De app haalt hooguit één keer per uur een nieuw bericht op (instelbaar met `verversMinuten`).
+
 ### Overige instellingen
 Vertrektijd, thuiskomst, het openen van het spel en de links naar de Les 2 Alpes-app staan in `src/config.ts`.
 
