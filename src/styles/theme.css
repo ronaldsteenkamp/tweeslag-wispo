@@ -18,8 +18,8 @@
   --sneeuw: #f2f7fb;
   --ijs: #e2f2f8;
 
-  /* ---- Licht (overdag, fel sneeuwlicht: veel contrast) ---- */
-  color-scheme: light;
+  /* ---- Altijd licht (fel sneeuwlicht: veel contrast) ---- */
+  color-scheme: only light; /* ook geen automatisch donker maken door Chrome */
   --achtergrond: var(--sneeuw);
   --oppervlak: #ffffff;
   --oppervlak-2: var(--ijs);
@@ -56,38 +56,4 @@
   --sneeuwpatroon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'%3E%3Cg stroke='%230d0058' stroke-opacity='.06' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M30 20v20M21 25l18 10M21 35l18-10'/%3E%3Cpath d='M150 50v14M144 53l12 8M144 61l12-8'/%3E%3Cpath d='M90 120v24M79 126l22 12M79 138l22-12'/%3E%3Cpath d='M190 150v16M183 154l14 8M183 162l14-8'/%3E%3Cpath d='M40 180v12M35 183l10 6M35 189l10-6'/%3E%3C/g%3E%3C/svg%3E");
 }
 
-/* ---- Donker (volgt de instelling van de telefoon) ---- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --achtergrond: #05031c;
-    --oppervlak: #110a3a;
-    --oppervlak-2: #1b1450;
-    --tekst: #eef3ff;
-    --tekst-zacht: #b0b3d6;
-    --rand: #2c2566;
-
-    --primair: var(--tweeslag-lichtblauw);
-    --primair-tekst: var(--tweeslag-donkerblauw);
-    --accent: #2fc0e4;
-    --accent-tekst: #05031c;
-    --accent-zacht: #0c3049;
-    --opvallend: #2fc0e4;
-    --opvallend-tekst: #05031c;
-
-    --succes: #3ccf91;
-    --succes-zacht: #0f3a2b;
-    --gevaar: #ff6b6b;
-
-    --hero: var(--tweeslag-donkerblauw);
-
-    --link: var(--accent);
-    --voortgang: var(--accent);
-    --kaart-achtergrond: #05031c;
-
-    --sneeuwpatroon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'%3E%3Cg stroke='%23ffffff' stroke-opacity='.05' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M30 20v20M21 25l18 10M21 35l18-10'/%3E%3Cpath d='M150 50v14M144 53l12 8M144 61l12-8'/%3E%3Cpath d='M90 120v24M79 126l22 12M79 138l22-12'/%3E%3Cpath d='M190 150v16M183 154l14 8M183 162l14-8'/%3E%3Cpath d='M40 180v12M35 183l10 6M35 189l10-6'/%3E%3C/g%3E%3C/svg%3E");
-
-    --tabbalk: rgba(10, 6, 40, 0.96);
-    --schaduw: 0 2px 12px rgba(0, 0, 0, 0.35);
-  }
-}
+/* De app staat altijd in de lichte, winterse stand, ook als de telefoon op donker staat. */

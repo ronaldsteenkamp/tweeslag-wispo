@@ -57,6 +57,8 @@ Verander je de tekst van een item, dan verdwijnt het vinkje bij dat ene item. Ie
 ```
 Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn eigen kamer bovenaan.
 
+**Kamerverdeling maken zonder JSON te typen:** open in de app *Kamers* en tik onderaan op **Kamerverdeling maken (reisleiding)**. Voeg deelnemers en kamers toe, stel het aantal bedden in en tik een naam en daarna een kamer aan (of gebruik *Automatisch verdelen*). Tik daarna op *Kopieer kamers.json*, open *kamers.json op GitHub* via de knop, plak de tekst eroverheen en kies *Commit changes*. Je werk wordt tussendoor op je telefoon bewaard; de groep ziet de nieuwe verdeling pas na de commit. `bedden` is optioneel; staat het erin, dan ziet iedereen hoeveel plekken er nog vrij zijn.
+
 ### spel.json
 ```json
 { "punten": { "bingoVakje": 2, "bingoRij": 10, "bingoVolleKaart": 50 },
@@ -84,7 +86,7 @@ Vertrektijd, thuiskomst, het openen van het spel en de links naar de Les 2 Alpes
 
 **Logo / app-icoon:** het app-icoon (`public/logo.svg`) en het woordmerk bovenaan Home (`public/img/2slag-wit.svg`) zijn winterversies van het officiële 2slag-logo uit de huisstijl, met sneeuw op de letters, sneeuwvlokken en besneeuwde bergen. Een ander icoon? Vervang `public/logo.svg` (vierkant). Bij elke build worden daaruit automatisch de app-iconen, de favicon en de splashscreens voor iPhone gemaakt. De achtergrondkleur en de ruimte rond het logo stel je in met `ACHTERGROND` en `padding` in `pwa-assets.config.ts`. Heeft je logo een transparante achtergrond, zet dan bij `transparent` de `padding` op bijvoorbeeld `0.1`. Heb je alleen een PNG, zet dan in `pwa-assets.config.ts` `images: ['public/logo.png']` en pas in `index.html` en `src/screens/Home.tsx` `logo.svg` aan naar `logo.png`.
 
-**Kleuren en lettertypen:** die volgen de Tweeslag-stijlgids (donkerblauw `#0d0058`, lichtblauw `#099fc4`, Trebuchet MS voor titels en Georgia voor tekst). Alles staat in `src/styles/theme.css`, bovenaan de clubkleuren. Daaronder staan de lichte en de donkere versie (dark mode volgt de instelling van de telefoon).
+**Kleuren en lettertypen:** die volgen de Tweeslag-stijlgids (donkerblauw `#0d0058`, lichtblauw `#099fc4`, Trebuchet MS voor titels en Georgia voor tekst). Alles staat in `src/styles/theme.css`, bovenaan de clubkleuren. De app staat altijd in de lichte stand, ook als de telefoon op donker staat.
 
 ---
 

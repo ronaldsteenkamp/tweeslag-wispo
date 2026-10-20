@@ -1051,6 +1051,178 @@ button {
   color: var(--tekst);
 }
 
+.kamer__bedden {
+  margin-left: auto;
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  color: var(--tekst-zacht);
+}
+
+/* ---------- Kamerverdeling (reisleiding) ---------- */
+
+.verdelen code {
+  font-size: 0.9em;
+}
+
+.verdelen > .tekstknop:first-child {
+  align-self: flex-start;
+}
+
+.verdelen__stand {
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--font-kop);
+}
+
+.verdelen__open {
+  color: var(--gevaar);
+}
+
+.verdelen__veld {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-kop);
+  font-weight: 700;
+}
+
+.verdelen__namen,
+.verdelen__plekken {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.verdelen__naam {
+  display: inline-flex;
+  align-items: stretch;
+  border: 2px solid var(--rand);
+  border-radius: 999px;
+  background: var(--oppervlak);
+  overflow: hidden;
+}
+
+.verdelen__naam button {
+  border: 0;
+  background: none;
+  min-height: 48px;
+  font-family: var(--font-kop);
+  font-weight: 700;
+  font-size: 1rem;
+  touch-action: manipulation;
+}
+
+.verdelen__naam > button:first-child {
+  padding: 6px 4px 6px 16px;
+}
+
+.verdelen__weg {
+  padding: 0 12px 0 8px;
+  color: var(--tekst-zacht);
+}
+
+.verdelen__naam.is-ingedeeld {
+  background: var(--oppervlak-2);
+}
+
+.verdelen__naam.is-gekozen {
+  border-color: var(--primair);
+  background: var(--primair);
+}
+
+.verdelen__naam.is-gekozen button {
+  color: var(--primair-tekst);
+}
+
+.verdelen__hint {
+  position: sticky;
+  top: calc(var(--boven) + 8px);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: var(--primair);
+  color: var(--primair-tekst);
+  font-family: var(--font-kop);
+  box-shadow: var(--schaduw);
+}
+
+.verdelen__hint .tekstknop {
+  color: inherit;
+}
+
+.verdelen__kamer.is-doel {
+  border: 2px dashed var(--accent);
+}
+
+.verdelen__kop {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.verdelen__nummer {
+  flex: 0 0 84px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.verdelen__bedden {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-kop);
+}
+
+.verdelen__bedden strong {
+  min-width: 2ch;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.verdelen__stap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  box-shadow: none;
+  border: 2px solid var(--rand);
+}
+
+.verdelen__stap:disabled {
+  opacity: 0.4;
+}
+
+.verdelen__vrij {
+  min-height: 48px;
+  padding: 6px 16px;
+  border: 2px dashed var(--rand);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tekst-zacht);
+  font-family: var(--font-kop);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.verdelen__vrij:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-zacht);
+  color: var(--tekst);
+}
+
+.verdelen__json {
+  min-height: 160px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  resize: vertical;
+}
+
 /* ---------- Kaart ---------- */
 
 .inhoud--kaart {

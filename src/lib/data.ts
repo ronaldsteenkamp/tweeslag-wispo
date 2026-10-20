@@ -27,6 +27,8 @@ export interface Paklijst {
 export interface Kamer {
   nummer: string
   naam?: string
+  /** Aantal bedden (mag ontbreken) */
+  bedden?: number
   bewoners: string[]
 }
 export interface Kamers {
@@ -95,6 +97,7 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
     kamers: lijst<Ruw>(r?.kamers).map((k) => ({
       nummer: String(k?.nummer ?? ''),
       naam: k?.naam,
+      bedden: Number(k?.bedden) > 0 ? Number(k.bedden) : undefined,
       bewoners: lijst<unknown>(k?.bewoners).map((b) => String(b).trim()),
     })),
   }),

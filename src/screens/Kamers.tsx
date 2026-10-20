@@ -5,7 +5,7 @@ import { NaamKiezer, normaal, useAlleNamen } from '../components/NaamKiezer'
 import { useData, type Kamer } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
 
-export default function Kamers() {
+export default function Kamers({ naarVerdelen }: { naarVerdelen: () => void }) {
   const { data, fout } = useData('kamers')
   const [naam, setNaam] = useOpgeslagen<string | null>('naam', null)
   const [wijzigen, setWijzigen] = useState(false)
@@ -47,6 +47,9 @@ export default function Kamers() {
             Annuleren
           </button>
         )}
+        <button type="button" className="tekstknop" onClick={naarVerdelen}>
+          Kamerverdeling maken (reisleiding)
+        </button>
       </div>
     )
   }
@@ -102,6 +105,10 @@ export default function Kamers() {
           <KamerInhoud kamer={k} jij={naam} zoek={q} />
         </section>
       ))}
+
+      <button type="button" className="knop knop--secundair knop--breed" onClick={naarVerdelen}>
+        🛏️ Kamerverdeling maken (reisleiding)
+      </button>
     </div>
   )
 }
@@ -112,6 +119,12 @@ function KamerInhoud({ kamer, jij, zoek = '' }: { kamer: Kamer; jij: string; zoe
       <div className="kamer__kop">
         <span className="kamer__nummer">{kamer.nummer}</span>
         {kamer.naam && <h2>{kamer.naam}</h2>}
+        {kamer.bedden !== undefined && (
+          <span className="kamer__bedden">
+            {kamer.bedden} bedden
+            {kamer.bedden > kamer.bewoners.length && ` · ${kamer.bedden - kamer.bewoners.length} vrij`}
+          </span>
+        )}
       </div>
       <ul className="bewoners">
         {kamer.bewoners.map((b) => (

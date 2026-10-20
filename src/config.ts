@@ -19,4 +19,7 @@ export const config = {
     ios: 'https://apps.apple.com/nl/app/les-2-alpes/id344912914',
     android: 'https://play.google.com/store/apps/details?id=com.lumiplan.montagne.LesDeuxAlpes',
   },
+
+  /** Hier plak je een nieuwe kamers.json uit de kamerverdeling (bewerken op GitHub) */
+  kamersBewerkenOpGithub: 'https://github.com/ronaldsteenkamp/tweeslag-wispo/edit/main/public/data/kamers.json',
 } as const

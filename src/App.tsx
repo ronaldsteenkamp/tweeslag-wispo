@@ -10,14 +10,19 @@ import Paklijst from './screens/Paklijst'
 import Kamers from './screens/Kamers'
 import Kaart from './screens/Kaart'
 import Spel from './screens/Spel'
+import Verdelen from './screens/Verdelen'
 
-function tabUitAdres(): Tab {
+/** Schermen die niet in de tabbalk staan */
+type Scherm = Tab | 'verdelen'
+
+function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
+  if (h === 'verdelen') return 'verdelen'
   return TABS.some((t) => t.id === h) ? (h as Tab) : 'home'
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>(tabUitAdres)
+  const [tab, setTab] = useState<Scherm>(tabUitAdres)
   // Wie al een naam heeft gekozen (van voor het welkomstscherm bestond) hoeft het niet te zien
   const [welkomGehad, setWelkomGehad] = useOpgeslagen('welkom.gehad', lees<string | null>('naam', null) !== null)
   const welkomKlaar = useCallback(() => setWelkomGehad(true), [setWelkomGehad])
@@ -37,7 +42,7 @@ export default function App() {
   }, [])
 
   const kies = useCallback(
-    (t: Tab) => {
+    (t: Scherm) => {
       if (t === tab) {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
@@ -56,13 +61,14 @@ export default function App() {
         {tab === 'home' && <Home naarTab={kies} />}
         {tab === 'planning' && <Planning />}
         {tab === 'paklijst' && <Paklijst />}
-        {tab === 'kamers' && <Kamers />}
+        {tab === 'kamers' && <Kamers naarVerdelen={() => kies('verdelen')} />}
         {tab === 'kaart' && <Kaart />}
         {tab === 'spel' && <Spel />}
+        {tab === 'verdelen' && <Verdelen terug={() => kies('kamers')} />}
       </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <UpdateMelding />
-      <TabBalk actief={tab} onKies={kies} />
+      <TabBalk actief={tab === 'verdelen' ? 'kamers' : tab} onKies={kies} />
     </>
   )
 }
