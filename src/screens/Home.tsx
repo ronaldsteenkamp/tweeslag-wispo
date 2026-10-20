@@ -2,6 +2,7 @@ import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
+import { Sneeuw } from '../components/Sneeuw'
 import type { Tab } from '../components/TabBalk'
 import { config } from '../config'
 import { useData, type Dag } from '../lib/data'
@@ -27,6 +28,7 @@ export default function Home({ naarTab }: { naarTab: (t: Tab) => void }) {
   return (
     <div className="scherm">
       <header className="hero golf">
+        <Sneeuw />
         <div className="hero__top">
           <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="Tweeslag" className="hero__logo" />
           <div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
+import { Sneeuw } from '../components/Sneeuw'
 import { config } from '../config'
 import { bingoScore, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
 import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
@@ -20,6 +21,7 @@ export default function Spel() {
     return (
       <div className="scherm">
         <section className="slot golf">
+          <Sneeuw />
           <div className="slot__icoon">
             <Icoon naam="slot" grootte={56} />
           </div>
@@ -71,6 +73,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
       {testOntgrendeld && <p className="melding melding--test">Testmodus: alles is open (?unlock=1)</p>}
 
       <section className="kaartje score golf" aria-live="polite">
+        <Sneeuw aantal={14} />
         <p className="score__label">{naam ? `Score van ${naam}` : 'Jouw score'}</p>
         <p className="score__totaal">
           {challengePunten + bingo.totaal} <span>punten</span>
@@ -259,7 +262,7 @@ function Bingo({
       </p>
       {feest && (
         <div className="feest" role="status">
-          🎉 {feest}
+          ❄️ {feest} 🎉
         </div>
       )}
     </>

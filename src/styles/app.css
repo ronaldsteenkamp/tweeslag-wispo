@@ -49,6 +49,8 @@ body {
 
 body {
   min-height: 100dvh;
+  background-image: var(--sneeuwpatroon);
+  background-size: 220px 220px;
   overscroll-behavior-y: none;
 }
 
@@ -420,7 +422,7 @@ button {
   }
 }
 
-/* ---------- Golven uit de huisstijl ---------- */
+/* ---------- Winterlandschap: bergen, sneeuwbank en vallende sneeuw ---------- */
 
 .golf {
   position: relative;
@@ -428,6 +430,7 @@ button {
   isolation: isolate;
 }
 
+/* Bergen met besneeuwde toppen (afbeelding staat in theme.css) */
 .golf::before,
 .golf::after {
   content: '';
@@ -437,29 +440,74 @@ button {
   bottom: 0;
   z-index: -1;
   pointer-events: none;
-  -webkit-mask: var(--golf-vorm) bottom / 100% 100% no-repeat;
-  mask: var(--golf-vorm) bottom / 100% 100% no-repeat;
 }
 
 .golf::before {
-  height: 56px;
-  background: var(--golf);
-  --golf-vorm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C 90 0, 170 55, 270 28 S 380 8, 400 18 V60 H0 Z'/%3E%3C/svg%3E");
+  height: 64px;
+  background: var(--bergen) bottom / 100% 100% no-repeat;
 }
 
+/* Sneeuwbank: golvende rand in de kleur van de pagina, zoals de golf uit de huisstijl */
 .golf::after {
   height: 30px;
-  background: var(--hero);
-  --golf-vorm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 30' preserveAspectRatio='none'%3E%3Cpath d='M0 18 C 110 0, 220 30, 320 12 S 390 8, 400 10 V30 H0 Z'/%3E%3C/svg%3E");
+  background: var(--sneeuwbank, var(--achtergrond));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 30' preserveAspectRatio='none'%3E%3Cpath d='M0 16 C 70 2, 140 26, 220 12 S 350 2, 400 14 V30 H0 Z'/%3E%3C/svg%3E")
+    bottom / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 30' preserveAspectRatio='none'%3E%3Cpath d='M0 16 C 70 2, 140 26, 220 12 S 350 2, 400 14 V30 H0 Z'/%3E%3C/svg%3E")
+    bottom / 100% 100% no-repeat;
 }
 
+.sneeuw {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sneeuw span {
+  position: absolute;
+  top: -12px;
+  border-radius: 50%;
+  background: #ffffff;
+  animation-name: vallen;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes vallen {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(var(--drift), 300px);
+  }
+  100% {
+    transform: translate(0, 620px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sneeuw {
+    display: none;
+  }
+}
+
+/* Sneeuwvlokje voor de schermtitels */
+.scherm > h1::before {
+  content: '❄';
+  display: inline-block;
+  margin-right: 0.35em;
+  color: var(--accent);
+  font-size: 0.8em;
+  transform: translateY(-0.05em);
+}
 /* ---------- Home ---------- */
 
 .hero {
   margin: 0 -16px;
   padding: calc(var(--boven) + 20px) 20px 28px;
-  padding-bottom: 64px;
-  border-radius: 0 0 28px 28px;
+  padding-bottom: 80px;
   color: var(--hero-tekst);
   background: var(--hero);
   display: flex;
@@ -527,6 +575,9 @@ button {
   padding: 10px 4px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
 }
 
 .aftelklok__getal {
@@ -1030,9 +1081,8 @@ button {
   align-items: center;
   gap: 16px;
   margin: 0 -16px;
-  padding: calc(var(--boven) + 40px) 20px 72px;
+  padding: calc(var(--boven) + 40px) 20px 84px;
   margin-top: calc(-16px - var(--boven));
-  border-radius: 0 0 28px 28px;
   background: var(--hero);
   color: var(--hero-tekst);
   text-align: center;
@@ -1059,7 +1109,8 @@ button {
 .score {
   align-items: center;
   text-align: center;
-  padding-bottom: 44px;
+  padding-bottom: 64px;
+  --sneeuwbank: var(--oppervlak);
   background: var(--hero);
   color: var(--hero-tekst);
   border: 0;

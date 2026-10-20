@@ -49,6 +49,11 @@
 
   --tabbalk: rgba(255, 255, 255, 0.96);
   --schaduw: 0 2px 12px rgba(13, 0, 88, 0.08);
+
+  /* Winterdecoratie: bergen met sneeuwtoppen onder de donkerblauwe koppen,
+     en een zacht sneeuwvlokpatroon op de achtergrond */
+  --bergen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 64' preserveAspectRatio='none'%3E%3Cpath d='M0 64V40L50 22L95 38L150 14L205 36L260 18L320 40L370 24L400 32V64Z' fill='%23087f9e'/%3E%3Cpath d='M50 22L43 27L48 26.5L51 29L55 26L58 27ZM150 14L141 20L147 19L151 22L156 18.5L160 19.5ZM260 18L251 24L257 23L261 26L265 22.5L269 23.5ZM370 24L363 29L368 28.5L371 31L375 28L378 29Z' fill='%23ffffff' fill-opacity='.9'/%3E%3Cpath d='M0 64V46L35 34L80 50L130 26L180 48L235 30L290 50L340 34L400 48V64Z' fill='%23099fc4'/%3E%3Cpath d='M35 34L27 38.5L32 38L36 41L40 37.5L44 38.5ZM130 26L120 32L127 31L131 35L136 30.5L141 31.5ZM235 30L225 36L232 35L236 39L241 34.5L246 35.5ZM340 34L331 39L337 38.5L341 42L345 38L350 39Z' fill='%23ffffff'/%3E%3C/svg%3E");
+  --sneeuwpatroon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'%3E%3Cg stroke='%230d0058' stroke-opacity='.06' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M30 20v20M21 25l18 10M21 35l18-10'/%3E%3Cpath d='M150 50v14M144 53l12 8M144 61l12-8'/%3E%3Cpath d='M90 120v24M79 126l22 12M79 138l22-12'/%3E%3Cpath d='M190 150v16M183 154l14 8M183 162l14-8'/%3E%3Cpath d='M40 180v12M35 183l10 6M35 189l10-6'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* ---- Donker (volgt de instelling van de telefoon) ---- */
@@ -79,6 +84,8 @@
     --link: var(--accent);
     --voortgang: var(--accent);
     --kaart-achtergrond: #05031c;
+
+    --sneeuwpatroon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'%3E%3Cg stroke='%23ffffff' stroke-opacity='.05' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M30 20v20M21 25l18 10M21 35l18-10'/%3E%3Cpath d='M150 50v14M144 53l12 8M144 61l12-8'/%3E%3Cpath d='M90 120v24M79 126l22 12M79 138l22-12'/%3E%3Cpath d='M190 150v16M183 154l14 8M183 162l14-8'/%3E%3Cpath d='M40 180v12M35 183l10 6M35 189l10-6'/%3E%3C/g%3E%3C/svg%3E");
 
     --tabbalk: rgba(10, 6, 40, 0.96);
     --schaduw: 0 2px 12px rgba(0, 0, 0, 0.35);
