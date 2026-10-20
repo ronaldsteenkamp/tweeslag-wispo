@@ -1,7 +1,9 @@
+import { useCallback, useState } from 'react'
 import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
+import { NaamWijzigen } from '../components/NaamWijzigen'
 import { Sneeuw } from '../components/Sneeuw'
 import type { Tab } from '../components/TabBalk'
 import { config } from '../config'
@@ -19,6 +21,8 @@ export default function Home({ naarTab }: { naarTab: (t: Tab) => void }) {
   const nu = useNu(1000)
   const { data: planning, fout } = useData('planning')
   const [naam] = useOpgeslagen<string | null>('naam', null)
+  const [naamKiezen, setNaamKiezen] = useState(false)
+  const sluitNaamKiezen = useCallback(() => setNaamKiezen(false), [])
 
   const dagen = planning?.dagen ?? []
   const vandaag = datumISO(nu)
@@ -38,6 +42,9 @@ export default function Home({ naarTab }: { naarTab: (t: Tab) => void }) {
         </div>
 
         <h1 className="hero__groet">{naam ? `Hoi ${naam}!` : 'Hoi!'}</h1>
+        <button type="button" className="hero__naam" onClick={() => setNaamKiezen(true)}>
+          {naam ? `Niet ${naam}? Kies je eigen naam` : 'Kies je naam'}
+        </button>
 
         {fase === 'voor' && (
           <>
@@ -91,6 +98,8 @@ export default function Home({ naarTab }: { naarTab: (t: Tab) => void }) {
       {!planning && <DataStatus fout={fout} />}
 
       <AppKnop />
+
+      <NaamWijzigen open={naamKiezen} onSluit={sluitNaamKiezen} />
     </div>
   )
 }
@@ -115,8 +124,8 @@ function AppKnop() {
   const links = config.les2alpesApp
   return (
     <section className="kaartje">
-      <h2>Liften, pistes en weer</h2>
-      <p>Welke liften draaien er, hoe is de sneeuw en hoe laat gaat de shuttlebus? Dat staat live in de officiële app.</p>
+      <h2>Liften, weer en webcams</h2>
+      <p>Welke liften draaien er, hoe wordt het weer en hoe ziet het er nu uit op de berg? Kijk live mee via de webcams in de officiële app.</p>
       {p === 'anders' ? (
         <div className="knoppenrij">
           <a className="knop knop--primair" href={links.ios} target="_blank" rel="noopener">

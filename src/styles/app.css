@@ -594,6 +594,25 @@ button {
   margin-top: 6px;
 }
 
+.hero__naam {
+  align-self: flex-start;
+  min-height: 40px;
+  margin-top: -8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  opacity: 0.85;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dialoog--hoog {
+  max-height: calc(100dvh - 32px - var(--boven));
+  overflow-y: auto;
+}
+
 .hero__tekst {
   font-size: 1.05rem;
 }
