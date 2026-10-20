@@ -110,9 +110,21 @@ export async function verbind() {
       if (error) throw error
       session = data.session
     }
-    // Kleine controle of de database echt bereikbaar is
-    const { error } = await c.from('deelnemers').select('user_id', { head: true, count: 'exact' }).limit(1)
+    // Controle of de server bereikbaar is én of de eigen rij er nog staat
+    const eigenRij = (uid: string) => c.from('deelnemers').select('naam').eq('user_id', uid).maybeSingle()
+    let { data: eigen, error } = await eigenRij(session!.user.id)
+    if (error && isSessieWeg(error)) {
+      // Sessie niet meer geldig: opnieuw beginnen met een nieuwe anonieme gebruiker
+      await c.auth.signOut({ scope: 'local' })
+      schrijf('backend.profiel', '')
+      const nieuw = await c.auth.signInAnonymously()
+      if (nieuw.error) throw nieuw.error
+      session = nieuw.data.session
+      ;({ data: eigen, error } = await eigenRij(session!.user.id))
+    }
     if (error) throw error
+    // Rij verdwenen (bijv. door een beheerder verwijderd): naam opnieuw versturen
+    if (!eigen) schrijf('backend.profiel', '')
     await verwerkSessie(c, session)
     zet({ status: 'verbonden' })
     await stuurProfiel()
@@ -121,6 +133,12 @@ export async function verbind() {
   } finally {
     bezig = false
   }
+}
+
+/** Fout omdat de sessie niet (meer) geldig is, in plaats van een netwerkprobleem */
+function isSessieWeg(fout: { code?: string; message?: string; status?: number }): boolean {
+  const tekst = `${fout.code ?? ''} ${fout.message ?? ''}`.toLowerCase()
+  return fout.status === 401 || fout.code === 'PGRST301' || tekst.includes('jwt') || tekst.includes('not found')
 }
 
 // ---------- Naam en kamer koppelen ----------
@@ -169,6 +187,14 @@ async function stuurProfielNu(forceer: boolean) {
   try {
     const c = await cb
     const { error } = await c.rpc('kies_naam', { p_naam: naam, p_kamer: kamer })
+    if (error?.code === '23503') {
+      // Deze gebruiker bestaat niet meer op de server (bijv. na opruimen): opnieuw aanmelden
+      await c.auth.signOut({ scope: 'local' })
+      schrijf('backend.profiel', '')
+      zet({ status: 'verbinden', userId: undefined, gekoppeld: null })
+      window.setTimeout(() => void verbind(), 0)
+      return
+    }
     if (error) throw error
     schrijf('backend.profiel', sleutel)
     zet({ gekoppeld: { naam, kamer } })
