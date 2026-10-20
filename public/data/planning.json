@@ -29,7 +29,7 @@
         { "tijd": "09:30", "titel": "Inskiën in groepjes", "omschrijving": "Beginners, gevorderden en de snelle groep. Rustig beginnen op de blauwe pistes.", "locatie": "Onderstation Jandri Express" },
         { "tijd": "12:30", "titel": "Lunch op de berg", "omschrijving": "Verzamelen op het terras halverwege de berg." },
         { "tijd": "16:30", "titel": "Après-ski", "omschrijving": "Eerste drankje van de week, op het terras onderaan de piste." },
-        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 101 en 102." }
+        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 101." }
       ]
     },
     {
@@ -40,7 +40,7 @@
         { "tijd": "09:00", "titel": "Naar de gletsjer", "omschrijving": "Vroeg omhoog, dan is de sneeuw boven het mooist. Warme laag aan, het kan koud zijn op 3200 meter.", "locatie": "Jandri Express" },
         { "tijd": "11:00", "titel": "IJsgrot", "omschrijving": "Wie wil, gaat mee naar de ijsgrot bij de gletsjer.", "locatie": "Gletsjer" },
         { "tijd": "16:30", "titel": "Après-ski" },
-        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 103 en 104." },
+        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 102." },
         { "tijd": "21:00", "titel": "Spelletjesavond", "omschrijving": "Pubquiz in de gemeenschappelijke ruimte." }
       ]
     },
@@ -51,7 +51,7 @@
         { "tijd": "08:30", "titel": "Ontbijt" },
         { "tijd": "09:30", "titel": "Vrij skiën", "omschrijving": "Ga met je eigen groepje op pad. Spreek een vast verzamelpunt af." },
         { "tijd": "14:00", "titel": "Sneeuwvolleybal", "omschrijving": "Het Tweeslag-toernooi in de sneeuw! Teams worden ter plekke gemaakt.", "locatie": "Sneeuwveld bij het centrum" },
-        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 105 en 106." }
+        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 101." }
       ]
     },
     {
@@ -71,7 +71,7 @@
         { "tijd": "08:30", "titel": "Ontbijt" },
         { "tijd": "09:30", "titel": "Vrij skiën" },
         { "tijd": "16:00", "titel": "Groepsfoto", "omschrijving": "Iedereen in clubkleuren! Neem je Tweeslag-shirt mee.", "locatie": "Onderaan de piste bij het centrum" },
-        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 107 en 108." },
+        { "tijd": "19:30", "titel": "Diner", "omschrijving": "Kookploeg: kamer 102." },
         { "tijd": "21:30", "titel": "Themafeest", "omschrijving": "Thema: foute skikleding uit de jaren 80." }
       ]
     },

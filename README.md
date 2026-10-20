@@ -80,7 +80,7 @@ Vertrektijd, thuiskomst, het openen van het spel en de links naar de Les 2 Alpes
 
 ## Pistekaart en logo vervangen
 
-**Pistekaart:** vervang `public/img/pistekaart.jpg` door de officiële kaart. Houd de naam `pistekaart.jpg` aan. Groot mag (tot 25 MB), maar 3–6 MB laadt prettiger. Liefst een brede afbeelding van minstens 3000 pixels, zodat je goed kunt inzoomen. De kaart wordt automatisch op de telefoon bewaard voor offline gebruik.
+**Pistekaart:** `public/img/pistekaart.jpg` is de officiële kaart van Les 2 Alpes voor winter 2025-2026 (`2026-Plan_Hiver.jpg` van les2alpes.com), licht gecomprimeerd tot ca. 2 MB. Komt de kaart voor 2026-2027 uit, vervang dan dit bestand en houd de naam `pistekaart.jpg` aan. Groot mag (tot 25 MB), maar 2–6 MB laadt prettiger. De kaart wordt automatisch op de telefoon bewaard voor offline gebruik. Let op: de kaart is van Les 2 Alpes en via de openbare URL voor iedereen te zien.
 
 **Logo / app-icoon:** het app-icoon (`public/logo.svg`) en het woordmerk bovenaan Home (`public/img/2slag-wit.svg`) zijn winterversies van het officiële 2slag-logo uit de huisstijl, met sneeuw op de letters, sneeuwvlokken en besneeuwde bergen. Een ander icoon? Vervang `public/logo.svg` (vierkant). Bij elke build worden daaruit automatisch de app-iconen, de favicon en de splashscreens voor iPhone gemaakt. De achtergrondkleur en de ruimte rond het logo stel je in met `ACHTERGROND` en `padding` in `pwa-assets.config.ts`. Heeft je logo een transparante achtergrond, zet dan bij `transparent` de `padding` op bijvoorbeeld `0.1`. Heb je alleen een PNG, zet dan in `pwa-assets.config.ts` `images: ['public/logo.png']` en pas in `index.html` en `src/screens/Home.tsx` `logo.svg` aan naar `logo.png`.
 

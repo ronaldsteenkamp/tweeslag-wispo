@@ -1051,6 +1051,19 @@ button {
   }
 }
 
+.kaartvak__bron {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #0d0058;
+  font-family: var(--font-kop);
+  font-size: 0.7rem;
+  pointer-events: none;
+}
+
 .kaartknoppen {
   position: absolute;
   right: 14px;

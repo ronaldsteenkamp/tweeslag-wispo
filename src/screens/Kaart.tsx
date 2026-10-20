@@ -197,6 +197,7 @@ export default function Kaart() {
           </p>
         )}
         {geladen === 'ok' && hint && <p className="kaartvak__hint">Knijp of dubbeltik om te zoomen</p>}
+        {geladen === 'ok' && <p className="kaartvak__bron">Pistekaart © Les 2 Alpes</p>}
       </div>
       <div className="kaartknoppen">
         <button type="button" className="kaartknop" aria-label="Inzoomen" onClick={() => knopZoom(1.6)}>
