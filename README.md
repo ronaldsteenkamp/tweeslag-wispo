@@ -133,7 +133,7 @@ Dit maakt `qr/tweeslag-wispo-qr.png` (om te printen) en `qr/tweeslag-wispo-qr.sv
 
 ## Installeren op de telefoon
 
-De app laat zelf een banner zien met uitleg zolang hij nog niet op het beginscherm staat:
+Wie de app voor het eerst opent (bijvoorbeeld via de QR-code), krijgt een welkomstscherm: eerst de eigen naam kiezen, daarna uitleg om de app op het beginscherm te zetten. Op een iPhone heeft de app op het beginscherm een eigen opslag, dus daar wordt de naam bij de eerste keer openen nog één keer gevraagd. Zolang de app nog niet op het beginscherm staat, laat Home ook een banner met uitleg zien:
 - **iPhone (Safari):** Deel-knop → *Zet op beginscherm* → *Voeg toe*.
 - **Android (Chrome):** knop *Installeren* in de app, of menu ⋮ → *App installeren*.
 

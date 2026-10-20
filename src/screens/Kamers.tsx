@@ -1,16 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
+import { NaamKiezer, normaal, useAlleNamen } from '../components/NaamKiezer'
 import { useData, type Kamer } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
-
-/** Kleine letters en zonder accenten, zodat 'esmee' ook 'Esmée' vindt */
-const normaal = (s: string) =>
-  s
-    .toLocaleLowerCase('nl')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .trim()
 
 export default function Kamers() {
   const { data, fout } = useData('kamers')
@@ -18,13 +11,7 @@ export default function Kamers() {
   const [wijzigen, setWijzigen] = useState(false)
   const [zoek, setZoek] = useState('')
 
-  const alleNamen = useMemo(
-    () =>
-      [...new Set((data?.kamers ?? []).flatMap((k) => k.bewoners))]
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, 'nl')),
-    [data],
-  )
+  const alleNamen = useAlleNamen(data)
 
   if (!data) {
     return (
@@ -38,17 +25,29 @@ export default function Kamers() {
   const naamBekend = naam !== null && alleNamen.includes(naam)
   if (!naamBekend || wijzigen) {
     return (
-      <NaamKiezer
-        namen={alleNamen}
-        onbekend={naam !== null && !naamBekend}
-        onKies={(n) => {
-          setNaam(n)
-          setWijzigen(false)
-          setZoek('')
-          window.scrollTo(0, 0)
-        }}
-        onAnnuleer={naamBekend ? () => setWijzigen(false) : undefined}
-      />
+      <div className="scherm">
+        <h1>Wie ben jij?</h1>
+        <p>
+          {naam !== null && !naamBekend
+            ? 'Je naam staat niet meer in de kamerlijst. Kies hem opnieuw.'
+            : 'Kies je naam, dan zie je je eigen kamer meteen bovenaan.'}{' '}
+          Dit wordt alleen op deze telefoon bewaard.
+        </p>
+        <NaamKiezer
+          namen={alleNamen}
+          onKies={(n) => {
+            setNaam(n)
+            setWijzigen(false)
+            setZoek('')
+            window.scrollTo(0, 0)
+          }}
+        />
+        {naamBekend && (
+          <button type="button" className="knop knop--secundair knop--breed" onClick={() => setWijzigen(false)}>
+            Annuleren
+          </button>
+        )}
+      </div>
     )
   }
 
@@ -126,60 +125,5 @@ function KamerInhoud({ kamer, jij, zoek = '' }: { kamer: Kamer; jij: string; zoe
         ))}
       </ul>
     </>
-  )
-}
-
-function NaamKiezer({
-  namen,
-  onbekend,
-  onKies,
-  onAnnuleer,
-}: {
-  namen: string[]
-  onbekend: boolean
-  onKies: (n: string) => void
-  onAnnuleer?: () => void
-}) {
-  const [zoek, setZoek] = useState('')
-  const q = normaal(zoek)
-  const lijst = q ? namen.filter((n) => normaal(n).includes(q)) : namen
-  return (
-    <div className="scherm">
-      <h1>Wie ben jij?</h1>
-      <p>
-        {onbekend
-          ? 'Je naam staat niet meer in de kamerlijst. Kies hem opnieuw.'
-          : 'Kies je naam, dan zie je je eigen kamer meteen bovenaan.'}{' '}
-        Dit wordt alleen op deze telefoon bewaard.
-      </p>
-      <div className="zoekveld">
-        <Icoon naam="zoek" />
-        <label className="verborgen" htmlFor="zoek-naam">
-          Zoek je naam
-        </label>
-        <input
-          id="zoek-naam"
-          type="search"
-          className="invoer"
-          placeholder="Zoek je naam"
-          value={zoek}
-          onChange={(e) => setZoek(e.target.value)}
-          autoComplete="off"
-        />
-      </div>
-      <div className="namenraster">
-        {lijst.map((n) => (
-          <button key={n} type="button" className="knop knop--naam" onClick={() => onKies(n)}>
-            {n}
-          </button>
-        ))}
-      </div>
-      {lijst.length === 0 && <p className="laadtekst">Geen naam gevonden. Vraag de reisleiding om je toe te voegen.</p>}
-      {onAnnuleer && (
-        <button type="button" className="knop knop--secundair knop--breed" onClick={onAnnuleer}>
-          Annuleren
-        </button>
-      )}
-    </div>
   )
 }

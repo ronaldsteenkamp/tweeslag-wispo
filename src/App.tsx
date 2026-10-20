@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { TabBalk, TABS, type Tab } from './components/TabBalk'
 import { UpdateMelding } from './components/UpdateMelding'
+import { Welkom } from './components/Welkom'
 import { haalAllesVooraf } from './lib/data'
+import { lees, useOpgeslagen } from './lib/opslag'
 import Home from './screens/Home'
 import Planning from './screens/Planning'
 import Paklijst from './screens/Paklijst'
@@ -16,6 +18,9 @@ function tabUitAdres(): Tab {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>(tabUitAdres)
+  // Wie al een naam heeft gekozen (van voor het welkomstscherm bestond) hoeft het niet te zien
+  const [welkomGehad, setWelkomGehad] = useOpgeslagen('welkom.gehad', lees<string | null>('naam', null) !== null)
+  const welkomKlaar = useCallback(() => setWelkomGehad(true), [setWelkomGehad])
 
   useEffect(() => {
     const opHash = () => setTab(tabUitAdres())
@@ -55,6 +60,7 @@ export default function App() {
         {tab === 'kaart' && <Kaart />}
         {tab === 'spel' && <Spel />}
       </main>
+      {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <UpdateMelding />
       <TabBalk actief={tab} onKies={kies} />
     </>

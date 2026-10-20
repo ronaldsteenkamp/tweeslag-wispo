@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { useData, type Dag } from '../lib/data'
@@ -42,18 +42,77 @@ export function Programma({ dag, nuTijd }: { dag: Dag; nuTijd?: string }) {
   )
 }
 
+/**
+ * Schuift de dagenbalk zelf met een korte animatie. Een tweede 'smooth' scroll tegelijk
+ * met die van de pagina breekt in Chrome één van beide af.
+ */
+function schuifNaar(el: HTMLElement, doel: number) {
+  const start = el.scrollLeft
+  const max = el.scrollWidth - el.clientWidth
+  const eind = Math.max(0, Math.min(max, doel))
+  const t0 = performance.now()
+  const stap = (t: number) => {
+    const p = Math.min(1, (t - t0) / 300)
+    el.scrollLeft = start + (eind - start) * (1 - Math.pow(1 - p, 3))
+    if (p < 1) requestAnimationFrame(stap)
+  }
+  requestAnimationFrame(stap)
+}
+
 export default function Planning() {
   const { data, fout } = useData('planning')
   const nu = useNu(30000)
   const vandaag = datumISO(nu)
   const dagRefs = useRef(new Map<string, HTMLElement>())
+  const chipRefs = useRef(new Map<string, HTMLButtonElement>())
+  const balk = useRef<HTMLDivElement>(null)
   const gescrold = useRef(false)
+  const negeerScrollTot = useRef(0)
+  const [actief, setActief] = useState<string | null>(null)
 
+  // Bij openen: naar vandaag (of de eerste dag)
   useEffect(() => {
     if (!data || gescrold.current) return
     gescrold.current = true
-    dagRefs.current.get(vandaag)?.scrollIntoView({ block: 'start' })
+    const start = data.dagen.some((d) => d.datum === vandaag) ? vandaag : data.dagen[0]?.datum
+    if (!start) return
+    setActief(start)
+    if (start === vandaag) dagRefs.current.get(vandaag)?.scrollIntoView({ block: 'start' })
   }, [data, vandaag])
+
+  // De actieve dag schuift naar links in de dagenbalk, de rest schuift mee
+  useEffect(() => {
+    const chip = actief ? chipRefs.current.get(actief) : undefined
+    if (chip && balk.current) schuifNaar(balk.current, chip.offsetLeft - 16)
+  }, [actief])
+
+  // Tijdens het scrollen door de planning loopt de dagenbalk mee
+  useEffect(() => {
+    if (!data) return
+    let wacht = 0
+    const bijScroll = () => {
+      if (wacht) return
+      wacht = requestAnimationFrame(() => {
+        wacht = 0
+        if (Date.now() < negeerScrollTot.current) return
+        const grens = (balk.current?.getBoundingClientRect().bottom ?? 0) + 24
+        let huidig = data.dagen[0]?.datum
+        for (const d of data.dagen) {
+          const el = dagRefs.current.get(d.datum)
+          if (el && el.getBoundingClientRect().top <= grens) huidig = d.datum
+        }
+        // Helemaal onderaan: de laatste dag, ook als die niet tot bovenaan kan scrollen
+        const onderaan = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
+        if (onderaan) huidig = data.dagen[data.dagen.length - 1]?.datum ?? huidig
+        if (huidig) setActief(huidig)
+      })
+    }
+    window.addEventListener('scroll', bijScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', bijScroll)
+      cancelAnimationFrame(wacht)
+    }
+  }, [data])
 
   if (!data) {
     return (
@@ -64,17 +123,27 @@ export default function Planning() {
     )
   }
 
-  const naarDag = (datum: string) => dagRefs.current.get(datum)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const naarDag = (datum: string) => {
+    // Even niet laten meelopen, anders springt de balk langs alle tussenliggende dagen
+    negeerScrollTot.current = Date.now() + 1200
+    setActief(datum)
+    dagRefs.current.get(datum)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <div className="scherm">
       <h1>Planning</h1>
-      <div className="dagkiezer" role="navigation" aria-label="Spring naar dag">
+      <div ref={balk} className="dagkiezer" role="navigation" aria-label="Spring naar dag">
         {data.dagen.map((d) => (
           <button
             key={d.datum}
+            ref={(el) => {
+              if (el) chipRefs.current.set(d.datum, el)
+              else chipRefs.current.delete(d.datum)
+            }}
             type="button"
-            className={`dagkiezer__dag${d.datum === vandaag ? ' is-vandaag' : ''}`}
+            className={`dagkiezer__dag${d.datum === vandaag ? ' is-vandaag' : ''}${d.datum === actief ? ' is-actief' : ''}`}
+            aria-current={d.datum === actief ? 'true' : undefined}
             onClick={() => naarDag(d.datum)}
           >
             {datumLabel(d.datum, 'kort')}

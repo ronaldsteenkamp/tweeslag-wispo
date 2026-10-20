@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // Alles wat de gebruiker zelf doet (vinkjes, naam, spel) staat alleen op dit apparaat.
 const VOORVOEGSEL = 'tweeslag-wispo.'
@@ -20,11 +20,40 @@ export function schrijf<T>(sleutel: string, waarde: T): void {
   }
 }
 
-/** useState dat in localStorage bewaard wordt */
+// Zodat bijvoorbeeld een naam die je in het welkomstscherm kiest meteen ook op Home staat
+const luisteraars = new Map<string, Set<(waarde: unknown) => void>>()
+const GEEN = Symbol('geen')
+
+/** useState dat in localStorage bewaard wordt en gelijk blijft tussen schermen */
 export function useOpgeslagen<T>(sleutel: string, standaard: T) {
   const [waarde, setWaarde] = useState<T>(() => lees(sleutel, standaard))
+  const huidig = useRef<T>(waarde)
+  huidig.current = waarde
+  const vanElders = useRef<unknown>(GEEN)
+
   useEffect(() => {
+    const set = luisteraars.get(sleutel) ?? new Set()
+    luisteraars.set(sleutel, set)
+    const luister = (w: unknown) => {
+      if (Object.is(w, huidig.current)) return
+      vanElders.current = w
+      setWaarde(w as T)
+    }
+    set.add(luister)
+    return () => {
+      set.delete(luister)
+    }
+  }, [sleutel])
+
+  useEffect(() => {
+    // Een waarde die van een ander scherm kwam is daar al bewaard
+    if (Object.is(vanElders.current, waarde)) {
+      vanElders.current = GEEN
+      return
+    }
     schrijf(sleutel, waarde)
+    luisteraars.get(sleutel)?.forEach((f) => f(waarde))
   }, [sleutel, waarde])
+
   return [waarde, setWaarde] as const
 }
