@@ -14,6 +14,12 @@ delete from auth.users;
 delete from public.correcties;
 delete from public.stemmingen;  -- de stemmen gaan automatisch mee
 
+-- Meldingen: logboek en sleutels (de abonnementen gingen al mee met de gebruikers),
+-- en de planner die elke 5 minuten draait
+delete from public.meldingen;
+delete from public.push_sleutels;
+select cron.unschedule(jobid) from cron.job where jobname = 'tweeslag-meldingen';
+
 -- De lijst met beheerders (e-mailadressen)
 delete from public.beheerders;
 

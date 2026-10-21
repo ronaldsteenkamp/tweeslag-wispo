@@ -26,7 +26,12 @@ export function Programma({ dag, nuTijd }: { dag: Dag; nuTijd?: string }) {
             <div className="tijdlijn__inhoud">
               <h3>
                 {item.titel}
-                {bezig && <span className="label label--accent">Nu</span>}
+                {item.melding === true && (
+                  <span className="tijdlijn__bel" title="Je krijgt 30 minuten van tevoren een melding" aria-label="met melding">
+                    🔔
+                  </span>
+                )}
+                {bezig &&<span className="label label--accent">Nu</span>}
                 {i === volgende && <span className="label">Straks</span>}
               </h3>
               {item.omschrijving && <p>{item.omschrijving}</p>}

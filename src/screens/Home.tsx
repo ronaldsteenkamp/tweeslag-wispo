@@ -3,6 +3,7 @@ import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
+import { MeldingenKaart } from '../components/Meldingen'
 import { NaamWijzigen } from '../components/NaamWijzigen'
 import { Sneeuw } from '../components/Sneeuw'
 import { StemmingOpHome } from '../components/Stemmen'
@@ -85,6 +86,8 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
       {fase !== 'na' && <WeerKaart nu={nu} voorVertrek={nu < vertrek} onOpen={naarWeer} />}
 
       <InstallatieBanner />
+
+      {fase !== 'na' && <MeldingenKaart />}
 
       <StemmingOpHome
         naarStemmen={() => {

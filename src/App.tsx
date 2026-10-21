@@ -4,7 +4,7 @@ import { UpdateMelding } from './components/UpdateMelding'
 import { Welkom } from './components/Welkom'
 import { config } from './config'
 import { haalAllesVooraf } from './lib/data'
-import { lees, useOpgeslagen } from './lib/opslag'
+import { lees, schrijf, useOpgeslagen } from './lib/opslag'
 import Home from './screens/Home'
 import Planning from './screens/Planning'
 import Paklijst from './screens/Paklijst'
@@ -20,6 +20,11 @@ type Scherm = Tab | 'verdelen' | 'weer' | 'beheer'
 
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
+  // Vanuit een melding over de uitslag: meteen naar Spel → Stemmen
+  if (h === 'stemmen') {
+    schrijf('spel.onderdeel', 'stemmen')
+    return 'spel'
+  }
   if (h === 'verdelen' || h === 'weer' || h === 'beheer') return h
   return TABS.some((t) => t.id === h) ? (h as Tab) : 'home'
 }

@@ -5,6 +5,8 @@ export interface PlanningItem {
   titel: string
   omschrijving?: string
   locatie?: string
+  /** Iedereen met meldingen aan krijgt 30 minuten van tevoren een seintje */
+  melding?: boolean
 }
 export interface Dag {
   datum: string

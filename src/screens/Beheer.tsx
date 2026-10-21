@@ -1,7 +1,9 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Verbinding } from '../components/Verbinding'
 import { controleerCode, stuurInlogmail, stuurProfiel, uitloggen, useBackend, verbind } from '../lib/backend'
 import { useData } from '../lib/data'
+import { haalLogboek, stuurBericht, type LogRegel } from '../lib/meldingen'
+import { BevestigDialoog } from '../components/BevestigDialoog'
 import { synchroniseerStemmingen, trekStemIn, useStemmingen, useStemmingSync } from '../lib/stemming'
 import { tijdUUMM } from '../lib/tijd'
 
@@ -167,6 +169,7 @@ export default function Beheer({ terug }: { terug: () => void }) {
         </section>
       )}
 
+      {b.beheerder && b.status === 'verbonden' && <MeldingBeheer />}
       {b.beheerder && b.status === 'verbonden' && <StemmingBeheer />}
 
       {melding && (
@@ -249,6 +252,109 @@ function StemmingBeheer() {
           {melding && <p className="klein">{melding}</p>}
         </form>
       )}
+    </section>
+  )
+}
+
+const SCHERMEN = [
+  ['#home', 'Home'],
+  ['#planning', 'Planning'],
+  ['#paklijst', 'Paklijst'],
+  ['#kamers', 'Kamers'],
+  ['#spel', 'Spel'],
+  ['#stemmen', 'Stemmen'],
+] as const
+
+/** Meldingen: bericht aan iedereen, aantal aangemelde apparaten en wat er verstuurd is */
+function MeldingBeheer() {
+  const [titel, setTitel] = useState('')
+  const [tekst, setTekst] = useState('')
+  const [url, setUrl] = useState('#home')
+  const [vragen, setVragen] = useState(false)
+  const [bezig, setBezig] = useState(false)
+  const [melding, setMelding] = useState<string | null>(null)
+  const [log, setLog] = useState<{ regels: LogRegel[]; apparaten: number; personen: number } | null>(null)
+
+  const laadLog = () => void haalLogboek().then(setLog)
+  useEffect(laadLog, [])
+
+  const verstuur = async () => {
+    setVragen(false)
+    setBezig(true)
+    setMelding(null)
+    const { data, fout } = await stuurBericht(titel, tekst, url)
+    setBezig(false)
+    if (fout) setMelding(`Versturen lukte niet: ${fout}`)
+    else {
+      setMelding(`Verstuurd naar ${data?.gelukt ?? 0} apparaat/apparaten${data?.mislukt ? ` (${data.mislukt} mislukt)` : ''} ✓`)
+      setTitel('')
+      setTekst('')
+      laadLog()
+    }
+  }
+
+  return (
+    <section className="kaartje">
+      <h2>Meldingen</h2>
+      <p className="klein">
+        {log
+          ? `${log.apparaten} apparaat/apparaten met meldingen aan (${log.personen} ${log.personen === 1 ? 'persoon' : 'personen'}).`
+          : 'Laden…'}
+      </p>
+      <form
+        className="beheer__formulier"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (titel.trim()) setVragen(true)
+        }}
+      >
+        <h3>Bericht aan iedereen</h3>
+        <input className="invoer" value={titel} onChange={(e) => setTitel(e.target.value)} maxLength={60} placeholder="Titel, bijv. Bus 15 min later" required />
+        <textarea className="invoer" value={tekst} onChange={(e) => setTekst(e.target.value)} maxLength={300} rows={3} placeholder="Tekst (mag leeg)" />
+        <label className="verdelen__veld">
+          <span>Openen op</span>
+          <select className="invoer" value={url} onChange={(e) => setUrl(e.target.value)}>
+            {SCHERMEN.map(([u, n]) => (
+              <option key={u} value={u}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" className="knop knop--primair knop--breed" disabled={bezig || !titel.trim()}>
+          {bezig ? 'Bezig…' : 'Versturen'}
+        </button>
+        {melding && <p className="klein">{melding}</p>}
+      </form>
+      <BevestigDialoog
+        open={vragen}
+        titel="Bericht versturen?"
+        tekst={`Iedereen met meldingen aan krijgt: "${titel}"${tekst ? ` – ${tekst}` : ''}`}
+        bevestigLabel="Versturen"
+        onAnnuleer={() => setVragen(false)}
+        onBevestig={() => void verstuur()}
+      />
+
+      {log && log.regels.length > 0 && (
+        <>
+          <h3>Laatst verstuurd</h3>
+          <ul className="meldingen-log">
+            {log.regels.map((r) => (
+              <li key={r.id}>
+                {r.titel}
+                <small>
+                  {new Date(r.gemaakt).toLocaleString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} ·{' '}
+                  {r.soort} · {r.aantal} ontvangen
+                </small>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <p className="klein">
+        Automatisch gaan er ook meldingen uit: 30 minuten voor planningsitems met <code>"melding": true</code>, als de
+        challenges van de dag opengaan en als de uitslag van een stemming bekend is.
+      </p>
     </section>
   )
 }

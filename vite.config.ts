@@ -36,6 +36,8 @@ export default defineConfig({
         // Ruim genoeg voor een grote, officiële pistekaart
         maximumFileSizeToCacheInBytes: 25 * 1024 * 1024,
         clientsClaim: true,
+        // Pushmeldingen tonen en openen (public/push-sw.js)
+        importScripts: ['push-sw.js'],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

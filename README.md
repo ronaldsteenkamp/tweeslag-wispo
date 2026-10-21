@@ -40,7 +40,7 @@ Je kunt de bestanden direct op github.com bewerken (open het bestand → potlood
   ] }
 ] }
 ```
-`omschrijving` en `locatie` mag je weglaten. De volgorde van de dagen bepaalt "Dag X van 10" op het beginscherm.
+`omschrijving` en `locatie` mag je weglaten. De volgorde van de dagen bepaalt "Dag X van 10" op het beginscherm. Zet `"melding": true` bij een item, dan krijgt iedereen met meldingen aan 30 minuten van tevoren een seintje (zie *Pushmeldingen*).
 
 ### paklijst.json
 ```json
@@ -147,7 +147,7 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 
 ### Eenmalig instellen (stap voor stap)
 
-> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 op 21 oktober, 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
+> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 en 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`; 0004, de Edge Function `meldingen` en de cronjob ook op 21 oktober), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
 
 1. **Project aanmaken.** Ga naar [supabase.com](https://supabase.com), maak een account en kies *New project*. Naam: `tweeslag-wispo`. Regio: een EU-regio, bijvoorbeeld *Central EU (Frankfurt)* of *West EU (Ireland)*. Kies een sterk databasewachtwoord en bewaar het in je wachtwoordmanager. Abonnement: *Free*.
 2. **Tabellen maken.** Open *SQL Editor → New query*, plak de inhoud van `supabase/migrations/0001_basis.sql` en klik op *Run*. Zet daarna jezelf en Sten als beheerder (met jullie eigen adressen):
@@ -196,6 +196,26 @@ Migratie: `supabase/migrations/0003_stemming.sql` (uitvoeren na 0002).
 - **Per ongeluk verkeerd gestemd?** Een beheerder kan in *Beheer → Stemmingen* de stem van iemand intrekken (zonder te zien wat het was); diegene kan dan opnieuw stemmen.
 - **Zonder internet** zie je de laatst bekende stand en uitslagen; stemmen zelf kan alleen met verbinding.
 
+### Pushmeldingen (fase 4)
+Migratie: `supabase/migrations/0004_meldingen.sql`. Edge Function: `supabase/functions/meldingen/` (`index.ts` en `planner.ts`). Planning: `supabase/cron_meldingen.sql`.
+
+- **Aanzetten:** op Home staat een kaart *🔔 Meldingen* met de knop **Meldingen aanzetten**. Pas na die tik vraagt de telefoon om toestemming. Daarna staan er *Testmelding* en *Uitzetten*.
+- **iPhone:** meldingen werken alleen in de app op het beginscherm, vanaf iOS 16.4. In Safari legt de kaart uit hoe je de app eerst op je beginscherm zet.
+- **Automatisch** (elke 5 minuten kijkt de server wat er aan de beurt is):
+  - 30 minuten vóór elk item in `planning.json` met `"melding": true` (in de planning staat daar een 🔔 bij);
+  - als de challenges van een dag opengaan;
+  - als de uitslag van een stemming bekend is (stemmingen die tegelijk sluiten komen in één melding).
+  Elke melding gaat maar één keer. Mist de server een moment (bijvoorbeeld een storing), dan haalt hij het nog in zolang het zin heeft: tot het planningsitem begint, of tot 3 uur na de challenges of de uitslag.
+- **Handmatig:** in *Beheer → Meldingen* stuurt de reisleiding een bericht aan iedereen (titel, tekst en welk scherm er opent). Daar zie je ook hoeveel apparaten meldingen aan hebben en wat er laatst is verstuurd.
+- **Sleutels:** de VAPID-sleutels maakt de Edge Function zelf bij de eerste aanroep en bewaart ze in de tabel `push_sleutels`, waar alleen de server bij kan. Er hoeft dus niemand een geheime sleutel te kopiëren.
+
+**Opnieuw instellen (bijvoorbeeld in een nieuw project)**
+1. Voer `0004_meldingen.sql` uit in de SQL Editor.
+2. *Edge Functions → Deploy a new function → Via Editor*: naam `meldingen`, maak de bestanden `index.ts` en `planner.ts` aan met de inhoud uit `supabase/functions/meldingen/`, en kies *Deploy function*. (Of met de Supabase CLI: `supabase functions deploy meldingen --no-verify-jwt`.)
+3. Zet bij de functie onder *Settings* **Verify JWT** uit en kies *Save changes*. De functie controleert zelf wie er belt; berichten aan iedereen mogen alleen beheerders sturen.
+4. Pas in `supabase/cron_meldingen.sql` zo nodig de project-URL aan en voer het uit.
+5. Controleren: `select * from cron.job_run_details order by start_time desc limit 5;` moet *succeeded* laten zien.
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 
@@ -204,7 +224,7 @@ Verder handig om te weten over het gratis abonnement: de standaard-mailserver va
 ### Privacy en opruimen na de reis
 - Alleen voornamen en kamernummers gaan naar de server, in een EU-regio. Geen e-mailadressen van deelnemers; alleen de beheerders loggen in met e-mail.
 - Stemmen worden opgeslagen met de voornaam van de kiezer (nodig voor "één stem per naam"). Alleen jijzelf ziet in de app op wie je stemde; de beheerders niet.
-- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang, de correcties, de stemmingen met alle stemmen en de beheerderslijst) en leeg de foto-bucket onder *Storage*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
+- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang en meldingsabonnementen, de correcties, de stemmingen met alle stemmen, het meldingenlogboek en de sleutels, de beheerderslijst, en stopt de planner) en leeg de foto-bucket onder *Storage*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
 - Haal daarna in GitHub de twee variabelen weg; de app werkt dan weer zonder backend.
 
 ## QR-code
