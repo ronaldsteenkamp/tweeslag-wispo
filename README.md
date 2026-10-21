@@ -147,7 +147,7 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 
 ### Eenmalig instellen (stap voor stap)
 
-> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 en 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`; 0004, de Edge Function `meldingen` en de cronjob ook op 21 oktober), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
+> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 en 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`; 0004, de Edge Function `meldingen`, de cronjob en 0005 met de bucket `fotos` ook op 21 oktober), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
 
 1. **Project aanmaken.** Ga naar [supabase.com](https://supabase.com), maak een account en kies *New project*. Naam: `tweeslag-wispo`. Regio: een EU-regio, bijvoorbeeld *Central EU (Frankfurt)* of *West EU (Ireland)*. Kies een sterk databasewachtwoord en bewaar het in je wachtwoordmanager. Abonnement: *Free*.
 2. **Tabellen maken.** Open *SQL Editor → New query*, plak de inhoud van `supabase/migrations/0001_basis.sql` en klik op *Run*. Zet daarna jezelf en Sten als beheerder (met jullie eigen adressen):
@@ -216,6 +216,17 @@ Migratie: `supabase/migrations/0004_meldingen.sql`. Edge Function: `supabase/fun
 4. Pas in `supabase/cron_meldingen.sql` zo nodig de project-URL aan en voer het uit.
 5. Controleren: `select * from cron.job_run_details order by start_time desc limit 5;` moet *succeeded* laten zien.
 
+### Fotomuur (fase 5)
+Migratie: `supabase/migrations/0005_fotomuur.sql` (maakt ook de bucket `fotos` en de regels voor de opslag).
+
+- **Uploaden:** bij elke challenge staat een knopje *📷 Foto als bewijs*. Je kunt een foto maken of er een uit je foto's kiezen. In het venster staat de regel **"Alleen foto's waarvan iedereen erop het goed vindt"**. Na het uploaden wordt de challenge vanzelf afgevinkt.
+- **Verkleinen:** de telefoon verkleint de foto vóór het uploaden tot max. 1600 px en ~300 kB, plus een kleine versie (480 px) voor de muur. Daarbij gaan ook de locatie- en cameragegevens (EXIF) eruit. Een foto van 3,4 MB werd bij de test 216 kB.
+- **Fotomuur:** *Spel → 📸 Fotomuur*, de nieuwste eerst, met naam, kamer, challenge en tijd. Tik op een foto voor het grote formaat. Nieuwe foto's verschijnen vanzelf (Supabase Realtime). Op Home staan de vier nieuwste.
+- **Privé:** de bucket is niet openbaar. De app vraagt per foto een tijdelijke link (signed URL) aan die een uur geldig is; dat kan alleen een apparaat dat in de app is aangemeld. Naam en kamer bij een foto zet de server erbij, niet de telefoon.
+- **Verwijderen:** iedereen kan zijn eigen foto's verwijderen; beheerders (ingelogd) kunnen elke foto verwijderen. Open de foto en tik op *Verwijderen*.
+- **Grenzen:** alleen JPEG of WebP, max. 1 MB per bestand. Het gratis abonnement heeft 1 GB opslag: genoeg voor duizenden foto's.
+- **Zonder internet** zie je de laatst geladen muur; uploaden kan alleen met verbinding.
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 
@@ -224,7 +235,7 @@ Verder handig om te weten over het gratis abonnement: de standaard-mailserver va
 ### Privacy en opruimen na de reis
 - Alleen voornamen en kamernummers gaan naar de server, in een EU-regio. Geen e-mailadressen van deelnemers; alleen de beheerders loggen in met e-mail.
 - Stemmen worden opgeslagen met de voornaam van de kiezer (nodig voor "één stem per naam"). Alleen jijzelf ziet in de app op wie je stemde; de beheerders niet.
-- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang en meldingsabonnementen, de correcties, de stemmingen met alle stemmen, het meldingenlogboek en de sleutels, de beheerderslijst, en stopt de planner) en leeg de foto-bucket onder *Storage*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
+- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang en meldingsabonnementen, de correcties, de stemmingen met alle stemmen, het meldingenlogboek en de sleutels, de beheerderslijst, en stopt de planner). De fotobestanden zelf kun je niet met SQL weghalen: ga naar *Storage → fotos*, selecteer alle mappen en kies *Delete*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
 - Haal daarna in GitHub de twee variabelen weg; de app werkt dan weer zonder backend.
 
 ## QR-code

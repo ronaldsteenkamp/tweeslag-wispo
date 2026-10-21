@@ -23,4 +23,7 @@ select cron.unschedule(jobid) from cron.job where jobname = 'tweeslag-meldingen'
 -- De lijst met beheerders (e-mailadressen)
 delete from public.beheerders;
 
--- Foto's (vanaf fase 5): leeg daarnaast de bucket via Storage → bucket → alles selecteren → Delete.
+-- Foto's: de gegevens gingen al mee met de gebruikers. De BESTANDEN zelf kunnen niet via SQL
+-- worden verwijderd. Doe dat in het dashboard: Storage → bucket "fotos" → alle mappen
+-- selecteren → Delete. Daarna eventueel de bucket zelf verwijderen (… → Delete bucket).
+delete from public.fotos;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
+import { FotoUpload } from '../components/FotoUpload'
 import { Klassement } from '../components/Klassement'
 import { Stemmen } from '../components/Stemmen'
 import { Sneeuw } from '../components/Sneeuw'
@@ -57,6 +58,13 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   const [gedaan, setGedaan] = useOpgeslagen<string[]>('spel.challenges', [])
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
+  const [fotoVoor, setFotoVoor] = useState<{ id: string; titel: string } | null>(null)
+  const [fotoGelukt, setFotoGelukt] = useState<string | null>(null)
+  useEffect(() => {
+    if (!fotoGelukt) return
+    const id = window.setTimeout(() => setFotoGelukt(null), 3500)
+    return () => window.clearTimeout(id)
+  }, [fotoGelukt])
 
   // De bingokaart wordt één keer per telefoon geschud en daarna bewaard
   const kaart = useMemo(() => maakKaart(data.bingo.vakjes, lees('spel.bingo.kaart', null)), [data])
@@ -74,6 +82,11 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
     <div className="scherm">
       <h1>Spel</h1>
       {testOntgrendeld && <p className="melding melding--test">Testmodus: alles is open (?unlock=1)</p>}
+      {backendIngesteld && (
+        <button type="button" className="knop knop--accent knop--breed" onClick={() => (window.location.hash = '#fotos')}>
+          📸 Fotomuur
+        </button>
+      )}
 
       <section className="kaartje score golf" aria-live="polite">
         <Sneeuw aantal={14} />
@@ -116,6 +129,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
           nu={nu}
           gedaan={gedaanSet}
           onWissel={(id) => setGedaan((oud) => (oud.includes(id) ? oud.filter((x) => x !== id) : [...oud, id]))}
+          onFoto={backendIngesteld ? setFotoVoor : undefined}
         />
       ) : (
         <Bingo
@@ -127,6 +141,25 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
           onWissel={(t) => setGemarkeerd((oud) => (oud.includes(t) ? oud.filter((x) => x !== t) : [...oud, t]))}
         />
       )}
+
+      {fotoVoor && (
+        <FotoUpload
+          challenge={fotoVoor}
+          onSluit={() => setFotoVoor(null)}
+          onGelukt={() => {
+            // Bewijs geleverd: dan telt de challenge ook als gedaan
+            const id = fotoVoor.id
+            setGedaan((oud) => (oud.includes(id) ? oud : [...oud, id]))
+            setFotoGelukt(`Foto staat op de fotomuur ✓ "${fotoVoor.titel}" is afgevinkt.`)
+            setFotoVoor(null)
+          }}
+        />
+      )}
+      {fotoGelukt && (
+        <div className="feest feest--klein" role="status" onClick={() => setFotoGelukt(null)}>
+          📸 {fotoGelukt}
+        </div>
+      )}
     </div>
   )
 }
@@ -136,11 +169,14 @@ function Challenges({
   nu,
   gedaan,
   onWissel,
+  onFoto,
 }: {
   dagen: ChallengeDag[]
   nu: Date
   gedaan: Set<string>
   onWissel: (id: string) => void
+  /** Foto als bewijs uploaden (alleen met backend) */
+  onFoto?: (c: { id: string; titel: string }) => void
 }) {
   const vandaag = datumISO(nu)
   const gesorteerd = [...dagen].sort((a, b) => a.datum.localeCompare(b.datum))
@@ -171,6 +207,11 @@ function Challenges({
                 <div className="challenge__tekst">
                   <h3>{c.titel}</h3>
                   {c.omschrijving && <p>{c.omschrijving}</p>}
+                  {onFoto && (
+                    <button type="button" className="challenge__foto" onClick={() => onFoto({ id: c.id, titel: c.titel })}>
+                      <Icoon naam="camera" grootte={18} /> Foto als bewijs
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"

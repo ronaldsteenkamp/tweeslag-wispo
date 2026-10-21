@@ -14,9 +14,10 @@ import Spel from './screens/Spel'
 import Verdelen from './screens/Verdelen'
 import Weer from './screens/Weer'
 import Beheer from './screens/Beheer'
+import Fotomuur from './screens/Fotomuur'
 
 /** Schermen die niet in de tabbalk staan */
-type Scherm = Tab | 'verdelen' | 'weer' | 'beheer'
+type Scherm = Tab | 'verdelen' | 'weer' | 'beheer' | 'fotos'
 
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
@@ -25,7 +26,7 @@ function tabUitAdres(): Scherm {
     schrijf('spel.onderdeel', 'stemmen')
     return 'spel'
   }
-  if (h === 'verdelen' || h === 'weer' || h === 'beheer') return h
+  if (h === 'verdelen' || h === 'weer' || h === 'beheer' || h === 'fotos') return h
   return TABS.some((t) => t.id === h) ? (h as Tab) : 'home'
 }
 
@@ -77,6 +78,7 @@ export default function App() {
         {tab === 'kamers' && <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />}
         {tab === 'kaart' && <Kaart />}
         {tab === 'spel' && <Spel />}
+        {tab === 'fotos' && <Fotomuur terug={() => kies('spel')} />}
         {tab === 'verdelen' &&
           (magVerdelen ? (
             <Verdelen terug={() => kies('kamers')} />
@@ -86,7 +88,10 @@ export default function App() {
       </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <UpdateMelding />
-      <TabBalk actief={tab === 'verdelen' || tab === 'beheer' ? 'kamers' : tab === 'weer' ? 'home' : tab} onKies={kies} />
+      <TabBalk
+        actief={tab === 'verdelen' || tab === 'beheer' ? 'kamers' : tab === 'weer' ? 'home' : tab === 'fotos' ? 'spel' : tab}
+        onKies={kies}
+      />
     </>
   )
 }

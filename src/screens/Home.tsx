@@ -3,6 +3,7 @@ import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
+import { FotoStrip } from '../components/FotoStrip'
 import { MeldingenKaart } from '../components/Meldingen'
 import { NaamWijzigen } from '../components/NaamWijzigen'
 import { Sneeuw } from '../components/Sneeuw'
@@ -88,6 +89,8 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
       <InstallatieBanner />
 
       {fase !== 'na' && <MeldingenKaart />}
+
+      <FotoStrip naarFotomuur={() => (window.location.hash = '#fotos')} />
 
       <StemmingOpHome
         naarStemmen={() => {

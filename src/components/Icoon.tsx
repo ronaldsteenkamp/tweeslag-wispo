@@ -16,6 +16,8 @@ const paden = {
   herstel: 'M4 12a8 8 0 1 0 2.5-5.8M4 4v4.5h4.5',
   pijl: 'M5 12h14M13 6l6 6-6 6',
   menu: 'M12 5.5v.01M12 12v.01M12 18.5v.01',
+  camera: 'M4 8h3.5l2-2.5h5L16.5 8H20v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+  prullenbak: 'M5 7h14M10 4h4M7 7l1 13h8l1-13M10 11v6M14 11v6',
 } as const
 
 export type IcoonNaam = keyof typeof paden

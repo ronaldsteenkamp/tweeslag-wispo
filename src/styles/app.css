@@ -1693,6 +1693,160 @@ button {
   font-size: 1.1rem;
 }
 
+/* ---------- Fotomuur ---------- */
+
+.challenge__foto {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 12px;
+  border: 1.5px solid var(--rand);
+  border-radius: 999px;
+  background: var(--oppervlak);
+  color: var(--tekst);
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.foto-upload__regel {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff4d6;
+  color: #5a3d00;
+  font-family: var(--font-kop);
+  font-weight: 800;
+}
+
+.foto-upload__voorbeeld {
+  width: 100%;
+  max-height: 45vh;
+  object-fit: contain;
+  border-radius: 14px;
+  background: var(--oppervlak-2);
+}
+
+.foto-upload .knop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.fotomuur__raster {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.fotomuur__foto {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--oppervlak-2);
+  font-size: 2rem;
+}
+
+.fotomuur__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fotomuur__onderschrift {
+  margin: 6px 2px 0;
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.fotomuur__onderschrift small {
+  display: block;
+  color: var(--tekst-zacht);
+}
+
+.fotostrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.foto-groot {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: calc(16px + var(--boven)) 16px calc(16px + var(--onder));
+  background: rgba(3, 6, 24, 0.92);
+  color: #fff;
+}
+
+.foto-groot img {
+  max-width: 100%;
+  max-height: calc(100dvh - 200px);
+  border-radius: 12px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.foto-groot__sluit {
+  position: absolute;
+  top: calc(12px + var(--boven));
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.foto-groot__onder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  width: 100%;
+  max-width: 600px;
+  font-family: var(--font-kop);
+}
+
+.foto-groot__onder p {
+  margin: 0;
+}
+
+.foto-groot__onder .knop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feest--klein {
+  max-width: calc(100vw - 32px);
+  font-size: 1rem;
+  font-weight: 800;
+  white-space: normal;
+  text-align: center;
+}
+
 /* ---------- Meldingen ---------- */
 
 .tijdlijn__bel {
