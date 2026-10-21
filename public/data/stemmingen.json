@@ -1,19 +1,36 @@
 {
-  "_uitleg": "Eén stemming per vraag. 'id' moet uniek zijn en mag je na de start niet meer veranderen (de stemmen hangen eraan). 'datum' is JJJJ-MM-DD. 'open' en 'sluit' zijn UU:MM op die datum, of JJJJ-MM-DDTUU:MM als hij pas een andere dag sluit. Tijden zijn Nederlandse tijd (in Les Deux Alpes hetzelfde). Kandidaten zijn automatisch alle namen uit kamers.json. Na een wijziging: open de app als beheerder (ingelogd), dan gaat de nieuwe versie vanzelf naar de server.",
+  "_uitleg": "Eén stemming per vraag. 'id' moet uniek zijn en mag je na de start niet meer veranderen (de stemmen hangen eraan). 'datum' is JJJJ-MM-DD (de dag waar hij bij hoort). 'open' en 'sluit' zijn UU:MM op die datum, of JJJJ-MM-DDTUU:MM als hij op een andere dag opent of sluit. Tijden zijn Nederlandse tijd (in Les Deux Alpes hetzelfde). Kandidaten zijn automatisch alle namen uit kamers.json. Na een wijziging: open de app als beheerder (ingelogd), dan gaat de nieuwe versie vanzelf naar de server.",
   "stemmingen": [
+    { "id": "heen-koffer", "datum": "2027-03-05", "vraag": "🧳 Meest overvolle bagage", "open": "19:30", "sluit": "2027-03-06T09:00" },
+    { "id": "heen-dj", "datum": "2027-03-05", "vraag": "🎤 DJ van de heenreis", "open": "19:30", "sluit": "2027-03-06T09:00" },
+
+    { "id": "aankomst-slaapkop", "datum": "2027-03-06", "vraag": "😴 Slaapkop van de busreis", "open": "12:00", "sluit": "21:30" },
+    { "id": "aankomst-zin", "datum": "2027-03-06", "vraag": "🤩 Meeste zin in de week", "open": "12:00", "sluit": "21:30" },
+
     { "id": "skier-1", "datum": "2027-03-07", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
     { "id": "val-1", "datum": "2027-03-07", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
+
     { "id": "skier-2", "datum": "2027-03-08", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
     { "id": "val-2", "datum": "2027-03-08", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
+
     { "id": "skier-3", "datum": "2027-03-09", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
     { "id": "val-3", "datum": "2027-03-09", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
     { "id": "volley-3", "datum": "2027-03-09", "vraag": "🏐 Beste actie bij het sneeuwvolleybal", "open": "15:00", "sluit": "21:30" },
+
     { "id": "skier-4", "datum": "2027-03-10", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
     { "id": "val-4", "datum": "2027-03-10", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
+
     { "id": "skier-5", "datum": "2027-03-11", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
     { "id": "val-5", "datum": "2027-03-11", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
     { "id": "outfit-5", "datum": "2027-03-11", "vraag": "🕺 Beste outfit van het themafeest", "open": "21:30", "sluit": "2027-03-12T12:00" },
+
     { "id": "skier-6", "datum": "2027-03-12", "vraag": "⛷️ Skiër van de dag", "open": "12:00", "sluit": "16:00" },
-    { "id": "val-6", "datum": "2027-03-12", "vraag": "💥 Valpartij van de dag", "open": "12:00", "sluit": "16:00" }
+    { "id": "val-6", "datum": "2027-03-12", "vraag": "💥 Valpartij van de dag", "open": "12:00", "sluit": "16:00" },
+
+    { "id": "terug-mvp", "datum": "2027-03-13", "vraag": "🏆 MVP van de week", "open": "09:00", "sluit": "18:30" },
+    { "id": "terug-moment", "datum": "2027-03-13", "vraag": "😂 Moment van de week", "open": "09:00", "sluit": "18:30" },
+
+    { "id": "thuis-slaapkop", "datum": "2027-03-14", "vraag": "💤 Slaapkop van de terugreis", "open": "2027-03-13T20:00", "sluit": "10:00" },
+    { "id": "thuis-busmaatje", "datum": "2027-03-14", "vraag": "🚌 Gezelligste busmaatje", "open": "2027-03-13T20:00", "sluit": "10:00" }
   ]
 }

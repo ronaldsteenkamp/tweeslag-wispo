@@ -83,6 +83,8 @@ export function Stemmen() {
         <UitslagKaart key={s.id} s={s} stand={stand} naam={naam} />
       ))}
 
+      {stemmingen.length > 0 && <AlleStemmingen stemmingen={stemmingen} nu={nu} beheerder={backend.beheerder} />}
+
       {stand && (geenVerbinding || mislukt) && (
         <p className="klein klassement__voet">Laatst bijgewerkt om {wanneer(stand.opgehaald, nu)}</p>
       )}
@@ -181,6 +183,51 @@ function StemKaart({
         onBevestig={() => void bevestig()}
       />
     </section>
+  )
+}
+
+/** '15:00–21:30', of met dag erbij als hij op een andere dag opent of sluit */
+function venster(s: StemmingInfo) {
+  const o = new Date(s.open)
+  const z = new Date(s.sluit)
+  const dag = (d: Date) => (datumISO(d) === s.datum ? '' : `${datumLabel(datumISO(d), 'kort')} `)
+  return `${dag(o)}${tijdUUMM(o)} – ${dag(z)}${tijdUUMM(z)}`
+}
+
+/** Overzicht van alle stemmingen, per dag */
+function AlleStemmingen({ stemmingen, nu, beheerder }: { stemmingen: StemmingInfo[]; nu: Date; beheerder: boolean }) {
+  const t = nu.getTime()
+  const perDag = new Map<string, StemmingInfo[]>()
+  for (const s of [...stemmingen].sort((a, b) => a.datum.localeCompare(b.datum) || a.open - b.open)) {
+    perDag.set(s.datum, [...(perDag.get(s.datum) ?? []), s])
+  }
+  return (
+    <details className="kaartje alle-stemmingen">
+      <summary>📋 Alle stemmingen ({stemmingen.length})</summary>
+      {[...perDag].map(([datum, lijst]) => (
+        <div key={datum} className="alle-stemmingen__dag">
+          <h3>{datumLabel(datum)}</h3>
+          <ul>
+            {lijst.map((s) => (
+              <li key={s.id} className={s.sluit <= t ? 'is-voorbij' : ''}>
+                <span>
+                  {s.vraag}
+                  <small>
+                    {venster(s)}
+                    {beheerder && s.alleenLokaal && ' · nog niet op de server'}
+                  </small>
+                </span>
+                {s.open <= t && t < s.sluit ? (
+                  <span className="label label--accent">open</span>
+                ) : s.sluit <= t ? (
+                  <span className="label">gesloten</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </details>
   )
 }
 
