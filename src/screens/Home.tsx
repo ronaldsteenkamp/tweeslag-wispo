@@ -45,10 +45,18 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
           </div>
         </div>
 
-        <h1 className="hero__groet">{naam ? `Hoi ${naam}!` : 'Hoi!'}</h1>
-        <button type="button" className="hero__naam" onClick={() => setNaamKiezen(true)}>
-          {naam ? `Niet ${naam}? Kies je eigen naam` : 'Kies je naam'}
-        </button>
+        <h1 className="hero__groet">
+          Hoi{' '}
+          <button
+            type="button"
+            className="hero__naam"
+            onClick={() => setNaamKiezen(true)}
+            aria-label={naam ? `${naam}, tik om een andere naam te kiezen` : 'Kies je naam'}
+          >
+            {naam ?? 'jij'}
+          </button>
+          !
+        </h1>
 
         {fase === 'voor' && (
           <>

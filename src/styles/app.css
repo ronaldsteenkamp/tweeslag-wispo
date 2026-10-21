@@ -594,18 +594,18 @@ button {
   margin-top: 6px;
 }
 
+/* De naam zelf is de knop om een andere naam te kiezen */
 .hero__naam {
-  align-self: flex-start;
-  min-height: 40px;
-  margin-top: -8px;
   padding: 0;
   border: 0;
   background: none;
   color: inherit;
-  opacity: 0.85;
-  font-size: 0.9rem;
+  font: inherit;
+  cursor: pointer;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+  touch-action: manipulation;
 }
 
 .dialoog--hoog {
