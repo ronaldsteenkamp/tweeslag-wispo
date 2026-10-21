@@ -146,10 +146,16 @@ export async function zetMeldingenUit(): Promise<void> {
 
 /** Testmelding naar je eigen apparaat */
 export async function stuurTestmelding(): Promise<string> {
-  const { data, fout } = await roepAan<{ gelukt: number; mislukt: number }>({ soort: 'test' })
+  // Eerst zeker weten dat dit apparaat (nog) goed op de server staat
+  await herstel(true)
+  const { data, fout } = await roepAan<{ gelukt: number; mislukt: number; opgeruimd: number; fouten?: string[] }>({
+    soort: 'test',
+  })
   if (fout === 'geen_abonnement') return 'Dit apparaat staat nog niet op de server. Zet meldingen uit en weer aan.'
   if (fout) return `Lukte niet: ${fout}`
-  return data && data.gelukt > 0 ? 'Testmelding verstuurd. Hij komt zo binnen.' : 'Versturen lukte niet.'
+  if (data && data.gelukt > 0) return 'Testmelding verstuurd. Hij komt zo binnen.'
+  const reden = data?.fouten?.[0] ?? (data?.opgeruimd ? 'het abonnement was verlopen' : 'onbekend')
+  return `Versturen lukte niet (${reden}). Zet meldingen uit en weer aan.`
 }
 
 // ---------- Beheer ----------
@@ -183,7 +189,7 @@ export async function haalLogboek(): Promise<{ regels: LogRegel[]; apparaten: nu
 // ---------- Starten ----------
 
 /** Na wisselen van gebruiker (of opnieuw aanmelden) het abonnement opnieuw aan de juiste gebruiker koppelen */
-async function herstel() {
+async function herstel(altijd = false) {
   const b = backendStand()
   if (b.status !== 'verbonden' || !b.userId || meldingStatus() !== 'aan') return
   try {
@@ -195,7 +201,7 @@ async function herstel() {
       meld()
       return
     }
-    if (lees(GEKOPPELD, '') !== `${b.userId}|${sub.endpoint}`) await bewaarOpServer(sub)
+    if (altijd || lees(GEKOPPELD, '') !== `${b.userId}|${sub.endpoint}`) await bewaarOpServer(sub)
   } catch {
     // Volgende keer opnieuw
   }

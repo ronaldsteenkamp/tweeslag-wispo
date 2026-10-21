@@ -71,9 +71,11 @@ async function verstuur(abonnementen: Abonnement[], bericht: { titel: string; te
         gelukt++
       } catch (e) {
         const code = (e as { statusCode?: number }).statusCode
+        const tekst = String((e as { body?: string }).body ?? (e as Error).message ?? '').slice(0, 120)
+        console.warn('push mislukt', code, new URL(a.endpoint).host, tekst)
         // Verlopen of afgemeld: opruimen
         if (code === 404 || code === 410) weg.push(a.endpoint)
-        else fouten.push(String(code ?? (e as Error).message).slice(0, 80))
+        else fouten.push(`${code ?? 'fout'} ${tekst}`.trim().slice(0, 140))
       }
     }),
   )
@@ -191,14 +193,14 @@ Deno.serve(async (req) => {
         const { data, error } = await db.from('push_abonnementen').select('endpoint, p256dh, auth').eq('user_id', u.id)
         if (error) throw error
         if (!data?.length) return antwoord({ fout: 'geen_abonnement' }, 404)
-        return antwoord(
-          await verstuur(data, {
-            titel: '❄️ Het werkt!',
-            tekst: 'Je krijgt nu meldingen van de Tweeslag Wispo-app.',
-            url: '#home',
-            tag: 'test',
-          }),
-        )
+        const r = await verstuur(data, {
+          titel: '❄️ Het werkt!',
+          tekst: 'Je krijgt nu meldingen van de Tweeslag Wispo-app.',
+          url: '#home',
+          tag: `test-${Date.now()}`,
+        })
+        console.log('testmelding', u.id.slice(-6), JSON.stringify(r))
+        return antwoord(r)
       }
 
       case 'bericht': {
