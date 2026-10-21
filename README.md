@@ -75,6 +75,25 @@ Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn 
 - De bingokaart heeft 24 vakjes plus een vrij vakje in het midden. Zet er minstens 24 in. Bij meer kiest elke telefoon er willekeurig 24, in een eigen volgorde die daarna vast blijft.
 - Het spel gaat open op vrijdag 5 maart 2027 om 18:00.
 
+### plekken.json (pins op de kaarten)
+```json
+{ "plekken": [
+  { "id": "bar-sneeuwpop", "naam": "Bar De Sneeuwpop", "soort": "apres", "kaart": "dorp",
+    "x": 42.5, "y": 81.0, "omschrijving": "Aan het plein.", "tijden": "Happy hour 16:00–18:00",
+    "route": "https://maps.google.com/?q=..." }
+] }
+```
+- `soort` is `apres` (paars, 🍻), `eten` (rood, 🍽️), `afspreek` (donkerblauw, 🚩) of `handig` (groen, ℹ️). Elke soort heeft een eigen kleur en icoon, en onderaan de kaart een filterknop.
+- `kaart` is `piste` of `dorp`.
+- `x` en `y` zijn **procenten** van de afbeelding: `x` 0 is helemaal links en 100 helemaal rechts, `y` 0 is boven en 100 onder. De punt van de pin staat precies op die plek.
+- `omschrijving`, `tijden` en `route` mag je weglaten. De knop *Route* verschijnt alleen als er een `route` (een webadres, bijvoorbeeld een Google Maps-link) is.
+- Een plek met een onbekende `soort` wordt `handig`. Een plek zonder naam of met `x`/`y` buiten 0–100 slaat de app over.
+- Nu staan er **fictieve voorbeelden** in (met "(voorbeeld)" in de naam). Vervang ze door echte plekken.
+
+**Plaatsmodus: x en y opzoeken zonder rekenen.** Open de app met `?plaats=1` achter het adres, bijvoorbeeld `https://ronaldsteenkamp.github.io/tweeslag-wispo/?plaats=1#kaart`. Kies Piste of Dorp, zoom zo nodig in en tik op de plek. Bovenin verschijnen de x en y, met een kant-en-klaar JSON-fragment en een knop *Kopieer JSON*. Plak het in de lijst `plekken` (met een komma tussen twee plekken) en vul naam, soort en de rest in. Een gele pin laat zien waar je tikte. Zonder `?plaats=1` werkt de kaart gewoon zoals altijd.
+
+**De kaart gebruiken:** bovenin wissel je tussen *Piste* en *Dorp* (de app onthoudt je keuze). Tik op een pin voor naam, omschrijving, tijden en route; tik ergens anders op de kaart om het onderblad te sluiten. Slepen werkt ook als je op een pin begint. Pins blijven op elk zoomniveau even groot. Op een smal scherm tonen de filterknoppen alleen hun icoon.
+
 ### Weer en sneeuw
 Het weerbericht komt van [Open-Meteo](https://open-meteo.com) (gratis, geen key nodig) voor twee plekken: het **dorp** (45,010 N 6,124 E, 1650 m) en de **gletsjer** bij de Dôme de Puy Salié (44,997 N 6,223 E, 3400 m). De coördinaten en hoogtes staan in `src/config.ts` onder `weer`; de hoogte wordt meegestuurd, zodat de temperatuur klopt voor die plek.
 
@@ -91,6 +110,8 @@ Vertrektijd, thuiskomst, het openen van het spel en de links naar de Les 2 Alpes
 ## Pistekaart en logo vervangen
 
 **Pistekaart:** `public/img/pistekaart.jpg` is de officiële kaart van Les 2 Alpes voor winter 2025-2026 (`2026-Plan_Hiver.jpg` van les2alpes.com), licht gecomprimeerd tot ca. 2 MB. Komt de kaart voor 2026-2027 uit, vervang dan dit bestand en houd de naam `pistekaart.jpg` aan. Groot mag (tot 25 MB), maar 2–6 MB laadt prettiger. De kaart wordt automatisch op de telefoon bewaard voor offline gebruik. Let op: de kaart is van Les 2 Alpes en via de openbare URL voor iedereen te zien.
+
+**Dorpskaart:** `public/img/dorpskaart.jpg` is nu een **placeholder** (een fictief stratenplan met de tekst "Voorbeeld"). Vervang hem door een echte plattegrond van het dorp en houd de naam `dorpskaart.jpg` aan. Ook die wordt offline bewaard. Staan er al plekken op de dorpskaart, controleer hun `x`/`y` dan met de plaatsmodus: de posities zijn procenten van de afbeelding, dus bij een andere plattegrond liggen ze ergens anders.
 
 **Logo / app-icoon:** het app-icoon (`public/logo.svg`) en het woordmerk bovenaan Home (`public/img/2slag-wit.svg`) zijn winterversies van het officiële 2slag-logo uit de huisstijl, met sneeuw op de letters, sneeuwvlokken en besneeuwde bergen. Een ander icoon? Vervang `public/logo.svg` (vierkant). Bij elke build worden daaruit automatisch de app-iconen, de favicon en de splashscreens voor iPhone gemaakt. De achtergrondkleur en de ruimte rond het logo stel je in met `ACHTERGROND` en `padding` in `pwa-assets.config.ts`. Heeft je logo een transparante achtergrond, zet dan bij `transparent` de `padding` op bijvoorbeeld `0.1`. Heb je alleen een PNG, zet dan in `pwa-assets.config.ts` `images: ['public/logo.png']` en pas in `index.html` en `src/screens/Home.tsx` `logo.svg` aan naar `logo.png`.
 

@@ -38,7 +38,7 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
         <Sneeuw aantal={20} />
         <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="Tweeslag" className="welkom__logo" />
         <p className="welkom__onder">Wispo 2027 · Les Deux Alpes</p>
-        <h1 id="welkom-titel">{stap === 'naam' ? 'Welkom! Wie ben jij?' : `Hoi ${naam}!`}</h1>
+        <h1 id="welkom-titel">{stap === 'naam' ? 'Welkom! Wie ben jij?' : naam ? `Hoi ${naam}!` : 'Hoi!'}</h1>
       </header>
 
       <div className="welkom__inhoud">

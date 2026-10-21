@@ -67,12 +67,33 @@ export interface Stemmingen {
   stemmingen: Stemming[]
 }
 
+export const PLEK_SOORTEN = ['apres', 'eten', 'afspreek', 'handig'] as const
+export type PlekSoort = (typeof PLEK_SOORTEN)[number]
+export type KaartNaam = 'piste' | 'dorp'
+
+export interface Plek {
+  id: string
+  naam: string
+  soort: PlekSoort
+  kaart: KaartNaam
+  /** Positie in procenten van de breedte en hoogte van de afbeelding */
+  x: number
+  y: number
+  omschrijving?: string
+  tijden?: string
+  route?: string
+}
+export interface Plekken {
+  plekken: Plek[]
+}
+
 interface DataTypes {
   planning: Planning
   paklijst: Paklijst
   kamers: Kamers
   spel: Spel
   stemmingen: Stemmingen
+  plekken: Plekken
 }
 export type DataNaam = keyof DataTypes
 
@@ -152,9 +173,29 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
       })
       .filter((s) => s.id && s.vraag && /^\d{4}-\d\d-\d\d$/.test(s.datum)),
   }),
+  plekken: (r) => ({
+    plekken: lijst<Ruw>(r?.plekken)
+      .map((p, i): Plek => {
+        const tekst = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
+        const route = tekst(p?.route)
+        return {
+          id: String(p?.id ?? `plek-${i}`),
+          naam: String(p?.naam ?? '').trim(),
+          soort: (PLEK_SOORTEN as readonly string[]).includes(p?.soort) ? p.soort : 'handig',
+          kaart: p?.kaart === 'dorp' ? 'dorp' : 'piste',
+          x: Number(p?.x),
+          y: Number(p?.y),
+          omschrijving: tekst(p?.omschrijving),
+          tijden: tekst(p?.tijden),
+          // Alleen echte webadressen als routeknop
+          route: route && /^https?:\/\//.test(route) ? route : undefined,
+        }
+      })
+      .filter((p) => p.naam && Number.isFinite(p.x) && Number.isFinite(p.y) && p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100),
+  }),
 }
 
-export const DATA_BESTANDEN: DataNaam[] = ['planning', 'paklijst', 'kamers', 'spel', 'stemmingen']
+export const DATA_BESTANDEN: DataNaam[] = ['planning', 'paklijst', 'kamers', 'spel', 'stemmingen', 'plekken']
 
 const cache = new Map<DataNaam, Promise<unknown>>()
 
