@@ -53,11 +53,24 @@ export interface Spel {
   bingo: { vrijVakje?: string; vakjes: string[] }
 }
 
+export interface Stemming {
+  id: string
+  datum: string
+  vraag: string
+  /** 'JJJJ-MM-DDTUU:MM' (Nederlandse tijd); 'UU:MM' in de JSON wordt aangevuld met de datum */
+  open: string
+  sluit: string
+}
+export interface Stemmingen {
+  stemmingen: Stemming[]
+}
+
 interface DataTypes {
   planning: Planning
   paklijst: Paklijst
   kamers: Kamers
   spel: Spel
+  stemmingen: Stemmingen
 }
 export type DataNaam = keyof DataTypes
 
@@ -118,9 +131,28 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
       vakjes: lijst<unknown>(r?.bingo?.vakjes).map((v) => String(v).trim()).filter(Boolean),
     },
   }),
+  stemmingen: (r) => ({
+    stemmingen: lijst<Ruw>(r?.stemmingen)
+      .map((s) => {
+        const datum = String(s?.datum ?? '')
+        const tijd = (t: unknown, standaard: string) => {
+          const x = String(t ?? standaard).trim()
+          return x.includes('T') ? x : `${datum}T${x}`
+        }
+        const vraag = String(s?.vraag ?? '').trim()
+        return {
+          id: String(s?.id ?? `${datum}-${vraag}`).trim(),
+          datum,
+          vraag,
+          open: tijd(s?.open, '00:00'),
+          sluit: tijd(s?.sluit, '23:59'),
+        }
+      })
+      .filter((s) => s.id && s.vraag && /^\d{4}-\d\d-\d\d$/.test(s.datum)),
+  }),
 }
 
-export const DATA_BESTANDEN: DataNaam[] = ['planning', 'paklijst', 'kamers', 'spel']
+export const DATA_BESTANDEN: DataNaam[] = ['planning', 'paklijst', 'kamers', 'spel', 'stemmingen']
 
 const cache = new Map<DataNaam, Promise<unknown>>()
 

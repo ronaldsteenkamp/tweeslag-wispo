@@ -1,0 +1,19 @@
+{
+  "_uitleg": "Eén stemming per vraag. 'id' moet uniek zijn en mag je na de start niet meer veranderen (de stemmen hangen eraan). 'datum' is JJJJ-MM-DD. 'open' en 'sluit' zijn UU:MM op die datum, of JJJJ-MM-DDTUU:MM als hij pas een andere dag sluit. Tijden zijn Nederlandse tijd (in Les Deux Alpes hetzelfde). Kandidaten zijn automatisch alle namen uit kamers.json. Na een wijziging: open de app als beheerder (ingelogd), dan gaat de nieuwe versie vanzelf naar de server.",
+  "stemmingen": [
+    { "id": "skier-1", "datum": "2027-03-07", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "val-1", "datum": "2027-03-07", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "skier-2", "datum": "2027-03-08", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "val-2", "datum": "2027-03-08", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "skier-3", "datum": "2027-03-09", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "val-3", "datum": "2027-03-09", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "volley-3", "datum": "2027-03-09", "vraag": "🏐 Beste actie bij het sneeuwvolleybal", "open": "15:00", "sluit": "21:30" },
+    { "id": "skier-4", "datum": "2027-03-10", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "val-4", "datum": "2027-03-10", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "skier-5", "datum": "2027-03-11", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "val-5", "datum": "2027-03-11", "vraag": "💥 Valpartij van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "outfit-5", "datum": "2027-03-11", "vraag": "🕺 Beste outfit van het themafeest", "open": "21:30", "sluit": "2027-03-12T12:00" },
+    { "id": "skier-6", "datum": "2027-03-12", "vraag": "⛷️ Skiër van de dag", "open": "12:00", "sluit": "16:00" },
+    { "id": "val-6", "datum": "2027-03-12", "vraag": "💥 Valpartij van de dag", "open": "12:00", "sluit": "16:00" }
+  ]
+}

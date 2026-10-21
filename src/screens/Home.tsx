@@ -5,13 +5,14 @@ import { Icoon } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
 import { NaamWijzigen } from '../components/NaamWijzigen'
 import { Sneeuw } from '../components/Sneeuw'
+import { StemmingOpHome } from '../components/Stemmen'
 import { WeerKaart } from '../components/WeerKaart'
 import type { Tab } from '../components/TabBalk'
 import { config } from '../config'
 import { useData, type Dag } from '../lib/data'
 import { platform } from '../lib/installatie'
 import { useNu } from '../lib/nu'
-import { useOpgeslagen } from '../lib/opslag'
+import { schrijf, useOpgeslagen } from '../lib/opslag'
 import { datumISO, datumLabel, lokaalNaarDate, tijdUUMM } from '../lib/tijd'
 import { Programma } from './Planning'
 
@@ -84,6 +85,13 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
       {fase !== 'na' && <WeerKaart nu={nu} voorVertrek={nu < vertrek} onOpen={naarWeer} />}
 
       <InstallatieBanner />
+
+      <StemmingOpHome
+        naarStemmen={() => {
+          schrijf('spel.onderdeel', 'stemmen')
+          naarTab('spel')
+        }}
+      />
 
       {fase === 'tijdens' && index >= 0 && (
         <section className="kaartje">

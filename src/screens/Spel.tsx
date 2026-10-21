@@ -3,6 +3,7 @@ import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { Klassement } from '../components/Klassement'
+import { Stemmen } from '../components/Stemmen'
 import { Sneeuw } from '../components/Sneeuw'
 import { config } from '../config'
 import { backendIngesteld } from '../lib/backend'
@@ -52,7 +53,7 @@ export default function Spel() {
 }
 
 function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
-  const [onderdeel, setOnderdeel] = useOpgeslagen<'challenges' | 'bingo' | 'klassement'>('spel.onderdeel', 'challenges')
+  const [onderdeel, setOnderdeel] = useOpgeslagen<'challenges' | 'bingo' | 'stemmen' | 'klassement'>('spel.onderdeel', 'challenges')
   const [gedaan, setGedaan] = useOpgeslagen<string[]>('spel.challenges', [])
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
@@ -90,8 +91,8 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         </p>
       </section>
 
-      <div className="segment" role="tablist" aria-label="Onderdeel">
-        {(['challenges', 'bingo', 'klassement'] as const).map((o) => (
+      <div className="segment segment--vier" role="tablist" aria-label="Onderdeel">
+        {(['challenges', 'bingo', 'stemmen', 'klassement'] as const).map((o) => (
           <button
             key={o}
             type="button"
@@ -100,13 +101,15 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             className={`segment__knop${onderdeel === o ? ' is-actief' : ''}`}
             onClick={() => setOnderdeel(o)}
           >
-            {o === 'challenges' ? 'Challenges' : o === 'bingo' ? 'Bingo' : 'Klassement'}
+            {o === 'challenges' ? 'Challenges' : o === 'bingo' ? 'Bingo' : o === 'stemmen' ? 'Stemmen' : 'Klassement'}
           </button>
         ))}
       </div>
 
       {onderdeel === 'klassement' ? (
         <Klassement />
+      ) : onderdeel === 'stemmen' ? (
+        <Stemmen />
       ) : onderdeel === 'challenges' ? (
         <Challenges
           dagen={data.challenges}

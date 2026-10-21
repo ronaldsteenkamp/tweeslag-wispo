@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Verbinding } from '../components/Verbinding'
 import { controleerCode, stuurInlogmail, stuurProfiel, uitloggen, useBackend, verbind } from '../lib/backend'
+import { useData } from '../lib/data'
+import { synchroniseerStemmingen, trekStemIn, useStemmingen, useStemmingSync } from '../lib/stemming'
+import { tijdUUMM } from '../lib/tijd'
 
 /** Beheer voor de reisleiding: verbinding, dit apparaat en inloggen met e-mail */
 export default function Beheer({ terug }: { terug: () => void }) {
@@ -164,11 +167,86 @@ export default function Beheer({ terug }: { terug: () => void }) {
         </section>
       )}
 
+      {b.beheerder && b.status === 'verbonden' && <StemmingBeheer />}
+
       {melding && (
         <p className="melding melding--fout" role="alert">
           {melding}
         </p>
       )}
     </div>
+  )
+}
+
+/** Stemmingen: stemmingen.json naar de server zetten en een stem intrekken */
+function StemmingBeheer() {
+  const { resultaat, bezig } = useStemmingSync()
+  const { stemmingen } = useStemmingen()
+  const { data: kamers } = useData('kamers')
+  const [stemming, setStemming] = useState('')
+  const [kiezer, setKiezer] = useState('')
+  const [melding, setMelding] = useState<string | null>(null)
+  const namen = [...new Set((kamers?.kamers ?? []).flatMap((k) => k.bewoners))].sort((a, b) => a.localeCompare(b, 'nl'))
+  const nu = Date.now()
+  // Intrekken heeft alleen zin terwijl de stemming nog open is
+  const open = stemmingen.filter((s) => !s.alleenLokaal && s.open <= nu && nu < s.sluit)
+
+  const intrekken = async (e: FormEvent) => {
+    e.preventDefault()
+    setMelding(null)
+    const fout = await trekStemIn(stemming, kiezer)
+    setMelding(fout ?? `De stem van ${kiezer} is ingetrokken. ${kiezer} kan opnieuw stemmen.`)
+  }
+
+  return (
+    <section className="kaartje">
+      <h2>Stemmingen</h2>
+      <p className="klein">
+        De vragen uit <code>stemmingen.json</code> en de namen uit <code>kamers.json</code> gaan vanzelf naar de server
+        als je de app als beheerder opent.
+      </p>
+      {resultaat && (
+        <p className="klein">
+          Gecontroleerd om {tijdUUMM(new Date(resultaat.tijd))}: {resultaat.aantal} stemmingen,{' '}
+          {resultaat.bijgewerkt ? `${resultaat.bijgewerkt} bijgewerkt` : 'alles was al up-to-date'}.
+          {resultaat.extra.length > 0 && ` Alleen op de server (niet in de JSON): ${resultaat.extra.join(', ')}.`}
+        </p>
+      )}
+      {resultaat?.fouten.map((f) => (
+        <p key={f} className="melding melding--fout">
+          {f}
+        </p>
+      ))}
+      <button type="button" className="knop knop--secundair knop--breed" disabled={bezig} onClick={() => void synchroniseerStemmingen()}>
+        {bezig ? 'Bezig…' : 'Nu bijwerken'}
+      </button>
+
+      {open.length > 0 && (
+        <form className="beheer__formulier" onSubmit={intrekken}>
+          <h3>Stem intrekken</h3>
+          <p className="klein">Heeft iemand per ongeluk verkeerd gestemd? Haal de stem weg, dan kan diegene opnieuw stemmen. Je ziet niet wat er gestemd is.</p>
+          <select className="invoer" value={stemming} onChange={(e) => setStemming(e.target.value)} required>
+            <option value="">Stemming…</option>
+            {open.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.vraag}
+              </option>
+            ))}
+          </select>
+          <select className="invoer" value={kiezer} onChange={(e) => setKiezer(e.target.value)} required>
+            <option value="">Van wie…</option>
+            {namen.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="knop knop--gevaar knop--breed" disabled={!stemming || !kiezer}>
+            Stem intrekken
+          </button>
+          {melding && <p className="klein">{melding}</p>}
+        </form>
+      )}
+    </section>
   )
 }

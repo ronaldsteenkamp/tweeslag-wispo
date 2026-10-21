@@ -147,7 +147,7 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 
 ### Eenmalig instellen (stap voor stap)
 
-> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd, ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
+> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 op 21 oktober, 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
 
 1. **Project aanmaken.** Ga naar [supabase.com](https://supabase.com), maak een account en kies *New project*. Naam: `tweeslag-wispo`. Regio: een EU-regio, bijvoorbeeld *Central EU (Frankfurt)* of *West EU (Ireland)*. Kies een sterk databasewachtwoord en bewaar het in je wachtwoordmanager. Abonnement: *Free*.
 2. **Tabellen maken.** Open *SQL Editor → New query*, plak de inhoud van `supabase/migrations/0001_basis.sql` en klik op *Run*. Zet daarna jezelf en Sten als beheerder (met jullie eigen adressen):
@@ -177,6 +177,24 @@ Migratie: `supabase/migrations/0002_scorebord.sql` (uitvoeren na 0001).
 - **Klassement:** in *Spel → Klassement*, per kamer (opgeteld) en per persoon; je eigen kamer en naam zijn uitgelicht. Het ververst live (Supabase Realtime) en elke 30 seconden als vangnet. Zonder verbinding zie je de laatst bekende stand.
 - **Bonuspunten en correcties:** beheerders zien onder het klassement een formulier: kamer of persoon kiezen, punten (min-teken voor aftrek) en een reden die iedereen ziet, bijvoorbeeld *+25 kamer Gletsjer: beste après-ski-outfit*. Correcties op een persoon gaan op naam, dus ze blijven gelden als iemand van telefoon wisselt. Een correctie verwijder je met het kruisje.
 
+### Dagelijkse stemming (fase 3)
+Migratie: `supabase/migrations/0003_stemming.sql` (uitvoeren na 0002).
+
+- **Vragen:** in `public/data/stemmingen.json`, bijvoorbeeld:
+  ```json
+  { "stemmingen": [
+    { "id": "skier-1", "datum": "2027-03-07", "vraag": "⛷️ Skiër van de dag", "open": "15:00", "sluit": "21:30" },
+    { "id": "outfit-5", "datum": "2027-03-11", "vraag": "🕺 Beste outfit", "open": "21:30", "sluit": "2027-03-12T12:00" }
+  ] }
+  ```
+  `open` en `sluit` zijn een tijd op `datum`, of een volledige datum-tijd als hij een andere dag sluit. Elke `id` is uniek; **verander een `id` niet meer als er al gestemd is** (de stemmen hangen eraan). Kandidaten zijn automatisch alle namen uit `kamers.json`.
+- **Naar de server:** de database moet de sluitingstijden kennen om de regels te bewaken. Dat gaat vanzelf: zodra een ingelogde beheerder de app opent, zet de app `stemmingen.json` (met de namen uit `kamers.json`) in de tabel `stemmingen`. Handmatig kan via *Beheer → Stemmingen → Nu bijwerken*. Pas je de JSON of de kamerverdeling aan, open dan even de app als beheerder.
+- **Regels (afgedwongen door de database):** stemmen kan alleen terwijl de stemming open is, niet op jezelf, en maar één keer per vraag. Dat geldt per naam, dus ook niet nogmaals vanaf een tweede telefoon. Stemmen gaat alleen via de functie `stem()`, niet rechtstreeks in de tabel.
+- **Geheim tot de sluitingstijd:** tijdens de stemming ziet iedereen alleen hoeveel stemmen er zijn. Wie op wie stemde ziet niemand in de app, ook de beheerders niet. Na de sluitingstijd verschijnt de uitslag per kandidaat in *Spel → Stemmen*, en de winnaars staan op Home.
+- **Op Home:** een kaart *Stemmen maar!* zolang er een open stemming is waarop je nog niet stemde, en de winnaars van de laatst gesloten dag.
+- **Per ongeluk verkeerd gestemd?** Een beheerder kan in *Beheer → Stemmingen* de stem van iemand intrekken (zonder te zien wat het was); diegene kan dan opnieuw stemmen.
+- **Zonder internet** zie je de laatst bekende stand en uitslagen; stemmen zelf kan alleen met verbinding.
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 
@@ -184,7 +202,8 @@ Verder handig om te weten over het gratis abonnement: de standaard-mailserver va
 
 ### Privacy en opruimen na de reis
 - Alleen voornamen en kamernummers gaan naar de server, in een EU-regio. Geen e-mailadressen van deelnemers; alleen de beheerders loggen in met e-mail.
-- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers en via de koppelingen alles wat eraan hangt) en leeg de foto-bucket onder *Storage*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
+- Stemmen worden opgeslagen met de voornaam van de kiezer (nodig voor "één stem per naam"). Alleen jijzelf ziet in de app op wie je stemde; de beheerders niet.
+- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang, de correcties, de stemmingen met alle stemmen en de beheerderslijst) en leeg de foto-bucket onder *Storage*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
 - Haal daarna in GitHub de twee variabelen weg; de app werkt dan weer zonder backend.
 
 ## QR-code

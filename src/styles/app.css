@@ -1631,6 +1631,94 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Stemming ---------- */
+
+.stemming h2 {
+  margin: 0;
+}
+
+.stemming .kaartje__kop > .klein {
+  white-space: nowrap;
+}
+
+.stemming__kandidaten {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.stemming__kandidaten .knop small {
+  font-weight: 400;
+}
+
+.stemming__gestemd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--succes-zacht);
+  color: var(--succes);
+  font-family: var(--font-kop);
+}
+
+.stemming__gestemd svg {
+  flex: none;
+}
+
+.stemming__winnaar {
+  margin: 0;
+  font-family: var(--font-kop);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.stemming__winnaar small {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--tekst-zacht);
+}
+
+.ranglijst--klein li {
+  padding: 6px 10px;
+}
+
+.ranglijst--klein .ranglijst__plek {
+  width: 28px;
+  height: 28px;
+}
+
+.ranglijst--klein .ranglijst__punten {
+  font-size: 1.1rem;
+}
+
+.stemming--home {
+  border: 2px solid var(--accent);
+}
+
+.winnaars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.winnaars li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-kop);
+}
+
+.winnaars__naam {
+  font-size: 1.15rem;
+  text-align: right;
+}
+
 .correcties {
   list-style: none;
   margin: 0;
@@ -1858,6 +1946,19 @@ button {
   background: none;
   font-weight: 700;
   color: var(--tekst-zacht);
+}
+
+.segment--vier {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.segment--vier {
+  gap: 2px;
+}
+
+.segment--vier .segment__knop {
+  padding: 0 2px;
+  font-size: 0.78rem;
 }
 
 .segment__knop.is-actief {
