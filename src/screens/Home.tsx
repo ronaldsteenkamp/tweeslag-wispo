@@ -96,8 +96,6 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
 
       <InstallatieBanner />
 
-      {fase !== 'na' && <MeldingenKaart />}
-
       <FotoStrip naarFotomuur={() => (window.location.hash = '#fotos')} />
 
       <StemmingOpHome
@@ -123,6 +121,9 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
       {!planning && <DataStatus fout={fout} />}
 
       <AppKnop />
+
+      {/* Helemaal onderaan */}
+      {fase !== 'na' && <MeldingenKaart />}
 
       <NaamWijzigen open={naamKiezen} onSluit={sluitNaamKiezen} />
     </div>
