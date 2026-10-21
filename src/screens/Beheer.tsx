@@ -208,8 +208,10 @@ function StemmingBeheer() {
       {resultaat && (
         <p className="klein">
           Gecontroleerd om {tijdUUMM(new Date(resultaat.tijd))}: {resultaat.aantal} stemmingen,{' '}
-          {resultaat.bijgewerkt ? `${resultaat.bijgewerkt} bijgewerkt` : 'alles was al up-to-date'}.
-          {resultaat.extra.length > 0 && ` Alleen op de server (niet in de JSON): ${resultaat.extra.join(', ')}.`}
+          {resultaat.bijgewerkt ? `${resultaat.bijgewerkt} bijgewerkt` : 'alles was al up-to-date'}
+          {resultaat.verwijderd > 0 && `, ${resultaat.verwijderd} weggehaald`}.
+          {resultaat.extra.length > 0 &&
+            ` Niet meer in de JSON, maar er is al op gestemd (blijft staan): ${resultaat.extra.join(', ')}.`}
         </p>
       )}
       {resultaat?.fouten.map((f) => (

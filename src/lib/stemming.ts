@@ -208,8 +208,10 @@ export interface SyncResultaat {
   tijd: number
   aantal: number
   bijgewerkt: number
+  /** Van de server gehaald omdat ze niet meer in de JSON staan (en nog geen stemmen hadden) */
+  verwijderd: number
   fouten: string[]
-  /** Op de server, maar niet (meer) in stemmingen.json */
+  /** Op de server en niet meer in stemmingen.json, maar er is al op gestemd (blijft staan) */
   extra: string[]
 }
 
@@ -253,20 +255,41 @@ export async function synchroniseerStemmingen(): Promise<SyncResultaat | null> {
       const { error: e2 } = await c.from('stemmingen').upsert(gewijzigd, { onConflict: 'id' })
       if (e2) throw e2
     }
+    // Uit de JSON gehaald: van de server af, maar alleen als er nog niet op gestemd is
     const inJson = new Set(rijen.map((r) => r.id))
+    let extra = [...opServer.keys()].filter((id) => !inJson.has(id))
+    let verwijderd = 0
+    if (extra.length) {
+      const { data: tellingen, error: e3 } = await c.rpc('stemstand')
+      if (e3) throw e3
+      const metStemmen = new Set(
+        ((tellingen ?? []) as { stemming_id: string; kandidaat: string | null; stemmen: number }[])
+          .filter((t) => t.kandidaat === null && t.stemmen > 0)
+          .map((t) => t.stemming_id),
+      )
+      const weg = extra.filter((id) => !metStemmen.has(id))
+      if (weg.length) {
+        const { error: e4 } = await c.from('stemmingen').delete().in('id', weg)
+        if (e4) throw e4
+        verwijderd = weg.length
+      }
+      extra = extra.filter((id) => metStemmen.has(id))
+    }
     syncResultaat = {
       tijd: Date.now(),
       aantal: rijen.length,
       bijgewerkt: gewijzigd.length,
+      verwijderd,
       fouten,
-      extra: [...opServer.keys()].filter((id) => !inJson.has(id)),
+      extra,
     }
-    if (gewijzigd.length) void verversStemstand()
+    if (gewijzigd.length || verwijderd) void verversStemstand()
   } catch (e) {
     syncResultaat = {
       tijd: Date.now(),
       aantal: 0,
       bijgewerkt: 0,
+      verwijderd: 0,
       fouten: [...fouten, `Bijwerken lukte niet: ${e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e)}`],
       extra: [],
     }
