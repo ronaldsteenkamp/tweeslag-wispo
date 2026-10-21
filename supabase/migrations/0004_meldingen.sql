@@ -128,3 +128,9 @@ revoke all on function public.bewaar_abonnement(text, text, text) from public, a
 grant execute on function public.bewaar_abonnement(text, text, text) to authenticated;
 revoke all on function public.meldingen_statistiek() from public, anon;
 grant execute on function public.meldingen_statistiek() to authenticated;
+
+-- De Edge Function werkt met de service role. Omdat nieuwe tabellen in dit project niet
+-- automatisch worden opengezet, krijgt die rol hier expliciet wat hij nodig heeft.
+grant select, insert, update, delete on public.push_abonnementen, public.meldingen, public.push_sleutels to service_role;
+grant select on public.stemmingen, public.stemmen, public.beheerders to service_role;
+grant usage, select on all sequences in schema public to service_role;
