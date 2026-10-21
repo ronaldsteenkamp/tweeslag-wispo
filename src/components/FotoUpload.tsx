@@ -68,10 +68,6 @@ export function FotoUpload({
       >
         <h2 id="foto-upload-titel">📸 Bewijs: {challenge.titel}</h2>
 
-        <p className="foto-upload__regel" role="note">
-          ⚠️ Alleen foto&apos;s waarvan iedereen erop het goed vindt
-        </p>
-
         {voorbeeld && <img className="foto-upload__voorbeeld" src={voorbeeld} alt="Voorbeeld van je foto" />}
         {foto && (
           <p className="klein">

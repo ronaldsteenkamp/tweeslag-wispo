@@ -1711,16 +1711,6 @@ button {
   font-weight: 700;
 }
 
-.foto-upload__regel {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #fff4d6;
-  color: #5a3d00;
-  font-family: var(--font-kop);
-  font-weight: 800;
-}
-
 .foto-upload__voorbeeld {
   width: 100%;
   max-height: 45vh;

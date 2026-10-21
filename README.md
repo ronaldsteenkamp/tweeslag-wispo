@@ -219,7 +219,7 @@ Migratie: `supabase/migrations/0004_meldingen.sql`. Edge Function: `supabase/fun
 ### Fotomuur (fase 5)
 Migratie: `supabase/migrations/0005_fotomuur.sql` (maakt ook de bucket `fotos` en de regels voor de opslag).
 
-- **Uploaden:** bij elke challenge staat een knopje *📷 Foto als bewijs*. Je kunt een foto maken of er een uit je foto's kiezen. In het venster staat de regel **"Alleen foto's waarvan iedereen erop het goed vindt"**. Na het uploaden wordt de challenge vanzelf afgevinkt.
+- **Uploaden:** bij elke challenge staat een knopje *📷 Foto als bewijs*. Je kunt een foto maken of er een uit je foto's kiezen. Na het uploaden wordt de challenge vanzelf afgevinkt.
 - **Verkleinen:** de telefoon verkleint de foto vóór het uploaden tot max. 1600 px en ~300 kB, plus een kleine versie (480 px) voor de muur. Daarbij gaan ook de locatie- en cameragegevens (EXIF) eruit. Een foto van 3,4 MB werd bij de test 216 kB.
 - **Fotomuur:** *Spel → 📸 Fotomuur*, de nieuwste eerst, met naam, kamer, challenge en tijd. Tik op een foto voor het grote formaat. Nieuwe foto's verschijnen vanzelf (Supabase Realtime). Op Home staan de vier nieuwste.
 - **Privé:** de bucket is niet openbaar. De app vraagt per foto een tijdelijke link (signed URL) aan die een uur geldig is; dat kan alleen een apparaat dat in de app is aangemeld. Naam en kamer bij een foto zet de server erbij, niet de telefoon.
