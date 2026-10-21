@@ -1703,7 +1703,10 @@ button {
 .alle-stemmingen__dag h3 {
   margin: 14px 0 6px;
   font-size: 0.95rem;
-  text-transform: capitalize;
+}
+
+.alle-stemmingen__dag h3::first-letter {
+  text-transform: uppercase;
 }
 
 .alle-stemmingen ul {
