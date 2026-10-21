@@ -169,6 +169,14 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 8. **Lokaal (optioneel).** Kopieer `.env.example` naar `.env.local` en vul dezelfde twee waarden in. `.env.local` gaat niet mee naar GitHub.
 9. **Controleren.** Open de app, kies je naam en ga naar *Kamers → ⚙️ Beheer (reisleiding)*. Daar moet *Verbonden* staan en *Gekoppeld als Ronald · kamer …*. Log in met je e-mail; bij *Beheerder* hoort dan *Ja ✓* te staan. In Supabase zie je onder *Table Editor → deelnemers* een rij per apparaat.
 
+### Scorebord (fase 2)
+Migratie: `supabase/migrations/0002_scorebord.sql` (uitvoeren na 0001).
+
+- **Versturen:** elke telefoon stuurt zijn volledige spelstand (afgevinkte challenges, bingovakjes en de punten) naar de tabel `voortgang`. Zonder internet blijft er een markering "nog versturen" staan; zodra er weer verbinding is gaat de actuele stand alsnog. Omdat steeds de hele stand gaat, maakt dubbel of laat versturen niets uit.
+- **Punten:** de telefoon rekent met dezelfde regels uit `spel.json` als het scherm *Jouw score*; de server bewaart de punten én wat er is afgevinkt, met grenzen (max. 5000 challengepunten, 1000 bingopunten). Bewust niet op de server berekend: de spelregels staan in `spel.json` op de website en niet in de database, dus dan zou je bij elke wijziging ook de database moeten bijwerken. Klopt er iets niet, dan corrigeert een beheerder.
+- **Klassement:** in *Spel → Klassement*, per kamer (opgeteld) en per persoon; je eigen kamer en naam zijn uitgelicht. Het ververst live (Supabase Realtime) en elke 30 seconden als vangnet. Zonder verbinding zie je de laatst bekende stand.
+- **Bonuspunten en correcties:** beheerders zien onder het klassement een formulier: kamer of persoon kiezen, punten (min-teken voor aftrek) en een reden die iedereen ziet, bijvoorbeeld *+25 kamer Gletsjer: beste après-ski-outfit*. Correcties op een persoon gaan op naam, dus ze blijven gelden als iemand van telefoon wisselt. Een correctie verwijder je met het kruisje.
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 

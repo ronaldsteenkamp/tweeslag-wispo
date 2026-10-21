@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
+import { Klassement } from '../components/Klassement'
 import { Sneeuw } from '../components/Sneeuw'
 import { config } from '../config'
+import { backendIngesteld } from '../lib/backend'
 import { bingoScore, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
 import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
 import { testOntgrendeld, useNu } from '../lib/nu'
@@ -50,7 +52,7 @@ export default function Spel() {
 }
 
 function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
-  const [onderdeel, setOnderdeel] = useOpgeslagen<'challenges' | 'bingo'>('spel.onderdeel', 'challenges')
+  const [onderdeel, setOnderdeel] = useOpgeslagen<'challenges' | 'bingo' | 'klassement'>('spel.onderdeel', 'challenges')
   const [gedaan, setGedaan] = useOpgeslagen<string[]>('spel.challenges', [])
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
@@ -81,11 +83,15 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         <p className="score__deel">
           Challenges {challengePunten} · Bingo {bingo.totaal}
         </p>
-        <p className="klein">Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!</p>
+        <p className="klein">
+          {backendIngesteld
+            ? 'Je score telt mee in het klassement.'
+            : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
+        </p>
       </section>
 
       <div className="segment" role="tablist" aria-label="Onderdeel">
-        {(['challenges', 'bingo'] as const).map((o) => (
+        {(['challenges', 'bingo', 'klassement'] as const).map((o) => (
           <button
             key={o}
             type="button"
@@ -94,12 +100,14 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             className={`segment__knop${onderdeel === o ? ' is-actief' : ''}`}
             onClick={() => setOnderdeel(o)}
           >
-            {o === 'challenges' ? 'Challenges' : 'Ski-bingo'}
+            {o === 'challenges' ? 'Challenges' : o === 'bingo' ? 'Bingo' : 'Klassement'}
           </button>
         ))}
       </div>
 
-      {onderdeel === 'challenges' ? (
+      {onderdeel === 'klassement' ? (
+        <Klassement />
+      ) : onderdeel === 'challenges' ? (
         <Challenges
           dagen={data.challenges}
           nu={nu}

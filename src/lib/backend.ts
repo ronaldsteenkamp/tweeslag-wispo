@@ -41,6 +41,14 @@ function zet(deel: Partial<BackendStand>) {
 }
 export const backendStand = () => stand
 
+/** Buiten React luisteren naar veranderingen in de verbinding */
+export function abonneerBackend(f: () => void): () => void {
+  luisteraars.add(f)
+  return () => {
+    luisteraars.delete(f)
+  }
+}
+
 // ---------- Client ----------
 
 let clientBelofte: Promise<SupabaseClient> | null = null
@@ -50,6 +58,8 @@ export function supabase(): Promise<SupabaseClient> | null {
   if (!backendIngesteld) return null
   clientBelofte ??= import('@supabase/supabase-js').then(({ createClient }) => {
     const c = createClient(URL, KEY, {
+      // fetch pas op het moment zelf opzoeken (zo is een storing ook na te bootsen bij het testen)
+      global: { fetch: (...args: Parameters<typeof fetch>) => window.fetch(...args) },
       auth: {
         persistSession: true,
         autoRefreshToken: true,

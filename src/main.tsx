@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import { startBackend } from './lib/backend'
 import { vangInstallatieMelding } from './lib/installatie'
+import { startScorebord } from './lib/scorebord'
 import './styles/theme.css'
 import './styles/app.css'
 
@@ -10,6 +11,7 @@ import './styles/app.css'
 vangInstallatieMelding()
 // Gedeelde functies (alleen als Supabase is ingesteld; anders gebeurt er niets)
 startBackend()
+startScorebord()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
