@@ -9,7 +9,8 @@
     "build": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && vite build",
     "preview": "vite preview",
     "qr": "node scripts/make-qr.mjs",
-    "dorpskaart": "node scripts/dorpskaart/teken.mjs"
+    "dorpskaart": "node scripts/dorpskaart/teken.mjs",
+    "bars": "node scripts/dorpskaart/bars.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",

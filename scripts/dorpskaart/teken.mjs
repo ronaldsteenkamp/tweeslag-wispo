@@ -85,6 +85,9 @@ const labels = []
 const bezet = [] // rechthoeken die al een label hebben
 // Noordpijl, schaal en bronvermelding vrijhouden
 bezet.push({ x: B - 120, y: 26, b: 100, h: 104 }, { x: 0, y: H - 110, b: 420, h: 110 }, { x: B - 380, y: H - 60, b: 380, h: 60 })
+// Legenda in het lege stuk links van het dorp (tussen de liftlijnen Vallée Blanche en Super Venosc)
+const LEGENDA = { x: 24, y: 1290, b: 470, h: 740 }
+bezet.push({ x: LEGENDA.x, y: LEGENDA.y, b: LEGENDA.b, h: LEGENDA.h })
 const botst = (r) => r.x < 0 || r.y < 0 || r.x + r.b > B || r.y + r.h > H || bezet.some((q) => r.x < q.x + q.b && q.x < r.x + r.b && r.y < q.y + q.h && q.y < r.y + r.h)
 const tekstBreedte = (s, grootte) => s.length * grootte * 0.56
 const halo = 'paint-order="stroke" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"'
@@ -202,6 +205,54 @@ for (const e of [...liften].sort((a, b) => (LIFTRANG[a.tags.aerialway] ?? 5) - (
 }
 plaatsStraten(false)
 console.log('straatnamen:', straten, 'van', perNaam.size)
+// ---------- Legenda (in het lege stuk links van het dorp) ----------
+function maakLegenda() {
+  const x0 = LEGENDA.x, y0 = LEGENDA.y, br = LEGENDA.b, rij = 44, gr = 23
+  const tx = x0 + 104 // tekstkolom
+  const d = []
+  let y = y0 + 52
+  const kop = (t) => {
+    d.push(`<text x="${x0 + 24}" y="${y}" font-size="27" font-weight="800" fill="${KLEUR.tekst}">${esc(t)}</text>`)
+    y += 30
+  }
+  const regel = (symbool, tekst, klein) => {
+    const m = y + rij / 2 // midden van de rij
+    d.push(symbool(x0 + 24, m))
+    d.push(`<text x="${tx}" y="${m + 8}" font-size="${gr}" fill="${KLEUR.tekst}">${esc(tekst)}${klein ? `<tspan dx="8" font-size="17" fill="${KLEUR.tekstZacht}">${esc(klein)}</tspan>` : ''}</text>`)
+    y += rij
+  }
+  const lijn = (breed, rand, kleur, extra = '') => (x, m) =>
+    `<path d="M${x} ${m} H${x + 62}" stroke="${rand}" stroke-width="${breed + 3}" stroke-linecap="round"/><path d="M${x} ${m} H${x + 62}" stroke="${kleur}" stroke-width="${breed}" stroke-linecap="round" ${extra}/>`
+  const pin = (kleur) => (x, m) =>
+    `<path transform="translate(${x + 18} ${m - 20})" d="M13 38 C13 38 0 24 0 13 A13 13 0 0 1 26 13 C26 24 13 38 13 38 Z" fill="${kleur}" stroke="#fff" stroke-width="3"/>`
+
+  kop('Legenda')
+  regel(lijn(16, KLEUR.wegRand, KLEUR.weg), 'Hoofdweg')
+  regel(lijn(10, KLEUR.wegRand, KLEUR.weg), 'Straat')
+  regel((x, m) => `<path d="M${x} ${m} H${x + 62}" stroke="${KLEUR.pad}" stroke-width="2.2" stroke-dasharray="6 4"/>`, 'Pad of wandelroute')
+  regel((x, m) => `<rect x="${x + 8}" y="${m - 13}" width="46" height="26" fill="${KLEUR.gebouw}" stroke="${KLEUR.gebouwRand}"/>`, 'Gebouw')
+  regel((x, m) => `<rect x="${x + 2}" y="${m - 13}" width="28" height="26" fill="${KLEUR.bos}"/><rect x="${x + 34}" y="${m - 13}" width="28" height="26" fill="${KLEUR.groen}"/>`, 'Bos en groen')
+  regel((x, m) => `<path d="M${x + 6} ${m} H${x + 56}" stroke="${KLEUR.lift}" stroke-width="3"/><circle cx="${x + 6}" cy="${m}" r="6" fill="${KLEUR.lift}" stroke="#fff" stroke-width="2"/><circle cx="${x + 56}" cy="${m}" r="6" fill="${KLEUR.lift}" stroke="#fff" stroke-width="2"/>`, 'Skilift', '(naam bij dalstation)')
+  regel((x, m) => `<circle cx="${x + 31}" cy="${m}" r="7" fill="${KLEUR.accent}" stroke="#fff" stroke-width="2"/>`, 'Herkenningspunt')
+  regel((x, m) => `<text x="${x + 31}" y="${m + 8}" text-anchor="middle" font-size="22" font-style="italic" font-weight="700" fill="${KLEUR.tekstZacht}">Abc</text>`, 'Wijk of plein')
+  y += 14
+  d.push(`<path d="M${x0 + 24} ${y} H${x0 + br - 24}" stroke="#d5dee8" stroke-width="2"/>`)
+  y += 40
+  kop('Pins in de app')
+  y -= 4
+  d.push(`<text x="${x0 + 24}" y="${y}" font-size="17" fill="${KLEUR.tekstZacht}">Tik op een pin voor naam, tijden en route</text>`)
+  y += 8
+  regel(pin('#8e24aa'), 'Bier, bar en après-ski')
+  regel(pin('#d62839'), 'Eten')
+  regel(pin('#0d0058'), 'Afspreken')
+  regel(pin('#1b8a5a'), 'Handig')
+  y += 22
+  d.push(`<text x="${x0 + 24}" y="${y + 6}" font-size="17" fill="${KLEUR.tekstZacht}">Inzoomen: knijpen of dubbeltikken</text>`)
+  const hoogte = y + 30 - y0
+  return `<g font-family="${FONT}"><rect x="${x0}" y="${y0}" width="${br}" height="${hoogte}" rx="22" fill="#ffffff" opacity="0.94" stroke="#cfd9e3" stroke-width="2"/>${d.join('')}</g>`
+}
+const legenda = maakLegenda()
+
 // Schaal, noordpijl en bronvermelding (geen titel: die zou in de app achter de schakelaar vallen)
 const schaalM = 200, schaalPx = schaalM / meterPerPx
 const kader = `
@@ -219,7 +270,8 @@ const kader = `
   </g>
   <rect x="${B - 360}" y="${H - 44}" width="340" height="30" rx="8" fill="#ffffff" opacity="0.9"/>
   <text x="${B - 30}" y="${H - 23}" text-anchor="end" font-size="17" fill="#3d4a6b">© OpenStreetMap-bijdragers (ODbL)</text>
-</g>`
+</g>
+${legenda}`
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${B}" height="${H}" viewBox="0 0 ${B} ${H}">
 <rect width="${B}" height="${H}" fill="${KLEUR.achtergrond}"/>

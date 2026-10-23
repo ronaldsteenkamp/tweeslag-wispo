@@ -12,7 +12,7 @@ interface Stand {
 const SLEEPDREMPEL = 8
 
 export const SOORTEN: Record<PlekSoort, { label: string; icoon: string; kleur: string }> = {
-  apres: { label: 'Après-ski', icoon: '🍻', kleur: '#8e24aa' },
+  apres: { label: 'Bier & après-ski', icoon: '🍻', kleur: '#8e24aa' },
   eten: { label: 'Eten', icoon: '🍽️', kleur: '#d62839' },
   afspreek: { label: 'Afspreken', icoon: '🚩', kleur: '#0d0058' },
   handig: { label: 'Handig', icoon: 'ℹ️', kleur: '#1b8a5a' },
