@@ -2082,8 +2082,8 @@ button {
 
 .kaartvak__bron {
   position: absolute;
-  right: 8px;
-  top: calc(var(--boven) + 72px);
+  left: 8px;
+  bottom: 8px;
   padding: 2px 8px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.8);
@@ -2093,22 +2093,7 @@ button {
   pointer-events: none;
 }
 
-/* Schakelaar Piste | Dorp */
-.kaartkeuze {
-  position: absolute;
-  top: calc(var(--boven) + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(260px, calc(100% - 32px));
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-.kaartkeuze .segment__knop {
-  min-height: 44px;
-}
-
-/* Laag met pins: beweegt mee met de kaart (zelfde transform) */
+/* Laag met stippen: beweegt mee met de kaart (zelfde transform) */
 .kaartvak__laag {
   position: absolute;
   top: 0;
@@ -2122,66 +2107,158 @@ button {
   display: none;
 }
 
-/* Pin in de vorm van een druppel; de punt staat precies op de plek */
-.pin {
+/* Stip van iemand die zijn locatie deelt; tegengeschaald (--tegen = 1 / zoom) */
+.stip {
   position: absolute;
-  width: 44px;
-  height: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   margin: 0;
   padding: 0;
   border: 0;
   background: none;
   pointer-events: auto;
   touch-action: none;
-  transform-origin: 50% 100%;
-  /* Tegengeschaald (--tegen = 1 / zoom), zodat de pin op elk zoomniveau even groot is */
-  transform: translate(-50%, -100%) scale(var(--tegen, 1));
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  transform-origin: 50% 18px;
+  transform: translate(-50%, -18px) scale(var(--tegen, 1));
 }
 
-.pin::before {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 2px;
+.stip__rondje {
+  display: grid;
+  place-items: center;
   width: 36px;
   height: 36px;
-  box-sizing: border-box;
   border: 3px solid #fff;
-  border-radius: 50% 50% 50% 0;
+  border-radius: 50%;
   background: var(--kleur, #0d0058);
-  transform: rotate(-45deg);
+  color: #fff;
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
-.pin span {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 10px;
-  font-size: 17px;
-  line-height: 1;
-  text-align: center;
+.stip__naam {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #0d0058;
+  font-family: var(--font-kop);
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
-.pin.is-gekozen {
-  z-index: 2;
-  transform: translate(-50%, -100%) scale(calc(var(--tegen, 1) * 1.3));
-}
-
-.pin.is-gekozen::before {
+.stip.is-eigen .stip__rondje {
   border-color: #ffd400;
+  animation: puls 2s ease-out infinite;
 }
 
-.pin--plaats {
+@keyframes puls {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 212, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(255, 212, 0, 0), 0 2px 8px rgba(0, 0, 0, 0.45);
+  }
+}
+
+.stip.is-oud {
+  opacity: 0.55;
+}
+
+.stip.is-gekozen {
+  z-index: 2;
+  transform: translate(-50%, -18px) scale(calc(var(--tegen, 1) * 1.25));
+}
+
+/* Knop "Deel mijn locatie" bovenin */
+.locatiebalk {
+  position: absolute;
+  top: calc(var(--boven) + 10px);
+  left: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   pointer-events: none;
 }
 
-.pin--plaats::before {
-  background: #ffd400;
-  border-color: #0d0058;
+.locatieknop {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #0d0058;
+  color: #fff;
+  font-family: var(--font-kop);
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
-/* Onderblad met de gegevens van een plek */
+.locatieknop:disabled {
+  opacity: 0.6;
+}
+
+.locatieknop.is-aan {
+  background: #1b8a5a;
+}
+
+.locatieknop__stip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #b9ffd9;
+  animation: knipper 1.6s ease-in-out infinite;
+}
+
+@keyframes knipper {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.locatiebalk__tekst {
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.locatiebalk__buiten {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.buitenchip {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #0d0058;
+  font-family: var(--font-kop);
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+}
+/* Onderblad met de gegevens van een persoon */
 .onderblad {
   position: absolute;
   left: 0;
@@ -2213,21 +2290,6 @@ button {
   gap: 12px;
 }
 
-.onderblad__soort {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--kleur);
-  color: #fff;
-  font-family: var(--font-kop);
-  font-size: 0.8rem;
-  font-weight: 800;
-}
-
-.onderblad__tijden {
-  font-family: var(--font-kop);
-  font-weight: 700;
-}
-
 .onderblad__knoppen {
   display: grid;
   grid-template-columns: 1fr;
@@ -2240,37 +2302,6 @@ button {
   align-items: center;
   justify-content: center;
   gap: 6px;
-}
-
-/* Plaatsmodus (?plaats=1) */
-.plaatspaneel {
-  position: absolute;
-  top: calc(var(--boven) + 66px);
-  left: 12px;
-  right: 12px;
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: var(--oppervlak);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
-}
-
-.plaatspaneel p {
-  margin: 0;
-}
-
-.plaatspaneel__json {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px;
-  border: 1px solid var(--rand);
-  border-radius: 10px;
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 0.75rem;
-  resize: none;
 }
 
 /* ---------- Spel ---------- */

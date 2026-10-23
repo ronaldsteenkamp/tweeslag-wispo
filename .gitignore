@@ -8,6 +8,3 @@ dev-dist
 # Snelkoppelingen voor eigen gebruik
 *.url
 
-# Werkbestanden van de dorpskaart (npm run dorpskaart)
-scripts/dorpskaart/osm.json
-scripts/dorpskaart/*.svg

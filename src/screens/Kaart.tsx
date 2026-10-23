@@ -1,149 +1,179 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Icoon } from '../components/Icoon'
-import { SOORTEN, ZoomKaart } from '../components/ZoomKaart'
-import { useData, type KaartNaam } from '../lib/data'
-import { useOpgeslagen } from '../lib/opslag'
+import { ZoomKaart, type KaartMarker } from '../components/ZoomKaart'
+import { useBackend } from '../lib/backend'
+import { KAART_PX, maakOmzetter } from '../lib/georef'
+import { startDelen, stopDelen, useDelen, useLocaties, type GedeeldeLocatie } from '../lib/locatie'
+import { useNu } from '../lib/nu'
+import { lees, schrijf, useOpgeslagen } from '../lib/opslag'
 
-const KAARTEN: Record<KaartNaam, { label: string; src: string; alt: string; bron: string; ontbreekt: string }> = {
-  piste: {
-    label: 'Piste',
-    src: `${import.meta.env.BASE_URL}img/pistekaart.jpg`,
-    alt: 'Pistekaart van Les Deux Alpes',
-    bron: 'Pistekaart © Les 2 Alpes',
-    ontbreekt: 'De pistekaart is nog niet bewaard. Open dit scherm één keer met internet.',
-  },
-  dorp: {
-    label: 'Dorp',
-    src: `${import.meta.env.BASE_URL}img/dorpskaart.jpg`,
-    alt: 'Plattegrond van het dorp Les Deux Alpes',
-    // Verplicht bij OpenStreetMap-gegevens (ODbL)
-    bron: '© OpenStreetMap-bijdragers',
-    ontbreekt: 'De dorpskaart is nog niet bewaard. Open dit scherm één keer met internet.',
-  },
+const KAART = `${import.meta.env.BASE_URL}img/pistekaart.jpg`
+const omzetter = maakOmzetter()
+/** Verder dan dit van het dichtstbijzijnde liftstation: niet op de kaart */
+const MAX_AFSTAND_M = 2500
+
+const KLEUREN = ['#8e24aa', '#d62839', '#1b8a5a', '#0277bd', '#c2185b', '#5d4037', '#00838f', '#6a1b9a', '#2e7d32', '#ad1457']
+const kleurVoor = (naam: string) => KLEUREN[[...naam].reduce((s, c) => s + c.charCodeAt(0), 0) % KLEUREN.length]
+
+function geleden(iso: string, nu: number) {
+  const min = Math.max(0, Math.round((nu - Date.parse(iso)) / 60_000))
+  return min < 1 ? 'zojuist' : min === 1 ? '1 minuut geleden' : `${min} minuten geleden`
 }
 
-// ?plaats=1: tik op de kaart om de positie (in procenten) voor plekken.json te krijgen
-const plaatsModus = new URLSearchParams(window.location.search).get('plaats') === '1'
+/** Waar op de pistekaart (in procenten), of null als het buiten het skigebied is */
+function opKaart(l: { lat: number; lon: number }) {
+  if (omzetter.afstandTotGebied(l.lat, l.lon) > MAX_AFSTAND_M) return null
+  const { x, y } = omzetter.naarKaart(l.lat, l.lon)
+  const px = (x / KAART_PX.b) * 100, py = (y / KAART_PX.h) * 100
+  return px < 0 || px > 100 || py < 0 || py > 100 ? null : { x: px, y: py }
+}
 
 export default function Kaart() {
-  const [keuze, setKeuze] = useOpgeslagen<KaartNaam>('kaart.keuze', 'piste')
-  const kaart = KAARTEN[keuze] ? keuze : 'piste'
-  const { data } = useData('plekken')
+  const backend = useBackend()
+  const delen = useDelen()
+  const nu = useNu(15_000).getTime()
+  const [naam] = useOpgeslagen<string | null>('naam', null)
+  const metBackend = backend.status !== 'uit'
+  const { locaties } = useLocaties(metBackend)
   const [gekozen, setGekozen] = useState<string | null>(null)
-  const [plaats, setPlaats] = useState<{ x: number; y: number } | null>(null)
+  const [vragen, setVragen] = useState(false)
 
-  // Alleen de bierplekken (soort 'apres')
-  const zichtbaar = useMemo(() => (data?.plekken ?? []).filter((p) => p.kaart === kaart && p.soort === 'apres'), [data, kaart])
-  const plek = zichtbaar.find((p) => p.id === gekozen) ?? null
+  const deelAan = delen.status === 'aan' || delen.status === 'zoeken'
 
-  const kies = (k: KaartNaam) => {
-    setKeuze(k)
-    setGekozen(null)
-    setPlaats(null)
-  }
+  // Iedereen die deelt; de eigen positie direct van de telefoon (sneller dan via de server)
+  const personen = useMemo(() => {
+    const lijst = locaties.filter((l) => l.user_id !== backend.userId)
+    if (deelAan && delen.positie && naam) {
+      lijst.push({
+        user_id: backend.userId ?? 'ik',
+        naam,
+        kamer: null,
+        lat: delen.positie.lat,
+        lon: delen.positie.lon,
+        nauwkeurigheid: Math.round(delen.positie.nauwkeurigheid),
+        bijgewerkt: new Date(delen.positie.tijd).toISOString(),
+      })
+    }
+    return lijst.map((l) => ({ ...l, plek: opKaart(l), eigen: l.user_id === (backend.userId ?? 'ik') }))
+  }, [locaties, backend.userId, deelAan, delen.positie, naam])
+
+  const markers: KaartMarker[] = personen
+    .filter((p) => p.plek)
+    .map((p) => ({
+      id: p.user_id,
+      x: p.plek!.x,
+      y: p.plek!.y,
+      label: p.eigen ? 'Jij' : p.naam,
+      kort: p.naam.slice(0, 2),
+      kleur: kleurVoor(p.naam),
+      eigen: p.eigen,
+      oud: nu - Date.parse(p.bijgewerkt) > 5 * 60_000,
+      beschrijving: `${p.eigen ? 'Jij' : p.naam}, ${geleden(p.bijgewerkt, nu)}`,
+    }))
+  const buiten = personen.filter((p) => !p.plek)
+  const persoon = personen.find((p) => p.user_id === gekozen) ?? null
   const sluit = useCallback(() => setGekozen(null), [])
+
+  const aanzetten = () => {
+    // De eerste keer uitleggen wat delen betekent
+    if (lees('locatie.uitgelegd', false)) startDelen()
+    else setVragen(true)
+  }
 
   return (
     <div className="kaartscherm">
-      <h1 className="verborgen">Kaart</h1>
+      <h1 className="verborgen">Pistekaart</h1>
       <ZoomKaart
-        key={kaart}
-        {...KAARTEN[kaart]}
-        plekken={zichtbaar}
+        src={KAART}
+        alt="Pistekaart van Les Deux Alpes"
+        bron="Pistekaart © Les 2 Alpes"
+        ontbreekt="De pistekaart is nog niet bewaard. Open dit scherm één keer met internet."
+        markers={markers}
         gekozen={gekozen}
-        onPlek={setGekozen}
+        onMarker={setGekozen}
         onLeegTik={sluit}
-        onPlaats={plaatsModus ? (x, y) => setPlaats({ x, y }) : undefined}
-        markering={plaats}
-        hint={plaatsModus ? 'Plaatsmodus: tik op een plek op de kaart' : 'Knijp of dubbeltik om te zoomen'}
+        hint="Knijp of dubbeltik om te zoomen"
       />
 
-      <div className="segment kaartkeuze" role="tablist" aria-label="Kaart">
-        {(Object.keys(KAARTEN) as KaartNaam[]).map((k) => (
-          <button
-            key={k}
-            type="button"
-            role="tab"
-            aria-selected={kaart === k}
-            className={`segment__knop${kaart === k ? ' is-actief' : ''}`}
-            onClick={() => kies(k)}
-          >
-            {KAARTEN[k].label}
-          </button>
-        ))}
-      </div>
-
-      {plaatsModus && plaats && <PlaatsPaneel x={plaats.x} y={plaats.y} kaart={kaart} onSluit={() => setPlaats(null)} />}
-
-      {plek && (
-        <section className="onderblad" aria-labelledby="onderblad-titel" style={{ ['--kleur' as string]: SOORTEN[plek.soort].kleur }}>
-          <div className="onderblad__kop">
-            <span className="onderblad__soort">
-              <span aria-hidden="true">{SOORTEN[plek.soort].icoon}</span> {SOORTEN[plek.soort].label}
-            </span>
-            <button type="button" className="icoonknop" aria-label="Sluiten" onClick={sluit}>
-              <Icoon naam="kruis" />
+      {metBackend && (
+        <div className="locatiebalk">
+          {delen.status === 'niet-ondersteund' ? null : deelAan ? (
+            <button type="button" className="locatieknop is-aan" onClick={() => void stopDelen()}>
+              <span className="locatieknop__stip" aria-hidden="true" />
+              {delen.status === 'zoeken' ? 'Locatie zoeken…' : 'Je deelt je locatie'} · <strong>Stop</strong>
             </button>
-          </div>
-          <h2 id="onderblad-titel">{plek.naam}</h2>
-          {plek.omschrijving && <p>{plek.omschrijving}</p>}
-          {plek.tijden && <p className="onderblad__tijden">🕒 {plek.tijden}</p>}
-          <div className="onderblad__knoppen">
-            <a
-              className="knop knop--primair"
-              // Google Maps toont bij de plek foto's en reviews
-              href={plek.fotos ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${plek.naam} Les Deux Alpes`)}`}
-              target="_blank"
-              rel="noopener"
-            >
-              📷 Foto&apos;s en reviews
-            </a>
-            {plek.route && (
-              <a className="knop knop--secundair" href={plek.route} target="_blank" rel="noopener">
-                <Icoon naam="pin" grootte={20} /> Route
-              </a>
-            )}
-          </div>
-        </section>
+          ) : (
+            <button type="button" className="locatieknop" onClick={aanzetten} disabled={!naam}>
+              📍 Deel mijn locatie
+            </button>
+          )}
+          {!naam && <p className="locatiebalk__tekst">Kies eerst je naam op Home.</p>}
+          {delen.status === 'geweigerd' && (
+            <p className="locatiebalk__tekst">Je hebt locatie geblokkeerd voor deze app. Zet het aan in de instellingen van je telefoon.</p>
+          )}
+          {delen.fout && deelAan && <p className="locatiebalk__tekst">{delen.fout}</p>}
+          {buiten.length > 0 && (
+            <div className="locatiebalk__buiten">
+              {buiten.map((p) => (
+                <button key={p.user_id} type="button" className="buitenchip" onClick={() => setGekozen(p.user_id)}>
+                  {p.eigen ? 'Jij' : p.naam} · buiten de kaart
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
+
+      {persoon && <PersoonBlad p={persoon} nu={nu} onSluit={sluit} />}
+
+      <BevestigDialoog
+        open={vragen}
+        titel="Je locatie delen?"
+        tekst="Iedereen in de app ziet dan een stip met jouw naam op de pistekaart, zolang dit aan staat en de app open is. Een locatie die een uur niet is bijgewerkt verdwijnt vanzelf. Je kunt altijd op Stop tikken."
+        bevestigLabel="Delen"
+        onAnnuleer={() => setVragen(false)}
+        onBevestig={() => {
+          setVragen(false)
+          schrijf('locatie.uitgelegd', true)
+          startDelen()
+        }}
+      />
     </div>
   )
 }
 
-/** Plaatsmodus: positie en een kant-en-klaar fragment voor plekken.json */
-function PlaatsPaneel({ x, y, kaart, onSluit }: { x: number; y: number; kaart: KaartNaam; onSluit: () => void }) {
-  const veld = useRef<HTMLTextAreaElement>(null)
-  const [gekopieerd, setGekopieerd] = useState(false)
-  const getal = (n: number) => n.toFixed(1)
-  const fragment = `{ "id": "nieuwe-plek", "naam": "Nieuwe plek", "soort": "apres", "kaart": "${kaart}", "x": ${getal(x)}, "y": ${getal(y)}, "omschrijving": "", "tijden": "", "route": "" }`
-
-  const kopieer = async () => {
-    try {
-      await navigator.clipboard.writeText(fragment)
-    } catch {
-      // Oudere browsers of geen https: selecteren en via de oude manier kopiëren
-      veld.current?.select()
-      document.execCommand('copy')
-    }
-    setGekopieerd(true)
-    window.setTimeout(() => setGekopieerd(false), 2000)
-  }
-
+function PersoonBlad({ p, nu, onSluit }: { p: GedeeldeLocatie & { plek: { x: number; y: number } | null; eigen: boolean }; nu: number; onSluit: () => void }) {
   return (
-    <section className="plaatspaneel" aria-live="polite">
+    <section className="onderblad" aria-labelledby="onderblad-titel" style={{ ['--kleur' as string]: kleurVoor(p.naam) }}>
       <div className="onderblad__kop">
-        <strong>
-          x: {getal(x)} · y: {getal(y)}
-        </strong>
+        <h2 id="onderblad-titel">{p.eigen ? `Jij (${p.naam})` : p.naam}</h2>
         <button type="button" className="icoonknop" aria-label="Sluiten" onClick={onSluit}>
           <Icoon naam="kruis" />
         </button>
       </div>
-      <textarea ref={veld} className="plaatspaneel__json" readOnly value={fragment} rows={3} onFocus={(e) => e.target.select()} />
-      <button type="button" className="knop knop--primair knop--breed" onClick={() => void kopieer()}>
-        {gekopieerd ? 'Gekopieerd ✓' : 'Kopieer JSON'}
-      </button>
-      <p className="klein">Plak dit in de lijst "plekken" in plekken.json (met een komma tussen de plekken) en vul naam, soort en de rest in.</p>
+      <p>
+        {p.kamer ? `Kamer ${p.kamer} · ` : ''}
+        {geleden(p.bijgewerkt, nu)}
+        {p.nauwkeurigheid ? ` · ± ${p.nauwkeurigheid} m` : ''}
+      </p>
+      {!p.plek && <p>Buiten het gebied van de pistekaart.</p>}
+      <p className="klein">De stip op de getekende pistekaart is bij benadering. De precieze plek zie je in Google Maps.</p>
+      <div className="onderblad__knoppen">
+        <a
+          className="knop knop--primair"
+          href={`https://www.google.com/maps/search/?api=1&query=${p.lat.toFixed(5)},${p.lon.toFixed(5)}`}
+          target="_blank"
+          rel="noopener"
+        >
+          <Icoon naam="pin" grootte={20} /> Precies op Google Maps
+        </a>
+        {p.eigen && (
+          <button type="button" className="knop knop--secundair" onClick={() => void stopDelen().then(onSluit)}>
+            Stop met delen
+          </button>
+        )}
+      </div>
     </section>
   )
 }

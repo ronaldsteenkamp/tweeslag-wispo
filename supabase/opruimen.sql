@@ -20,6 +20,10 @@ delete from public.meldingen;
 delete from public.push_sleutels;
 select cron.unschedule(jobid) from cron.job where jobname = 'tweeslag-meldingen';
 
+-- Live locaties (gingen al mee met de gebruikers) en de opruimtaak daarvan
+delete from public.locaties;
+select cron.unschedule(jobid) from cron.job where jobname = 'tweeslag-locaties-opruimen';
+
 -- De lijst met beheerders (e-mailadressen)
 delete from public.beheerders;
 

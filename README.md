@@ -75,26 +75,6 @@ Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn 
 - De bingokaart heeft 24 vakjes plus een vrij vakje in het midden. Zet er minstens 24 in. Bij meer kiest elke telefoon er willekeurig 24, in een eigen volgorde die daarna vast blijft.
 - Het spel gaat open op vrijdag 5 maart 2027 om 18:00.
 
-### plekken.json (pins op de kaarten)
-```json
-{ "plekken": [
-  { "id": "bar-sneeuwpop", "naam": "Bar De Sneeuwpop", "soort": "apres", "kaart": "dorp",
-    "x": 42.5, "y": 81.0, "omschrijving": "Aan het plein.", "tijden": "Happy hour 16:00–18:00",
-    "route": "https://maps.google.com/?q=..." }
-] }
-```
-- `soort`: de kaart toont alleen **bierplekken**, soort `apres` (paarse pin met 🍻). De soorten `eten`, `afspreek` en `handig` mag je in de JSON zetten, maar de app laat ze (nu) niet zien.
-- `kaart` is `piste` of `dorp`.
-- `x` en `y` zijn **procenten** van de afbeelding: `x` 0 is helemaal links en 100 helemaal rechts, `y` 0 is boven en 100 onder. De punt van de pin staat precies op die plek.
-- `omschrijving`, `tijden` en `route` mag je weglaten. De knop *Route* verschijnt alleen als er een `route` (een webadres, bijvoorbeeld een Google Maps-link) is.
-- **Foto's en reviews:** in het onderblad van elke plek staat een knop *📷 Foto's en reviews*. Die zoekt de plek op naam (plus "Les Deux Alpes") op in Google Maps, waar je de foto's en reviews ziet. De foto's van Google zelf mogen we niet in de app overnemen. Vindt Google de plek niet goed, zet dan `fotos` met een eigen link.
-- Een plek met een onbekende `soort` wordt `handig`. Een plek zonder naam of met `x`/`y` buiten 0–100 slaat de app over.
-- **Nu op de kaarten:** op de pistekaart 6 bierplekken op de berg (La Fée, Chalet Belle Étoile, Le Diable au Cœur, La Toura, Pano Bar en Le 3200), met de hand op de restauranticoontjes van de officiële kaart gezet (id begint met `berg-`). Op de dorpskaart de 21 bars, pubs en nachtclubs uit OpenStreetMap (id begint met `osm-`, zie hieronder).
-
-**Plaatsmodus: x en y opzoeken zonder rekenen.** Open de app met `?plaats=1` achter het adres, bijvoorbeeld `https://ronaldsteenkamp.github.io/tweeslag-wispo/?plaats=1#kaart`. Kies Piste of Dorp, zoom zo nodig in en tik op de plek. Bovenin verschijnen de x en y, met een kant-en-klaar JSON-fragment en een knop *Kopieer JSON*. Plak het in de lijst `plekken` (met een komma tussen twee plekken) en vul naam, soort en de rest in. Een gele pin laat zien waar je tikte. Zonder `?plaats=1` werkt de kaart gewoon zoals altijd.
-
-**De kaart gebruiken:** bovenin wissel je tussen *Piste* en *Dorp* (de app onthoudt je keuze). Verder staan er geen knoppen op de kaart: zoomen doe je met knijpen of dubbeltikken (dubbeltik nogmaals voor de hele kaart). Tik op een pin voor naam, omschrijving, foto's en route; tik ergens anders op de kaart om het onderblad te sluiten. Slepen werkt ook als je op een pin begint. Pins blijven op elk zoomniveau even groot.
-
 ### Weer en sneeuw
 Het weerbericht komt van [Open-Meteo](https://open-meteo.com) (gratis, geen key nodig) voor twee plekken: het **dorp** (45,010 N 6,124 E, 1650 m) en de **gletsjer** bij de Dôme de Puy Salié (44,997 N 6,223 E, 3400 m). De coördinaten en hoogtes staan in `src/config.ts` onder `weer`; de hoogte wordt meegestuurd, zodat de temperatuur klopt voor die plek.
 
@@ -111,13 +91,6 @@ Vertrektijd, thuiskomst, het openen van het spel en de links naar de Les 2 Alpes
 ## Pistekaart en logo vervangen
 
 **Pistekaart:** `public/img/pistekaart.jpg` is de officiële kaart van Les 2 Alpes voor winter 2025-2026 (`2026-Plan_Hiver.jpg` van les2alpes.com), licht gecomprimeerd tot ca. 2 MB. Komt de kaart voor 2026-2027 uit, vervang dan dit bestand en houd de naam `pistekaart.jpg` aan. Groot mag (tot 25 MB), maar 2–6 MB laadt prettiger. De kaart wordt automatisch op de telefoon bewaard voor offline gebruik. Let op: de kaart is van Les 2 Alpes en via de openbare URL voor iedereen te zien.
-
-**Dorpskaart:** `public/img/dorpskaart.jpg` is een plattegrond van het dorp, getekend uit **OpenStreetMap**-gegevens in de Tweeslag-stijl: straten met namen, gebouwen, liften (met de naam bij het dalstation), herkenningspunten (toeristenbureau, gemeentehuis, post, apotheek, bioscoop, politie), pleinen, een schaal en een noordpijl. Hij wordt offline bewaard. De vermelding *© OpenStreetMap-bijdragers* staat op de kaart en in de app; die is verplicht (licentie ODbL), laat hem staan.
-
-- **Legenda:** links op de kaart staat een legenda met de symbolen (hoofdweg, straat, pad, gebouw, bos en groen, skilift, herkenningspunt, wijk of plein) en de bierpin van de app. Zoom in om hem te lezen.
-- **Bier drinken:** alle bars, pubs en nachtclubs uit OpenStreetMap (nu 21) staan als paarse pin (*Bier & après-ski*) op de dorpskaart, met hun echte naam en een knop *Route* naar Google Maps. Ze komen uit `npm run bars` (script `scripts/dorpskaart/bars.mjs`): dat zet ze in `plekken.json` met een id die begint met `osm-` en vervangt bij opnieuw draaien alleen die plekken. Bars in hetzelfde gebouw schuift het een paar meter uit elkaar, zodat je ze ingezoomd allebei kunt aantikken. Openingstijden staan er alleen bij als OpenStreetMap ze kent; controleer ter plekke. Wil je een bar niet op de kaart, haal hem dan uit `plekken.json`; draai `npm run bars` daarna niet opnieuw, want dan komt hij terug.
-- **Opnieuw maken** (bijvoorbeeld als OpenStreetMap is bijgewerkt): `npm run dorpskaart` en daarna `npm run bars`. Het script `scripts/dorpskaart/teken.mjs` haalt de gegevens één keer op via de Overpass-API (bewaard in `scripts/dorpskaart/osm.json`), tekent de kaart en schrijft `public/img/dorpskaart.jpg`. Met `--opnieuw` haalt het verse gegevens op. Kleuren, het kader en welke herkenningspunten erop staan, pas je bovenin het script aan.
-- **Eigen plattegrond gebruiken?** Vervang `dorpskaart.jpg` door een andere afbeelding met dezelfde naam. Controleer daarna de `x`/`y` van de plekken op de dorpskaart met de plaatsmodus: de posities zijn procenten van de afbeelding, dus bij een andere kaart liggen ze ergens anders. Dat geldt ook als je het kader in het script aanpast.
 
 **Logo / app-icoon:** het app-icoon (`public/logo.svg`) en het woordmerk bovenaan Home (`public/img/2slag-wit.svg`) zijn winterversies van het officiële 2slag-logo uit de huisstijl, met sneeuw op de letters, sneeuwvlokken en besneeuwde bergen. Een ander icoon? Vervang `public/logo.svg` (vierkant). Bij elke build worden daaruit automatisch de app-iconen, de favicon en de splashscreens voor iPhone gemaakt. De achtergrondkleur en de ruimte rond het logo stel je in met `ACHTERGROND` en `padding` in `pwa-assets.config.ts`. Heeft je logo een transparante achtergrond, zet dan bij `transparent` de `padding` op bijvoorbeeld `0.1`. Heb je alleen een PNG, zet dan in `pwa-assets.config.ts` `images: ['public/logo.png']` en pas in `index.html` en `src/screens/Home.tsx` `logo.svg` aan naar `logo.png`.
 
@@ -174,7 +147,7 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 
 ### Eenmalig instellen (stap voor stap)
 
-> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 en 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`; 0004, de Edge Function `meldingen`, de cronjob en 0005 met de bucket `fotos` ook op 21 oktober), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
+> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 en 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`; 0004, de Edge Function `meldingen`, de cronjob en 0005 met de bucket `fotos` ook op 21 oktober; 0006 voor de live locatie op 23 oktober), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
 
 1. **Project aanmaken.** Ga naar [supabase.com](https://supabase.com), maak een account en kies *New project*. Naam: `tweeslag-wispo`. Regio: een EU-regio, bijvoorbeeld *Central EU (Frankfurt)* of *West EU (Ireland)*. Kies een sterk databasewachtwoord en bewaar het in je wachtwoordmanager. Abonnement: *Free*.
 2. **Tabellen maken.** Open *SQL Editor → New query*, plak de inhoud van `supabase/migrations/0001_basis.sql` en klik op *Run*. Zet daarna jezelf en Sten als beheerder (met jullie eigen adressen):
@@ -254,6 +227,18 @@ Migratie: `supabase/migrations/0005_fotomuur.sql` (maakt ook de bucket `fotos` e
 - **Grenzen:** alleen JPEG of WebP, max. 1 MB per bestand. Het gratis abonnement heeft 1 GB opslag: genoeg voor duizenden foto's.
 - **Zonder internet** zie je de laatst geladen muur; uploaden kan alleen met verbinding.
 
+### Live locatie op de pistekaart
+Migratie: `supabase/migrations/0006_locaties.sql` (maakt ook een cronjob die oude locaties elk uur weggooit).
+
+- **Delen:** op het scherm *Kaart* staat bovenin **📍 Deel mijn locatie**. De eerste keer legt de app uit wat dat betekent; daarna vraagt de telefoon om toestemming voor je locatie. Zolang het aan staat zie je *Je deelt je locatie · Stop*.
+- **Wat anderen zien:** een gekleurde stip met je naam op de pistekaart, die live meebeweegt (Supabase Realtime). Jouw eigen stip heeft een gele ring en heet *Jij*. Een locatie die langer dan 5 minuten niet is bijgewerkt wordt vager; na een uur verdwijnt hij helemaal.
+- **Tik op een stip:** naam, kamer, hoe lang geleden, de nauwkeurigheid en een knop **Precies op Google Maps** (de exacte plek). Bij je eigen stip staat ook *Stop met delen*.
+- **Buiten de kaart:** iemand die niet in het skigebied is (bijvoorbeeld nog thuis), staat bovenin als *Naam · buiten de kaart*.
+- **Alleen met de app open:** een webapp krijgt geen locatie als hij op de achtergrond staat of het scherm uit is. Dan blijft je laatste positie staan, met de tijd erbij. Open je de app weer, dan gaat het vanzelf verder.
+- **Privacy:** alleen wie zelf op *Deel mijn locatie* tikt, deelt iets. Alleen apparaten in de app zien de locaties, en alleen van het afgelopen uur. *Stop* verwijdert je locatie meteen van de server; oudere locaties ruimt de server elk uur op. Posities worden afgerond op ongeveer 1 meter.
+
+**Hoe komt een GPS-positie op de getekende pistekaart?** De pistekaart is een panoramatekening, geen kaart op schaal. In `src/lib/georef.ts` staan 13 ijkpunten: liftstations met hun echte coördinaten (uit OpenStreetMap) en hun plek op de tekening. Een *thin-plate spline* buigt de tekening zo vloeiend mogelijk tussen die punten. Op een ijkpunt klopt het precies; ertussen zit het gemiddeld zo'n 50 pixels (ongeveer een pistebreedte op de tekening) naast. Voor de exacte plek is er de knop naar Google Maps. Vervang je `pistekaart.jpg` door een nieuwe kaart, zoek dan dezelfde stations op en pas hun `x`/`y` (in pixels) in `georef.ts` aan.
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 
@@ -262,7 +247,7 @@ Verder handig om te weten over het gratis abonnement: de standaard-mailserver va
 ### Privacy en opruimen na de reis
 - Alleen voornamen en kamernummers gaan naar de server, in een EU-regio. Geen e-mailadressen van deelnemers; alleen de beheerders loggen in met e-mail.
 - Stemmen worden opgeslagen met de voornaam van de kiezer (nodig voor "één stem per naam"). Alleen jijzelf ziet in de app op wie je stemde; de beheerders niet.
-- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang en meldingsabonnementen, de correcties, de stemmingen met alle stemmen, het meldingenlogboek en de sleutels, de beheerderslijst, en stopt de planner). De fotobestanden zelf kun je niet met SQL weghalen: ga naar *Storage → fotos*, selecteer alle mappen en kies *Delete*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
+- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang en meldingsabonnementen, de correcties, de stemmingen met alle stemmen, het meldingenlogboek en de sleutels, de live locaties, de beheerderslijst, en stopt de planner en de opruimtaak van de locaties). De fotobestanden zelf kun je niet met SQL weghalen: ga naar *Storage → fotos*, selecteer alle mappen en kies *Delete*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
 - Haal daarna in GitHub de twee variabelen weg; de app werkt dan weer zonder backend.
 
 ## QR-code

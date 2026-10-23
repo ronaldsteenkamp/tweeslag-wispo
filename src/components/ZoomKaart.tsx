@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as AanwijsEvent } from 'react'
-import type { Plek, PlekSoort } from '../lib/data'
 
 interface Stand {
   s: number // zoom (1 = past precies in beeld)
@@ -10,11 +9,22 @@ interface Stand {
 /** Hoe ver (px) je mag bewegen voordat een aanraking slepen wordt in plaats van tikken */
 const SLEEPDREMPEL = 8
 
-export const SOORTEN: Record<PlekSoort, { label: string; icoon: string; kleur: string }> = {
-  apres: { label: 'Bier & après-ski', icoon: '🍻', kleur: '#8e24aa' },
-  eten: { label: 'Eten', icoon: '🍽️', kleur: '#d62839' },
-  afspreek: { label: 'Afspreken', icoon: '🚩', kleur: '#0d0058' },
-  handig: { label: 'Handig', icoon: 'ℹ️', kleur: '#1b8a5a' },
+/** Een stip op de kaart (bijv. iemand die zijn locatie deelt). x en y in procenten. */
+export interface KaartMarker {
+  id: string
+  x: number
+  y: number
+  /** Naam onder de stip */
+  label: string
+  /** Letters in de stip */
+  kort: string
+  kleur: string
+  /** Eigen stip: met witte ring */
+  eigen?: boolean
+  /** Oude positie: vager */
+  oud?: boolean
+  /** Uitleg voor schermlezers */
+  beschrijving: string
 }
 
 interface Props {
@@ -23,19 +33,16 @@ interface Props {
   bron: string
   /** Tekst als de afbeelding (nog) niet te laden is */
   ontbreekt: string
-  plekken: Plek[]
+  markers: KaartMarker[]
   gekozen: string | null
-  onPlek: (id: string) => void
+  onMarker: (id: string) => void
   /** Tik op een lege plek van de kaart */
   onLeegTik: () => void
-  /** Plaatsmodus: tik geeft de positie in procenten */
-  onPlaats?: (x: number, y: number) => void
-  markering?: { x: number; y: number } | null
   hint: string
 }
 
-/** Kaart met knijpen om te zoomen, slepen, dubbeltikken (of scrollen) en pins die meebewegen */
-export function ZoomKaart({ src, alt, bron, ontbreekt, plekken, gekozen, onPlek, onLeegTik, onPlaats, markering, hint: hintTekst }: Props) {
+/** Kaart met knijpen om te zoomen, slepen, dubbeltikken (of scrollen) en stippen die meebewegen */
+export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarker, onLeegTik, hint: hintTekst }: Props) {
   const vak = useRef<HTMLDivElement>(null)
   const beeld = useRef<HTMLImageElement>(null)
   const laag = useRef<HTMLDivElement>(null)
@@ -45,7 +52,7 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, plekken, gekozen, onPlek,
   const gebaar = useRef<{ start: Stand; afstand: number; midden: { x: number; y: number } } | null>(null)
   const laatsteTik = useRef({ t: 0, x: 0, y: 0 })
   // De aanraking die (misschien) een tik is: waar en wanneer hij begon, en op welke pin
-  const tik = useRef<{ x: number; y: number; t: number; plek: string | null; gesleept: boolean } | null>(null)
+  const tik = useRef<{ x: number; y: number; t: number; marker: string | null; gesleept: boolean } | null>(null)
   const [geladen, setGeladen] = useState<'bezig' | 'ok' | 'fout'>('bezig')
   const [hint, setHint] = useState(true)
 
@@ -161,8 +168,8 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, plekken, gekozen, onPlek,
     vingers.current.set(e.pointerId, p)
     setHint(false)
     // Eén vinger: misschien een tik. Een tweede vinger maakt er een knijpgebaar van.
-    const plek = (e.target as HTMLElement).closest?.('[data-plek]')?.getAttribute('data-plek') ?? null
-    tik.current = vingers.current.size === 1 ? { ...p, t: performance.now(), plek, gesleept: false } : null
+    const marker = (e.target as HTMLElement).closest?.('[data-marker]')?.getAttribute('data-marker') ?? null
+    tik.current = vingers.current.size === 1 ? { ...p, t: performance.now(), marker, gesleept: false } : null
     startGebaar()
   }
 
@@ -203,16 +210,9 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, plekken, gekozen, onPlek,
     // Gesleept, of lang vastgehouden: geen tik
     if (!t || t.gesleept || e.type === 'pointercancel' || performance.now() - t.t > 600) return
 
-    if (t.plek) {
+    if (t.marker) {
       laatsteTik.current = { t: 0, x: 0, y: 0 }
-      onPlek(t.plek)
-      return
-    }
-    if (onPlaats) {
-      const { s, x, y } = stand.current
-      const px = ((p.x - x) / s / pas.current.b) * 100
-      const py = ((p.y - y) / s / pas.current.h) * 100
-      if (px >= 0 && px <= 100 && py >= 0 && py <= 100) onPlaats(Math.round(px * 10) / 10, Math.round(py * 10) / 10)
+      onMarker(t.marker)
       return
     }
     onLeegTik()
@@ -251,21 +251,25 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, plekken, gekozen, onPlek,
           onError={() => setGeladen('fout')}
         />
         <div ref={laag} className="kaartvak__laag" hidden={geladen !== 'ok'}>
-          {plekken.map((p) => (
+          {markers.map((m) => (
             <button
-              key={p.id}
+              key={m.id}
               type="button"
-              data-plek={p.id}
-              className={`pin${p.id === gekozen ? ' is-gekozen' : ''}`}
-              style={{ left: `${p.x}%`, top: `${p.y}%`, ['--kleur' as string]: SOORTEN[p.soort].kleur }}
-              aria-label={`${SOORTEN[p.soort].label}: ${p.naam}`}
+              data-marker={m.id}
+              className={`stip${m.id === gekozen ? ' is-gekozen' : ''}${m.eigen ? ' is-eigen' : ''}${m.oud ? ' is-oud' : ''}`}
+              style={{ left: `${m.x}%`, top: `${m.y}%`, ['--kleur' as string]: m.kleur }}
+              aria-label={m.beschrijving}
               // Alleen voor het toetsenbord; tikken handelt het kaartvak af (zie onUp)
-              onClick={(e) => e.detail === 0 && onPlek(p.id)}
+              onClick={(e) => e.detail === 0 && onMarker(m.id)}
             >
-              <span aria-hidden="true">{SOORTEN[p.soort].icoon}</span>
+              <span className="stip__rondje" aria-hidden="true">
+                {m.kort}
+              </span>
+              <span className="stip__naam" aria-hidden="true">
+                {m.label}
+              </span>
             </button>
           ))}
-          {markering && <span className="pin pin--plaats" style={{ left: `${markering.x}%`, top: `${markering.y}%` }} aria-hidden="true" />}
         </div>
         {geladen === 'fout' && <p className="kaartvak__melding">{ontbreekt}</p>}
         {geladen === 'ok' && hint && <p className="kaartvak__hint">{hintTekst}</p>}
