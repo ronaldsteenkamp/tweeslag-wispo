@@ -75,6 +75,17 @@ create policy "eigen locatie of beheerder verwijderen" on public.locaties
   for delete to authenticated
   using (user_id = auth.uid() or public.is_beheerder());
 
+-- De tijd van de server: de app rekent daarmee "x minuten geleden" uit, ook als de klok
+-- van een telefoon afwijkt
+create or replace function public.server_tijd()
+returns timestamptz
+language sql
+stable
+as $$ select now() $$;
+
+revoke all on function public.server_tijd() from public, anon;
+grant execute on function public.server_tijd() to authenticated;
+
 revoke all on public.locaties from anon, authenticated;
 grant select, insert, update, delete on public.locaties to authenticated;
 grant select, insert, update, delete on public.locaties to service_role;
