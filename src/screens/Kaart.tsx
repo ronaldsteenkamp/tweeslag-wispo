@@ -16,7 +16,8 @@ const KAARTEN: Record<KaartNaam, { label: string; src: string; alt: string; bron
     label: 'Dorp',
     src: `${import.meta.env.BASE_URL}img/dorpskaart.jpg`,
     alt: 'Plattegrond van het dorp Les Deux Alpes',
-    bron: 'Plattegrond van het dorp',
+    // Verplicht bij OpenStreetMap-gegevens (ODbL)
+    bron: '© OpenStreetMap-bijdragers',
     ontbreekt: 'De dorpskaart is nog niet bewaard. Open dit scherm één keer met internet.',
   },
 }

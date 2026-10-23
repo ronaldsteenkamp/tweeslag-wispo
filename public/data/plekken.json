@@ -5,9 +5,9 @@
     { "id": "voorbeeld-berghut", "naam": "Berghut Halverwege (voorbeeld)", "soort": "eten", "kaart": "piste", "x": 48.0, "y": 52.0, "omschrijving": "Fictief terras voor de lunch op de berg.", "tijden": "Lunch 11:30–15:00" },
     { "id": "voorbeeld-verzamelpunt-berg", "naam": "Verzamelpunt Tweeslag (voorbeeld)", "soort": "afspreek", "kaart": "piste", "x": 60.0, "y": 35.0, "omschrijving": "Hier verzamelen we als iemand kwijt is. Fictief voorbeeld." },
     { "id": "voorbeeld-ehbo", "naam": "EHBO-post (voorbeeld)", "soort": "handig", "kaart": "piste", "x": 35.0, "y": 64.0, "omschrijving": "Fictief voorbeeld van een handige plek." },
-    { "id": "voorbeeld-cafe-plein", "naam": "Café Het Plein (voorbeeld)", "soort": "apres", "kaart": "dorp", "x": 46.0, "y": 44.0, "omschrijving": "Fictief café aan het dorpsplein.", "tijden": "Elke dag tot 02:00", "route": "https://maps.google.com/?q=Les+Deux+Alpes" },
-    { "id": "voorbeeld-pizzeria", "naam": "Pizzeria Fantasia (voorbeeld)", "soort": "eten", "kaart": "dorp", "x": 63.0, "y": 58.0, "omschrijving": "Fictieve pizzeria. Groepen vooraf bellen.", "tijden": "18:00–22:30" },
-    { "id": "voorbeeld-verzamelpunt-dorp", "naam": "Verzamelpunt bus (voorbeeld)", "soort": "afspreek", "kaart": "dorp", "x": 18.0, "y": 72.0, "omschrijving": "Fictief: hier stopt de bus bij aankomst en vertrek." },
-    { "id": "voorbeeld-supermarkt", "naam": "Supermarkt (voorbeeld)", "soort": "handig", "kaart": "dorp", "x": 74.0, "y": 30.0, "tijden": "08:00–19:30" }
+    { "id": "voorbeeld-cafe-plein", "naam": "Café Het Plein (voorbeeld)", "soort": "apres", "kaart": "dorp", "x": 38.0, "y": 82.4, "omschrijving": "Fictief café aan de Place de l'Alpe de Venosc.", "tijden": "Elke dag tot 02:00", "route": "https://www.openstreetmap.org/?mlat=45.0041&mlon=6.1218#map=18/45.0041/6.1218" },
+    { "id": "voorbeeld-pizzeria", "naam": "Pizzeria Fantasia (voorbeeld)", "soort": "eten", "kaart": "dorp", "x": 42.5, "y": 71.0, "omschrijving": "Fictieve pizzeria bij de bioscoop. Groepen vooraf bellen.", "tijden": "18:00–22:30" },
+    { "id": "voorbeeld-verzamelpunt-dorp", "naam": "Verzamelpunt (voorbeeld)", "soort": "afspreek", "kaart": "dorp", "x": 56.8, "y": 58.3, "omschrijving": "Fictief voorbeeld: verzamelen bij het toeristenbureau, vlak bij de Jandri Express." },
+    { "id": "voorbeeld-supermarkt", "naam": "Supermarkt (voorbeeld)", "soort": "handig", "kaart": "dorp", "x": 52.2, "y": 52.5, "omschrijving": "Op deze plek staat volgens OpenStreetMap een supermarkt.", "tijden": "08:00–19:30" }
   ]
 }
