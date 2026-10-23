@@ -50,7 +50,7 @@ const bars = el
       kaart: 'dorp',
       x,
       y,
-      omschrijving: `${SOORT[e.tags.amenity]}. Bron: OpenStreetMap; controleer ter plekke of hij open is.`,
+      omschrijving: `${SOORT[e.tags.amenity]} in het dorp`,
       tijden: tijden(e.tags.opening_hours),
       route: `https://www.google.com/maps/search/?api=1&query=${e.lat.toFixed(5)},${e.lon.toFixed(5)}`,
     }

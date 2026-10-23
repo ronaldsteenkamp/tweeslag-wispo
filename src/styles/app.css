@@ -2093,28 +2093,6 @@ button {
   pointer-events: none;
 }
 
-.kaartknoppen {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.kaartknop {
-  width: 60px;
-  height: 60px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 18px;
-  background: var(--oppervlak);
-  color: var(--tekst);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-  touch-action: manipulation;
-}
-
 /* Schakelaar Piste | Dorp */
 .kaartkeuze {
   position: absolute;
@@ -2203,55 +2181,6 @@ button {
   border-color: #0d0058;
 }
 
-/* Filters onderaan, links van de zoomknoppen (binnen duimbereik) */
-.kaartfilters {
-  position: absolute;
-  left: 12px;
-  right: 86px;
-  bottom: 14px;
-  display: flex;
-  flex-wrap: wrap-reverse;
-  gap: 8px;
-  pointer-events: none;
-}
-
-.kaartfilter {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 2px solid var(--kleur);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--tekst);
-  font-family: var(--font-kop);
-  font-size: 0.85rem;
-  font-weight: 800;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  pointer-events: auto;
-  touch-action: manipulation;
-}
-
-.kaartfilter.is-aan {
-  background: var(--kleur);
-  color: #fff;
-}
-
-/* Smal scherm: alleen de iconen, in één rij */
-@media (max-width: 360px) {
-  .kaartfilter {
-    justify-content: center;
-    width: 46px;
-    padding: 0;
-    font-size: 1.1rem;
-  }
-
-  .kaartfilter__label {
-    display: none;
-  }
-}
-
 /* Onderblad met de gegevens van een plek */
 .onderblad {
   position: absolute;
@@ -2299,12 +2228,18 @@ button {
   font-weight: 700;
 }
 
+.onderblad__knoppen {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 .onderblad .knop {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 4px;
 }
 
 /* Plaatsmodus (?plaats=1) */

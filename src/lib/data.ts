@@ -82,6 +82,8 @@ export interface Plek {
   omschrijving?: string
   tijden?: string
   route?: string
+  /** Link naar foto's en reviews; zonder: zoeken op naam in Google Maps */
+  fotos?: string
 }
 export interface Plekken {
   plekken: Plek[]
@@ -178,6 +180,7 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
       .map((p, i): Plek => {
         const tekst = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
         const route = tekst(p?.route)
+        const fotos = tekst(p?.fotos)
         return {
           id: String(p?.id ?? `plek-${i}`),
           naam: String(p?.naam ?? '').trim(),
@@ -189,6 +192,7 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
           tijden: tekst(p?.tijden),
           // Alleen echte webadressen als routeknop
           route: route && /^https?:\/\//.test(route) ? route : undefined,
+          fotos: fotos && /^https?:\/\//.test(fotos) ? fotos : undefined,
         }
       })
       .filter((p) => p.naam && Number.isFinite(p.x) && Number.isFinite(p.y) && p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100),

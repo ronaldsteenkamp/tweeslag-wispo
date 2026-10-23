@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as AanwijsEvent } from 'react'
 import type { Plek, PlekSoort } from '../lib/data'
-import { Icoon } from './Icoon'
 
 interface Stand {
   s: number // zoom (1 = past precies in beeld)
@@ -35,7 +34,7 @@ interface Props {
   hint: string
 }
 
-/** Kaart met knijpen om te zoomen, slepen, dubbeltikken, +/− knoppen en pins die meebewegen */
+/** Kaart met knijpen om te zoomen, slepen, dubbeltikken (of scrollen) en pins die meebewegen */
 export function ZoomKaart({ src, alt, bron, ontbreekt, plekken, gekozen, onPlek, onLeegTik, onPlaats, markering, hint: hintTekst }: Props) {
   const vak = useRef<HTMLDivElement>(null)
   const beeld = useRef<HTMLImageElement>(null)
@@ -229,12 +228,6 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, plekken, gekozen, onPlek,
     }
   }
 
-  const knopZoom = (factor: number) => {
-    const v = vak.current
-    if (!v) return
-    zoomOm(stand.current.s * factor, v.clientWidth / 2, v.clientHeight / 2, true)
-  }
-
   return (
     <>
       <div
@@ -277,17 +270,6 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, plekken, gekozen, onPlek,
         {geladen === 'fout' && <p className="kaartvak__melding">{ontbreekt}</p>}
         {geladen === 'ok' && hint && <p className="kaartvak__hint">{hintTekst}</p>}
         {geladen === 'ok' && <p className="kaartvak__bron">{bron}</p>}
-      </div>
-      <div className="kaartknoppen">
-        <button type="button" className="kaartknop" aria-label="Inzoomen" onClick={() => knopZoom(1.6)}>
-          <Icoon naam="plus" grootte={28} />
-        </button>
-        <button type="button" className="kaartknop" aria-label="Uitzoomen" onClick={() => knopZoom(1 / 1.6)}>
-          <Icoon naam="min" grootte={28} />
-        </button>
-        <button type="button" className="kaartknop" aria-label="Hele kaart" onClick={() => zet({ s: 1, x: 0, y: 0 }, true)}>
-          <Icoon naam="herstel" grootte={26} />
-        </button>
       </div>
     </>
   )

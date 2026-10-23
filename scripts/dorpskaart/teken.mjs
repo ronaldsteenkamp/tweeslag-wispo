@@ -238,15 +238,12 @@ function maakLegenda() {
   y += 14
   d.push(`<path d="M${x0 + 24} ${y} H${x0 + br - 24}" stroke="#d5dee8" stroke-width="2"/>`)
   y += 40
-  kop('Pins in de app')
-  y -= 4
-  d.push(`<text x="${x0 + 24}" y="${y}" font-size="17" fill="${KLEUR.tekstZacht}">Tik op een pin voor naam, tijden en route</text>`)
-  y += 8
-  regel(pin('#8e24aa'), 'Bier, bar en après-ski')
-  regel(pin('#d62839'), 'Eten')
-  regel(pin('#0d0058'), 'Afspreken')
-  regel(pin('#1b8a5a'), 'Handig')
-  y += 22
+  kop('In de app')
+  y += 4
+  regel(pin('#8e24aa'), 'Bierplek', '(bar, pub, nachtclub)')
+  y += 16
+  d.push(`<text x="${x0 + 24}" y="${y + 6}" font-size="17" fill="${KLEUR.tekstZacht}">Tik op een pin voor foto's, reviews en route</text>`)
+  y += 34
   d.push(`<text x="${x0 + 24}" y="${y + 6}" font-size="17" fill="${KLEUR.tekstZacht}">Inzoomen: knijpen of dubbeltikken</text>`)
   const hoogte = y + 30 - y0
   return `<g font-family="${FONT}"><rect x="${x0}" y="${y0}" width="${br}" height="${hoogte}" rx="22" fill="#ffffff" opacity="0.94" stroke="#cfd9e3" stroke-width="2"/>${d.join('')}</g>`
