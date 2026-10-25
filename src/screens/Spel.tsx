@@ -12,6 +12,7 @@ import { backendIngesteld } from '../lib/backend'
 import { bingoScore, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
 import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
 import { testOntgrendeld, useNu } from '../lib/nu'
+import { isTestperiode } from '../lib/testperiode'
 import { lees, schrijf, useOpgeslagen } from '../lib/opslag'
 import { datumISO, datumLabel, lokaalNaarDate } from '../lib/tijd'
 
@@ -22,7 +23,7 @@ export default function Spel() {
   const nu = useNu(1000)
   const { data, fout } = useData('spel')
 
-  if (!testOntgrendeld && nu < spelOpen) {
+  if (!testOntgrendeld && !config.spelTestperiode && nu < spelOpen) {
     return (
       <div className="scherm">
         <section className="slot golf">
@@ -88,6 +89,13 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
     <div className="scherm">
       <h1>Spel</h1>
       {testOntgrendeld && <p className="melding melding--test">Testmodus: alles is open (?unlock=1)</p>}
+      {isTestperiode(nu) && (
+        <p className="melding">
+          <strong>Testperiode.</strong> Probeer alles gerust uit. Op {datumLabel(config.spelOpen.slice(0, 10))} om{' '}
+          {config.spelOpen.slice(11)} begint het echte spel: dan worden je vinkjes, punten en casinofiches gewist en krijg
+          je een nieuwe busbingokaart.
+        </p>
+      )}
       {backendIngesteld && (
         <button type="button" className="knop knop--accent knop--breed" onClick={() => (window.location.hash = '#fotos')}>
           📸 Fotomuur

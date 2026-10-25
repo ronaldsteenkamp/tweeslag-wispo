@@ -6,6 +6,7 @@ import { vangInstallatieMelding } from './lib/installatie'
 import { startKamerverdeling } from './lib/kamerverdeling'
 import { startProfielen } from './lib/profiel'
 import { startScorebord } from './lib/scorebord'
+import { startTestperiode } from './lib/testperiode'
 import { startLocatie } from './lib/locatie'
 import { startMeldingen } from './lib/meldingen'
 import { startStemming } from './lib/stemming'
@@ -16,6 +17,7 @@ import './styles/app.css'
 vangInstallatieMelding()
 // Gedeelde functies (alleen als Supabase is ingesteld; anders gebeurt er niets)
 startBackend()
+startTestperiode()
 startScorebord()
 startProfielen()
 startKamerverdeling()

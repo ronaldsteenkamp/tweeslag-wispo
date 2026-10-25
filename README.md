@@ -82,7 +82,8 @@ Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn 
 - De kaart heeft 24 vakjes plus een vrij vakje in het midden. Zet er minstens 24 in (nu 39). Bij meer kiest elke telefoon er willekeurig 24, in een eigen volgorde die daarna vast blijft. Punten: `bingoVakje` per vakje, `bingoRij` per rij, kolom of diagonaal en `bingoVolleKaart` voor een volle kaart; ze tellen mee in het klassement.
 - Een vakje is een emoji plus een korte tekst. Houd de tekst op een telefoon van 360 px breed binnen het vakje: max. 2 regels van zo'n 10 tekens, een lang woord eventueel met een streepje (`Wagen-ziek`).
 - Haal je een vakje uit de lijst, dan krijgt elke telefoon er bij het openen een ander willekeurig vakje voor terug, en het vinkje op het oude vakje verdwijnt. Zo kregen telefoons met een kaart van de vroegere pistebingo vanzelf een nieuwe busbingokaart, zonder oude punten.
-- Het spel gaat open op vrijdag 5 maart 2027 om 18:00.
+- Het echte spel begint op vrijdag 5 maart 2027 om 18:00 (`spelOpen` in `src/config.ts`).
+- **Testperiode:** zolang `spelTestperiode` in `src/config.ts` op `true` staat, is het spel daarvoor al open om uit te proberen, met bovenaan de melding *Testperiode*. Op het moment dat het echte spel begint, wist elke telefoon wat er in de testperiode is gedaan: afgevinkte challenges, busbingovinkjes (met een nieuwe kaart) en de casinofiches en bakken. De telefoon stuurt dan meteen een lege stand, zodat ook het klassement weer op 0 begint. Niet gewist worden profielen, stemmen, foto's op de fotomuur en bonuspunten van beheerders; haal die zo nodig zelf weg. Zet `spelTestperiode` op `false` om het spel tot de start op slot te houden.
 
 ### rad.json
 Inhoud van *Spel → Rad*. Het rad geeft geen punten en werkt helemaal zonder internet: de uitslag wordt op de telefoon zelf bepaald (met `crypto.getRandomValues`).

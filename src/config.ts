@@ -9,8 +9,14 @@ export const config = {
   vertrek: '2027-03-05T19:30',
   /** Verwachte thuiskomst: daarna toont Home "Welkom thuis" */
   thuiskomst: '2027-03-14T12:00',
-  /** Vanaf dit moment is het spel open */
+  /** Vanaf dit moment is het spel open (en begint het echte spel) */
   spelOpen: '2027-03-05T18:00',
+  /**
+   * true: het spel staat al open vóór spelOpen, als testperiode om uit te proberen.
+   * Wat iemand in de testperiode doet, wordt op spelOpen op de telefoon gewist (zie lib/testperiode.ts).
+   * false: het spel zit tot spelOpen op slot.
+   */
+  spelTestperiode: true,
   /** Standaardtijd waarop de challenges van een dag opengaan (als 'openOm' ontbreekt in spel.json) */
   challengesOpenOm: '07:00',
 
