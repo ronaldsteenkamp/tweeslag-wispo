@@ -187,11 +187,25 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     <>
       {keuzebalk}
 
+      <section className="kaartje radkaart golf" aria-label="Rad">
+        <RadWiel opties={opties} soort={soort} groep={groep} hoek={hoek.current} />
+        {opties.length < 2 ? (
+          <p className="radkaart__tekort">{tekort}</p>
+        ) : (
+          <button type="button" className="knop knop--accent radkaart__draai" onClick={() => void draaiRad()} disabled={bezig}>
+            {bezig ? 'Draait…' : 'Draai!'}
+          </button>
+        )}
+        <button type="button" className="radkaart__geluid" onClick={() => setGeluidAan(!geluidAan)} aria-pressed={geluidAan}>
+          {geluidAan ? '🔊 Geluid aan' : '🔈 Geluid uit'}
+        </button>
+      </section>
+
       {soort === 'klos' && <DeelnemersKiezer kamers={kamers} naam={naam} />}
       {soort === 'piste' && (
         <fieldset className="veld">
           <legend>Welke kleuren?</legend>
-          <div className="radkeuzes">
+          <div className="radkleuren">
             {PISTE_KLEUREN.map((k) => (
               <button
                 key={k}
@@ -207,20 +221,6 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
         </fieldset>
       )}
       {soort === 'eigen' && <EigenOpties opties={eigen} onWijzig={setEigen} />}
-
-      <section className="kaartje radkaart golf" aria-label="Rad">
-        <RadWiel opties={opties} soort={soort} groep={groep} hoek={hoek.current} />
-        {opties.length < 2 ? (
-          <p className="radkaart__tekort">{tekort}</p>
-        ) : (
-          <button type="button" className="knop knop--accent radkaart__draai" onClick={() => void draaiRad()} disabled={bezig}>
-            {bezig ? 'Draait…' : 'Draai!'}
-          </button>
-        )}
-        <button type="button" className="radkaart__geluid" onClick={() => setGeluidAan(!geluidAan)} aria-pressed={geluidAan}>
-          {geluidAan ? '🔊 Geluid aan' : '🔈 Geluid uit'}
-        </button>
-      </section>
 
       <div aria-live="polite">
         {uitslag && (

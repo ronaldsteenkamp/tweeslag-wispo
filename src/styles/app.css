@@ -2969,6 +2969,20 @@ button {
   gap: 8px;
 }
 
+/* De vier pistekleuren op één rij */
+.radkleuren {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.radkleuren .keuze {
+  min-height: 48px;
+  padding: 6px 4px;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
 .radkeuzes .keuze {
   min-height: 44px;
 }
@@ -3085,21 +3099,28 @@ button {
   opacity: 0.8;
 }
 
-.casino__kopregel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.casino__kopregel h2 {
+.casino__titel {
   margin: 0;
   color: var(--goud);
 }
 
+/* Onder de tafel: je fiches, de fichekeuze en de inzet, op een houten plank */
+.casino__bak {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 14px 14px 16px;
+  border: 2px solid var(--goud);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #7a4a22, var(--hout));
+  color: #fff;
+  box-shadow: var(--schaduw);
+}
+
 .casino__saldo {
-  flex: none;
-  padding: 4px 12px;
+  align-self: center;
+  padding: 4px 14px;
   border: 2px solid var(--goud);
   border-radius: 999px;
   font-family: var(--font-kop);

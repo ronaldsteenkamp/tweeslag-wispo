@@ -27,7 +27,6 @@ const BUITEN: { sleutel: Buiten; label: string }[] = [
 const isRood = (g: number) => g % 2 === 1
 const kleurVan = (g: number) => (g === 0 ? 'groen' : isRood(g) ? 'rood' : 'zwart')
 const fiches = (n: number) => n.toLocaleString('nl-NL')
-const vanWie = (naam: string) => (/[sxz]$/i.test(naam) ? `${naam}'` : `${naam}'s`)
 
 /** Wint deze inzet bij uitslag g? Geeft het totale bedrag terug dat de bank uitbetaalt (incl. inzet). */
 function uitbetaling(sleutel: string, inzet: number, g: number, n: number): number {
@@ -183,22 +182,12 @@ export function Roulette({
     <div className="casino">
       <section className="kaartje casino__kop golf">
         <Sneeuw aantal={10} />
-        <div className="casino__kopregel">
-          <h2>{naam ? `${vanWie(naam)} casino` : 'Het casino'}</h2>
-          <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
-            <span aria-hidden="true">🪙</span> {fiches(saldo)}
-          </p>
-        </div>
+        <h2 className="casino__titel">Josjes casino</h2>
         <p className="klein">Nepfiches, geen echt geld en geen punten. Ze staan alleen op deze telefoon.</p>
       </section>
 
-      <details className="kaartje casino__spelers">
-        <summary>Spelers ({n})</summary>
-        <DeelnemersKiezer kamers={kamers} naam={naam} />
-      </details>
-
       {n < 2 ? (
-        <p className="melding">Kies minstens twee spelers (tik hierboven op Spelers).</p>
+        <p className="melding">Kies minstens twee spelers (tik hieronder op Spelers).</p>
       ) : (
         <section className="casino__tafel" aria-label="Roulettetafel">
           <RouletteWiel n={n} wiel={wiel} bal={bal} hoek={hoek.current} />
@@ -270,6 +259,25 @@ export function Roulette({
             </div>
           </div>
 
+          {!uitslag && (
+            <button
+              type="button"
+              className="knop knop--breed casino__knop casino__draai"
+              onClick={() => void draaiWiel()}
+              disabled={bezig || totaal === 0}
+            >
+              {bezig ? 'Het balletje rolt…' : totaal === 0 ? 'Zet eerst een fiche in' : 'Rien ne va plus!'}
+            </button>
+          )}
+
+        </section>
+      )}
+
+      {n >= 2 && (
+        <section className="casino__bak" aria-label="Je fiches">
+          <p className="casino__saldo">
+            <span aria-hidden="true">🪙</span> {fiches(saldo)} <small>fiches</small>
+          </p>
           <div className="casino__fiches" role="radiogroup" aria-label="Fiche">
             {FICHES.map((f) => (
               <button
@@ -290,17 +298,6 @@ export function Roulette({
           {totaal > 0 && !bezig && (
             <button type="button" className="tekstknop casino__terug" onClick={inzetTerug}>
               Inzet terugnemen
-            </button>
-          )}
-
-          {!uitslag && (
-            <button
-              type="button"
-              className="knop knop--breed casino__knop casino__draai"
-              onClick={() => void draaiWiel()}
-              disabled={bezig || totaal === 0}
-            >
-              {bezig ? 'Het balletje rolt…' : totaal === 0 ? 'Zet eerst een fiche in' : 'Rien ne va plus!'}
             </button>
           )}
 
@@ -325,6 +322,11 @@ export function Roulette({
           )}
         </section>
       )}
+
+      <details className="kaartje casino__spelers">
+        <summary>Spelers ({n})</summary>
+        <DeelnemersKiezer kamers={kamers} naam={naam} />
+      </details>
 
       {melding && (
         <div className="toast" role="status">
