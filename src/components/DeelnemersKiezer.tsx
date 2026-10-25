@@ -62,7 +62,6 @@ export function DeelnemersKiezer({ kamers, naam }: { kamers?: Kamers; naam: stri
                 aria-pressed={keuze.namen.includes(n)}
                 onClick={() => setKeuze((oud) => ({ ...oud, namen: wissel(oud.namen, n) }))}
               >
-                {keuze.namen.includes(n) ? '✓ ' : ''}
                 {n}
               </button>
             ))}
