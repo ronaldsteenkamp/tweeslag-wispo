@@ -12,6 +12,7 @@ delete from auth.users;
 
 -- Gegevens die op naam staan (niet aan een apparaat gekoppeld)
 delete from public.correcties;
+delete from public.profielen;
 delete from public.stemmingen;  -- de stemmen gaan automatisch mee
 
 -- Meldingen: logboek en sleutels (de abonnementen gingen al mee met de gebruikers),

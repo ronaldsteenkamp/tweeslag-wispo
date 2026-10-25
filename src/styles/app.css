@@ -606,7 +606,7 @@ button {
   margin-top: 6px;
 }
 
-/* De naam zelf is de knop om een andere naam te kiezen */
+/* De naam zelf is de knop naar je profiel (en een andere naam kiezen) */
 .hero__naam {
   padding: 0;
   border: 0;
@@ -2562,4 +2562,275 @@ button {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ---------- Profielen ---------- */
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-tekst);
+  font-family: var(--font-kop);
+  font-weight: 800;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar--groot {
+  width: 96px;
+  height: 96px;
+  font-size: 2rem;
+  border: 3px solid var(--oppervlak);
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+/* Namen die je kunt aantikken voor iemands profiel */
+.bewoners li:has(.bewoners__naam) {
+  padding: 0;
+}
+
+.bewoners__naam {
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--rand);
+  text-underline-offset: 3px;
+}
+
+.ranglijst__persoon {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--rand);
+  text-underline-offset: 3px;
+}
+
+.herinnering {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  border: 2px dashed var(--accent);
+  color: var(--tekst);
+  font: inherit;
+  text-align: left;
+}
+
+.herinnering > span:first-child {
+  font-size: 1.6rem;
+}
+
+.herinnering strong,
+.herinnering small {
+  display: block;
+}
+
+.herinnering strong {
+  font-family: var(--font-kop);
+}
+
+.herinnering small {
+  color: var(--tekst-zacht);
+}
+
+.profielformulier {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profielformulier__foto {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profielformulier__fotoknoppen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.veld {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.veld legend,
+.veld__kop {
+  margin-bottom: 6px;
+  font-family: var(--font-kop);
+  font-weight: 700;
+}
+
+.veld__kop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.veld__optioneel {
+  font-weight: 400;
+  color: var(--tekst-zacht);
+}
+
+.veld textarea.invoer {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.keuzes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.keuzes--lijst {
+  grid-template-columns: 1fr;
+}
+
+.keuze {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 2px solid var(--rand);
+  border-radius: 14px;
+  background: var(--oppervlak);
+  color: var(--tekst);
+  font-family: var(--font-kop);
+  font-weight: 700;
+  touch-action: manipulation;
+}
+
+.keuzes--lijst .keuze {
+  justify-content: flex-start;
+  min-height: 48px;
+  text-align: left;
+}
+
+.keuze.is-actief {
+  border-color: var(--accent);
+  background: var(--accent-zacht);
+}
+
+.keuze__nummer {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--oppervlak-2);
+}
+
+.keuze.is-actief .keuze__nummer {
+  background: var(--accent);
+  color: var(--accent-tekst);
+}
+
+.profiel__naamregel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.profielkaart {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.profielkaart__kop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profielkaart__kop h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  overflow-wrap: anywhere;
+}
+
+.profielkaart__lijst {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.profielkaart__lijst > div {
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--oppervlak-2);
+}
+
+.profielkaart__lijst dt {
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--tekst-zacht);
+}
+
+.profielkaart__lijst dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.niveau {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.niveau__balk {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.niveau__balk span {
+  width: 16px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--rand);
+}
+
+.niveau__balk span.is-aan {
+  background: var(--accent);
 }

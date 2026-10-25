@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import { startBackend } from './lib/backend'
 import { vangInstallatieMelding } from './lib/installatie'
+import { startProfielen } from './lib/profiel'
 import { startScorebord } from './lib/scorebord'
 import { startLocatie } from './lib/locatie'
 import { startMeldingen } from './lib/meldingen'
@@ -15,6 +16,7 @@ vangInstallatieMelding()
 // Gedeelde functies (alleen als Supabase is ingesteld; anders gebeurt er niets)
 startBackend()
 startScorebord()
+startProfielen()
 startStemming()
 startMeldingen()
 startLocatie()

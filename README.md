@@ -18,7 +18,7 @@ Web-app (PWA) voor de wintersport van G.S.B.V. Tweeslag: aftelklok, planning, pa
 
 De app staat op een **openbare** website. Zoekmachines worden geweerd (`noindex` en `robots.txt`), maar iedereen met de link kan hem openen. Zet daarom in de JSON-bestanden **alleen voornamen**: geen achternamen, telefoonnummers, adressen, geboortedata of andere persoonsgegevens. Hebben twee mensen dezelfde voornaam, schrijf dan bijvoorbeeld `"Lisa"` en `"Lisa 2"`.
 
-Wat iemand in de app doet (vinkjes, gekozen naam, spelscore) blijft op zijn eigen telefoon en wordt nergens naartoe gestuurd.
+Zonder backend blijft wat iemand in de app doet (vinkjes, gekozen naam, spelscore, profiel) op zijn eigen telefoon. Met de Supabase-backend (zie hieronder) gaan naam, score, stemmen, foto's, profielen en (als je dat aanzet) je locatie naar de server. Daar kan iedereen die de app opent ze zien (niet via zoekmachines of zonder de app). Zet dus ook in je profiel niets wat niet iedereen met de link mag lezen.
 
 ---
 
@@ -150,7 +150,7 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 
 ### Eenmalig instellen (stap voor stap)
 
-> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 en 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`; 0004, de Edge Function `meldingen`, de cronjob en 0005 met de bucket `fotos` ook op 21 oktober; 0006 voor de live locatie op 23 oktober), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
+> **Al gedaan (20 oktober 2026):** project `tweeslag-wispo` (ref `pqxvfewizjyqeoerzjwx`) in *North EU (Stockholm)*, migratie 0001 uitgevoerd (0002 en 0003 op 21 oktober, inclusief de stemmingen uit `stemmingen.json`; 0004, de Edge Function `meldingen`, de cronjob en 0005 met de bucket `fotos` ook op 21 oktober; 0006 voor de live locatie op 23 oktober; **0007 voor de profielen moet nog**), ronaldsteenkamp@gmail.com als beheerder, anoniem inloggen aan, URL's ingesteld en de GitHub-variabelen gezet. De stappen hieronder zijn er om het opnieuw te kunnen doen.
 
 1. **Project aanmaken.** Ga naar [supabase.com](https://supabase.com), maak een account en kies *New project*. Naam: `tweeslag-wispo`. Regio: een EU-regio, bijvoorbeeld *Central EU (Frankfurt)* of *West EU (Ireland)*. Kies een sterk databasewachtwoord en bewaar het in je wachtwoordmanager. Abonnement: *Free*.
 2. **Tabellen maken.** Open *SQL Editor → New query*, plak de inhoud van `supabase/migrations/0001_basis.sql` en klik op *Run*. Zet daarna jezelf en Sten als beheerder (met jullie eigen adressen):
@@ -242,6 +242,24 @@ Migratie: `supabase/migrations/0006_locaties.sql` (maakt ook een cronjob die oud
 
 **Hoe komt een GPS-positie op de getekende pistekaart?** De pistekaart is een panoramatekening, geen kaart op schaal. In `src/lib/georef.ts` staan 13 ijkpunten: liftstations met hun echte coördinaten (uit OpenStreetMap) en hun plek op de tekening. Een *thin-plate spline* buigt de tekening zo vloeiend mogelijk tussen die punten. Op een ijkpunt klopt het precies; ertussen zit het gemiddeld zo'n 50 pixels (ongeveer een pistebreedte op de tekening) naast. Voor de exacte plek is er de knop naar Google Maps. Vervang je `pistekaart.jpg` door een nieuwe kaart, zoek dan dezelfde stations op en pas hun `x`/`y` (in pixels) in `georef.ts` aan.
 
+### Profielen (fase 7)
+Migratie: `supabase/migrations/0007_profielen.sql` (uitvoeren na 0006). Gebruikt de bucket `fotos` uit 0005 voor de profielfoto's.
+
+**Migratie draaien:** open in Supabase *SQL Editor → New query*, plak de hele inhoud van `0007_profielen.sql` en klik op *Run*. Het script mag vaker gedraaid worden. Controle: onder *Table Editor* staat nu de tabel `profielen`. Zolang de migratie niet gedraaid is, werkt de rest van de app gewoon; profielen blijven dan alleen op de eigen telefoon staan (met "nog versturen") en gaan vanzelf mee zodra de tabel er is.
+
+- **Invullen:** direct na de eerste keer naam kiezen (welkomstscherm, of bij *Kamers*) komt het profielscherm. Met *Later invullen* sla je het over; dan staat er op Home een herinnering tot het profiel af is. Heeft je naam al een profiel (bijvoorbeeld van je vorige telefoon), dan wordt het niet opnieuw gevraagd.
+- **Velden:** ⛷️ ski, board, allebei of nog nooit gedaan; 📊 niveau 1 tot 5 (van *Waar zit de rem?* tot *Zwarte piste voor ontbijt*); 🤫 een feitje dat niemand van je weet (max. 140 tekens); 🎤 karaokenummer of buslied (max. 60); 🥶 grootste angst (max. 80); 📸 een profielfoto. Verplicht voor een "af" profiel: ski/board, niveau en feitje.
+- **Aanpassen:** tik op Home op je eigen naam (*Hoi …!*). Daar staan je profiel en *Andere naam kiezen* samen. Of open je eigen kaartje en tik op *Aanpassen*.
+- **Bekijken:** tik op een naam bij *Kamers* of in *Spel → Klassement* voor iemands profielkaartje: foto (of initialen), ski/board, niveau, feitje, karaokenummer en angst.
+- **Foto:** de telefoon snijdt de foto vierkant bij (het midden) en verkleint hem tot max. 512 px en ~90 kB JPEG, zonder locatie- en cameragegevens. Hij staat in de privé-bucket `fotos` in de map van het apparaat (`<user_id>/profiel-….jpg`) en is alleen via tijdelijke links te zien, net als de fotomuur. Profielfoto's komen niet op de fotomuur.
+- **Op naam:** net als de correcties hangt een profiel aan de naam, niet aan de telefoon. Iedereen in de app mag alle profielen lezen; schrijven mag alleen het apparaat dat die naam nu heeft (regel `is_eigen_naam` in de database). Kiest iemand zijn naam op een nieuwe telefoon, dan komt zijn profiel mee.
+- **Zonder internet:** je eigen profiel staat op de telefoon en gaat naar de server zodra er verbinding is (dezelfde "nog versturen"-markering als de spelstand; ook een nieuwe foto wacht dan op de telefoon). De profielen van iedereen en hun foto's worden bewaard, dus kaartjes die je eerder zag (of die bij het openen van de app al binnenkwamen) blijven zonder bereik te zien.
+- **Ongepast profiel wissen (beheerders):** log in als beheerder (*Kamers → ⚙️ Beheer*), tik op de naam van diegene bij *Kamers* of in het klassement en kies **Profiel wissen (beheer)**. Het profiel en de foto verdwijnen; op diens telefoon wordt het profiel ook leeggemaakt en verschijnt de herinnering weer. Zonder de app kan het ook in *SQL Editor*:
+  ```sql
+  delete from public.profielen where lower(naam) = lower('Naam');
+  ```
+  De foto staat dan nog in *Storage → fotos* (de map met het `user_id`; het pad staat in de kolom `foto_pad`). Verwijder hem daar met *Delete*.
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 
@@ -250,7 +268,7 @@ Verder handig om te weten over het gratis abonnement: de standaard-mailserver va
 ### Privacy en opruimen na de reis
 - Alleen voornamen en kamernummers gaan naar de server, in een EU-regio. Geen e-mailadressen van deelnemers; alleen de beheerders loggen in met e-mail.
 - Stemmen worden opgeslagen met de voornaam van de kiezer (nodig voor "één stem per naam"). Alleen jijzelf ziet in de app op wie je stemde; de beheerders niet.
-- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang en meldingsabonnementen, de correcties, de stemmingen met alle stemmen, het meldingenlogboek en de sleutels, de live locaties, de beheerderslijst, en stopt de planner en de opruimtaak van de locaties). De fotobestanden zelf kun je niet met SQL weghalen: ga naar *Storage → fotos*, selecteer alle mappen en kies *Delete*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
+- **Na de reis alles verwijderen:** voer `supabase/opruimen.sql` uit in de SQL Editor (verwijdert alle gebruikers met hun voortgang en meldingsabonnementen, de correcties, de stemmingen met alle stemmen, het meldingenlogboek en de sleutels, de live locaties, de profielen, de beheerderslijst, en stopt de planner en de opruimtaak van de locaties). De fotobestanden zelf kun je niet met SQL weghalen: ga naar *Storage → fotos*, selecteer alle mappen en kies *Delete*. Of verwijder in één keer het hele project: *Project Settings → General → Delete project*.
 - Haal daarna in GitHub de twee variabelen weg; de app werkt dan weer zonder backend.
 
 ## QR-code
@@ -262,7 +280,7 @@ Dit maakt `qr/tweeslag-wispo-qr.png` (om te printen) en `qr/tweeslag-wispo-qr.sv
 
 ## Installeren op de telefoon
 
-Wie de app voor het eerst opent (bijvoorbeeld via de QR-code), krijgt een welkomstscherm: eerst de eigen naam kiezen, daarna uitleg om de app op het beginscherm te zetten. Op een iPhone heeft de app op het beginscherm een eigen opslag, dus daar wordt de naam bij de eerste keer openen nog één keer gevraagd; het welkomstscherm zegt dat er ook bij. Wie alleen Safari gebruikt, raakt naam en voortgang kwijt als de site een week niet geopend wordt (Safari wist dan alle opslag van een website); de app op het beginscherm heeft daar geen last van. Zolang de app nog niet op het beginscherm staat, laat Home ook een banner met uitleg zien:
+Wie de app voor het eerst opent (bijvoorbeeld via de QR-code), krijgt een welkomstscherm: eerst de eigen naam kiezen, dan het profiel (mag later), daarna uitleg om de app op het beginscherm te zetten. Op een iPhone heeft de app op het beginscherm een eigen opslag, dus daar wordt de naam bij de eerste keer openen nog één keer gevraagd; het welkomstscherm zegt dat er ook bij. Wie alleen Safari gebruikt, raakt naam en voortgang kwijt als de site een week niet geopend wordt (Safari wist dan alle opslag van een website); de app op het beginscherm heeft daar geen last van. Zolang de app nog niet op het beginscherm staat, laat Home ook een banner met uitleg zien:
 - **iPhone (Safari):** Deel-knop → *Zet op beginscherm* → *Voeg toe*.
 - **Android (Chrome):** knop *Installeren* in de app, of menu ⋮ → *App installeren*.
 
@@ -271,4 +289,4 @@ Wie de app voor het eerst opent (bijvoorbeeld via de QR-code), krijgt een welkom
 - Vite + React + TypeScript, met `vite-plugin-pwa` voor het manifest en de service worker.
 - De app zelf, de iconen en de pistekaart worden vooraf bewaard (cache-first). De JSON-data gaat network-first: eerst internet (max. 5 seconden wachten), anders de bewaarde versie.
 - Persoonlijke gegevens staan in `localStorage` onder `tweeslag-wispo.*`.
-- Code: `src/screens/` (de zes schermen), `src/components/`, `src/lib/` (tijd, opslag, data, bingo).
+- Code: `src/screens/` (de zes schermen), `src/components/`, `src/lib/` (tijd, opslag, data, bingo, profiel).

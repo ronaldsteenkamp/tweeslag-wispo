@@ -8,8 +8,8 @@ import { abonneerBackend, backendIngesteld, backendStand, supabase } from './bac
  * de privé-bucket 'fotos' en zijn alleen te zien via tijdelijke links (signed URLs).
  */
 
-const BUCKET = 'fotos'
-const LINK_GELDIG = 3600 // seconden
+export const BUCKET = 'fotos'
+export const LINK_GELDIG = 3600 // seconden
 
 export interface Foto {
   id: string
@@ -85,6 +85,30 @@ export async function verklein(bestand: Blob): Promise<Verkleind> {
     const groot = await naarJpeg(beeld.bron, beeld.b, beeld.h, 1600, 300_000)
     const klein = await naarJpeg(beeld.bron, beeld.b, beeld.h, 480, 60_000)
     return { groot: groot.blob, klein: klein.blob, breedte: groot.breedte, hoogte: groot.hoogte }
+  } finally {
+    beeld.sluit()
+  }
+}
+
+/** Vierkant uit het midden, max. `zijde` px, als JPEG (voor de profielfoto) */
+export async function verkleinVierkant(bestand: Blob, zijde = 512, maxBytes = 90_000): Promise<Blob> {
+  const beeld = await laadBeeld(bestand)
+  try {
+    const kant = Math.min(beeld.b, beeld.h)
+    let doel = Math.min(zijde, kant)
+    for (let poging = 0; poging < 5; poging++) {
+      const canvas = document.createElement('canvas')
+      canvas.width = canvas.height = doel
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('Verkleinen lukt niet in deze browser')
+      ctx.drawImage(beeld.bron, (beeld.b - kant) / 2, (beeld.h - kant) / 2, kant, kant, 0, 0, doel, doel)
+      for (const kwaliteit of [0.82, 0.72, 0.62]) {
+        const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', kwaliteit))
+        if (blob && blob.size <= maxBytes) return blob
+      }
+      doel = Math.round(doel * 0.8)
+    }
+    throw new Error('De foto kon niet klein genoeg gemaakt worden')
   } finally {
     beeld.sluit()
   }

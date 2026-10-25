@@ -5,6 +5,7 @@ import { useOpgeslagen } from '../lib/opslag'
 import { useKlassement, useSyncStatus, verwijderCorrectie, voegCorrectieToe } from '../lib/scorebord'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 import { BevestigDialoog } from './BevestigDialoog'
+import { toonProfiel } from './Profiel'
 import { Icoon } from './Icoon'
 import { Verbinding } from './Verbinding'
 
@@ -90,8 +91,10 @@ export function Klassement() {
                 <li key={p.naam} className={p.naam === naam ? 'is-eigen' : ''}>
                   <span className="ranglijst__plek">{i + 1}</span>
                   <span className="ranglijst__naam">
-                    {p.naam}
-                    {p.naam === naam && <span className="label label--accent">jij</span>}
+                    <button type="button" className="ranglijst__persoon" onClick={() => toonProfiel(p.naam)}>
+                      {p.naam}
+                      {p.naam === naam && <span className="label label--accent">jij</span>}
+                    </button>
                     <small>
                       kamer {kamerLabel(p.kamer)}
                       {p.correcties !== 0 && ` · bonus ${p.correcties > 0 ? '+' : ''}${p.correcties}`}

@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { NaamKiezer, normaal, useAlleNamen } from '../components/NaamKiezer'
+import { openMijnProfiel, toonProfiel } from '../components/Profiel'
 import { config } from '../config'
 import { useData, type Kamer } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
+import { profielAfVoor } from '../lib/profiel'
 
 export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () => void; naarBeheer: () => void }) {
   const { data, fout } = useData('kamers')
@@ -42,6 +44,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
             setWijzigen(false)
             setZoek('')
             window.scrollTo(0, 0)
+            if (!profielAfVoor(n)) openMijnProfiel()
           }}
         />
         {naamBekend && (
@@ -139,8 +142,10 @@ function KamerInhoud({ kamer, jij, zoek = '' }: { kamer: Kamer; jij: string; zoe
             key={b}
             className={`${b === jij ? 'is-jij' : ''}${zoek && normaal(b).includes(zoek) ? ' is-gevonden' : ''}`}
           >
-            {b}
-            {b === jij && <span className="label label--accent">jij</span>}
+            <button type="button" className="bewoners__naam" onClick={() => toonProfiel(b)}>
+              {b}
+              {b === jij && <span className="label label--accent">jij</span>}
+            </button>
           </li>
         ))}
       </ul>

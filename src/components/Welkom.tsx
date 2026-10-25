@@ -3,7 +3,9 @@ import { useData } from '../lib/data'
 import { useInstallatie } from '../lib/installatie'
 import { useOpgeslagen } from '../lib/opslag'
 import { InstallatieUitleg } from './InstallatieBanner'
+import { profielAfVoor, useMijnProfiel } from '../lib/profiel'
 import { NaamKiezer, useAlleNamen } from './NaamKiezer'
+import { ProfielFormulier } from './Profiel'
 import { Sneeuw } from './Sneeuw'
 
 /**
@@ -15,7 +17,8 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
   const namen = useAlleNamen(data)
   const [naam, setNaam] = useOpgeslagen<string | null>('naam', null)
   const { platform, geinstalleerd, kanDirectInstalleren } = useInstallatie()
-  const [stap, setStap] = useState<'naam' | 'installeren'>('naam')
+  const [stap, setStap] = useState<'naam' | 'profiel' | 'installeren'>('naam')
+  const profiel = useMijnProfiel()
   const vak = useRef<HTMLDivElement>(null)
 
   // Installeren heeft alleen zin als de app nog niet op het beginscherm staat
@@ -38,7 +41,9 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
         <Sneeuw aantal={20} />
         <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="Tweeslag" className="welkom__logo" />
         <p className="welkom__onder">Wispo 2027 · Les Deux Alpes</p>
-        <h1 id="welkom-titel">{stap === 'naam' ? 'Welkom! Wie ben jij?' : naam ? `Hoi ${naam}!` : 'Hoi!'}</h1>
+        <h1 id="welkom-titel">
+          {stap === 'naam' ? 'Welkom! Wie ben jij?' : stap === 'profiel' ? 'Vertel iets over jezelf' : naam ? `Hoi ${naam}!` : 'Hoi!'}
+        </h1>
       </header>
 
       <div className="welkom__inhoud">
@@ -50,7 +55,9 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
                 namen={namen}
                 onKies={(n) => {
                   setNaam(n)
-                  naNaam()
+                  // Heeft deze naam al een profiel (bijv. van een andere telefoon), dan meteen door
+                  if (profielAfVoor(n)) naNaam()
+                  else setStap('profiel')
                 }}
               />
             ) : (
@@ -61,6 +68,14 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
             <button type="button" className="tekstknop welkom__later" onClick={naNaam}>
               Sla over, ik kies later
             </button>
+          </>
+        ) : stap === 'profiel' && profiel ? (
+          <>
+            <p>
+              Zo leren de anderen je een beetje kennen. Druk op iemands naam (bij Kamers of in het klassement) om
+              diens profiel te zien.
+            </p>
+            <ProfielFormulier profiel={profiel} onKlaar={naNaam} />
           </>
         ) : (
           <>

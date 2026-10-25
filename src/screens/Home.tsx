@@ -1,11 +1,10 @@
-import { useCallback, useState } from 'react'
 import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
 import { FotoStrip } from '../components/FotoStrip'
 import { MeldingenKaart } from '../components/Meldingen'
-import { NaamWijzigen } from '../components/NaamWijzigen'
+import { openMijnProfiel } from '../components/Profiel'
 import { Sneeuw } from '../components/Sneeuw'
 import { StemmingOpHome } from '../components/Stemmen'
 import { WeerKaart } from '../components/WeerKaart'
@@ -13,6 +12,7 @@ import type { Tab } from '../components/TabBalk'
 import { config } from '../config'
 import { NAAM_OVERGENOMEN } from '../lib/backend'
 import { useData, type Dag } from '../lib/data'
+import { isAf, useMijnProfiel } from '../lib/profiel'
 import { platform } from '../lib/installatie'
 import { useNu } from '../lib/nu'
 import { schrijf, useOpgeslagen } from '../lib/opslag'
@@ -26,9 +26,8 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
   const nu = useNu(1000)
   const { data: planning, fout } = useData('planning')
   const [naam] = useOpgeslagen<string | null>('naam', null)
-  const [naamKiezen, setNaamKiezen] = useState(false)
+  const profiel = useMijnProfiel()
   const [overgenomen] = useOpgeslagen<string | null>(NAAM_OVERGENOMEN, null)
-  const sluitNaamKiezen = useCallback(() => setNaamKiezen(false), [])
 
   const dagen = planning?.dagen ?? []
   const vandaag = datumISO(nu)
@@ -52,8 +51,8 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
           <button
             type="button"
             className="hero__naam"
-            onClick={() => setNaamKiezen(true)}
-            aria-label={naam ? `${naam}, tik om een andere naam te kiezen` : 'Kies je naam'}
+            onClick={() => openMijnProfiel()}
+            aria-label={naam ? `${naam}, tik voor je profiel of een andere naam` : 'Kies je naam'}
           >
             {naam ?? 'jij'}
           </button>
@@ -100,10 +99,20 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
             <strong>{overgenomen}</strong> is op een ander apparaat gekozen
             {platform() === 'ios' ? ', bijvoorbeeld in de app op je beginscherm' : ''}. Je score telt daar.
           </p>
-          <button type="button" className="knop knop--secundair knop--breed" onClick={() => setNaamKiezen(true)}>
+          <button type="button" className="knop knop--secundair knop--breed" onClick={() => openMijnProfiel(true)}>
             Toch dit apparaat gebruiken
           </button>
         </section>
+      )}
+
+      {naam && profiel && !isAf(profiel) && (
+        <button type="button" className="kaartje herinnering" onClick={() => openMijnProfiel()}>
+          <span aria-hidden="true">📝</span>
+          <span>
+            <strong>Vul je profiel in</strong>
+            <small>Ski of board, je niveau en iets wat niemand van je weet.</small>
+          </span>
+        </button>
       )}
 
       {fase !== 'na' && <WeerKaart nu={nu} voorVertrek={nu < vertrek} onOpen={naarWeer} />}
@@ -139,7 +148,6 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
       {/* Helemaal onderaan */}
       {fase !== 'na' && <MeldingenKaart />}
 
-      <NaamWijzigen open={naamKiezen} onSluit={sluitNaamKiezen} />
     </div>
   )
 }
