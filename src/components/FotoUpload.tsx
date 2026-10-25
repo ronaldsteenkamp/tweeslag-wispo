@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useBackend } from '../lib/backend'
+import { useDialoogFocus } from '../lib/dialoogFocus'
 import { uploadFoto, verklein, type Verkleind } from '../lib/fotos'
+import { bewaarVoorLater } from '../lib/fotowachtrij'
 import { Icoon } from './Icoon'
 
 /** Dialoog om een foto als bewijs bij een challenge te uploaden */
@@ -11,7 +13,8 @@ export function FotoUpload({
 }: {
   challenge: { id: string; titel: string }
   onSluit: () => void
-  onGelukt: () => void
+  /** `later`: zonder bereik bewaard, de foto gaat vanzelf naar de fotomuur zodra er verbinding is */
+  onGelukt: (later: boolean) => void
 }) {
   const backend = useBackend()
   const camera = useRef<HTMLInputElement>(null)
@@ -20,6 +23,9 @@ export function FotoUpload({
   const [voorbeeld, setVoorbeeld] = useState<string | null>(null)
   const [stap, setStap] = useState<'kiezen' | 'verkleinen' | 'klaar' | 'uploaden'>('kiezen')
   const [fout, setFout] = useState<string | null>(null)
+  // Uploaden mislukt: dan mag je hem ook bewaren om later te versturen
+  const [magLater, setMagLater] = useState(false)
+  const dialoog = useDialoogFocus<HTMLDivElement>()
 
   useEffect(() => {
     const opToets = (e: KeyboardEvent) => e.key === 'Escape' && onSluit()
@@ -44,6 +50,16 @@ export function FotoUpload({
     }
   }
 
+  const later = async () => {
+    if (!foto) return
+    setStap('uploaden')
+    const f = await bewaarVoorLater(foto, challenge)
+    if (f) {
+      setFout(f)
+      setStap('klaar')
+    } else onGelukt(true)
+  }
+
   const upload = async () => {
     if (!foto) return
     setStap('uploaden')
@@ -51,15 +67,18 @@ export function FotoUpload({
     const f = await uploadFoto(foto, challenge)
     if (f) {
       setFout(f)
+      setMagLater(true)
       setStap('klaar')
-    } else onGelukt()
+    } else onGelukt(false)
   }
 
-  const geenVerbinding = backend.status !== 'verbonden'
+  // Geen bereik (of de naam is nog niet doorgegeven): bewaren en later vanzelf versturen
+  const geenVerbinding = backend.status !== 'verbonden' || !backend.gekoppeld
 
   return (
     <div className="dialoog-achtergrond" onClick={onSluit}>
       <div
+        ref={dialoog}
         className="dialoog dialoog--hoog foto-upload"
         role="dialog"
         aria-modal="true"
@@ -76,7 +95,9 @@ export function FotoUpload({
           </p>
         )}
         {stap === 'verkleinen' && <p className="laadtekst">Foto verkleinen…</p>}
-        {geenVerbinding && <p className="melding">Geen verbinding. Uploaden kan alleen met internet.</p>}
+        {geenVerbinding && (
+          <p className="melding">Geen verbinding. De foto wordt op je telefoon bewaard en vanzelf verstuurd zodra er bereik is.</p>
+        )}
         {fout && (
           <p className="melding melding--fout" role="alert">
             {fout}
@@ -94,14 +115,26 @@ export function FotoUpload({
         <input ref={galerij} type="file" accept="image/*" hidden onChange={(e) => void gekozen(e.target.files?.[0])} />
 
         {stap === 'klaar' || stap === 'uploaden' ? (
-          <div className="dialoog__knoppen">
-            <button type="button" className="knop knop--secundair" onClick={() => galerij.current?.click()} disabled={stap === 'uploaden'}>
-              Andere foto
-            </button>
-            <button type="button" className="knop knop--primair" onClick={() => void upload()} disabled={stap === 'uploaden' || geenVerbinding}>
-              {stap === 'uploaden' ? 'Uploaden…' : 'Uploaden'}
-            </button>
-          </div>
+          <>
+            <div className="dialoog__knoppen">
+              <button type="button" className="knop knop--secundair" onClick={() => galerij.current?.click()} disabled={stap === 'uploaden'}>
+                Andere foto
+              </button>
+              <button
+                type="button"
+                className="knop knop--primair"
+                onClick={() => void (geenVerbinding ? later() : upload())}
+                disabled={stap === 'uploaden'}
+              >
+                {stap === 'uploaden' ? 'Bezig…' : geenVerbinding ? 'Bewaren' : 'Uploaden'}
+              </button>
+            </div>
+            {magLater && !geenVerbinding && stap === 'klaar' && (
+              <button type="button" className="tekstknop" onClick={() => void later()}>
+                Bewaren en later opnieuw proberen
+              </button>
+            )}
+          </>
         ) : (
           <div className="dialoog__knoppen">
             <button type="button" className="knop knop--primair" onClick={() => camera.current?.click()} disabled={stap === 'verkleinen'}>

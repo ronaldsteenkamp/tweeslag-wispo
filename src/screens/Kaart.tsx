@@ -38,8 +38,25 @@ export default function Kaart() {
   const { locaties } = useLocaties(metBackend)
   const [gekozen, setGekozen] = useState<string | null>(null)
   const [vragen, setVragen] = useState(false)
+  // "Waar ben ik?": je eigen plek, alleen op deze telefoon (wordt niet gedeeld)
+  const [eigenPlek, setEigenPlek] = useState<{ lat: number; lon: number; tijd: number } | null>(null)
+  const [zoekPlek, setZoekPlek] = useState<'bezig' | 'buiten' | 'fout' | null>(null)
 
   const deelAan = delen.status === 'aan' || delen.status === 'zoeken'
+
+  const waarBenIk = () => {
+    setZoekPlek('bezig')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const p = { lat: pos.coords.latitude, lon: pos.coords.longitude, tijd: pos.timestamp }
+        setEigenPlek(p)
+        setZoekPlek(opKaart(p) ? null : 'buiten')
+      },
+      () => setZoekPlek('fout'),
+      { enableHighAccuracy: true, maximumAge: 30_000, timeout: 20_000 },
+    )
+  }
+  const eigenStip = !deelAan && eigenPlek ? opKaart(eigenPlek) : null
 
   // Iedereen die deelt; de eigen positie direct van de telefoon (sneller dan via de server)
   const personen = useMemo(() => {
@@ -71,6 +88,19 @@ export default function Kaart() {
       oud: nu - Date.parse(p.bijgewerkt) > 5 * 60_000,
       beschrijving: `${p.eigen ? 'Jij' : p.naam}, ${geleden(p.bijgewerkt, nu)}`,
     }))
+  if (eigenStip && eigenPlek) {
+    markers.push({
+      id: 'ik-hier',
+      x: eigenStip.x,
+      y: eigenStip.y,
+      label: 'Jij',
+      kort: (naam ?? 'Ik').slice(0, 2),
+      kleur: '#0d0058',
+      eigen: true,
+      oud: nu - eigenPlek.tijd > 5 * 60_000,
+      beschrijving: `Jij (alleen op deze telefoon), ${geleden(new Date(eigenPlek.tijd).toISOString(), nu)}`,
+    })
+  }
   const buiten = personen.filter((p) => !p.plek)
   const persoon = personen.find((p) => p.user_id === gekozen) ?? null
   const sluit = useCallback(() => setGekozen(null), [])
@@ -96,9 +126,14 @@ export default function Kaart() {
         hint="Knijp of dubbeltik om te zoomen"
       />
 
-      {metBackend && (
-        <div className="locatiebalk">
-          {delen.status === 'niet-ondersteund' ? null : deelAan ? (
+      <div className="locatiebalk">
+        <div className="locatiebalk__knoppen">
+          {!deelAan && 'geolocation' in navigator && (
+            <button type="button" className="locatieknop" onClick={waarBenIk} disabled={zoekPlek === 'bezig'}>
+              {zoekPlek === 'bezig' ? 'Zoeken…' : '🧭 Waar ben ik?'}
+            </button>
+          )}
+          {!metBackend || delen.status === 'niet-ondersteund' ? null : deelAan ? (
             <button type="button" className="locatieknop is-aan" onClick={() => void stopDelen()}>
               <span className="locatieknop__stip" aria-hidden="true" />
               {delen.status === 'zoeken' ? 'Locatie zoeken…' : 'Je deelt je locatie'} · <strong>Stop</strong>
@@ -108,22 +143,30 @@ export default function Kaart() {
               📍 Deel mijn locatie
             </button>
           )}
-          {!naam && <p className="locatiebalk__tekst">Kies eerst je naam op Home.</p>}
-          {delen.status === 'geweigerd' && (
-            <p className="locatiebalk__tekst">Je hebt locatie geblokkeerd voor deze app. Zet het aan in de instellingen van je telefoon.</p>
-          )}
-          {delen.fout && deelAan && <p className="locatiebalk__tekst">{delen.fout}</p>}
-          {buiten.length > 0 && (
-            <div className="locatiebalk__buiten">
-              {buiten.map((p) => (
-                <button key={p.user_id} type="button" className="buitenchip" onClick={() => setGekozen(p.user_id)}>
-                  {p.eigen ? 'Jij' : p.naam} · buiten de kaart
-                </button>
-              ))}
-            </div>
-          )}
         </div>
-      )}
+        {zoekPlek === 'buiten' && <p className="locatiebalk__tekst">Je bent buiten het gebied van de pistekaart.</p>}
+        {zoekPlek === 'fout' && (
+          <p className="locatiebalk__tekst">Je plek is niet te bepalen. Staat locatie aan voor deze app?</p>
+        )}
+        {metBackend && (
+          <>
+            {!naam && <p className="locatiebalk__tekst">Kies eerst je naam op Home om je locatie te delen.</p>}
+            {delen.status === 'geweigerd' && (
+              <p className="locatiebalk__tekst">Je hebt locatie geblokkeerd voor deze app. Zet het aan in de instellingen van je telefoon.</p>
+            )}
+            {delen.fout && deelAan && <p className="locatiebalk__tekst">{delen.fout}</p>}
+            {buiten.length > 0 && (
+              <div className="locatiebalk__buiten">
+                {buiten.map((p) => (
+                  <button key={p.user_id} type="button" className="buitenchip" onClick={() => setGekozen(p.user_id)}>
+                    {p.eigen ? 'Jij' : p.naam} · buiten de kaart
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {persoon && <PersoonBlad p={persoon} nu={nu} onSluit={sluit} />}
 

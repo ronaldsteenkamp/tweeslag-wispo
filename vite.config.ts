@@ -41,12 +41,15 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            // Network-first voor de JSON-data: nieuwe versie als er bereik is, anders de bewaarde
+            // Network-first voor de JSON-data: nieuwe versie als er bereik is, anders de bewaarde.
+            // Op de berg is het bereik vaak traag: na 2 seconden wachten de bewaarde versie (de nieuwe
+            // komt dan bij een volgende keer openen). Stale-while-revalidate zou altijd eerst de oude
+            // tonen, ook bij goed bereik, en dan zie je een nieuwe planning of kamerverdeling pas later.
             urlPattern: /\/data\/[^/]+\.json$/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'tweeslag-data',
-              networkTimeoutSeconds: 5,
+              networkTimeoutSeconds: 2,
               cacheableResponse: { statuses: [0, 200] },
             },
           },

@@ -12,7 +12,7 @@ import { bingoScore, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
 import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
 import { testOntgrendeld, useNu } from '../lib/nu'
 import { isTestperiode } from '../lib/testperiode'
-import { lees, schrijf, useOpgeslagen } from '../lib/opslag'
+import { useOpgeslagen } from '../lib/opslag'
 import { datumISO, datumLabel, lokaalNaarDate } from '../lib/tijd'
 
 const spelOpen = lokaalNaarDate(config.spelOpen)
@@ -71,9 +71,13 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
     return () => window.clearTimeout(id)
   }, [fotoGelukt])
 
-  // De bingokaart wordt één keer per telefoon geschud en daarna bewaard
-  const kaart = useMemo(() => maakKaart(data.bingo.vakjes, lees('spel.bingo.kaart', null)), [data])
-  useEffect(() => schrijf('spel.bingo.kaart', kaart), [kaart])
+  // De bingokaart wordt één keer per telefoon geschud en daarna bewaard. Wist het begin van het
+  // echte spel hem (ook terwijl dit scherm openstaat), dan komt er meteen een nieuwe.
+  const [bewaardeKaart, setBewaardeKaart] = useOpgeslagen<unknown>('spel.bingo.kaart', null)
+  const kaart = useMemo(() => maakKaart(data.bingo.vakjes, bewaardeKaart), [data, bewaardeKaart])
+  useEffect(() => {
+    if (JSON.stringify(kaart) !== JSON.stringify(bewaardeKaart)) setBewaardeKaart(kaart)
+  }, [kaart, bewaardeKaart, setBewaardeKaart])
   // Vinkjes van vakjes die niet (meer) op de kaart staan weg, bijv. van de oude pistebingo
   useEffect(() => {
     const opKaart = new Set(kaart)
@@ -163,11 +167,15 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         <FotoUpload
           challenge={fotoVoor}
           onSluit={() => setFotoVoor(null)}
-          onGelukt={() => {
+          onGelukt={(later) => {
             // Bewijs geleverd: dan telt de challenge ook als gedaan
             const id = fotoVoor.id
             setGedaan((oud) => (oud.includes(id) ? oud : [...oud, id]))
-            setFotoGelukt(`Foto staat op de fotomuur ✓ "${fotoVoor.titel}" is afgevinkt.`)
+            setFotoGelukt(
+              later
+                ? `Foto bewaard ✓ Hij gaat naar de fotomuur zodra er bereik is. "${fotoVoor.titel}" is afgevinkt.`
+                : `Foto staat op de fotomuur ✓ "${fotoVoor.titel}" is afgevinkt.`,
+            )
             setFotoVoor(null)
           }}
         />

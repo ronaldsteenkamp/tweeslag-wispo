@@ -6,8 +6,9 @@ import { normaal } from '../components/NaamKiezer'
 import { config } from '../config'
 import { backendIngesteld, useBackend } from '../lib/backend'
 import { alleDeelnemers, useData, type Kamers } from '../lib/data'
-import { slaKamerverdelingOp } from '../lib/kamerverdeling'
+import { SERVER_VERSIE, slaKamerverdelingOp, type ServerVersie } from '../lib/kamerverdeling'
 import { useOpgeslagen } from '../lib/opslag'
+import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 
 interface ConceptKamer {
   id: string
@@ -24,6 +25,8 @@ interface Concept {
   over: string[]
   /** Namen en verblijf uit kamers.json toen het concept voor het laatst is bijgewerkt */
   basis?: Basis
+  /** De verdeling op de server waar dit concept op voortbouwt ('bijgewerkt'), of null als er nog geen was */
+  serverVersie?: string | null
 }
 
 interface Basis {
@@ -38,8 +41,9 @@ const UITLEG =
 
 const nieuwId = () => Math.random().toString(36).slice(2, 9)
 
-function uitData(data: Kamers): Concept {
+function uitData(data: Kamers, serverVersie: string | null): Concept {
   return {
+    serverVersie,
     verblijf: data.verblijf ?? '',
     kamers: data.kamers.map((k) => ({
       id: nieuwId(),
@@ -118,6 +122,8 @@ function schud<T>(lijst: T[]): T[] {
 export default function Verdelen({ terug }: { terug: () => void }) {
   const { data, fout } = useData('kamers')
   const [concept, setConcept] = useOpgeslagen<Concept | null>('verdeling.concept', null)
+  const [serverVersie] = useOpgeslagen<ServerVersie | null>(SERVER_VERSIE, null)
+  const [mijnNaam] = useOpgeslagen<string | null>('naam', null)
   const [gekozen, setGekozen] = useState<string | null>(null)
   const [nieuweNaam, setNieuweNaam] = useState('')
   const [melding, setMelding] = useState<string | null>(null)
@@ -135,13 +141,15 @@ export default function Verdelen({ terug }: { terug: () => void }) {
   useEffect(() => {
     if (!data) return
     if (!concept) {
-      setConcept(uitData(data))
+      setConcept(uitData(data, serverVersie?.bijgewerkt ?? null))
       return
     }
     const r = bijwerken(concept, data)
     if (!r) return
     setConcept(r.concept)
     if (r.tekst) setBijgewerkt(r.tekst)
+    // serverVersie hoort bij data (samen opgehaald); alleen bij het begin nodig
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, concept, setConcept])
 
   useEffect(() => {
@@ -269,13 +277,24 @@ export default function Verdelen({ terug }: { terug: () => void }) {
     setOpgeslagen(null)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _uitleg, ...kamers } = JSON.parse(json)
-    const fout = await slaKamerverdelingOp(kamers)
+    const r = await slaKamerverdelingOp(kamers, concept.serverVersie ?? null)
     setOpslaanBezig(false)
-    if (fout) setOpslaanFout(fout)
-    else
+    if ('fout' in r) setOpslaanFout(r.fout)
+    else if ('nieuwer' in r)
+      setOpslaanFout('Niet opgeslagen: er staat intussen een nieuwere verdeling in de app. Kies hierboven wat je wilt doen.')
+    else {
+      wijzig((c) => ({ ...c, serverVersie: r.versie }))
       setOpgeslagen(
         `Opgeslagen om ${new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}. Iedereen ziet de nieuwe verdeling zodra zijn app verbinding heeft.`,
       )
+    }
+  }
+
+  // Iemand anders (of jij op een ander apparaat) sloeg een verdeling op nadat dit concept begon
+  const anderOpgeslagen = backendIngesteld && serverVersie && concept.serverVersie !== serverVersie.bijgewerkt ? serverVersie : null
+  const wanneerOpgeslagen = (v: ServerVersie) => {
+    const d = new Date(v.bijgewerkt)
+    return `${datumISO(d) === datumISO(new Date()) ? 'vandaag' : datumLabel(datumISO(d), 'kort')} om ${tijdUUMM(d)}`
   }
 
   const download = () => {
@@ -297,6 +316,42 @@ export default function Verdelen({ terug }: { terug: () => void }) {
         Voor de reisleiding. Tik op een naam en daarna op een kamer. Je werk wordt op deze telefoon bewaard; de groep
         ziet het pas als je onderaan op <strong>Opslaan in de app</strong> tikt.
       </p>
+
+      {anderOpgeslagen && (
+        <div className="melding" role="status">
+          <p>
+            <strong>
+              {anderOpgeslagen.door && anderOpgeslagen.door !== mijnNaam ? anderOpgeslagen.door : 'Iemand'} heeft{' '}
+              {wanneerOpgeslagen(anderOpgeslagen)} een kamerverdeling in de app opgeslagen.
+            </strong>{' '}
+            {anderOpgeslagen.door === mijnNaam && '(Met jouw naam, bijvoorbeeld op een ander apparaat.) '}
+            Jouw concept op deze telefoon is ouder. Opslaan zou die verdeling overschrijven.
+          </p>
+          <div className="knoppenrij">
+            <button
+              type="button"
+              className="knop knop--primair knop--klein"
+              onClick={() => {
+                if (data) setConcept(uitData(data, anderOpgeslagen.bijgewerkt))
+                setGekozen(null)
+                setOpslaanFout(null)
+              }}
+            >
+              Die overnemen
+            </button>
+            <button
+              type="button"
+              className="knop knop--secundair knop--klein"
+              onClick={() => {
+                wijzig((c) => ({ ...c, serverVersie: anderOpgeslagen.bijgewerkt }))
+                setOpslaanFout(null)
+              }}
+            >
+              Mijn versie houden
+            </button>
+          </div>
+        </div>
+      )}
 
       {bijgewerkt && (
         <p className="melding">
@@ -561,7 +616,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
         gevaarlijk
         onAnnuleer={() => setOpnieuwVragen(false)}
         onBevestig={() => {
-          if (data) setConcept(uitData(data))
+          if (data) setConcept(uitData(data, serverVersie?.bijgewerkt ?? null))
           setGekozen(null)
           setOpnieuwVragen(false)
         }}

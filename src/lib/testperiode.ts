@@ -61,7 +61,7 @@ function wisAlsBegonnen() {
   if (nu() < spelBegint || lees<number | null>(TESTMOMENT, null) === null) return
   schrijfEnMeld('spel.challenges', [])
   schrijfEnMeld('spel.bingo.vinkjes', [])
-  schrijf('spel.bingo.kaart', null) // nieuwe, geschudde busbingokaart
+  schrijfEnMeld('spel.bingo.kaart', null) // nieuwe, geschudde busbingokaart (ook op een open scherm)
   schrijfEnMeld('casino.fiches', 1000)
   schrijfEnMeld('casino.geleend', 0)
   schrijf(TESTMOMENT, null)

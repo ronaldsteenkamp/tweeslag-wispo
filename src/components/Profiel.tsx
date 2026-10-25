@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useBackend } from '../lib/backend'
+import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
 import {
@@ -363,6 +364,7 @@ function Tekstveld({
 export function ProfielVenster() {
   const v = useVenster()
   const sluit = () => zetVenster(null)
+  const venster = useDialoogFocus<HTMLDivElement>(v !== null)
 
   useEffect(() => {
     if (!v) return
@@ -373,8 +375,10 @@ export function ProfielVenster() {
 
   if (!v) return null
   return (
-    <div className="dialoog-achtergrond" onClick={sluit}>
+    // Naast het venster tikken sluit alleen een bekeken profiel; bij invullen zou je je antwoorden kwijtraken
+    <div className="dialoog-achtergrond" onClick={v.soort === 'bekijk' ? sluit : undefined}>
       <div
+        ref={venster}
         className="dialoog dialoog--hoog"
         role="dialog"
         aria-modal="true"

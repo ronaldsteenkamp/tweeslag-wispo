@@ -3,8 +3,10 @@ import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Icoon } from '../components/Icoon'
 import { Verbinding } from '../components/Verbinding'
 import { useBackend } from '../lib/backend'
+import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData } from '../lib/data'
 import { grooteLink, useFotos, verwijderFoto, type Foto } from '../lib/fotos'
+import { useFotoWachtrij } from '../lib/fotowachtrij'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 
 export function wanneerGemaakt(iso: string) {
@@ -26,6 +28,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
   const { fotos, mislukt, meer, laadMeer } = useFotos(30, backend.status !== 'uit')
   const kamerLabel = useKamerLabel()
   const [open, setOpen] = useState<number | null>(null)
+  const wachtend = useFotoWachtrij()
 
   return (
     <div className="scherm fotomuur">
@@ -41,6 +44,12 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
           <div className="kaartje klassement__status">
             <Verbinding />
             <p className="klein">Upload een foto als bewijs via het 📷-knopje bij een challenge.</p>
+            {wachtend > 0 && (
+              <p className="klein">
+                📤 {wachtend} {wachtend === 1 ? 'foto wacht' : "foto's wachten"} op bereik en {wachtend === 1 ? 'komt' : 'komen'}{' '}
+                vanzelf op de muur.
+              </p>
+            )}
           </div>
 
           {!fotos ? (
@@ -127,6 +136,7 @@ export function FotoGroot({
   const [glijden, setGlijden] = useState(false)
   const vinger = useRef<{ x: number; y: number; t: number; richting: 'x' | 'y' | null } | null>(null)
   const gesleept = useRef(false)
+  const dialoog = useDialoogFocus<HTMLDivElement>()
 
   const i = Math.min(index, fotos.length - 1)
   const foto = fotos[i]
@@ -247,6 +257,7 @@ export function FotoGroot({
 
   return (
     <div
+      ref={dialoog}
       className="foto-groot"
       role="dialog"
       aria-modal="true"
@@ -261,7 +272,7 @@ export function FotoGroot({
       <p className="foto-groot__teller" aria-hidden="true">
         {i + 1} / {fotos.length}
       </p>
-      <button type="button" className="foto-groot__sluit" aria-label="Sluiten" onClick={onSluit}>
+      <button type="button" className="foto-groot__sluit" aria-label="Sluiten" onClick={onSluit} data-autofocus>
         <Icoon naam="kruis" />
       </button>
       {i > 0 && (

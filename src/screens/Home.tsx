@@ -105,6 +105,19 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
         </section>
       )}
 
+      {/* Tijdens de reis eerst het programma van vandaag, daarna de rest */}
+      {fase === 'tijdens' && index >= 0 && (
+        <section className="kaartje">
+          <div className="kaartje__kop">
+            <h2>Vandaag</h2>
+            <button type="button" className="tekstknop" onClick={() => naarTab('planning')}>
+              Hele planning <Icoon naam="pijl" grootte={18} />
+            </button>
+          </div>
+          <Programma dag={dagen[index]} nuTijd={tijdUUMM(nu)} />
+        </section>
+      )}
+
       {naam && profiel && !isAf(profiel) && (
         <button type="button" className="kaartje herinnering" onClick={() => openMijnProfiel()}>
           <span aria-hidden="true">📝</span>
@@ -127,18 +140,6 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
           naarTab('spel')
         }}
       />
-
-      {fase === 'tijdens' && index >= 0 && (
-        <section className="kaartje">
-          <div className="kaartje__kop">
-            <h2>Vandaag</h2>
-            <button type="button" className="tekstknop" onClick={() => naarTab('planning')}>
-              Hele planning <Icoon naam="pijl" grootte={18} />
-            </button>
-          </div>
-          <Programma dag={dagen[index]} nuTijd={tijdUUMM(nu)} />
-        </section>
-      )}
 
       {fase === 'voor' && dagen[0] && <EersteDag dag={dagen[0]} naarPlanning={() => naarTab('planning')} />}
       {!planning && <DataStatus fout={fout} />}

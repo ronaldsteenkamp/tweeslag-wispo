@@ -9,6 +9,7 @@ import { startScorebord } from './lib/scorebord'
 import { startTestperiode } from './lib/testperiode'
 import { startLocatie } from './lib/locatie'
 import { startMeldingen } from './lib/meldingen'
+import { startFotoWachtrij } from './lib/fotowachtrij'
 import { startStemming } from './lib/stemming'
 import './styles/theme.css'
 import './styles/app.css'
@@ -27,6 +28,7 @@ startKamerverdeling()
 startStemming()
 startMeldingen()
 startLocatie()
+startFotoWachtrij()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

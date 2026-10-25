@@ -2175,6 +2175,41 @@ button {
 }
 
 /* Laag met stippen: beweegt mee met de kaart (zelfde transform) */
+/* Zoomknoppen rechtsonder: groot genoeg voor handschoenen */
+.kaartvak__zoom {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kaartvak__zoomknop {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 16px;
+  background: #0d0058;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  touch-action: manipulation;
+}
+
+.kaartvak__zoomknop:active {
+  transform: scale(0.95);
+}
+
+/* Knoppen in de locatiebalk naast elkaar */
+.locatiebalk__knoppen {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
 .kaartvak__laag {
   position: absolute;
   top: 0;

@@ -18,23 +18,38 @@ export function bijgewerkt(weer: Weer, nu: Date): string {
 export function WeerKaart({ nu, voorVertrek, onOpen }: { nu: Date; voorVertrek: boolean; onOpen: () => void }) {
   const { weer, laden, mislukt } = useWeer()
   const vandaag = datumISO(nu)
+  // Een bericht dat zo oud is dat vandaag er niet meer in staat, niet als "vandaag" tonen
+  const metVandaag = weer?.locaties.every((l) => l.dagen.some((d) => d.datum === vandaag)) ?? false
 
   return (
-    <button type="button" className="kaartje weerkaart" onClick={onOpen} aria-label="Weer en sneeuw, tik voor details">
+    // De hele kaart is aan te tikken; voor toetsenbord en schermlezer is er de knop "Meer"
+    <section className="kaartje weerkaart" onClick={onOpen}>
       <div className="kaartje__kop">
         <h2>{voorVertrek ? 'Zo is het nu in Les Deux Alpes' : 'Weer en sneeuw vandaag'}</h2>
-        <span className="tekstknop" aria-hidden="true">
-          Meer <Icoon naam="pijl" grootte={18} />
-        </span>
+        <button
+          type="button"
+          className="tekstknop"
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpen()
+          }}
+        >
+          Meer <span className="verborgen">over weer en sneeuw</span> <Icoon naam="pijl" grootte={18} />
+        </button>
       </div>
 
       {!weer ? (
         <p className="laadtekst">{laden ? 'Weerbericht laden…' : mislukt ? 'Nog geen weerbericht bewaard. Open de app een keer met internet.' : '…'}</p>
+      ) : !metVandaag ? (
+        <p className="laadtekst">
+          Het bewaarde weerbericht is te oud ({bijgewerkt(weer, nu).toLowerCase()}). Open de app met internet voor een nieuw
+          bericht.
+        </p>
       ) : (
         <>
           <div className="weerkaart__plekken">
             {weer.locaties.map((l) => {
-              const dag = l.dagen.find((d) => d.datum === vandaag) ?? l.dagen[0]
+              const dag = l.dagen.find((d) => d.datum === vandaag)!
               return (
                 <div key={l.id} className="weerkaart__plek">
                   <p className="weerkaart__naam">
@@ -63,6 +78,6 @@ export function WeerKaart({ nu, voorVertrek, onOpen }: { nu: Date; voorVertrek: 
           </p>
         </>
       )}
-    </button>
+    </section>
   )
 }

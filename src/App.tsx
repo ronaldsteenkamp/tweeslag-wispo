@@ -41,8 +41,9 @@ export default function App() {
   const [naam] = useOpgeslagen<string | null>('naam', null)
   // De kamerverdeling is alleen voor de reisleiding (zie config.ts)
   const magVerdelen = naam !== null && config.reisleiding.includes(naam)
-  // Op de piste of in de bus: het scherm gaat niet op slot zolang de app open is
-  useSchermWakker()
+  // Op de kaart, bij het rad en bij de busbingo gaat het scherm niet op slot (elders wel, voor de batterij)
+  const [spelOnderdeel] = useOpgeslagen<string>('spel.onderdeel', 'challenges')
+  useSchermWakker(tab === 'kaart' || tab === 'rad' || (tab === 'spel' && spelOnderdeel === 'bingo'))
 
   useEffect(() => {
     const opHash = () => setTab(tabUitAdres())

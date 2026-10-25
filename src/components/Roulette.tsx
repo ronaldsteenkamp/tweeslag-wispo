@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Kamers } from '../lib/data'
+import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useOpgeslagen } from '../lib/opslag'
 import { deelnemers, fractie, schud, useDeelnemersKeuze, willekeurig } from '../lib/rad'
 import { CasinoLogo } from './CasinoLogo'
@@ -74,6 +75,7 @@ export function Roulette({
   useEffect(() => onBezig?.(bezig), [bezig, onBezig])
   const [uitslag, setUitslag] = useState<Uitslag | null>(null)
   const [melding, setMelding] = useState<string | null>(null)
+  const popup = useDialoogFocus<HTMLDivElement>(uitslag !== null)
   const [geluidAan] = useOpgeslagen('rad.geluid', true)
   const wiel = useRef<SVGGElement>(null)
   const bal = useRef<SVGCircleElement>(null)
@@ -95,23 +97,27 @@ export function Roulette({
   )
 
   const spelers = useMemo(() => deelnemers(keuze, kamers, naam), [keuze, kamers, naam])
-  const n = spelers.length
-  // Elk getal 1..N hoort bij één naam, per ronde opnieuw geschud
+  // Elk getal 1..N hoort bij één naam, per ronde opnieuw geschud. Tafel en wiel volgen deze
+  // volgorde (niet de spelerslijst zelf), zodat ze niet veranderen terwijl het balletje rolt.
   const [volgorde, setVolgorde] = useState<string[]>(() => schud(spelers))
+  const n = volgorde.length
   const totaal = Object.values(inzet).reduce((s, x) => s + x, 0)
   const totaalNu = useRef(totaal)
   totaalNu.current = totaal
 
-  // Andere spelers: inzet terug en opnieuw schudden
+  // Andere spelers: inzet terug en opnieuw schudden. Niet tijdens een worp of met de uitslag
+  // in beeld; dan pas daarna.
   const spelersSleutel = spelers.join('|')
+  const tafelVoor = useRef(spelersSleutel)
   useEffect(() => {
+    if (bezig || uitslag || spelersSleutel === tafelVoor.current) return
+    tafelVoor.current = spelersSleutel
     setVolgorde(schud(spelersSleutel ? spelersSleutel.split('|') : []))
-    setUitslag(null)
     const terug = totaalNu.current
     if (terug) setSaldo((s) => s + terug)
     totaalNu.current = 0
     setInzet({})
-  }, [spelersSleutel, setSaldo])
+  }, [spelersSleutel, bezig, uitslag, setSaldo])
 
   useEffect(() => {
     if (!uitslag) return
@@ -143,6 +149,7 @@ export function Roulette({
 
   const volgendeRonde = () => {
     setUitslag(null)
+    tafelVoor.current = spelersSleutel
     setVolgorde(schud(spelers))
   }
 
@@ -345,8 +352,11 @@ export function Roulette({
       )}
 
       <details className="kaartje casino__spelers">
-        <summary>Spelers ({n})</summary>
-        <DeelnemersKiezer kamers={kamers} naam={naam} />
+        <summary>Spelers ({spelers.length})</summary>
+        {/* Niets aan te passen zolang het balletje rolt */}
+        <fieldset className="radinstellingen" disabled={bezig}>
+          <DeelnemersKiezer kamers={kamers} naam={naam} />
+        </fieldset>
       </details>
       <p className="klein casino__bakken">
         🍺 {geleend} {geleend === 1 ? 'bak' : 'bakken'} getrokken
@@ -355,6 +365,7 @@ export function Roulette({
       {uitslag && (
         <div className="dialoog-achtergrond dialoog-achtergrond--midden" onClick={volgendeRonde}>
           <div
+            ref={popup}
             className="dialoog casino__popup"
             role="dialog"
             aria-modal="true"
