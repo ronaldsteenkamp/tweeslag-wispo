@@ -92,6 +92,9 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
   const [keuze] = useDeelnemersKeuze()
   const [kleuren, setKleuren] = useOpgeslagen<PisteKleur[]>('rad.kleuren', PISTE_KLEUREN)
   const [eigen, setEigen] = useOpgeslagen<string[]>('rad.eigen', ['Ja', 'Nee'])
+  // Drankjes: welke uit rad.json niet meedoen, en zelf toegevoegde
+  const [drankUit, setDrankUit] = useOpgeslagen<string[]>('rad.drankjes.uit', [])
+  const [eigenDrank, setEigenDrank] = useOpgeslagen<string[]>('rad.drankjes.eigen', [])
   const [geluidAan, setGeluidAan] = useOpgeslagen('rad.geluid', true)
   const [bezig, setBezig] = useState(false)
   const [casinoBezig, setCasinoBezig] = useState(false)
@@ -104,10 +107,11 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     if (soort === 'klos') return deelnemers(keuze, kamers, naam).map((n) => ({ waarde: n }))
     if (soort === 'piste')
       return verspreid(rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur })))
-    if (soort === 'drankje') return rad.drankjes.map((d) => ({ waarde: d }))
+    if (soort === 'drankje')
+      return [...new Set([...rad.drankjes, ...eigenDrank])].filter((d) => !drankUit.includes(d)).map((d) => ({ waarde: d }))
     if (soort === 'casino') return []
     return eigen.map((e) => e.trim()).filter(Boolean).map((e) => ({ waarde: e }))
-  }, [soort, keuze, kamers, naam, rad, kleuren, eigen])
+  }, [soort, keuze, kamers, naam, rad, kleuren, eigen, drankUit, eigenDrank])
 
   // Andere opties: oude uitslag weg
   useEffect(() => setUitslag(null), [opties])
@@ -167,7 +171,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
         ? 'Kies minstens één kleur met twee of meer pistes.'
         : soort === 'eigen'
           ? 'Vul minstens twee opties in.'
-          : 'Er staan nog geen drankjes in rad.json.'
+          : 'Kies minstens twee drankjes.'
 
   const keuzebalk = (
     <div className="segment segment--vijf" role="tablist" aria-label="Welk rad">
@@ -234,14 +238,15 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
         </fieldset>
       )}
       {soort === 'eigen' && <EigenOpties opties={eigen} onWijzig={setEigen} />}
-
-      <div aria-live="polite">
-        {uitslag && (
-          <section className="kaartje raduitslag">
-            <UitslagInhoud uitslag={uitslag} />
-          </section>
-        )}
-      </div>
+      {soort === 'drankje' && (
+        <DrankKiezer
+          vast={rad.drankjes}
+          uit={drankUit}
+          setUit={setDrankUit}
+          eigen={eigenDrank}
+          setEigen={setEigenDrank}
+        />
+      )}
 
       {popup && uitslag && (
         <div className="dialoog-achtergrond dialoog-achtergrond--midden" onClick={() => setPopup(false)}>
@@ -369,6 +374,87 @@ function UitslagInhoud({ uitslag }: { uitslag: Uitslag }) {
       )}
       {soort === 'eigen' && <p className="raduitslag__groot">🎯 {optie}</p>}
     </>
+  )
+}
+
+/** Welke drankjes doen mee (aan/uit), en zelf drankjes toevoegen of weghalen */
+function DrankKiezer({
+  vast,
+  uit,
+  setUit,
+  eigen,
+  setEigen,
+}: {
+  vast: string[]
+  uit: string[]
+  setUit: (f: (oud: string[]) => string[]) => void
+  eigen: string[]
+  setEigen: (f: (oud: string[]) => string[]) => void
+}) {
+  const [nieuw, setNieuw] = useState('')
+  const alle = [...new Set([...vast, ...eigen])]
+  const wissel = (d: string) => setUit((oud) => (oud.includes(d) ? oud.filter((x) => x !== d) : [...oud, d]))
+  const voegToe = (e: React.FormEvent) => {
+    e.preventDefault()
+    const d = nieuw.trim().replace(/\s+/g, ' ')
+    if (!d) return
+    if (!alle.some((x) => x.toLocaleLowerCase('nl') === d.toLocaleLowerCase('nl'))) setEigen((oud) => [...oud, d])
+    setUit((oud) => oud.filter((x) => x.toLocaleLowerCase('nl') !== d.toLocaleLowerCase('nl')))
+    setNieuw('')
+  }
+  return (
+    <fieldset className="veld">
+      <legend>Welke drankjes doen mee?</legend>
+      <div className="radkeuzes">
+        {alle.map((d) => {
+          const aan = !uit.includes(d)
+          const zelf = eigen.includes(d) && !vast.includes(d)
+          return zelf ? (
+            <span key={d} className={`drankkeuze${aan ? ' is-actief' : ''}`}>
+              <button type="button" aria-pressed={aan} onClick={() => wissel(d)}>
+                {d}
+              </button>
+              <button
+                type="button"
+                className="drankkeuze__weg"
+                aria-label={`${d} weghalen`}
+                onClick={() => {
+                  setEigen((oud) => oud.filter((x) => x !== d))
+                  setUit((oud) => oud.filter((x) => x !== d))
+                }}
+              >
+                ✕
+              </button>
+            </span>
+          ) : (
+            <button key={d} type="button" className={`keuze${aan ? ' is-actief' : ''}`} aria-pressed={aan} onClick={() => wissel(d)}>
+              {d}
+            </button>
+          )
+        })}
+      </div>
+      <div className="knoppenrij">
+        <button type="button" className="knop knop--secundair knop--klein" onClick={() => setUit(() => [])}>
+          Alles aan
+        </button>
+        <button type="button" className="knop knop--secundair knop--klein" onClick={() => setUit(() => alle)}>
+          Niets
+        </button>
+      </div>
+      <form className="eigenopties__regel" onSubmit={voegToe}>
+        <input
+          className="invoer"
+          value={nieuw}
+          maxLength={40}
+          placeholder="Drankje toevoegen"
+          aria-label="Drankje toevoegen"
+          onChange={(e) => setNieuw(e.target.value)}
+        />
+        <button type="submit" className="knop knop--secundair knop--klein" disabled={!nieuw.trim()}>
+          ＋
+        </button>
+      </form>
+    </fieldset>
   )
 }
 

@@ -2969,6 +2969,39 @@ button {
   gap: 8px;
 }
 
+/* Zelf toegevoegd drankje: aan/uit en een kruisje om het weg te halen */
+.drankkeuze {
+  display: inline-flex;
+  align-items: stretch;
+  min-height: 44px;
+  border: 2px solid var(--rand);
+  border-radius: 14px;
+  background: var(--oppervlak);
+  overflow: hidden;
+}
+
+.drankkeuze button {
+  border: 0;
+  background: none;
+  color: var(--tekst);
+  font-family: var(--font-kop);
+  font-weight: 700;
+}
+
+.drankkeuze button:first-child {
+  padding: 6px 4px 6px 12px;
+}
+
+.drankkeuze__weg {
+  padding: 0 12px 0 8px;
+  color: var(--tekst-zacht) !important;
+}
+
+.drankkeuze.is-actief {
+  border-color: var(--accent);
+  background: var(--accent-zacht);
+}
+
 /* De vier pistekleuren op één rij */
 .radkleuren {
   display: grid;
