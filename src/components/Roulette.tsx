@@ -314,7 +314,7 @@ export function Roulette({
                   setGeleend(geleend + 1)
                 }}
               >
-                🍺 Een bak voor {fiches(LENING)} nieuwe fiches
+                🍺 Trek een bak voor {fiches(LENING)} nieuwe fiches
               </button>
               {geleend > 0 && (
                 <p className="klein">

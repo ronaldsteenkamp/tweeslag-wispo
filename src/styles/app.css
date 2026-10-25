@@ -3023,6 +3023,24 @@ button {
   animation: omhoog 0.25s ease-out;
 }
 
+/* Uitslag als popup midden in beeld */
+.dialoog-achtergrond--midden {
+  place-items: center;
+}
+
+.raduitslag--popup {
+  border: 3px solid var(--accent);
+  padding: 26px 20px 20px;
+}
+
+.raduitslag--popup .raduitslag__groot {
+  font-size: 1.9rem;
+}
+
+.raduitslag--popup .dialoog__knoppen {
+  width: 100%;
+}
+
 .raduitslag__groot {
   font-family: var(--font-kop);
   font-size: 1.6rem;

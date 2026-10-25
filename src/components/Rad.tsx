@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { PISTE_KLEUREN, useData, type Kamers, type PisteKleur, type Rad as RadData } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
-import { deelnemers, fractie, initialen, kies, useDeelnemersKeuze, willekeurig } from '../lib/rad'
+import { deelnemers, fractie, initialen, kies, schud, useDeelnemersKeuze, willekeurig } from '../lib/rad'
 import { DataStatus } from './DataStatus'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
 import { Roulette } from './Roulette'
@@ -30,6 +30,44 @@ const VAKKLEUREN = [
 /** Kleur van vak i, zo dat twee buren (ook het laatste en het eerste vak) nooit gelijk zijn */
 const vakKleur = (i: number, n: number) => VAKKLEUREN[n % 3 === 1 && i === n - 1 ? 1 : i % 3]
 
+/**
+ * Pistes zo over het rad verdelen dat de kleuren gelijkmatig rondom liggen en dezelfde kleur zo min
+ * mogelijk naast elkaar staat ("gewogen om de beurt": elke kleur spaart punten op naar zijn aantal,
+ * wie de meeste heeft is aan de beurt). Startpunten en de volgorde binnen een kleur zijn elke keer anders.
+ */
+function verspreidEenKeer<T extends { kleur: PisteKleur }>(lijst: T[]): T[] {
+  const perKleur = new Map<PisteKleur, T[]>()
+  for (const x of schud(lijst)) perKleur.set(x.kleur, [...(perKleur.get(x.kleur) ?? []), x])
+  const groepen = [...perKleur.values()]
+  const tegoed = groepen.map((g) => fractie() * g.length)
+  const gebruikt = groepen.map(() => 0)
+  const uit: T[] = []
+  while (uit.length < lijst.length) {
+    let beste = -1
+    groepen.forEach((g, i) => {
+      tegoed[i] += g.length
+      if (gebruikt[i] < g.length && (beste < 0 || tegoed[i] > tegoed[beste])) beste = i
+    })
+    uit.push(groepen[beste][gebruikt[beste]++])
+    tegoed[beste] -= lijst.length
+  }
+  return uit
+}
+
+/** Hoeveel buren (rondom, dus ook laatste en eerste) dezelfde kleur hebben */
+const gelijkeBuren = (lijst: { kleur: PisteKleur }[]) =>
+  lijst.filter((x, i) => lijst.length > 1 && x.kleur === lijst[(i + 1) % lijst.length].kleur).length
+
+/** Een paar keer verdelen en de verdeling met de minste gelijke buren houden */
+function verspreid<T extends { kleur: PisteKleur }>(lijst: T[]): T[] {
+  let beste = verspreidEenKeer(lijst)
+  for (let poging = 0; poging < 30 && gelijkeBuren(beste) > 0; poging++) {
+    const nieuw = verspreidEenKeer(lijst)
+    if (gelijkeBuren(nieuw) < gelijkeBuren(beste)) beste = nieuw
+  }
+  return beste
+}
+
 interface Uitslag {
   soort: Soort
   optie: string
@@ -56,13 +94,14 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
   const [bezig, setBezig] = useState(false)
   const [casinoBezig, setCasinoBezig] = useState(false)
   const [uitslag, setUitslag] = useState<Uitslag | null>(null)
+  const [popup, setPopup] = useState(false)
   const groep = useRef<SVGGElement>(null)
   const { hoek, draai } = useDraai()
 
   const opties = useMemo<{ waarde: string; kleur?: PisteKleur }[]>(() => {
     if (soort === 'klos') return deelnemers(keuze, kamers, naam).map((n) => ({ waarde: n }))
     if (soort === 'piste')
-      return rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur }))
+      return verspreid(rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur })))
     if (soort === 'drankje') return rad.drankjes.map((d) => ({ waarde: d }))
     if (soort === 'casino') return []
     return eigen.map((e) => e.trim()).filter(Boolean).map((e) => ({ waarde: e }))
@@ -70,6 +109,13 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
 
   // Andere opties: oude uitslag weg
   useEffect(() => setUitslag(null), [opties])
+
+  useEffect(() => {
+    if (!popup) return
+    const opToets = (e: KeyboardEvent) => e.key === 'Escape' && setPopup(false)
+    window.addEventListener('keydown', opToets)
+    return () => window.removeEventListener('keydown', opToets)
+  }, [popup])
 
   const draaiRad = async () => {
     if (bezig || opties.length < 2) return
@@ -82,6 +128,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     const doel = nu + 360 * 4 + ((((doelRest - (nu % 360)) % 360) + 360) % 360)
     setBezig(true)
     setUitslag(null)
+    setPopup(false)
     await draai({
       doel,
       duur: 3300 + fractie() * 700,
@@ -96,6 +143,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
       kleur: o.kleur,
       opdracht: soort === 'klos' && rad.klosOpdrachten.length ? kies(rad.klosOpdrachten) : undefined,
     })
+    setPopup(true)
     setBezig(false)
   }
 
@@ -174,7 +222,42 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
         </button>
       </section>
 
-      <div aria-live="polite">{uitslag && <UitslagKaart uitslag={uitslag} />}</div>
+      <div aria-live="polite">
+        {uitslag && (
+          <section className="kaartje raduitslag">
+            <UitslagInhoud uitslag={uitslag} />
+          </section>
+        )}
+      </div>
+
+      {popup && uitslag && (
+        <div className="dialoog-achtergrond dialoog-achtergrond--midden" onClick={() => setPopup(false)}>
+          <div
+            className="dialoog raduitslag raduitslag--popup"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Uitslag"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <UitslagInhoud uitslag={uitslag} />
+            <div className="dialoog__knoppen">
+              <button type="button" className="knop knop--secundair" onClick={() => setPopup(false)}>
+                Sluiten
+              </button>
+              <button
+                type="button"
+                className="knop knop--accent"
+                onClick={() => {
+                  setPopup(false)
+                  void draaiRad()
+                }}
+              >
+                Nog eens!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
@@ -246,10 +329,10 @@ function RadWiel({
 
 const hoofdletter = (s: string) => s.charAt(0).toLocaleUpperCase('nl') + s.slice(1)
 
-function UitslagKaart({ uitslag }: { uitslag: Uitslag }) {
+function UitslagInhoud({ uitslag }: { uitslag: Uitslag }) {
   const { soort, optie, opdracht, kleur } = uitslag
   return (
-    <section className="kaartje raduitslag">
+    <>
       {soort === 'klos' && (
         <>
           <p className="raduitslag__groot">🎯 {optie} is de klos!</p>
@@ -271,7 +354,7 @@ function UitslagKaart({ uitslag }: { uitslag: Uitslag }) {
         </>
       )}
       {soort === 'eigen' && <p className="raduitslag__groot">🎯 {optie}</p>}
-    </section>
+    </>
   )
 }
 
