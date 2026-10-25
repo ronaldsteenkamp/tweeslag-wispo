@@ -30,7 +30,7 @@ export const kleinPad = (pad: string) => pad.replace(/\.jpg$/, '-klein.jpg')
 
 // ---------- Verkleinen ----------
 
-async function laadBeeld(bestand: Blob) {
+export async function laadBeeld(bestand: Blob) {
   if ('createImageBitmap' in window) {
     try {
       const bm = await createImageBitmap(bestand, { imageOrientation: 'from-image' } as ImageBitmapOptions)
@@ -48,7 +48,12 @@ async function laadBeeld(bestand: Blob) {
     URL.revokeObjectURL(url)
     throw new Error('Dit bestand kan de app niet lezen. Kies een foto (JPEG of PNG).')
   }
-  return { bron: img as CanvasImageSource, b: img.naturalWidth, h: img.naturalHeight, sluit: () => URL.revokeObjectURL(url) }
+  return {
+    bron: img as CanvasImageSource,
+    b: img.naturalWidth,
+    h: img.naturalHeight,
+    sluit: () => URL.revokeObjectURL(url),
+  }
 }
 
 async function naarJpeg(bron: CanvasImageSource, b: number, h: number, maxZijde: number, maxBytes: number) {
@@ -90,18 +95,25 @@ export async function verklein(bestand: Blob): Promise<Verkleind> {
   }
 }
 
-/** Vierkant uit het midden, max. `zijde` px, als JPEG (voor de profielfoto) */
-export async function verkleinVierkant(bestand: Blob, zijde = 512, maxBytes = 90_000): Promise<Blob> {
+/**
+ * Snijdt een vierkant uit de foto (in pixels van de foto, na draaien volgens EXIF) en maakt er
+ * een JPEG van max. `uit` px van (voor de profielfoto).
+ */
+export async function snijUit(
+  bestand: Blob,
+  uitsnede: { x: number; y: number; zijde: number },
+  uit = 512,
+  maxBytes = 90_000,
+): Promise<Blob> {
   const beeld = await laadBeeld(bestand)
   try {
-    const kant = Math.min(beeld.b, beeld.h)
-    let doel = Math.min(zijde, kant)
+    let doel = Math.max(1, Math.round(Math.min(uit, uitsnede.zijde)))
     for (let poging = 0; poging < 5; poging++) {
       const canvas = document.createElement('canvas')
       canvas.width = canvas.height = doel
       const ctx = canvas.getContext('2d')
       if (!ctx) throw new Error('Verkleinen lukt niet in deze browser')
-      ctx.drawImage(beeld.bron, (beeld.b - kant) / 2, (beeld.h - kant) / 2, kant, kant, 0, 0, doel, doel)
+      ctx.drawImage(beeld.bron, uitsnede.x, uitsnede.y, uitsnede.zijde, uitsnede.zijde, 0, 0, doel, doel)
       for (const kwaliteit of [0.82, 0.72, 0.62]) {
         const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', kwaliteit))
         if (blob && blob.size <= maxBytes) return blob
@@ -208,9 +220,10 @@ export function useFotos(aantal: number, actief = true) {
       const rijen = (data ?? []) as Foto[]
       const zichtbaar = rijen.slice(0, limiet)
       if (zichtbaar.length) {
-        const { data: links, error: e2 } = await c.storage
-          .from(BUCKET)
-          .createSignedUrls(zichtbaar.map((f) => kleinPad(f.pad)), LINK_GELDIG)
+        const { data: links, error: e2 } = await c.storage.from(BUCKET).createSignedUrls(
+          zichtbaar.map((f) => kleinPad(f.pad)),
+          LINK_GELDIG,
+        )
         if (e2) throw e2
         const perPad = new Map((links ?? []).map((l) => [l.path, l.signedUrl]))
         for (const f of zichtbaar) f.klein = perPad.get(kleinPad(f.pad)) ?? undefined

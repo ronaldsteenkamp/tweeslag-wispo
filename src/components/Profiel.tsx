@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useBackend } from '../lib/backend'
 import { useData } from '../lib/data'
-import { verkleinVierkant } from '../lib/fotos'
 import { useOpgeslagen } from '../lib/opslag'
 import {
   isAf,
@@ -18,6 +17,7 @@ import {
   type ProfielRij,
 } from '../lib/profiel'
 import { BevestigDialoog } from './BevestigDialoog'
+import { FotoBijsnijder } from './FotoBijsnijder'
 import { NaamKiezer, useAlleNamen } from './NaamKiezer'
 
 // ---------- Eén venster voor de hele app ----------
@@ -60,7 +60,17 @@ const initialen = (naam: string) =>
     .toLocaleUpperCase('nl')
 
 /** Profielfoto, of de initialen als er geen foto is */
-export function Avatar({ naam, pad, lokaal, groot }: { naam: string; pad: string | null; lokaal?: string | null; groot?: boolean }) {
+export function Avatar({
+  naam,
+  pad,
+  lokaal,
+  groot,
+}: {
+  naam: string
+  pad: string | null
+  lokaal?: string | null
+  groot?: boolean
+}) {
   const url = useProfielFoto(pad, lokaal)
   return (
     <span className={`avatar${groot ? ' avatar--groot' : ''}`} aria-hidden="true">
@@ -145,18 +155,23 @@ export function ProfielFormulier({
   const [angst, setAngst] = useState(profiel.angst)
   const [foto, setFoto] = useState(profiel.foto)
   const [fotoLokaal, setFotoLokaal] = useState(profiel.fotoLokaal)
-  const [fotoBezig, setFotoBezig] = useState(false)
   const [fotoFout, setFotoFout] = useState<string | null>(null)
+  // De gekozen foto (om opnieuw bij te snijden) en de foto die nu bijgesneden wordt
+  const [origineel, setOrigineel] = useState<File | null>(null)
+  const [bijsnijden, setBijsnijden] = useState<File | null>(null)
   const bestand = useRef<HTMLInputElement>(null)
 
   const af = isAf({ ski, niveau, feitje })
 
-  const kiesFoto = async (f: File | undefined) => {
+  const kiesFoto = (f: File | undefined) => {
+    if (bestand.current) bestand.current.value = ''
     if (!f) return
-    setFotoBezig(true)
     setFotoFout(null)
+    setBijsnijden(f)
+  }
+
+  const bijgesneden = async (blob: Blob) => {
     try {
-      const blob = await verkleinVierkant(f)
       const url = await new Promise<string>((ok, mis) => {
         const lezer = new FileReader()
         lezer.onload = () => ok(String(lezer.result))
@@ -164,12 +179,21 @@ export function ProfielFormulier({
         lezer.readAsDataURL(blob)
       })
       setFotoLokaal(url)
+      setOrigineel(bijsnijden)
     } catch (e) {
       setFotoFout(e instanceof Error ? e.message : 'Deze foto lukt niet. Probeer een andere.')
-    } finally {
-      setFotoBezig(false)
-      if (bestand.current) bestand.current.value = ''
     }
+    setBijsnijden(null)
+  }
+
+  if (bijsnijden) {
+    return (
+      <FotoBijsnijder
+        bestand={bijsnijden}
+        onKlaar={(b) => void bijgesneden(b)}
+        onAnnuleer={() => setBijsnijden(null)}
+      />
+    )
   }
 
   const opslaan = (e: React.FormEvent) => {
@@ -184,14 +208,14 @@ export function ProfielFormulier({
       <div className="profielformulier__foto">
         <Avatar naam={profiel.naam} pad={foto} lokaal={fotoLokaal} groot />
         <div className="profielformulier__fotoknoppen">
-          <button
-            type="button"
-            className="knop knop--secundair knop--klein"
-            onClick={() => bestand.current?.click()}
-            disabled={fotoBezig}
-          >
-            📸 {fotoBezig ? 'Bezig…' : foto || fotoLokaal ? 'Andere foto' : 'Foto kiezen'}
+          <button type="button" className="knop knop--secundair knop--klein" onClick={() => bestand.current?.click()}>
+            📸 {foto || fotoLokaal ? 'Andere foto' : 'Foto kiezen'}
           </button>
+          {origineel && fotoLokaal && (
+            <button type="button" className="tekstknop" onClick={() => setBijsnijden(origineel)}>
+              Opnieuw bijsnijden
+            </button>
+          )}
           {(foto || fotoLokaal) && (
             <button
               type="button"
@@ -199,6 +223,7 @@ export function ProfielFormulier({
               onClick={() => {
                 setFoto(null)
                 setFotoLokaal(null)
+                setOrigineel(null)
               }}
             >
               Foto weghalen
@@ -206,7 +231,7 @@ export function ProfielFormulier({
           )}
           <span className="klein">Optioneel</span>
         </div>
-        <input ref={bestand} type="file" accept="image/*" hidden onChange={(e) => void kiesFoto(e.target.files?.[0])} />
+        <input ref={bestand} type="file" accept="image/*" hidden onChange={(e) => kiesFoto(e.target.files?.[0])} />
       </div>
       {fotoFout && <p className="melding melding--fout">{fotoFout}</p>}
 
