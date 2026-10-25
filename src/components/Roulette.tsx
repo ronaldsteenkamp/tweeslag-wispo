@@ -65,6 +65,9 @@ export function Roulette({ naam, kamers, onTerug }: { naam: string; kamers?: Kam
   const [melding, setMelding] = useState<string | null>(null)
   const wiel = useRef<SVGGElement>(null)
   const bal = useRef<SVGCircleElement>(null)
+  // Waar het balletje nu ligt (graden, 0 = boven); een nieuwe draai begint daar
+  const balHoek = useRef(0)
+  const balStraal = useRef(95)
   const { hoek, draai } = useDraai()
 
   const spelers = useMemo(() => deelnemers(keuze, kamers, naam), [keuze, kamers, naam])
@@ -122,8 +125,13 @@ export function Roulette({ naam, kamers, onTerug }: { naam: string; kamers?: Kam
     const wielRest = (((balEind - (getal + 0.5) * vak) % 360) + 360) % 360
     const wielStart = hoek.current
     const wielDoel = wielStart + 360 * 3 + ((((wielRest - (wielStart % 360)) % 360) + 360) % 360)
-    const balStart = fractie() * 360
-    const balVrijDoel = balEind - 360 * 5 // het balletje rolt de andere kant op
+    // Het balletje beweegt ten opzichte van het wiel: eerst hard de andere kant op, dan steeds
+    // langzamer tot het stil in het vakje ligt (vanaf 85% draait het gewoon met het wiel mee).
+    // Zo komt het precies goed uit zonder sprongen, wat het wiel ook doet.
+    const relStart = balHoek.current - wielStart
+    const relVakje = (getal + 0.5) * vak
+    const relEind = relVakje + 360 * Math.floor((relStart - 360 * 6 - relVakje) / 360)
+    const straalStart = balStraal.current
     setBezig(true)
     setUitslag(null)
     await draai({
@@ -133,14 +141,17 @@ export function Roulette({ naam, kamers, onTerug }: { naam: string; kamers?: Kam
       onTik: tik,
       onFrame: (h, t) => {
         wiel.current?.setAttribute('transform', `rotate(${h})`)
-        // Vrij rollend balletje, dat aan het eind in het vakje valt en met het wiel meedraait
-        const vrij = balStart + (balVrijDoel - balStart) * (1 - Math.pow(1 - t, 3))
-        const inVakje = h + (getal + 0.5) * vak
-        const s = Math.min(1, Math.max(0, (t - 0.7) / 0.2))
-        const zacht = s * s * (3 - 2 * s)
-        const a = ((vrij + (inVakje - vrij) * zacht - 90) * Math.PI) / 180
-        const stuiter = t > 0.7 && t < 0.92 ? Math.abs(Math.sin(t * 60)) * 3 * (1 - zacht) : 0
-        const r = 95 - 22 * zacht + stuiter
+        const tb = Math.min(1, t / 0.85)
+        const rel = relStart + (relEind - relStart) * (1 - Math.pow(1 - tb, 3))
+        // Eerst uit het vakje terug de baan op (95), aan het eind vallen in het vakje (73) met een paar kleine hupjes
+        const zacht = (x: number) => x * x * (3 - 2 * x)
+        const op = zacht(Math.min(1, tb / 0.1))
+        const u = Math.min(1, Math.max(0, (tb - 0.55) / 0.45))
+        const hupje = 4 * Math.abs(Math.sin(Math.PI * 3 * u)) * (1 - u)
+        const r = straalStart + (95 - straalStart) * op - 22 * zacht(u) + hupje
+        balStraal.current = r
+        balHoek.current = h + rel
+        const a = ((h + rel - 90) * Math.PI) / 180
         bal.current?.setAttribute('cx', String(Math.cos(a) * r))
         bal.current?.setAttribute('cy', String(Math.sin(a) * r))
       },
