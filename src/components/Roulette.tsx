@@ -3,7 +3,6 @@ import type { Kamers } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
 import { deelnemers, fractie, schud, useDeelnemersKeuze, willekeurig } from '../lib/rad'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
-import { Sneeuw } from './Sneeuw'
 import { taartpunt, tik, useDraai } from './Wiel'
 
 /*
@@ -100,6 +99,13 @@ export function Roulette({
   }, [spelersSleutel, setSaldo])
 
   useEffect(() => {
+    if (!uitslag) return
+    const opToets = (e: KeyboardEvent) => e.key === 'Escape' && volgendeRonde()
+    window.addEventListener('keydown', opToets)
+    return () => window.removeEventListener('keydown', opToets)
+  })
+
+  useEffect(() => {
     if (!melding) return
     const id = window.setTimeout(() => setMelding(null), 2500)
     return () => window.clearTimeout(id)
@@ -180,41 +186,18 @@ export function Roulette({
 
   return (
     <div className="casino">
-      <section className="kaartje casino__kop golf">
-        <Sneeuw aantal={10} />
-        <h2 className="casino__titel">Josjes casino</h2>
-        <p className="klein">Nepfiches, geen echt geld en geen punten. Ze staan alleen op deze telefoon.</p>
-      </section>
-
       {n < 2 ? (
         <p className="melding">Kies minstens twee spelers (tik hieronder op Spelers).</p>
       ) : (
-        <section className="casino__tafel" aria-label="Roulettetafel">
-          <RouletteWiel n={n} wiel={wiel} bal={bal} hoek={hoek.current} />
-
-          <div aria-live="polite">
-            {uitslag && (
-              <div className="casino__uitslag">
-                <p className="casino__getal">
-                  <span className={`casino__bol casino__bol--${kleurVan(uitslag.getal)}`}>{uitslag.getal}</span>
-                  {uitslag.getal === 0 ? 'groen' : kleurVan(uitslag.getal)}
-                </p>
-                <p className="casino__klos">
-                  {uitslag.naam ? `${uitslag.naam} is de klos!` : '🍻 Iedereen drinkt!'}
-                </p>
-                <p>
-                  {uitslag.uitbetaald > uitslag.ingezet
-                    ? `Je wint ${fiches(uitslag.uitbetaald - uitslag.ingezet)} fiches 🎉`
-                    : uitslag.uitbetaald === uitslag.ingezet
-                      ? 'Quitte: je krijgt je inzet terug.'
-                      : `Je verliest ${fiches(uitslag.ingezet - uitslag.uitbetaald)} fiches.`}
-                </p>
-                <button type="button" className="knop casino__knop" onClick={volgendeRonde}>
-                  🔀 Volgende ronde
-                </button>
-              </div>
-            )}
+        <section className="casino__tafel" aria-label="Josjes casino">
+          <div className="casino__kopregel">
+            <h2 className="casino__titel">Josjes casino</h2>
+            <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
+              <span aria-hidden="true">🪙</span> {fiches(saldo)}
+            </p>
           </div>
+
+          <RouletteWiel n={n} wiel={wiel} bal={bal} hoek={hoek.current} />
 
           <div className="casino__veld">
             <Vak sleutel="0" label="0, iedereen drinkt" klasse="casino__vak casino__vak--nul" inzet={inzet} winnend={winnend('0')} onZet={zet} uit={!!uitslag || bezig}>
@@ -259,49 +242,7 @@ export function Roulette({
             </div>
           </div>
 
-          {!uitslag && (
-            <button
-              type="button"
-              className="knop knop--breed casino__knop casino__draai"
-              onClick={() => void draaiWiel()}
-              disabled={bezig || totaal === 0}
-            >
-              {bezig ? 'Het balletje rolt…' : totaal === 0 ? 'Zet eerst een fiche in' : 'Rien ne va plus!'}
-            </button>
-          )}
-
-        </section>
-      )}
-
-      {n >= 2 && (
-        <section className="casino__bak" aria-label="Je fiches">
-          <p className="casino__saldo">
-            <span aria-hidden="true">🪙</span> {fiches(saldo)} <small>fiches</small>
-          </p>
-          <div className="casino__fiches" role="radiogroup" aria-label="Fiche">
-            {FICHES.map((f) => (
-              <button
-                key={f}
-                type="button"
-                role="radio"
-                aria-checked={fiche === f}
-                className={`fiche fiche--${f}${fiche === f ? ' is-gekozen' : ''}`}
-                onClick={() => setFiche(f)}
-              >
-                {f}
-              </button>
-            ))}
-            <span className="casino__inzet">
-              Inzet <strong>{fiches(totaal)}</strong>
-            </span>
-          </div>
-          {totaal > 0 && !bezig && (
-            <button type="button" className="tekstknop casino__terug" onClick={inzetTerug}>
-              Inzet terugnemen
-            </button>
-          )}
-
-          {saldo === 0 && totaal === 0 && !bezig && (
+          {saldo === 0 && totaal === 0 && !bezig && !uitslag ? (
             <div className="casino__bank">
               <button
                 type="button"
@@ -319,6 +260,41 @@ export function Roulette({
                 </p>
               )}
             </div>
+          ) : (
+            <>
+              <div className="casino__bediening">
+                <div className="casino__fiches" role="radiogroup" aria-label="Fiche">
+                  {FICHES.map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      role="radio"
+                      aria-checked={fiche === f}
+                      className={`fiche fiche--${f}${fiche === f ? ' is-gekozen' : ''}`}
+                      onClick={() => setFiche(f)}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="knop casino__knop casino__draai"
+                  onClick={() => void draaiWiel()}
+                  disabled={bezig || totaal === 0 || !!uitslag}
+                >
+                  {bezig ? 'Rolt…' : totaal === 0 ? 'Zet in' : 'Rien ne va plus!'}
+                </button>
+              </div>
+              <p className="casino__inzetregel">
+                Inzet <strong>{fiches(totaal)}</strong>
+                {totaal > 0 && !bezig && (
+                  <button type="button" className="tekstknop casino__terug" onClick={inzetTerug}>
+                    terugnemen
+                  </button>
+                )}
+              </p>
+            </>
           )}
         </section>
       )}
@@ -327,6 +303,35 @@ export function Roulette({
         <summary>Spelers ({n})</summary>
         <DeelnemersKiezer kamers={kamers} naam={naam} />
       </details>
+      <p className="klein casino__uitleg">Nepfiches: geen echt geld en geen punten. Ze staan alleen op deze telefoon.</p>
+
+      {uitslag && (
+        <div className="dialoog-achtergrond dialoog-achtergrond--midden" onClick={volgendeRonde}>
+          <div
+            className="dialoog casino__popup"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Uitslag"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="casino__getal">
+              <span className={`casino__bol casino__bol--${kleurVan(uitslag.getal)}`}>{uitslag.getal}</span>
+              {uitslag.getal === 0 ? 'groen' : kleurVan(uitslag.getal)}
+            </p>
+            <p className="casino__klos">{uitslag.naam ? `${uitslag.naam} neemt een slok!` : '🍻 Iedereen drinkt!'}</p>
+            <p>
+              {uitslag.uitbetaald > uitslag.ingezet
+                ? `Je wint ${fiches(uitslag.uitbetaald - uitslag.ingezet)} fiches 🎉`
+                : uitslag.uitbetaald === uitslag.ingezet
+                  ? 'Quitte: je krijgt je inzet terug.'
+                  : `Je verliest ${fiches(uitslag.ingezet - uitslag.uitbetaald)} fiches.`}
+            </p>
+            <button type="button" className="knop knop--breed casino__knop" onClick={volgendeRonde}>
+              🔀 Volgende ronde
+            </button>
+          </div>
+        </div>
+      )}
 
       {melding && (
         <div className="toast" role="status">
