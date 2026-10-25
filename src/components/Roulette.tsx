@@ -327,7 +327,7 @@ export function Roulette({
                   : `Je verliest ${fiches(uitslag.ingezet - uitslag.uitbetaald)} fiches.`}
             </p>
             <button type="button" className="knop knop--breed casino__knop" onClick={volgendeRonde}>
-              🔀 Volgende ronde
+              Volgende ronde
             </button>
           </div>
         </div>
@@ -396,7 +396,7 @@ function RouletteWiel({
 }) {
   const vakken = n + 1
   const vak = 360 / vakken
-  const letter = vakken <= 13 ? 9 : vakken <= 25 ? 7 : 5.5
+  const letter = vakken <= 13 ? 9 : vakken <= 25 ? 8 : 7
   return (
     <svg className="casino__wiel" viewBox="-118 -118 236 236" role="img" aria-label={`Roulettewiel met 0 tot en met ${n}`}>
       <defs>
