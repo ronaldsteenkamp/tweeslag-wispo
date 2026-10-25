@@ -81,8 +81,8 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
             </p>
             {nu < vertrek && (
               <p className="hero__klein">
-                De bus vertrekt om {config.vertrek.slice(11)}. Nog {Math.ceil((vertrek.getTime() - nu.getTime()) / 60000)}{' '}
-                minuten!
+                De bus vertrekt om {config.vertrek.slice(11)}. Nog{' '}
+                {Math.ceil((vertrek.getTime() - nu.getTime()) / 60000)} minuten!
               </p>
             )}
           </>
@@ -110,7 +110,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
           <span aria-hidden="true">📝</span>
           <span>
             <strong>Vul je profiel in</strong>
-            <small>Ski of board, je niveau en iets wat niemand van je weet.</small>
+            <small>Ski of board, je niveau, een geheim feitje, je karaokenummer en je grootste angst.</small>
           </span>
         </button>
       )}
@@ -147,7 +147,6 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
 
       {/* Helemaal onderaan */}
       {fase !== 'na' && <MeldingenKaart />}
-
     </div>
   )
 }
@@ -173,7 +172,10 @@ function AppKnop() {
   return (
     <section className="kaartje">
       <h2>Liften, weer en webcams</h2>
-      <p>Welke liften draaien er, hoe wordt het weer en hoe ziet het er nu uit op de berg? Kijk live mee via de webcams in de officiële app.</p>
+      <p>
+        Welke liften draaien er, hoe wordt het weer en hoe ziet het er nu uit op de berg? Kijk live mee via de webcams
+        in de officiële app.
+      </p>
       {p === 'anders' ? (
         <div className="knoppenrij">
           <a className="knop knop--primair" href={links.ios} target="_blank" rel="noopener">

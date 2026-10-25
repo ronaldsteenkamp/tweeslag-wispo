@@ -30,7 +30,7 @@ export const NIVEAUS = [
   'Zwarte piste voor ontbijt',
 ]
 
-export const MAX = { feitje: 140, karaoke: 60, angst: 80 }
+export const MAX = { feitje: 140, karaoke: 60, artiest: 60, angst: 80 }
 
 /** Zoals de rij op de server */
 export interface ProfielRij {
@@ -38,8 +38,9 @@ export interface ProfielRij {
   ski: Ski
   niveau: number
   feitje: string
-  karaoke: string | null
-  angst: string | null
+  karaoke: string
+  artiest: string
+  angst: string
   foto_pad: string | null
   bijgewerkt?: string
 }
@@ -51,6 +52,7 @@ export interface Profiel {
   niveau: number | null
   feitje: string
   karaoke: string
+  artiest: string
   angst: string
   /** Pad van de foto op de server */
   foto: string | null
@@ -78,6 +80,7 @@ export const leegProfiel = (naam: string): Profiel => ({
   niveau: null,
   feitje: '',
   karaoke: '',
+  artiest: '',
   angst: '',
   foto: null,
   fotoLokaal: null,
@@ -89,15 +92,17 @@ const vanRij = (r: ProfielRij): Profiel => ({
   niveau: r.niveau,
   feitje: r.feitje,
   karaoke: r.karaoke ?? '',
+  artiest: r.artiest ?? '',
   angst: r.angst ?? '',
   foto: r.foto_pad,
   fotoLokaal: null,
   verstuurd: true,
 })
 
-/** Verplicht voor "profiel af": ski/board, niveau en feitje */
-export const isAf = (p: Pick<Profiel, 'ski' | 'niveau' | 'feitje'> | null | undefined) =>
-  !!p && !!p.ski && !!p.niveau && p.feitje.trim().length > 0
+/** Alle vragen zijn verplicht (alleen de foto niet) */
+export const isAf = (
+  p: Pick<Profiel, 'ski' | 'niveau' | 'feitje' | 'karaoke' | 'artiest' | 'angst'> | null | undefined,
+) => !!p && !!p.ski && !!p.niveau && [p.feitje, p.karaoke, p.artiest, p.angst].every((t) => (t ?? '').trim().length > 0)
 
 /** Heeft deze naam al een volledig profiel (hier of op de server)? */
 export function profielAfVoor(naam: string) {
@@ -114,11 +119,18 @@ export function useMijnProfiel(): Profiel | null {
   const [naam] = useOpgeslagen<string | null>('naam', null)
   const [profiel] = useOpgeslagen<Profiel | null>(PROFIEL, null)
   if (!naam) return null
-  return profiel?.naam === naam ? profiel : leegProfiel(naam)
+  // Aanvullen: een profiel van een eerdere versie van de app mist misschien velden (zoals artiest)
+  return profiel?.naam === naam ? { ...leegProfiel(naam), ...profiel } : leegProfiel(naam)
 }
 
 export function slaProfielOp(p: Profiel) {
-  schrijfEnMeld(PROFIEL, { ...p, feitje: p.feitje.trim(), karaoke: p.karaoke.trim(), angst: p.angst.trim() })
+  schrijfEnMeld(PROFIEL, {
+    ...p,
+    feitje: p.feitje.trim(),
+    karaoke: p.karaoke.trim(),
+    artiest: p.artiest.trim(),
+    angst: p.angst.trim(),
+  })
   schrijfEnMeld(TE_VERSTUREN, true)
   void verstuurProfiel()
 }
@@ -171,8 +183,9 @@ export async function verstuurProfiel() {
         ski: p.ski,
         niveau: p.niveau,
         feitje: p.feitje.slice(0, MAX.feitje),
-        karaoke: p.karaoke.slice(0, MAX.karaoke) || null,
-        angst: p.angst.slice(0, MAX.angst) || null,
+        karaoke: p.karaoke.slice(0, MAX.karaoke),
+        artiest: p.artiest.slice(0, MAX.artiest),
+        angst: p.angst.slice(0, MAX.angst),
         foto_pad: pad,
       },
       { onConflict: 'naam' },
@@ -224,7 +237,7 @@ async function haalProfielenNu() {
     const c = await cb
     const { data, error } = await c
       .from('profielen')
-      .select('naam, ski, niveau, feitje, karaoke, angst, foto_pad, bijgewerkt')
+      .select('naam, ski, niveau, feitje, karaoke, artiest, angst, foto_pad, bijgewerkt')
     if (error) throw error
     const rijen = (data ?? []) as ProfielRij[]
     schrijfEnMeld<Cache>(CACHE, { rijen, opgehaald: Date.now() })
@@ -261,7 +274,11 @@ export async function wisProfiel(rij: ProfielRij): Promise<string | null> {
   const c = await cb
   const { error } = await c.from('profielen').delete().eq('naam', rij.naam)
   if (error) return `Wissen lukte niet: ${error.message}`
-  if (rij.foto_pad) await c.storage.from(BUCKET).remove([rij.foto_pad]).catch(() => {})
+  if (rij.foto_pad)
+    await c.storage
+      .from(BUCKET)
+      .remove([rij.foto_pad])
+      .catch(() => {})
   await haalProfielen()
   return null
 }

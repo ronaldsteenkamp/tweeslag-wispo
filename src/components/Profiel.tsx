@@ -93,7 +93,7 @@ function Niveau({ niveau }: { niveau: number }) {
 }
 
 /** Een bekeken profiel: van de server, of je eigen (ook als het nog verstuurd moet worden) */
-type Bekeken = Pick<ProfielRij, 'naam' | 'ski' | 'niveau' | 'feitje' | 'karaoke' | 'angst' | 'foto_pad'> & {
+type Bekeken = Pick<ProfielRij, 'naam' | 'ski' | 'niveau' | 'feitje' | 'karaoke' | 'artiest' | 'angst' | 'foto_pad'> & {
   fotoLokaal?: string | null
 }
 
@@ -119,18 +119,17 @@ function ProfielInhoud({ p }: { p: Bekeken }) {
           <dt>🤫 Wat niemand van me weet</dt>
           <dd>{p.feitje}</dd>
         </div>
-        {p.karaoke && (
-          <div>
-            <dt>🎤 Karaokenummer of buslied</dt>
-            <dd>{p.karaoke}</dd>
-          </div>
-        )}
-        {p.angst && (
-          <div>
-            <dt>🥶 Grootste angst</dt>
-            <dd>{p.angst}</dd>
-          </div>
-        )}
+        <div>
+          <dt>🎤 Karaokenummer of buslied</dt>
+          <dd>
+            {p.karaoke}
+            {p.artiest && <span className="profielkaart__artiest"> – {p.artiest}</span>}
+          </dd>
+        </div>
+        <div>
+          <dt>🥶 Grootste angst</dt>
+          <dd>{p.angst}</dd>
+        </div>
       </dl>
     </div>
   )
@@ -152,6 +151,7 @@ export function ProfielFormulier({
   const [niveau, setNiveau] = useState(profiel.niveau)
   const [feitje, setFeitje] = useState(profiel.feitje)
   const [karaoke, setKaraoke] = useState(profiel.karaoke)
+  const [artiest, setArtiest] = useState(profiel.artiest)
   const [angst, setAngst] = useState(profiel.angst)
   const [foto, setFoto] = useState(profiel.foto)
   const [fotoLokaal, setFotoLokaal] = useState(profiel.fotoLokaal)
@@ -161,7 +161,7 @@ export function ProfielFormulier({
   const [bijsnijden, setBijsnijden] = useState<File | null>(null)
   const bestand = useRef<HTMLInputElement>(null)
 
-  const af = isAf({ ski, niveau, feitje })
+  const af = isAf({ ski, niveau, feitje, karaoke, artiest, angst })
 
   const kiesFoto = (f: File | undefined) => {
     if (bestand.current) bestand.current.value = ''
@@ -199,7 +199,7 @@ export function ProfielFormulier({
   const opslaan = (e: React.FormEvent) => {
     e.preventDefault()
     if (!af) return
-    slaProfielOp({ ...profiel, ski, niveau, feitje, karaoke, angst, foto, fotoLokaal })
+    slaProfielOp({ ...profiel, ski, niveau, feitje, karaoke, artiest, angst, foto, fotoLokaal })
     onKlaar()
   }
 
@@ -284,7 +284,13 @@ export function ProfielFormulier({
         max={MAX.karaoke}
         onWijzig={setKaraoke}
         placeholder="Bijv. Dancing Queen"
-        optioneel
+      />
+      <Tekstveld
+        label="🎙️ Van welke artiest?"
+        waarde={artiest}
+        max={MAX.artiest}
+        onWijzig={setArtiest}
+        placeholder="Bijv. ABBA"
       />
       <Tekstveld
         label="🥶 Grootste angst"
@@ -292,10 +298,9 @@ export function ProfielFormulier({
         max={MAX.angst}
         onWijzig={setAngst}
         placeholder="Spinnen, stoeltjeslift, stilte in een lift met onbekenden"
-        optioneel
       />
 
-      {!af && <p className="klein">Vul ski of board, je niveau en een feitje in om op te slaan.</p>}
+      {!af && <p className="klein">Beantwoord alle vragen om op te slaan. Alleen de foto mag je overslaan.</p>}
       <button type="submit" className="knop knop--primair knop--breed" disabled={!af}>
         Opslaan
       </button>
@@ -313,7 +318,6 @@ function Tekstveld({
   onWijzig,
   placeholder,
   lang,
-  optioneel,
 }: {
   label: string
   waarde: string
@@ -321,7 +325,6 @@ function Tekstveld({
   onWijzig: (w: string) => void
   placeholder: string
   lang?: boolean
-  optioneel?: boolean
 }) {
   const props = {
     className: 'invoer',
@@ -333,10 +336,7 @@ function Tekstveld({
   return (
     <label className="veld">
       <span className="veld__kop">
-        <span>
-          {label}
-          {optioneel && <span className="veld__optioneel"> (optioneel)</span>}
-        </span>
+        <span>{label}</span>
         <span className={`teller${waarde.length >= max ? ' teller--klaar' : ''}`}>
           {waarde.length}/{max}
         </span>

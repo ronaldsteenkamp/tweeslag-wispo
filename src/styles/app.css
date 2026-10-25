@@ -2697,8 +2697,7 @@ button {
   margin-bottom: 0;
 }
 
-.veld__optioneel {
-  font-weight: 400;
+.profielkaart__artiest {
   color: var(--tekst-zacht);
 }
 
