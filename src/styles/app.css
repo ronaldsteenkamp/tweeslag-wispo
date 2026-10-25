@@ -3207,8 +3207,9 @@ button {
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  /* Titel en saldo liggen over de lege hoeken naast het ronde wiel */
-  margin-bottom: -22px;
+  /* Logo en saldo liggen over de lege hoeken naast het ronde wiel (niet verder: anders
+     raakt CASINO de rand van het wiel) */
+  margin-bottom: -12px;
 }
 
 .casino__titel {
@@ -3269,7 +3270,7 @@ button {
 
 /* Het wiel groeit mee met de schermhoogte, zodat alles op één scherm past */
 .casino__wiel {
-  width: clamp(130px, calc(100dvh - 600px), 300px);
+  width: clamp(130px, calc(100dvh - 610px), 300px);
   height: auto;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
 }
