@@ -10,7 +10,7 @@ Web-app (PWA) voor de wintersport van G.S.B.V. Tweeslag: aftelklok, planning, pa
 > | `planning.json` | Per dag het programma (tijd, titel, omschrijving, locatie) |
 > | `paklijst.json` | Categorieën met spullen om mee te nemen |
 > | `kamers.json` | Kamers met nummer, naam en bewoners |
-> | `spel.json` | Dagelijkse challenges, punten en de bingovakjes |
+> | `spel.json` | Dagelijkse challenges, punten en de busbingovakjes |
 >
 > Pas een bestand aan, zet het op GitHub en de app haalt de nieuwe versie op zodra iemand internet heeft. Zonder internet ziet iedereen de laatst bewaarde versie.
 
@@ -68,11 +68,14 @@ Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn 
         "omschrijving": "Maak een groepsfoto bij de top van de gletsjer.", "punten": 20 }
     ] }
   ],
-  "bingo": { "vrijVakje": "❄️ Vrij vakje", "vakjes": ["Hond op de piste", "..."] } }
+  "bingo": { "vrijVakje": "🏐 Vrij!", "vakjes": ["🚧 File", "😴 Iemand snurkt", "..."] } }
 ```
 - Challenges van een dag gaan open op `datum` om `openOm` (zonder `openOm` om 07:00).
 - Elke challenge heeft een uniek `id` (kleine letters, geen spaties). **Verander een `id` niet meer tijdens de reis**, anders is iemands vinkje weg. De titel en omschrijving mag je wel aanpassen.
-- De bingokaart heeft 24 vakjes plus een vrij vakje in het midden. Zet er minstens 24 in. Bij meer kiest elke telefoon er willekeurig 24, in een eigen volgorde die daarna vast blijft.
+- De **busbingo** is voor in de nachtbus naar Les Deux Alpes (vertrek vr 5 maart 19:30, aankomst za 6 maart 09:00). In de app heet hij overal *Busbingo*; in de code, `spel.json` (`bingo`, `bingoVakje` enz.) en de database heet hij nog gewoon `bingo`.
+- De kaart heeft 24 vakjes plus een vrij vakje in het midden. Zet er minstens 24 in (nu 39). Bij meer kiest elke telefoon er willekeurig 24, in een eigen volgorde die daarna vast blijft. Punten: `bingoVakje` per vakje, `bingoRij` per rij, kolom of diagonaal en `bingoVolleKaart` voor een volle kaart; ze tellen mee in het klassement.
+- Een vakje is een emoji plus een korte tekst. Houd de tekst op een telefoon van 360 px breed binnen het vakje: max. 2 regels van zo'n 10 tekens, een lang woord eventueel met een streepje (`Wagen-ziek`).
+- Haal je een vakje uit de lijst, dan krijgt elke telefoon er bij het openen een ander willekeurig vakje voor terug, en het vinkje op het oude vakje verdwijnt. Zo kregen telefoons met een kaart van de vroegere pistebingo vanzelf een nieuwe busbingokaart, zonder oude punten.
 - Het spel gaat open op vrijdag 5 maart 2027 om 18:00.
 
 ### Weer en sneeuw
@@ -172,8 +175,8 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 ### Scorebord (fase 2)
 Migratie: `supabase/migrations/0002_scorebord.sql` (uitvoeren na 0001).
 
-- **Versturen:** elke telefoon stuurt zijn volledige spelstand (afgevinkte challenges, bingovakjes en de punten) naar de tabel `voortgang`. Zonder internet blijft er een markering "nog versturen" staan; zodra er weer verbinding is gaat de actuele stand alsnog. Omdat steeds de hele stand gaat, maakt dubbel of laat versturen niets uit.
-- **Punten:** de telefoon rekent met dezelfde regels uit `spel.json` als het scherm *Jouw score*; de server bewaart de punten én wat er is afgevinkt, met grenzen (max. 5000 challengepunten, 1000 bingopunten). Bewust niet op de server berekend: de spelregels staan in `spel.json` op de website en niet in de database, dus dan zou je bij elke wijziging ook de database moeten bijwerken. Klopt er iets niet, dan corrigeert een beheerder.
+- **Versturen:** elke telefoon stuurt zijn volledige spelstand (afgevinkte challenges, busbingovakjes en de punten) naar de tabel `voortgang`. Zonder internet blijft er een markering "nog versturen" staan; zodra er weer verbinding is gaat de actuele stand alsnog. Omdat steeds de hele stand gaat, maakt dubbel of laat versturen niets uit.
+- **Punten:** de telefoon rekent met dezelfde regels uit `spel.json` als het scherm *Jouw score*; de server bewaart de punten én wat er is afgevinkt, met grenzen (max. 5000 challengepunten, 1000 busbingopunten). Bewust niet op de server berekend: de spelregels staan in `spel.json` op de website en niet in de database, dus dan zou je bij elke wijziging ook de database moeten bijwerken. Klopt er iets niet, dan corrigeert een beheerder.
 - **Klassement:** in *Spel → Klassement*, per kamer (opgeteld) en per persoon; je eigen kamer en naam zijn uitgelicht. Het ververst live (Supabase Realtime) en elke 30 seconden als vangnet. Zonder verbinding zie je de laatst bekende stand.
 - **Bonuspunten en correcties:** beheerders zien onder het klassement een formulier: kamer of persoon kiezen, punten (min-teken voor aftrek) en een reden die iedereen ziet, bijvoorbeeld *+25 kamer Gletsjer: beste après-ski-outfit*. Correcties op een persoon gaan op naam, dus ze blijven gelden als iemand van telefoon wisselt. Een correctie verwijder je met het kruisje.
 

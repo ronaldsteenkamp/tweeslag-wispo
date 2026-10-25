@@ -69,6 +69,11 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   // De bingokaart wordt één keer per telefoon geschud en daarna bewaard
   const kaart = useMemo(() => maakKaart(data.bingo.vakjes, lees('spel.bingo.kaart', null)), [data])
   useEffect(() => schrijf('spel.bingo.kaart', kaart), [kaart])
+  // Vinkjes van vakjes die niet (meer) op de kaart staan weg, bijv. van de oude pistebingo
+  useEffect(() => {
+    const opKaart = new Set(kaart)
+    if (gemarkeerd.some((t) => !opKaart.has(t))) setGemarkeerd(gemarkeerd.filter((t) => opKaart.has(t)))
+  }, [kaart, gemarkeerd, setGemarkeerd])
 
   const gedaanSet = useMemo(() => new Set(gedaan), [gedaan])
   const gemarkeerdSet = useMemo(() => new Set(gemarkeerd), [gemarkeerd])
@@ -95,7 +100,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
           {challengePunten + bingo.totaal} <span>punten</span>
         </p>
         <p className="score__deel">
-          Challenges {challengePunten} · Bingo {bingo.totaal}
+          Challenges {challengePunten} · Busbingo {bingo.totaal}
         </p>
         <p className="klein">
           {backendIngesteld
@@ -114,7 +119,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             className={`segment__knop${onderdeel === o ? ' is-actief' : ''}`}
             onClick={() => setOnderdeel(o)}
           >
-            {o === 'challenges' ? 'Challenges' : o === 'bingo' ? 'Bingo' : o === 'stemmen' ? 'Stemmen' : 'Klassement'}
+            {o === 'challenges' ? 'Challenges' : o === 'bingo' ? 'Busbingo' : o === 'stemmen' ? 'Stemmen' : 'Klassement'}
           </button>
         ))}
       </div>
@@ -265,7 +270,7 @@ function Bingo({
 
   useEffect(() => {
     if (score.lijnen > vorigeLijnen.current) {
-      setFeest(score.vol ? `VOLLE KAART! +${punten.bingoVolleKaart}` : `BINGO! +${punten.bingoRij}`)
+      setFeest(score.vol ? `VOLLE KAART! +${punten.bingoVolleKaart}` : `BUSBINGO! +${punten.bingoRij}`)
     }
     vorigeLijnen.current = score.lijnen
   }, [score.lijnen, score.vol, punten])
@@ -279,11 +284,11 @@ function Bingo({
   return (
     <>
       <p className="klein">
-        Tik een vakje aan als je het ziet. {punten.bingoVakje} punten per vakje, {punten.bingoRij} per rij (ook
+        Busbingo voor in de nachtbus. Tik een vakje aan als je het ziet. {punten.bingoVakje} punten per vakje, {punten.bingoRij} per rij (ook
         kolommen en diagonalen) en {punten.bingoVolleKaart} voor een volle kaart.
       </p>
-      {tekort && <p className="melding">Let op: spel.json heeft minder dan 24 bingovakjes.</p>}
-      <div className="bingo" role="grid" aria-label="Ski-bingo">
+      {tekort && <p className="melding">Let op: spel.json heeft minder dan 24 busbingovakjes.</p>}
+      <div className="bingo" role="grid" aria-label="Busbingo">
         {Array.from({ length: 25 }, (_, i) => {
           const tekst = vakjeTekst(kaart, i)
           const aan = score.aan(i)
@@ -314,7 +319,7 @@ function Bingo({
       </p>
       {feest && (
         <div className="feest" role="status">
-          ❄️ {feest} 🎉
+          🚌 {feest} 🎉
         </div>
       )}
     </>
