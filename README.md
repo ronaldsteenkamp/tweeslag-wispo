@@ -140,6 +140,11 @@ npm run build
 npm run preview
 ```
 
+Het rekenwerk van het rad (`src/lib/radwiskunde.ts`: waar het rad stopt, pistes verdelen, tekst in de vakken) heeft tests. Die draaien met Node 22.18 of nieuwer:
+```bash
+npm test
+```
+
 ### Testen alsof het een andere dag is
 - `?nu=2027-03-08T10:00` doet alsof het dat moment is (ook `?nu=2027-03-08`). Zo kun je Home, de planning en het spel tijdens de reis bekijken.
 - `?unlock=1` opent het spel en alle challenges meteen.

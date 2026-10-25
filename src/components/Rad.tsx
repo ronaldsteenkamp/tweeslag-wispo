@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PISTE_KLEUREN, useData, type Kamers, type PisteKleur, type Rad as RadData } from '../lib/data'
-import { useOpgeslagen } from '../lib/opslag'
-import { deelnemers, fractie, initialen, kies, schud, useDeelnemersKeuze, willekeurig } from '../lib/rad'
+import { lees, useOpgeslagen } from '../lib/opslag'
+import { BevestigDialoog } from './BevestigDialoog'
+import { deelnemers, fractie, initialen, kies, useDeelnemersKeuze, willekeurig } from '../lib/rad'
+import { doelHoek, vakTekst, verspreid } from '../lib/radwiskunde'
 import { DataStatus } from './DataStatus'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
 import { Roulette } from './Roulette'
@@ -19,6 +21,8 @@ const SOORTEN: { waarde: Soort; label: string }[] = [
 
 const KLEUR_EMOJI: Record<PisteKleur, string> = { groen: '🟢', blauw: '🔵', rood: '🔴', zwart: '⚫' }
 const KLEUR_NAAM: Record<PisteKleur, string> = { groen: 'Groene', blauw: 'Blauwe', rood: 'Rode', zwart: 'Zwarte' }
+/** Rand van een pistevak in de kleur van de piste (blauw lichter dan het clubblauw, zwart met een witte rand) */
+const PISTE_RAND: Record<PisteKleur, string> = { groen: '#22a447', blauw: '#3f7df0', rood: '#e0283f', zwart: '#111111' }
 
 /** Vakken om en om donkerblauw, lichtblauw en wit; tekst die op elke kleur leesbaar is */
 const VAKKLEUREN = [
@@ -30,48 +34,17 @@ const VAKKLEUREN = [
 /** Kleur van vak i, zo dat twee buren (ook het laatste en het eerste vak) nooit gelijk zijn */
 const vakKleur = (i: number, n: number) => VAKKLEUREN[n % 3 === 1 && i === n - 1 ? 1 : i % 3]
 
-/**
- * Pistes zo over het rad verdelen dat de kleuren gelijkmatig rondom liggen en dezelfde kleur zo min
- * mogelijk naast elkaar staat ("gewogen om de beurt": elke kleur spaart punten op naar zijn aantal,
- * wie de meeste heeft is aan de beurt). Startpunten en de volgorde binnen een kleur zijn elke keer anders.
- */
-function verspreidEenKeer<T extends { kleur: PisteKleur }>(lijst: T[]): T[] {
-  const perKleur = new Map<PisteKleur, T[]>()
-  for (const x of schud(lijst)) perKleur.set(x.kleur, [...(perKleur.get(x.kleur) ?? []), x])
-  const groepen = [...perKleur.values()]
-  const tegoed = groepen.map((g) => fractie() * g.length)
-  const gebruikt = groepen.map(() => 0)
-  const uit: T[] = []
-  while (uit.length < lijst.length) {
-    let beste = -1
-    groepen.forEach((g, i) => {
-      tegoed[i] += g.length
-      if (gebruikt[i] < g.length && (beste < 0 || tegoed[i] > tegoed[beste])) beste = i
-    })
-    uit.push(groepen[beste][gebruikt[beste]++])
-    tegoed[beste] -= lijst.length
-  }
-  return uit
-}
-
-/** Hoeveel buren (rondom, dus ook laatste en eerste) dezelfde kleur hebben */
-const gelijkeBuren = (lijst: { kleur: PisteKleur }[]) =>
-  lijst.filter((x, i) => lijst.length > 1 && x.kleur === lijst[(i + 1) % lijst.length].kleur).length
-
-/** Een paar keer verdelen en de verdeling met de minste gelijke buren houden */
-function verspreid<T extends { kleur: PisteKleur }>(lijst: T[]): T[] {
-  let beste = verspreidEenKeer(lijst)
-  for (let poging = 0; poging < 30 && gelijkeBuren(beste) > 0; poging++) {
-    const nieuw = verspreidEenKeer(lijst)
-    if (gelijkeBuren(nieuw) < gelijkeBuren(beste)) beste = nieuw
-  }
-  return beste
-}
-
 interface Optie {
   waarde: string
   kleur?: PisteKleur
 }
+
+interface EigenLijst {
+  naam: string
+  opties: string[]
+}
+
+const MAX_LIJSTEN = 8
 
 interface Uitslag {
   soort: Soort
@@ -106,7 +79,12 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
   const [soort, setSoort] = useOpgeslagen<Soort>('rad.soort', 'klos')
   const [keuze] = useDeelnemersKeuze()
   const [kleuren, setKleuren] = useOpgeslagen<PisteKleur[]>('rad.kleuren', PISTE_KLEUREN)
-  const [eigen, setEigen] = useOpgeslagen<string[]>('rad.eigen', ['Ja', 'Nee'])
+  // Eigen lijsten; de eerste neemt de opties over van toen er nog maar één lijst was ('rad.eigen')
+  const eersteLijst = useMemo(() => [{ naam: 'Lijst 1', opties: lees<string[]>('rad.eigen', ['Ja', 'Nee']) }], [])
+  const [lijsten, setLijsten] = useOpgeslagen<EigenLijst[]>('rad.eigenLijsten', eersteLijst)
+  const [lijstNr, setLijstNr] = useOpgeslagen('rad.eigenLijst', 0)
+  const actief = Math.min(lijstNr, lijsten.length - 1)
+  const eigen = lijsten[actief].opties
   // Drankjes: welke uit rad.json niet meedoen, en zelf toegevoegde
   const [drankUit, setDrankUit] = useOpgeslagen<string[]>('rad.drankjes.uit', [])
   const [eigenDrank, setEigenDrank] = useOpgeslagen<string[]>('rad.drankjes.eigen', [])
@@ -128,7 +106,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
   // Per rad apart, zodat bijvoorbeeld een nieuwe kamerverdeling de pistes niet opnieuw schudt
   const namen = useMemo(() => deelnemers(keuze, kamers, naam).map((n) => ({ waarde: n })), [keuze, kamers, naam])
   const pistes = useMemo(
-    () => verspreid(rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur }))),
+    () => verspreid(rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur })), fractie),
     [rad.pistes, kleuren],
   )
   const drankjes = useMemo(
@@ -177,12 +155,9 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     // Deze lijst blijft op het rad staan tot de uitslag er is, ook als er intussen iets verandert
     const lijst = opties
     const n = lijst.length
-    const vak = 360 / n
     const i = willekeurig(n)
     // Vak i komt onder de pijl (boven), ergens binnen het vak en niet precies op de grens
-    const doelRest = (((360 - (i + 0.5) * vak + (fractie() - 0.5) * vak * 0.7) % 360) + 360) % 360
-    const nu = hoek.current
-    const doel = nu + 360 * 4 + ((((doelRest - (nu % 360)) % 360) + 360) % 360)
+    const doel = doelHoek(i, n, hoek.current, fractie())
     window.clearTimeout(popupTimer.current)
     setVast((oud) => ({ opties: lijst, winnaar: null, ronde: (oud?.ronde ?? 0) + 1 }))
     setBezig(true)
@@ -191,7 +166,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     await draai({
       doel,
       duur: 3300 + fractie() * 700,
-      vak,
+      vak: 360 / n,
       onTik: geluidAan
         ? () => {
             tik()
@@ -226,14 +201,26 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
           ? 'Vul minstens twee opties in.'
           : 'Kies minstens twee drankjes.'
 
+  // Met een toetsenbord: pijltjes (en Home/End) gaan naar het vorige of volgende rad
+  const opPijltje = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const nu = SOORTEN.findIndex((s) => s.waarde === soort)
+    const stap = { ArrowLeft: -1, ArrowRight: 1 }[e.key]
+    const nieuw = e.key === 'Home' ? 0 : e.key === 'End' ? SOORTEN.length - 1 : stap ? (nu + stap + SOORTEN.length) % SOORTEN.length : -1
+    if (nieuw < 0) return
+    e.preventDefault()
+    setSoort(SOORTEN[nieuw].waarde)
+    ;(e.currentTarget.children[nieuw] as HTMLElement | undefined)?.focus()
+  }
+
   const keuzebalk = (
-    <div className="segment segment--vijf" role="tablist" aria-label="Welk rad">
+    <div className="segment segment--vijf" role="tablist" aria-label="Welk rad" onKeyDown={opPijltje}>
       {SOORTEN.map((s) => (
         <button
           key={s.waarde}
           type="button"
           role="tab"
           aria-selected={soort === s.waarde}
+          tabIndex={soort === s.waarde ? 0 : -1}
           className={`segment__knop${soort === s.waarde ? ' is-actief' : ''}`}
           onClick={() => setSoort(s.waarde)}
           disabled={bezig || casinoBezig}
@@ -322,7 +309,9 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
             </div>
           </fieldset>
         )}
-        {soort === 'eigen' && <EigenOpties opties={eigen} onWijzig={setEigen} />}
+        {soort === 'eigen' && (
+          <EigenLijsten lijsten={lijsten} actief={actief} onKies={setLijstNr} onWijzig={setLijsten} />
+        )}
         {soort === 'drankje' && (
           <DrankKiezer
             vast={rad.drankjes}
@@ -386,17 +375,27 @@ function RadWiel({
 }) {
   const n = Math.max(opties.length, 1)
   const vak = 360 / n
-  const letter = n <= 6 ? 11 : n <= 10 ? 9 : n <= 16 ? 7.5 : 6
+  const { letter, ruimte, maxTekens } = vakTekst(n)
   // Pas bij heel veel namen initialen; anders kleinere tekst (en afkappen)
   const kort = soort === 'klos' && n > 40
-  // Tekst loopt van de rand (92) naar binnen tot waar het vak nog hoog genoeg is voor een regel
-  const binnenrand = Math.max(22, (letter * 1.1 * n) / (2 * Math.PI))
-  const maxTekens = Math.floor((92 - binnenrand) / (letter * 0.56))
   const label = (o: Optie) => {
     const t = kort ? initialen(o.waarde) : o.waarde
-    const tekst = t.length > maxTekens ? `${t.slice(0, maxTekens - 1)}…` : t
-    return o.kleur ? `${tekst} ${KLEUR_EMOJI[o.kleur]}` : tekst
+    return t.length > maxTekens ? `${t.slice(0, maxTekens - 1)}…` : t
   }
+
+  // Afkappen gaat op aantal tekens; is een tekst met brede letters (W, M) toch te lang, dan iets smaller maken
+  useLayoutEffect(() => {
+    groep.current?.querySelectorAll<SVGTextElement>('.radkaart__vaktekst').forEach((t) => {
+      t.removeAttribute('textLength')
+      t.removeAttribute('lengthAdjust')
+      const max = Number(t.dataset.ruimte)
+      if (t.getComputedTextLength() > max) {
+        t.setAttribute('textLength', String(max))
+        t.setAttribute('lengthAdjust', 'spacingAndGlyphs')
+      }
+    })
+  }, [groep, opties, ruimte])
+
   return (
     <svg className="radkaart__wiel" viewBox="-115 -115 230 230" role="img" aria-label={`Rad met ${opties.length} vakken`}>
       <circle r="106" fill="var(--tweeslag-donkerblauw)" stroke="#ffffff" strokeWidth="3" />
@@ -406,12 +405,23 @@ function RadWiel({
         {opties.length >= 2 &&
           opties.map((o, i) => {
             const kleur = vakKleur(i, n)
+            // Pistes: een rand in de kleur van de piste, de tekst schuift iets naar binnen
+            const rand = o.kleur ? 7 : 0
             return (
               <g key={`${i}-${o.waarde}`}>
                 <path d={taartpunt(100, i * vak, (i + 1) * vak)} fill={kleur.vlak} stroke="var(--tweeslag-donkerblauw)" strokeWidth="0.6" />
+                {o.kleur && (
+                  <path
+                    d={taartpunt(100, i * vak, (i + 1) * vak, 100 - rand)}
+                    fill={PISTE_RAND[o.kleur]}
+                    stroke="#ffffff"
+                    strokeWidth="0.6"
+                  />
+                )}
                 <text
                   transform={`rotate(${(i + 0.5) * vak - 90})`}
-                  x="92"
+                  x={92 - rand}
+                  data-ruimte={ruimte - rand}
                   y={letter * 0.35}
                   textAnchor="end"
                   fontSize={letter}
@@ -590,6 +600,89 @@ function DrankKiezer({
         </button>
       </form>
     </fieldset>
+  )
+}
+
+/** Meerdere eigen lijsten (bijv. "Spelletje", "Wat eten we?"): kiezen, hernoemen, toevoegen en weghalen */
+function EigenLijsten({
+  lijsten,
+  actief,
+  onKies,
+  onWijzig,
+}: {
+  lijsten: EigenLijst[]
+  actief: number
+  onKies: (i: number) => void
+  onWijzig: (l: EigenLijst[]) => void
+}) {
+  const [weghalen, setWeghalen] = useState(false)
+  const lijst = lijsten[actief]
+  const naam = (l: EigenLijst, i: number) => l.naam.trim() || `Lijst ${i + 1}`
+  const zet = (nieuw: Partial<EigenLijst>) => onWijzig(lijsten.map((l, i) => (i === actief ? { ...l, ...nieuw } : l)))
+  return (
+    <>
+      <fieldset className="veld">
+        <legend>Welke lijst?</legend>
+        <div className="radkeuzes">
+          {lijsten.map((l, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`keuze${i === actief ? ' is-actief' : ''}`}
+              aria-pressed={i === actief}
+              onClick={() => onKies(i)}
+            >
+              {naam(l, i)}
+            </button>
+          ))}
+          {lijsten.length < MAX_LIJSTEN && (
+            <button
+              type="button"
+              className="keuze"
+              onClick={() => {
+                onWijzig([...lijsten, { naam: `Lijst ${lijsten.length + 1}`, opties: ['', ''] }])
+                onKies(lijsten.length)
+              }}
+            >
+              ＋ Nieuwe lijst
+            </button>
+          )}
+        </div>
+        <div className="eigenopties__regel">
+          <input
+            className="invoer"
+            value={lijst.naam}
+            maxLength={24}
+            placeholder="Naam van de lijst"
+            aria-label="Naam van de lijst"
+            onChange={(e) => zet({ naam: e.target.value })}
+          />
+          <button
+            type="button"
+            className="icoonknop"
+            aria-label={`Lijst ${naam(lijst, actief)} weghalen`}
+            disabled={lijsten.length <= 1}
+            onClick={() => setWeghalen(true)}
+          >
+            🗑
+          </button>
+        </div>
+      </fieldset>
+      <EigenOpties opties={lijst.opties} onWijzig={(opties) => zet({ opties })} />
+      <BevestigDialoog
+        open={weghalen}
+        titel={`${naam(lijst, actief)} weghalen?`}
+        tekst="De opties in deze lijst ben je dan kwijt."
+        bevestigLabel="Weghalen"
+        gevaarlijk
+        onBevestig={() => {
+          onWijzig(lijsten.filter((_, i) => i !== actief))
+          onKies(Math.max(0, actief - 1))
+          setWeghalen(false)
+        }}
+        onAnnuleer={() => setWeghalen(false)}
+      />
+    </>
   )
 }
 

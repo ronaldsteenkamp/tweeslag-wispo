@@ -3089,6 +3089,9 @@ button {
   width: 100%;
   max-width: 420px;
   height: auto;
+  /* Liggend (of een laag scherm): rad, pijl en draaiknop samen in beeld */
+  max-height: calc(100dvh - 190px);
+  min-height: 200px;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
 }
 
