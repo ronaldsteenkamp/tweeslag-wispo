@@ -13,6 +13,7 @@ import { taartpunt, tik, useDraai } from './Wiel'
 
 const FICHES = [10, 25, 100] as const
 const START = 1000
+/** Fiches op, dan: een bak (bier in één keer leeg) voor zoveel nieuwe fiches */
 const LENING = 500
 
 type Buiten = 'rood' | 'zwart' | 'even' | 'oneven'
@@ -307,11 +308,11 @@ export function Roulette({ naam, kamers, onTerug }: { naam: string; kamers?: Kam
                   setGeleend(geleend + 1)
                 }}
               >
-                🏦 De bank leent je {fiches(LENING)}
+                🍺 Een bak voor {fiches(LENING)} nieuwe fiches
               </button>
               {geleend > 0 && (
                 <p className="klein">
-                  Je hebt al {geleend} keer geleend ({fiches(geleend * LENING)} fiches).
+                  Al {geleend} {geleend === 1 ? 'bak' : 'bakken'} getrokken.
                 </p>
               )}
             </div>
