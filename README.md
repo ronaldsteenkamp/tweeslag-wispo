@@ -11,6 +11,7 @@ Web-app (PWA) voor de wintersport van G.S.B.V. Tweeslag: aftelklok, planning, pa
 > | `paklijst.json` | Categorieën met spullen om mee te nemen |
 > | `kamers.json` | Kamers met nummer, naam en bewoners |
 > | `spel.json` | Dagelijkse challenges, punten en de busbingovakjes |
+> | `rad.json` | Pistes, drankjes en klosopdrachten voor het rad, en wie een casino krijgt |
 >
 > Pas een bestand aan, zet het op GitHub en de app haalt de nieuwe versie op zodra iemand internet heeft. Zonder internet ziet iedereen de laatst bewaarde versie.
 
@@ -82,6 +83,21 @@ Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn 
 - Een vakje is een emoji plus een korte tekst. Houd de tekst op een telefoon van 360 px breed binnen het vakje: max. 2 regels van zo'n 10 tekens, een lang woord eventueel met een streepje (`Wagen-ziek`).
 - Haal je een vakje uit de lijst, dan krijgt elke telefoon er bij het openen een ander willekeurig vakje voor terug, en het vinkje op het oude vakje verdwijnt. Zo kregen telefoons met een kaart van de vroegere pistebingo vanzelf een nieuwe busbingokaart, zonder oude punten.
 - Het spel gaat open op vrijdag 5 maart 2027 om 18:00.
+
+### rad.json
+Inhoud van *Spel → Rad*. Het rad geeft geen punten en werkt helemaal zonder internet: de uitslag wordt op de telefoon zelf bepaald (met `crypto.getRandomValues`).
+```json
+{ "pistes": [ { "naam": "Mantel", "kleur": "rood" } ],
+  "drankjes": ["Glühwein", "Génépi"],
+  "klosOpdrachten": ["haalt de volgende ronde", "doet de afwas"],
+  "casino": ["Josje"] }
+```
+- **Vier radden:** *Klos* (een willekeurige persoon), *Piste*, *Drankje* en *Eigen* (zelf 2 tot 12 opties intypen; die blijven op de telefoon bewaard). Bij *Klos* kies je wie meedoet: iedereen, je eigen kamer, een paar kamers of zelf namen aanvinken (uit `kamers.json`). Na het draaien staat er bijvoorbeeld *Tom is de klos! Haalt de volgende ronde.*
+- **`pistes`:** naam en kleur (`groen`, `blauw`, `rood` of `zwart`). Bij het rad filter je op kleur, zodat beginners geen zwarte piste krijgen. De lijst bevat echte, benoemde pistes van Les Deux Alpes met hun kleur uit [OpenStreetMap](https://www.openstreetmap.org) (de genummerde stukjes zijn weggelaten).
+- **`drankjes`** en **`klosOpdrachten`:** vrij aan te vullen. Schrijf een klosopdracht zonder hoofdletter en zonder punt aan het eind (*haalt de volgende ronde*); de app zet er de naam voor.
+- **`casino`:** wie hier staat (precies zoals de naam in `kamers.json`), krijgt in plaats van het rad een roulettetafel: *Josje's casino*. Iemand toevoegen: `"casino": ["Josje", "Sten"]`. Via *Terug naar het rad* kan diegene ook het gewone rad gebruiken (en via *Naar je casino* weer terug).
+- **Roulette:** een groene 0 en de getallen 1 tot het aantal spelers (zelfde keuze als bij *Klos*). Oneven is rood, even zwart; elk getal hoort bij één naam, elke ronde opnieuw geschud. De 0 betekent *Iedereen drinkt*. Inzetten met fiches van 10, 25 of 100 op een getal, de 0, rood/zwart of even/oneven, en dan *Rien ne va plus!*. Uitbetaling: rood/zwart/even/oneven 1:1, een getal of de 0 (aantal spelers − 1):1; valt de 0, dan verliezen rood/zwart/even/oneven. De fiches (start 1000) zijn nep en staan alleen op de telefoon. Zijn ze op, dan leent de bank er 500 (met een teller hoe vaak).
+- **Geluid en beweging:** bij het draaien klinkt een tikje (uit te zetten onder het rad). Staat op de telefoon *minder beweging* aan, dan verschijnt de uitslag meteen, zonder draaien.
 
 ### Weer en sneeuw
 Het weerbericht komt van [Open-Meteo](https://open-meteo.com) (gratis, geen key nodig) voor twee plekken: het **dorp** (45,010 N 6,124 E, 1650 m) en de **gletsjer** bij de Dôme de Puy Salié (44,997 N 6,223 E, 3400 m). De coördinaten en hoogtes staan in `src/config.ts` onder `weer`; de hoogte wordt meegestuurd, zodat de temperatuur klopt voor die plek.

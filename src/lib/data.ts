@@ -75,12 +75,25 @@ export interface Stemmingen {
   stemmingen: Stemming[]
 }
 
+export type PisteKleur = 'groen' | 'blauw' | 'rood' | 'zwart'
+export const PISTE_KLEUREN: PisteKleur[] = ['groen', 'blauw', 'rood', 'zwart']
+
+/** Inhoud van het rad (Spel → Rad) */
+export interface Rad {
+  pistes: { naam: string; kleur: PisteKleur }[]
+  drankjes: string[]
+  klosOpdrachten: string[]
+  /** Namen die een roulettetafel krijgen in plaats van het rad */
+  casino: string[]
+}
+
 interface DataTypes {
   planning: Planning
   paklijst: Paklijst
   kamers: Kamers
   spel: Spel
   stemmingen: Stemmingen
+  rad: Rad
 }
 export type DataNaam = keyof DataTypes
 
@@ -163,9 +176,20 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
       })
       .filter((s) => s.id && s.vraag && /^\d{4}-\d\d-\d\d$/.test(s.datum)),
   }),
+  rad: (r) => {
+    const teksten = (x: unknown) => lijst<unknown>(x).map((t) => String(t).trim()).filter(Boolean)
+    return {
+      pistes: lijst<Ruw>(r?.pistes)
+        .map((p) => ({ naam: String(p?.naam ?? '').trim(), kleur: String(p?.kleur ?? '').trim().toLowerCase() as PisteKleur }))
+        .filter((p) => p.naam && PISTE_KLEUREN.includes(p.kleur)),
+      drankjes: teksten(r?.drankjes),
+      klosOpdrachten: teksten(r?.klosOpdrachten),
+      casino: teksten(r?.casino),
+    }
+  },
 }
 
-export const DATA_BESTANDEN: DataNaam[] = ['planning', 'paklijst', 'kamers', 'spel', 'stemmingen']
+export const DATA_BESTANDEN: DataNaam[] = ['planning', 'paklijst', 'kamers', 'spel', 'stemmingen', 'rad']
 
 const cache = new Map<DataNaam, Promise<unknown>>()
 

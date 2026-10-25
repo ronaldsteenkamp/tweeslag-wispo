@@ -4,6 +4,7 @@ import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { FotoUpload } from '../components/FotoUpload'
 import { Klassement } from '../components/Klassement'
+import { RadOnderdeel } from '../components/Rad'
 import { Stemmen } from '../components/Stemmen'
 import { Sneeuw } from '../components/Sneeuw'
 import { config } from '../config'
@@ -54,7 +55,7 @@ export default function Spel() {
 }
 
 function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
-  const [onderdeel, setOnderdeel] = useOpgeslagen<'challenges' | 'bingo' | 'stemmen' | 'klassement'>('spel.onderdeel', 'challenges')
+  const [onderdeel, setOnderdeel] = useOpgeslagen<'challenges' | 'bingo' | 'rad' | 'stemmen' | 'klassement'>('spel.onderdeel', 'challenges')
   const [gedaan, setGedaan] = useOpgeslagen<string[]>('spel.challenges', [])
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
@@ -109,8 +110,8 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         </p>
       </section>
 
-      <div className="segment segment--vier" role="tablist" aria-label="Onderdeel">
-        {(['challenges', 'bingo', 'stemmen', 'klassement'] as const).map((o) => (
+      <div className="segment segment--vijf" role="tablist" aria-label="Onderdeel">
+        {(['challenges', 'bingo', 'rad', 'stemmen', 'klassement'] as const).map((o) => (
           <button
             key={o}
             type="button"
@@ -119,13 +120,23 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             className={`segment__knop${onderdeel === o ? ' is-actief' : ''}`}
             onClick={() => setOnderdeel(o)}
           >
-            {o === 'challenges' ? 'Challenges' : o === 'bingo' ? 'Busbingo' : o === 'stemmen' ? 'Stemmen' : 'Klassement'}
+            {o === 'challenges'
+              ? 'Challenges'
+              : o === 'bingo'
+                ? 'Busbingo'
+                : o === 'rad'
+                  ? 'Rad'
+                  : o === 'stemmen'
+                    ? 'Stemmen'
+                    : 'Klassement'}
           </button>
         ))}
       </div>
 
       {onderdeel === 'klassement' ? (
         <Klassement />
+      ) : onderdeel === 'rad' ? (
+        <RadOnderdeel />
       ) : onderdeel === 'stemmen' ? (
         <Stemmen />
       ) : onderdeel === 'challenges' ? (
