@@ -3143,20 +3143,6 @@ button {
   }
 }
 
-/* De laatste uitslagen onder de draaiknop */
-.radkaart__laatste {
-  max-width: 100%;
-  padding: 0 12px;
-  font-family: var(--font-kop);
-  font-size: 0.9rem;
-  text-align: center;
-  opacity: 0.85;
-}
-
-.radkaart__laatste strong {
-  opacity: 1;
-}
-
 /* Confetti over het rad na een uitslag */
 .confetti {
   position: absolute;

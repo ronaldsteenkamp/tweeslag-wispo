@@ -55,9 +55,6 @@ interface Uitslag {
   kleur?: PisteKleur
 }
 
-/** Kort, voor de regel "Laatste:" onder het rad */
-const kortTekst = (u: Uitslag) => (u.kleur ? `${KLEUR_EMOJI[u.kleur]} ${u.optie}` : u.optie)
-
 /** Volledig, voor schermlezers */
 function voorleesTekst(u: Uitslag) {
   if (u.soort === 'klos') return `${u.optie} is de klos!${u.opdracht ? ` ${hoofdletter(u.opdracht.replace(/[.!]+$/, ''))}.` : ''}`
@@ -89,8 +86,6 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
   const [drankUit, setDrankUit] = useOpgeslagen<string[]>('rad.drankjes.uit', [])
   const [eigenDrank, setEigenDrank] = useOpgeslagen<string[]>('rad.drankjes.eigen', [])
   const [geluidAan, setGeluidAan] = useOpgeslagen('rad.geluid', true)
-  // De laatste vijf uitslagen per rad
-  const [laatste, setLaatste] = useOpgeslagen<Partial<Record<Soort, string[]>>>('rad.laatste', {})
   const [bezig, setBezig] = useState(false)
   const [casinoBezig, setCasinoBezig] = useState(false)
   const [uitslag, setUitslag] = useState<Uitslag | null>(null)
@@ -185,7 +180,6 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     }
     setUitslag(nieuw)
     setVast((oud) => (oud ? { ...oud, winnaar: i } : oud))
-    setLaatste((oud) => ({ ...oud, [soort]: [kortTekst(nieuw), ...(oud[soort] ?? [])].slice(0, 5) }))
     if (geluidAan) tril([80, 60, 180])
     setBezig(false)
     // Eerst even het winnende vak laten oplichten, dan pas de popup
@@ -276,12 +270,6 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
           >
             {bezig ? 'Draait…' : 'Draai!'}
           </button>
-        )}
-        {!!laatste[soort]?.length && (
-          <p className="radkaart__laatste">
-            Laatste: <strong>{laatste[soort]![0]}</strong>
-            {laatste[soort]!.slice(1).map((x) => ` · ${x}`)}
-          </p>
         )}
         <p className="verborgen" aria-live="polite">
           {uitslag ? voorleesTekst(uitslag) : ''}
