@@ -2901,3 +2901,18 @@ button {
   width: 100%;
   accent-color: var(--accent);
 }
+
+
+.verdelen__github summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-kop);
+  font-weight: 700;
+  color: var(--link);
+  cursor: pointer;
+}
+
+.verdelen__github > * + * {
+  margin-top: 10px;
+}

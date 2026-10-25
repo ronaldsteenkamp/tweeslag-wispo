@@ -4,7 +4,9 @@ import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { normaal } from '../components/NaamKiezer'
 import { config } from '../config'
+import { backendIngesteld, useBackend } from '../lib/backend'
 import { alleDeelnemers, useData, type Kamers } from '../lib/data'
+import { slaKamerverdelingOp } from '../lib/kamerverdeling'
 import { useOpgeslagen } from '../lib/opslag'
 
 interface ConceptKamer {
@@ -122,6 +124,10 @@ export default function Verdelen({ terug }: { terug: () => void }) {
   const [opnieuwVragen, setOpnieuwVragen] = useState(false)
   const [gekopieerd, setGekopieerd] = useState(false)
   const [bijgewerkt, setBijgewerkt] = useState<string | null>(null)
+  const backend = useBackend()
+  const [opslaanBezig, setOpslaanBezig] = useState(false)
+  const [opgeslagen, setOpgeslagen] = useState<string | null>(null)
+  const [opslaanFout, setOpslaanFout] = useState<string | null>(null)
   const jsonVak = useRef<HTMLTextAreaElement>(null)
 
   // Eerste keer: beginnen met de kamers die nu in de app staan. Daarna: wijzigingen in kamers.json
@@ -257,6 +263,21 @@ export default function Verdelen({ terug }: { terug: () => void }) {
     window.setTimeout(() => setGekopieerd(false), 2500)
   }
 
+  const opslaan = async () => {
+    setOpslaanBezig(true)
+    setOpslaanFout(null)
+    setOpgeslagen(null)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _uitleg, ...kamers } = JSON.parse(json)
+    const fout = await slaKamerverdelingOp(kamers)
+    setOpslaanBezig(false)
+    if (fout) setOpslaanFout(fout)
+    else
+      setOpgeslagen(
+        `Opgeslagen om ${new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}. Iedereen ziet de nieuwe verdeling zodra zijn app verbinding heeft.`,
+      )
+  }
+
   const download = () => {
     const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
     const a = document.createElement('a')
@@ -274,7 +295,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
       <h1>Kamerverdeling</h1>
       <p>
         Voor de reisleiding. Tik op een naam en daarna op een kamer. Je werk wordt op deze telefoon bewaard; de groep
-        ziet het pas als je onderaan de nieuwe <code>kamers.json</code> op GitHub zet.
+        ziet het pas als je onderaan op <strong>Opslaan in de app</strong> tikt.
       </p>
 
       {bijgewerkt && (
@@ -446,39 +467,80 @@ export default function Verdelen({ terug }: { terug: () => void }) {
       </div>
 
       <section className="kaartje">
-        <h2>Klaar? Zet hem in de app</h2>
+        <h2>Klaar? Opslaan in de app</h2>
         {concept.over.length > 0 && (
           <p className="melding">
             Let op: {concept.over.join(', ')} {concept.over.length === 1 ? 'heeft' : 'hebben'} nog geen kamer en{' '}
             {concept.over.length === 1 ? 'staat' : 'staan'} in de app onder <em>Nog geen kamer</em>.
           </p>
         )}
-        <ol className="stappen">
-          <li>
-            Tik op <strong>Kopieer kamers.json</strong>.
-          </li>
-          <li>
-            Open <strong>kamers.json op GitHub</strong>, selecteer alle tekst en plak de nieuwe tekst eroverheen.
-          </li>
-          <li>
-            Tik op <strong>Commit changes</strong>. Na een paar minuten staat de nieuwe verdeling in ieders app.
-          </li>
-        </ol>
-        <div className="knoppenrij">
-          <button type="button" className="knop knop--primair" onClick={kopieer}>
-            {gekopieerd ? '✓ Gekopieerd' : 'Kopieer kamers.json'}
+        {backendIngesteld &&
+          (backend.beheerder ? (
+            <>
+              <button
+                type="button"
+                className="knop knop--primair knop--breed"
+                onClick={() => void opslaan()}
+                disabled={opslaanBezig || backend.status !== 'verbonden'}
+              >
+                {opslaanBezig ? 'Bezig…' : '💾 Opslaan in de app'}
+              </button>
+              <p className="klein">
+                {backend.status === 'verbonden'
+                  ? 'Daarna staat de nieuwe verdeling meteen in ieders app.'
+                  : 'Geen verbinding: opslaan kan alleen met internet. Je werk blijft op deze telefoon bewaard.'}
+              </p>
+            </>
+          ) : (
+            <>
+              <p>Opslaan kan alleen als je op deze telefoon bent ingelogd als beheerder.</p>
+              <button
+                type="button"
+                className="knop knop--secundair knop--breed"
+                onClick={() => (window.location.hash = '#beheer')}
+              >
+                ⚙️ Inloggen als beheerder
+              </button>
+            </>
+          ))}
+        {opgeslagen && <p className="melding">✓ {opgeslagen}</p>}
+        {opslaanFout && <p className="melding melding--fout">{opslaanFout}</p>}
+
+        <details className="verdelen__github" open={!backendIngesteld}>
+          <summary>{backendIngesteld ? 'Of via GitHub (kamers.json)' : 'Via GitHub (kamers.json)'}</summary>
+          <ol className="stappen">
+            <li>
+              Tik op <strong>Kopieer kamers.json</strong>.
+            </li>
+            <li>
+              Open <strong>kamers.json op GitHub</strong>, selecteer alle tekst en plak de nieuwe tekst eroverheen.
+            </li>
+            <li>
+              Tik op <strong>Commit changes</strong>. Na een paar minuten staat de nieuwe verdeling in ieders app.
+            </li>
+          </ol>
+          <div className="knoppenrij">
+            <button type="button" className="knop knop--primair" onClick={kopieer}>
+              {gekopieerd ? '✓ Gekopieerd' : 'Kopieer kamers.json'}
+            </button>
+            <a className="knop knop--accent" href={config.kamersBewerkenOpGithub} target="_blank" rel="noopener">
+              kamers.json op GitHub
+            </a>
+          </div>
+          <button type="button" className="tekstknop" onClick={download}>
+            Of download het bestand
           </button>
-          <a className="knop knop--accent" href={config.kamersBewerkenOpGithub} target="_blank" rel="noopener">
-            kamers.json op GitHub
-          </a>
-        </div>
-        <button type="button" className="tekstknop" onClick={download}>
-          Of download het bestand
-        </button>
-        <label className="verborgen" htmlFor="kamers-json">
-          Nieuwe kamers.json
-        </label>
-        <textarea id="kamers-json" ref={jsonVak} className="invoer verdelen__json" readOnly value={json} rows={8} />
+          <label className="verborgen" htmlFor="kamers-json">
+            Nieuwe kamers.json
+          </label>
+          <textarea id="kamers-json" ref={jsonVak} className="invoer verdelen__json" readOnly value={json} rows={8} />
+          {backendIngesteld && (
+            <p className="klein">
+              Staat er al een verdeling in de app opgeslagen, dan gaat die voor op kamers.json. Namen die je daarna alleen
+              in kamers.json zet, komen in de app onder <em>Nog geen kamer</em>.
+            </p>
+          )}
+        </details>
       </section>
 
       <button type="button" className="tekstknop" onClick={() => setOpnieuwVragen(true)}>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { lees, schrijf } from './opslag'
 
 export interface PlanningItem {
   tijd: string
@@ -168,6 +169,31 @@ export const DATA_BESTANDEN: DataNaam[] = ['planning', 'paklijst', 'kamers', 'sp
 
 const cache = new Map<DataNaam, Promise<unknown>>()
 
+// ---------- Kamerverdeling van de server ----------
+// Slaat de reisleiding de kamerverdeling op in de app (zie kamerverdeling.ts), dan gaat die voor op
+// kamers.json. Namen die alleen in kamers.json staan (later toegevoegd) komen onder "Nog geen kamer".
+
+const SERVER_KAMERS = 'kamers.server'
+let serverKamers: Kamers | null = lees<Kamers | null>(SERVER_KAMERS, null)
+const kamersLuisteraars = new Set<() => void>()
+
+export const normaliseerKamers = (ruw: unknown): Kamers => normaliseer.kamers(ruw)
+
+/** De verdeling van de server (of null als er geen is); wordt ook bewaard voor gebruik zonder internet */
+export function zetServerKamers(k: Kamers | null) {
+  if (JSON.stringify(k) === JSON.stringify(serverKamers)) return
+  serverKamers = k
+  schrijf(SERVER_KAMERS, k)
+  kamersLuisteraars.forEach((f) => f())
+}
+
+function combineer(json: Kamers): Kamers {
+  if (!serverKamers) return json
+  const bekend = new Set(alleDeelnemers(serverKamers))
+  const later = alleDeelnemers(json).filter((n) => !bekend.has(n))
+  return { ...serverKamers, zonderKamer: [...serverKamers.zonderKamer, ...later] }
+}
+
 async function haalOp<K extends DataNaam>(naam: K): Promise<DataTypes[K]> {
   let antwoord: Response
   try {
@@ -193,7 +219,16 @@ export function laad<K extends DataNaam>(naam: K, opnieuw = false): Promise<Data
       if (cache.get(naam) === belofte) cache.delete(naam)
     })
   }
-  return cache.get(naam) as Promise<DataTypes[K]>
+  const belofte = cache.get(naam) as Promise<DataTypes[K]>
+  if (naam !== 'kamers') return belofte
+  // Kamers: de verdeling van de server gaat voor; zonder kamers.json is die alleen ook goed
+  return belofte.then(
+    (json) => combineer(json as Kamers) as DataTypes[K],
+    (fout) => {
+      if (serverKamers) return serverKamers as DataTypes[K]
+      throw fout
+    },
+  )
 }
 
 /** Haalt alle bestanden op, zodat ze ook offline klaarstaan als je een tabblad nog niet geopend hebt */
@@ -203,6 +238,16 @@ export function haalAllesVooraf() {
 
 export function useData<K extends DataNaam>(naam: K) {
   const [staat, setStaat] = useState<{ data?: DataTypes[K]; fout?: DataFout }>({})
+  // Opnieuw zodra er een nieuwe kamerverdeling van de server is
+  const [versie, setVersie] = useState(0)
+  useEffect(() => {
+    if (naam !== 'kamers') return
+    const f = () => setVersie((v) => v + 1)
+    kamersLuisteraars.add(f)
+    return () => {
+      kamersLuisteraars.delete(f)
+    }
+  }, [naam])
   useEffect(() => {
     let actief = true
     laad(naam).then(
@@ -216,6 +261,6 @@ export function useData<K extends DataNaam>(naam: K) {
     return () => {
       actief = false
     }
-  }, [naam])
+  }, [naam, versie])
   return staat
 }

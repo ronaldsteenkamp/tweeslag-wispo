@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import { startBackend } from './lib/backend'
 import { vangInstallatieMelding } from './lib/installatie'
+import { startKamerverdeling } from './lib/kamerverdeling'
 import { startProfielen } from './lib/profiel'
 import { startScorebord } from './lib/scorebord'
 import { startLocatie } from './lib/locatie'
@@ -17,6 +18,7 @@ vangInstallatieMelding()
 startBackend()
 startScorebord()
 startProfielen()
+startKamerverdeling()
 startStemming()
 startMeldingen()
 startLocatie()
