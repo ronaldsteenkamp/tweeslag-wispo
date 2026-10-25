@@ -17,6 +17,11 @@ export const config = {
    * false: het spel zit tot spelOpen op slot.
    */
   spelTestperiode: true,
+  /**
+   * Dagelijkse teststemming in de testperiode. Pas aanzetten als de Edge Function 'meldingen'
+   * met het filter op 'test-' live staat, anders krijgt iedereen elke nacht een uitslagmelding.
+   */
+  testStemmingen: false,
   /** Standaardtijd waarop de challenges van een dag opengaan (als 'openOm' ontbreekt in spel.json) */
   challengesOpenOm: '07:00',
 

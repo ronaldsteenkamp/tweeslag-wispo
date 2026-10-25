@@ -94,9 +94,9 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
       {testOntgrendeld && <p className="melding melding--test">Testmodus: alles is open (?unlock=1)</p>}
       {isTestperiode(nu) && (
         <p className="melding">
-          <strong>Testperiode.</strong> Probeer alles gerust uit. Op {datumLabel(config.spelOpen.slice(0, 10))} om{' '}
-          {config.spelOpen.slice(11)} begint het echte spel: dan worden je vinkjes, punten en casinofiches gewist en krijg
-          je een nieuwe busbingokaart.
+          <strong>Testperiode.</strong> Probeer alles gerust uit: alle challenges staan open. Op {datumLabel(config.spelOpen.slice(0, 10))} om {config.spelOpen.slice(11)} begint het echte spel:
+          dan worden je vinkjes, punten en casinofiches gewist, krijg je een nieuwe busbingokaart en verdwijnen de
+          teststemmingen. Foto's die je als bewijs uploadt blijven wel op de fotomuur staan.
         </p>
       )}
       {backendIngesteld && (
@@ -197,8 +197,8 @@ function Challenges({
 }) {
   const vandaag = datumISO(nu)
   const gesorteerd = [...dagen].sort((a, b) => a.datum.localeCompare(b.datum))
-  const open = gesorteerd.filter((d) => testOntgrendeld || nu >= openMoment(d)).reverse()
-  const volgende = gesorteerd.find((d) => !testOntgrendeld && nu < openMoment(d))
+  const open = gesorteerd.filter((d) => testOntgrendeld || isTestperiode(nu) || nu >= openMoment(d)).reverse()
+  const volgende = gesorteerd.find((d) => !testOntgrendeld && !isTestperiode(nu) && nu < openMoment(d))
 
   return (
     <>

@@ -133,6 +133,8 @@ async function geslotenStemmingen(nu: number): Promise<GeslotenStemming[]> {
     .select('id, vraag, sluit')
     .lte('sluit', new Date(nu).toISOString())
     .gt('sluit', vanaf)
+    // Teststemmingen (testperiode vóór de reis, id 'test-…') geven geen melding
+    .not('id', 'like', 'test-%')
   if (error) throw error
   if (!st?.length) return []
   const { data: stemmen, error: e2 } = await db

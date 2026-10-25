@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { abonneerBackend, backendIngesteld, backendStand, supabase } from './backend'
 import { alleDeelnemers, laad, useData } from './data'
 import { lees, schrijf } from './opslag'
+import { isTestStemming, isTestperiode, testStemmingen } from './testperiode'
 import { lokaalNaarDate } from './tijd'
 
 /*
@@ -128,7 +129,7 @@ export function useStemmingen(actief = true) {
 
   const lijst = useMemo<StemmingInfo[]>(() => {
     const map = new Map<string, StemmingInfo>()
-    for (const s of json?.stemmingen ?? []) {
+    for (const s of [...(json?.stemmingen ?? []), ...testStemmingen()]) {
       map.set(s.id, {
         id: s.id,
         datum: s.datum,
@@ -151,7 +152,11 @@ export function useStemmingen(actief = true) {
         alleenLokaal: false,
       })
     }
-    return [...map.values()].sort((a, b) => a.open - b.open || a.sluit - b.sluit || a.id.localeCompare(b.id))
+    // Na de testperiode zijn teststemmingen weg, ook als ze nog op de server staan
+    const test = isTestperiode()
+    return [...map.values()]
+      .filter((s) => test || !isTestStemming(s.id))
+      .sort((a, b) => a.open - b.open || a.sluit - b.sluit || a.id.localeCompare(b.id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [json, stand?.opgehaald])
 
@@ -231,7 +236,7 @@ export async function synchroniseerStemmingen(): Promise<SyncResultaat | null> {
   try {
     const [json, kamers, c] = await Promise.all([laad('stemmingen', true), laad('kamers', true), cb])
     const kandidaten = alleDeelnemers(kamers)
-    const rijen = json.stemmingen.flatMap((s) => {
+    const rijen = [...json.stemmingen, ...testStemmingen()].flatMap((s) => {
       const open = lokaalNaarDate(s.open)
       const sluit = lokaalNaarDate(s.sluit)
       if (Number.isNaN(open.getTime()) || Number.isNaN(sluit.getTime()) || sluit <= open) {
@@ -267,13 +272,14 @@ export async function synchroniseerStemmingen(): Promise<SyncResultaat | null> {
           .filter((t) => t.kandidaat === null && t.stemmen > 0)
           .map((t) => t.stemming_id),
       )
-      const weg = extra.filter((id) => !metStemmen.has(id))
+      // Teststemmingen mogen altijd weg (met hun stemmen); echte alleen zonder stemmen
+      const weg = extra.filter((id) => isTestStemming(id) || !metStemmen.has(id))
       if (weg.length) {
         const { error: e4 } = await c.from('stemmingen').delete().in('id', weg)
         if (e4) throw e4
         verwijderd = weg.length
       }
-      extra = extra.filter((id) => metStemmen.has(id))
+      extra = extra.filter((id) => !weg.includes(id))
     }
     syncResultaat = {
       tijd: Date.now(),
