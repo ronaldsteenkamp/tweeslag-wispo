@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useBackend } from '../lib/backend'
-import { useData } from '../lib/data'
+import { alleDeelnemers, useData } from '../lib/data'
 import { useNu } from '../lib/nu'
 import { useOpgeslagen } from '../lib/opslag'
 import { stem, useStemmingen, winnaars, type StemmingInfo, type StemStand } from '../lib/stemming'
@@ -25,7 +25,7 @@ export function Stemmen() {
   const { data: kamers } = useData('kamers')
   const [naam] = useOpgeslagen<string | null>('naam', null)
 
-  const alleNamen = useMemo(() => [...new Set((kamers?.kamers ?? []).flatMap((k) => k.bewoners))], [kamers])
+  const alleNamen = useMemo(() => alleDeelnemers(kamers), [kamers])
 
   if (backend.status === 'uit') {
     return (

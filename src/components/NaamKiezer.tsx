@@ -1,24 +1,13 @@
 import { useMemo, useState } from 'react'
-import type { Kamers } from '../lib/data'
+import { alleDeelnemers, type Kamers } from '../lib/data'
 import { Icoon } from './Icoon'
 
 /** Kleine letters en zonder accenten, zodat 'esmee' ook 'Esmée' vindt */
-export const normaal = (s: string) =>
-  s
-    .toLocaleLowerCase('nl')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .trim()
+export const normaal = (s: string) => s.toLocaleLowerCase('nl').normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
 
-/** Alle bewoners uit kamers.json, op alfabet */
+/** Alle deelnemers uit kamers.json (ook wie nog geen kamer heeft), op alfabet */
 export function useAlleNamen(kamers?: Kamers) {
-  return useMemo(
-    () =>
-      [...new Set((kamers?.kamers ?? []).flatMap((k) => k.bewoners))]
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, 'nl')),
-    [kamers],
-  )
+  return useMemo(() => alleDeelnemers(kamers).sort((a, b) => a.localeCompare(b, 'nl')), [kamers])
 }
 
 /** Raster met grote naamknoppen en een zoekveld */

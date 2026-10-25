@@ -23,7 +23,7 @@ interface Concept {
 }
 
 const UITLEG =
-  "Kamers met nummer, een naam (mag je weglaten), het aantal bedden en de bewoners. ALLEEN VOORNAMEN, geen achternamen. Twee mensen met dezelfde naam? Schrijf dan bijvoorbeeld 'Lisa' en 'Lisa 2'. Iedereen kiest in de app zijn naam uit deze lijst. Tip: maak de verdeling in de app via Kamers → Kamerverdeling maken."
+  "Kamers met nummer, een naam (mag je weglaten), het aantal bedden en de bewoners. Wie nog geen kamer heeft staat onder zonderKamer. ALLEEN VOORNAMEN, geen achternamen. Twee mensen met dezelfde naam? Schrijf dan bijvoorbeeld 'Lisa' en 'Lisa 2'. Iedereen kiest in de app zijn naam uit deze lijst. Tip: maak de verdeling in de app via Kamers → Kamerverdeling maken."
 
 const nieuwId = () => Math.random().toString(36).slice(2, 9)
 
@@ -37,7 +37,7 @@ function uitData(data: Kamers): Concept {
       bedden: k.bedden ?? Math.max(k.bewoners.length, 2),
       bewoners: [...k.bewoners],
     })),
-    over: [],
+    over: [...data.zonderKamer],
   }
 }
 
@@ -56,7 +56,8 @@ function naarJson(c: Concept): string {
     `  "verblijf": ${JSON.stringify(c.verblijf.trim())},`,
     '  "kamers": [',
     c.kamers.map(regel).join(',\n'),
-    '  ]',
+    c.over.length ? '  ],' : '  ]',
+    ...(c.over.length ? [`  "zonderKamer": [${c.over.map((b) => JSON.stringify(b)).join(', ')}]`] : []),
     '}',
     '',
   ].join('\n')
@@ -390,7 +391,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
         {concept.over.length > 0 && (
           <p className="melding">
             Let op: {concept.over.join(', ')} {concept.over.length === 1 ? 'heeft' : 'hebben'} nog geen kamer en{' '}
-            {concept.over.length === 1 ? 'staat' : 'staan'} dan niet in de app.
+            {concept.over.length === 1 ? 'staat' : 'staan'} in de app onder <em>Nog geen kamer</em>.
           </p>
         )}
         <ol className="stappen">

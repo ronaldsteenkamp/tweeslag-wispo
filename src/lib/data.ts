@@ -36,7 +36,14 @@ export interface Kamer {
 export interface Kamers {
   verblijf?: string
   kamers: Kamer[]
+  /** Deelnemers die nog geen kamer hebben (kunnen wel al hun naam kiezen) */
+  zonderKamer: string[]
 }
+
+/** Iedereen die meegaat: de bewoners van alle kamers plus wie nog geen kamer heeft */
+export const alleDeelnemers = (k?: Kamers | null) => [
+  ...new Set([...(k?.kamers ?? []).flatMap((kamer) => kamer.bewoners), ...(k?.zonderKamer ?? [])].filter(Boolean)),
+]
 
 export interface Challenge {
   id: string
@@ -115,6 +122,9 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
       bedden: Number(k?.bedden) > 0 ? Number(k.bedden) : undefined,
       bewoners: lijst<unknown>(k?.bewoners).map((b) => String(b).trim()),
     })),
+    zonderKamer: lijst<unknown>(r?.zonderKamer)
+      .map((b) => String(b).trim())
+      .filter(Boolean),
   }),
   spel: (r) => ({
     punten: { bingoVakje: 2, bingoRij: 10, bingoVolleKaart: 50, ...(r?.punten ?? {}) },

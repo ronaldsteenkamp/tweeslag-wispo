@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Verbinding } from '../components/Verbinding'
 import { controleerCode, stuurInlogmail, stuurProfiel, uitloggen, useBackend, verbind } from '../lib/backend'
-import { useData } from '../lib/data'
+import { alleDeelnemers, useData } from '../lib/data'
 import { haalLogboek, stuurBericht, type LogRegel } from '../lib/meldingen'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { synchroniseerStemmingen, trekStemIn, useStemmingen, useStemmingSync } from '../lib/stemming'
@@ -189,7 +189,7 @@ function StemmingBeheer() {
   const [stemming, setStemming] = useState('')
   const [kiezer, setKiezer] = useState('')
   const [melding, setMelding] = useState<string | null>(null)
-  const namen = [...new Set((kamers?.kamers ?? []).flatMap((k) => k.bewoners))].sort((a, b) => a.localeCompare(b, 'nl'))
+  const namen = alleDeelnemers(kamers).sort((a, b) => a.localeCompare(b, 'nl'))
   const nu = Date.now()
   // Intrekken heeft alleen zin terwijl de stemming nog open is
   const open = stemmingen.filter((s) => !s.alleenLokaal && s.open <= nu && nu < s.sluit)

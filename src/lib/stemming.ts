@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { abonneerBackend, backendIngesteld, backendStand, supabase } from './backend'
-import { laad, useData } from './data'
+import { alleDeelnemers, laad, useData } from './data'
 import { lees, schrijf } from './opslag'
 import { lokaalNaarDate } from './tijd'
 
@@ -230,7 +230,7 @@ export async function synchroniseerStemmingen(): Promise<SyncResultaat | null> {
   const fouten: string[] = []
   try {
     const [json, kamers, c] = await Promise.all([laad('stemmingen', true), laad('kamers', true), cb])
-    const kandidaten = [...new Set(kamers.kamers.flatMap((k) => k.bewoners).filter(Boolean))]
+    const kandidaten = alleDeelnemers(kamers)
     const rijen = json.stemmingen.flatMap((s) => {
       const open = lokaalNaarDate(s.open)
       const sluit = lokaalNaarDate(s.sluit)
