@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 /*
  * Gedeeld door het rad en de roulette: een draai-animatie die uitloopt (ease-out), een
@@ -29,6 +29,15 @@ export function tik(sterkte = 0.05, toon = 1700) {
     osc.stop(nu + 0.035)
   } catch {
     // Geen geluid mogelijk: dan maar stil
+  }
+}
+
+/** Trillen (Android; op een iPhone gebeurt er niets) */
+export function tril(patroon: number | number[]) {
+  try {
+    navigator.vibrate?.(patroon)
+  } catch {
+    // Niet toegestaan of niet ondersteund: dan maar niet
   }
 }
 
@@ -73,6 +82,14 @@ export function rolgeluid() {
 export function useDraai() {
   const hoek = useRef(0)
   const frame = useRef<number | null>(null)
+
+  // Weg van het scherm tijdens het draaien: animatie (en tikgeluid) stoppen
+  useEffect(
+    () => () => {
+      if (frame.current) cancelAnimationFrame(frame.current)
+    },
+    [],
+  )
 
   const draai = useCallback(
     (opties: { doel: number; duur: number; onFrame: (hoek: number, t: number) => void; vak?: number; onTik?: () => void }) =>

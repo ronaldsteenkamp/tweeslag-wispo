@@ -3124,6 +3124,86 @@ button {
   font-size: 1.2rem;
 }
 
+/* Het winnende vak licht een paar keer op */
+.radkaart__winnaar {
+  fill: #f3d36b;
+  fill-opacity: 0;
+  stroke: #f3d36b;
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+  animation: radwinnaar 0.7s ease-in-out 4 alternate;
+}
+
+@keyframes radwinnaar {
+  to {
+    fill-opacity: 0.35;
+  }
+}
+
+/* De laatste uitslagen onder de draaiknop */
+.radkaart__laatste {
+  max-width: 100%;
+  padding: 0 12px;
+  font-family: var(--font-kop);
+  font-size: 0.9rem;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.radkaart__laatste strong {
+  opacity: 1;
+}
+
+/* Confetti over het rad na een uitslag */
+.confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti span {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: confetti;
+  animation-timing-function: cubic-bezier(0.3, 0.6, 0.6, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes confetti {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--opzij), 420px) rotate(var(--draai));
+  }
+}
+
+/* Instellingen onder het rad: uit tijdens het draaien */
+.radinstellingen {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.radinstellingen:disabled {
+  opacity: 0.55;
+}
+
 .raduitslag {
   align-items: center;
   text-align: center;
@@ -3140,6 +3220,18 @@ button {
 /* Uitslag als popup midden in beeld */
 .dialoog-achtergrond--midden {
   place-items: center;
+}
+
+/* Rad: popup onderin en minder donker, zodat de pijl en het winnende vak zichtbaar blijven */
+.dialoog-achtergrond--licht {
+  background: rgba(3, 6, 24, 0.25);
+}
+
+.raduitslag__inhoud {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .raduitslag--popup {

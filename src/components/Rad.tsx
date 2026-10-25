@@ -5,7 +5,7 @@ import { deelnemers, fractie, initialen, kies, schud, useDeelnemersKeuze, willek
 import { DataStatus } from './DataStatus'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
 import { Roulette } from './Roulette'
-import { taartpunt, tik, useDraai } from './Wiel'
+import { minderBeweging, taartpunt, tik, tril, useDraai } from './Wiel'
 
 type Soort = 'klos' | 'piste' | 'drankje' | 'eigen' | 'casino'
 
@@ -68,6 +68,11 @@ function verspreid<T extends { kleur: PisteKleur }>(lijst: T[]): T[] {
   return beste
 }
 
+interface Optie {
+  waarde: string
+  kleur?: PisteKleur
+}
+
 interface Uitslag {
   soort: Soort
   /** Ondertitel, bij het draaien gekozen */
@@ -75,6 +80,16 @@ interface Uitslag {
   optie: string
   opdracht?: string
   kleur?: PisteKleur
+}
+
+/** Kort, voor de regel "Laatste:" onder het rad */
+const kortTekst = (u: Uitslag) => (u.kleur ? `${KLEUR_EMOJI[u.kleur]} ${u.optie}` : u.optie)
+
+/** Volledig, voor schermlezers */
+function voorleesTekst(u: Uitslag) {
+  if (u.soort === 'klos') return `${u.optie} is de klos!${u.opdracht ? ` ${hoofdletter(u.opdracht.replace(/[.!]+$/, ''))}.` : ''}`
+  if (u.soort === 'piste') return `${u.optie}${u.kleur ? `, ${KLEUR_NAAM[u.kleur].toLowerCase()} piste` : ''}`
+  return u.optie
 }
 
 /** Het tabblad Rad: vier radden en het casino (voor iedereen) */
@@ -96,29 +111,53 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
   const [drankUit, setDrankUit] = useOpgeslagen<string[]>('rad.drankjes.uit', [])
   const [eigenDrank, setEigenDrank] = useOpgeslagen<string[]>('rad.drankjes.eigen', [])
   const [geluidAan, setGeluidAan] = useOpgeslagen('rad.geluid', true)
+  // De laatste vijf uitslagen per rad
+  const [laatste, setLaatste] = useOpgeslagen<Partial<Record<Soort, string[]>>>('rad.laatste', {})
   const [bezig, setBezig] = useState(false)
   const [casinoBezig, setCasinoBezig] = useState(false)
   const [uitslag, setUitslag] = useState<Uitslag | null>(null)
   const [popup, setPopup] = useState(false)
+  // De opties waarmee gedraaid wordt (blijven op het rad staan tot er iets verandert) en het winnende vak
+  const [vast, setVast] = useState<{ opties: Optie[]; winnaar: number | null; ronde: number } | null>(null)
   const groep = useRef<SVGGElement>(null)
+  const draaiKnop = useRef<HTMLButtonElement>(null)
+  const nogEensKnop = useRef<HTMLButtonElement>(null)
+  const popupTimer = useRef<number>()
   const { hoek, draai } = useDraai()
 
-  const opties = useMemo<{ waarde: string; kleur?: PisteKleur }[]>(() => {
-    if (soort === 'klos') return deelnemers(keuze, kamers, naam).map((n) => ({ waarde: n }))
-    if (soort === 'piste')
-      return verspreid(rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur })))
-    if (soort === 'drankje')
-      return [...new Set([...rad.drankjes, ...eigenDrank])].filter((d) => !drankUit.includes(d)).map((d) => ({ waarde: d }))
-    if (soort === 'casino') return []
-    return eigen.map((e) => e.trim()).filter(Boolean).map((e) => ({ waarde: e }))
-  }, [soort, keuze, kamers, naam, rad, kleuren, eigen, drankUit, eigenDrank])
+  // Per rad apart, zodat bijvoorbeeld een nieuwe kamerverdeling de pistes niet opnieuw schudt
+  const namen = useMemo(() => deelnemers(keuze, kamers, naam).map((n) => ({ waarde: n })), [keuze, kamers, naam])
+  const pistes = useMemo(
+    () => verspreid(rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur }))),
+    [rad.pistes, kleuren],
+  )
+  const drankjes = useMemo(
+    () => [...new Set([...rad.drankjes, ...eigenDrank])].filter((d) => !drankUit.includes(d)).map((d) => ({ waarde: d })),
+    [rad.drankjes, eigenDrank, drankUit],
+  )
+  const eigenOpties = useMemo(() => eigen.map((e) => e.trim()).filter(Boolean).map((e) => ({ waarde: e })), [eigen])
+  const opties: Optie[] =
+    soort === 'klos' ? namen : soort === 'piste' ? pistes : soort === 'drankje' ? drankjes : soort === 'eigen' ? eigenOpties : []
 
-  // Andere opties: oude uitslag weg
-  useEffect(() => setUitslag(null), [opties])
+  // Andere opties: oude uitslag weg. Tijdens het draaien niet: dan blijft het rad gelijk aan de uitslag.
+  useEffect(() => {
+    if (bezig) return
+    setUitslag(null)
+    setVast(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opties])
+
+  useEffect(() => () => window.clearTimeout(popupTimer.current), [])
+
+  const sluitPopup = () => {
+    setPopup(false)
+    draaiKnop.current?.focus()
+  }
 
   useEffect(() => {
     if (!popup) return
-    const opToets = (e: KeyboardEvent) => e.key === 'Escape' && setPopup(false)
+    nogEensKnop.current?.focus()
+    const opToets = (e: KeyboardEvent) => e.key === 'Escape' && sluitPopup()
     window.addEventListener('keydown', opToets)
     return () => window.removeEventListener('keydown', opToets)
   }, [popup])
@@ -135,13 +174,17 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
 
   const draaiRad = async () => {
     if (bezig || opties.length < 2) return
-    const n = opties.length
+    // Deze lijst blijft op het rad staan tot de uitslag er is, ook als er intussen iets verandert
+    const lijst = opties
+    const n = lijst.length
     const vak = 360 / n
     const i = willekeurig(n)
     // Vak i komt onder de pijl (boven), ergens binnen het vak en niet precies op de grens
     const doelRest = (((360 - (i + 0.5) * vak + (fractie() - 0.5) * vak * 0.7) % 360) + 360) % 360
     const nu = hoek.current
     const doel = nu + 360 * 4 + ((((doelRest - (nu % 360)) % 360) + 360) % 360)
+    window.clearTimeout(popupTimer.current)
+    setVast((oud) => ({ opties: lijst, winnaar: null, ronde: (oud?.ronde ?? 0) + 1 }))
     setBezig(true)
     setUitslag(null)
     setPopup(false)
@@ -149,19 +192,29 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
       doel,
       duur: 3300 + fractie() * 700,
       vak,
-      onTik: geluidAan ? tik : undefined,
+      onTik: geluidAan
+        ? () => {
+            tik()
+            tril(5)
+          }
+        : undefined,
       onFrame: (h) => groep.current?.setAttribute('transform', `rotate(${h})`),
     })
-    const o = opties[i]
-    setUitslag({
+    const o = lijst[i]
+    const nieuw: Uitslag = {
       soort,
       optie: o.waarde,
       kleur: o.kleur,
       opdracht: soort === 'klos' && rad.klosOpdrachten.length ? kies(rad.klosOpdrachten) : undefined,
       zin: ondertitel(soort, o.kleur),
-    })
-    setPopup(true)
+    }
+    setUitslag(nieuw)
+    setVast((oud) => (oud ? { ...oud, winnaar: i } : oud))
+    setLaatste((oud) => ({ ...oud, [soort]: [kortTekst(nieuw), ...(oud[soort] ?? [])].slice(0, 5) }))
+    if (geluidAan) tril([80, 60, 180])
     setBezig(false)
+    // Eerst even het winnende vak laten oplichten, dan pas de popup
+    popupTimer.current = window.setTimeout(() => setPopup(true), minderBeweging() ? 0 : 700)
   }
 
   const tekort =
@@ -210,66 +263,96 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
           className="radkaart__geluid"
           onClick={() => setGeluidAan(!geluidAan)}
           aria-pressed={geluidAan}
-          aria-label={geluidAan ? 'Geluid uitzetten' : 'Geluid aanzetten'}
-          title={geluidAan ? 'Geluid aan' : 'Geluid uit'}
+          aria-label={geluidAan ? 'Geluid en trillen uitzetten' : 'Geluid en trillen aanzetten'}
+          title={geluidAan ? 'Geluid en trillen aan' : 'Geluid en trillen uit'}
         >
           {geluidAan ? '🔊' : '🔇'}
         </button>
-        <RadWiel opties={opties} soort={soort} groep={groep} hoek={hoek.current} />
+        <RadWiel
+          opties={vast?.opties ?? opties}
+          soort={soort}
+          groep={groep}
+          hoek={hoek.current}
+          winnaar={bezig ? null : (vast?.winnaar ?? null)}
+        />
+        {vast?.winnaar != null && !bezig && <Confetti key={vast.ronde} />}
         {opties.length < 2 ? (
           <p className="radkaart__tekort">{tekort}</p>
         ) : (
-          <button type="button" className="knop knop--accent radkaart__draai" onClick={() => void draaiRad()} disabled={bezig}>
+          <button
+            ref={draaiKnop}
+            type="button"
+            className="knop knop--accent radkaart__draai"
+            onClick={() => void draaiRad()}
+            disabled={bezig}
+            aria-busy={bezig}
+          >
             {bezig ? 'Draait…' : 'Draai!'}
           </button>
         )}
+        {!!laatste[soort]?.length && (
+          <p className="radkaart__laatste">
+            Laatste: <strong>{laatste[soort]![0]}</strong>
+            {laatste[soort]!.slice(1).map((x) => ` · ${x}`)}
+          </p>
+        )}
+        <p className="verborgen" aria-live="polite">
+          {uitslag ? voorleesTekst(uitslag) : ''}
+        </p>
       </section>
 
-      {soort === 'klos' && <DeelnemersKiezer kamers={kamers} naam={naam} />}
-      {soort === 'piste' && (
-        <fieldset className="veld">
-          <legend>Welke kleuren?</legend>
-          <div className="radkleuren">
-            {PISTE_KLEUREN.map((k) => (
-              <button
-                key={k}
-                type="button"
-                className={`keuze${kleuren.includes(k) ? ' is-actief' : ''}`}
-                aria-pressed={kleuren.includes(k)}
-                onClick={() => setKleuren((oud) => (oud.includes(k) ? oud.filter((x) => x !== k) : [...oud, k]))}
-              >
-                {KLEUR_EMOJI[k]} {k}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-      )}
-      {soort === 'eigen' && <EigenOpties opties={eigen} onWijzig={setEigen} />}
-      {soort === 'drankje' && (
-        <DrankKiezer
-          vast={rad.drankjes}
-          uit={drankUit}
-          setUit={setDrankUit}
-          eigen={eigenDrank}
-          setEigen={setEigenDrank}
-        />
-      )}
+      {/* Niets aan te passen zolang het rad draait */}
+      <fieldset className="radinstellingen" disabled={bezig}>
+        {soort === 'klos' && <DeelnemersKiezer kamers={kamers} naam={naam} />}
+        {soort === 'piste' && (
+          <fieldset className="veld">
+            <legend>Welke kleuren?</legend>
+            <div className="radkleuren">
+              {PISTE_KLEUREN.map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  className={`keuze${kleuren.includes(k) ? ' is-actief' : ''}`}
+                  aria-pressed={kleuren.includes(k)}
+                  onClick={() => setKleuren((oud) => (oud.includes(k) ? oud.filter((x) => x !== k) : [...oud, k]))}
+                >
+                  {KLEUR_EMOJI[k]} {k}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
+        {soort === 'eigen' && <EigenOpties opties={eigen} onWijzig={setEigen} />}
+        {soort === 'drankje' && (
+          <DrankKiezer
+            vast={rad.drankjes}
+            uit={drankUit}
+            setUit={setDrankUit}
+            eigen={eigenDrank}
+            setEigen={setEigenDrank}
+          />
+        )}
+      </fieldset>
 
       {popup && uitslag && (
-        <div className="dialoog-achtergrond dialoog-achtergrond--midden" onClick={() => setPopup(false)}>
+        <div className="dialoog-achtergrond dialoog-achtergrond--licht" onClick={sluitPopup}>
           <div
             className="dialoog raduitslag raduitslag--popup"
             role="dialog"
             aria-modal="true"
             aria-label="Uitslag"
+            aria-describedby="raduitslag-inhoud"
             onClick={(e) => e.stopPropagation()}
           >
-            <UitslagInhoud uitslag={uitslag} />
+            <div id="raduitslag-inhoud" className="raduitslag__inhoud">
+              <UitslagInhoud uitslag={uitslag} />
+            </div>
             <div className="dialoog__knoppen">
-              <button type="button" className="knop knop--secundair" onClick={() => setPopup(false)}>
+              <button type="button" className="knop knop--secundair" onClick={sluitPopup}>
                 Sluiten
               </button>
               <button
+                ref={nogEensKnop}
                 type="button"
                 className="knop knop--accent"
                 onClick={() => {
@@ -292,19 +375,24 @@ function RadWiel({
   soort,
   groep,
   hoek,
+  winnaar,
 }: {
-  opties: { waarde: string; kleur?: PisteKleur }[]
+  opties: Optie[]
   soort: Soort
   groep: React.RefObject<SVGGElement>
   hoek: number
+  /** Het vak onder de pijl na het draaien (licht op) */
+  winnaar: number | null
 }) {
   const n = Math.max(opties.length, 1)
   const vak = 360 / n
   const letter = n <= 6 ? 11 : n <= 10 ? 9 : n <= 16 ? 7.5 : 6
-  // Bij veel namen: initialen; bij veel andere opties: kleinere tekst (en afkappen)
-  const kort = soort === 'klos' && n > 16
-  const maxTekens = Math.floor(66 / (letter * 0.56))
-  const label = (o: { waarde: string; kleur?: PisteKleur }) => {
+  // Pas bij heel veel namen initialen; anders kleinere tekst (en afkappen)
+  const kort = soort === 'klos' && n > 40
+  // Tekst loopt van de rand (92) naar binnen tot waar het vak nog hoog genoeg is voor een regel
+  const binnenrand = Math.max(22, (letter * 1.1 * n) / (2 * Math.PI))
+  const maxTekens = Math.floor((92 - binnenrand) / (letter * 0.56))
+  const label = (o: Optie) => {
     const t = kort ? initialen(o.waarde) : o.waarde
     const tekst = t.length > maxTekens ? `${t.slice(0, maxTekens - 1)}…` : t
     return o.kleur ? `${tekst} ${KLEUR_EMOJI[o.kleur]}` : tekst
@@ -341,6 +429,9 @@ function RadWiel({
             const r = (((i * vak - 90) * Math.PI) / 180)
             return <circle key={i} cx={Math.cos(r) * 103} cy={Math.sin(r) * 103} r="1.8" fill="#f3d36b" />
           })}
+        {winnaar !== null && opties.length >= 2 && (
+          <path d={taartpunt(100, winnaar * vak, (winnaar + 1) * vak)} className="radkaart__winnaar" />
+        )}
       </g>
       <circle r="17" fill="#ffffff" stroke="var(--tweeslag-donkerblauw)" strokeWidth="3" />
       <text y="6" textAnchor="middle" fontSize="17" aria-hidden="true">
@@ -349,6 +440,43 @@ function RadWiel({
       {/* De rode pijl bovenaan */}
       <path d="M0 -92 L-11 -114 L11 -114 Z" fill="#d7263d" stroke="#ffffff" strokeWidth="2.5" strokeLinejoin="round" />
     </svg>
+  )
+}
+
+const CONFETTI_KLEUREN = ['#f3d36b', '#ffffff', '#099fc4', '#d7263d', '#7fd3ea']
+
+/** Een handvol confetti over het rad (bij minder beweging meteen weer weg) */
+function Confetti() {
+  const stukjes = useMemo(
+    () =>
+      Array.from({ length: 28 }, (_, i) => ({
+        links: 10 + fractie() * 80,
+        opzij: (fractie() - 0.5) * 120,
+        vertraging: fractie() * 0.25,
+        duur: 1.3 + fractie() * 0.8,
+        draai: (fractie() - 0.5) * 900,
+        kleur: CONFETTI_KLEUREN[i % CONFETTI_KLEUREN.length],
+      })),
+    [],
+  )
+  return (
+    <div className="confetti" aria-hidden="true">
+      {stukjes.map((s, i) => (
+        <span
+          key={i}
+          style={
+            {
+              left: `${s.links}%`,
+              background: s.kleur,
+              animationDelay: `${s.vertraging}s`,
+              animationDuration: `${s.duur}s`,
+              '--opzij': `${s.opzij}px`,
+              '--draai': `${s.draai}deg`,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+    </div>
   )
 }
 
