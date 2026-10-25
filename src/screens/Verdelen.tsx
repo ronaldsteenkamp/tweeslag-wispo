@@ -245,7 +245,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
           className="invoer"
           value={concept.verblijf}
           onChange={(e) => wijzig((c) => ({ ...c, verblijf: e.target.value }))}
-          placeholder="Naam van het chalet"
+          placeholder="Naam van het verblijf"
         />
       </label>
 

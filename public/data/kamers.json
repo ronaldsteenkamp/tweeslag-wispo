@@ -1,6 +1,6 @@
 {
   "_uitleg": "Kamers met nummer, een naam (mag je weglaten), het aantal bedden en de bewoners. Wie nog geen kamer heeft staat onder zonderKamer. ALLEEN VOORNAMEN, geen achternamen. Twee mensen met dezelfde naam? Schrijf dan bijvoorbeeld 'Lisa' en 'Lisa 2'. Iedereen kiest in de app zijn naam uit deze lijst. Tip: maak de verdeling in de app via Kamers → Kamerverdeling maken.",
-  "verblijf": "Chalet Tweeslag (voorbeeld)",
+  "verblijf": "Résidence La Muzelle",
   "kamers": [
     { "nummer": "101", "naam": "Gletsjer", "bedden": 3, "bewoners": ["Sten", "Tom", "Ronald"] },
     { "nummer": "102", "naam": "Poedersneeuw", "bedden": 3, "bewoners": ["Leah", "Selma", "Josje"] }

@@ -52,7 +52,7 @@ Verander je de tekst van een item, dan verdwijnt het vinkje bij dat ene item. Ie
 
 ### kamers.json
 ```json
-{ "verblijf": "Naam van het chalet",
+{ "verblijf": "Résidence La Muzelle",
   "kamers": [ { "nummer": "101", "naam": "Gletsjer", "bewoners": ["Anouk", "Sanne"] } ],
   "zonderKamer": ["Jacco", "Menno"] }
 ```
