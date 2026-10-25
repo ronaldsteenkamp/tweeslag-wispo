@@ -100,7 +100,7 @@ const grootGeheugen = new Map<string, string>()
 
 /**
  * Foto's schermvullend bekijken. Swipe naar links of rechts (of gebruik de pijltjes) voor de
- * volgende of vorige foto, swipe omlaag om te sluiten. Met verwijderen voor de eigenaar en beheerders.
+ * volgende of vorige foto, swipe omlaag om te sluiten. Met verwijderen voor beheerders.
  */
 export function FotoGroot({
   fotos,
@@ -130,7 +130,8 @@ export function FotoGroot({
 
   const i = Math.min(index, fotos.length - 1)
   const foto = fotos[i]
-  const magVerwijderen = !!foto && (foto.user_id === backend.userId || backend.beheerder)
+  // Alleen beheerders (ingelogd) mogen foto's van de muur halen, ook niet de maker zelf
+  const magVerwijderen = !!foto && backend.beheerder
 
   // Grote versie van deze foto en de buren alvast ophalen
   useEffect(() => {

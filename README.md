@@ -248,7 +248,7 @@ Migratie: `supabase/migrations/0005_fotomuur.sql` (maakt ook de bucket `fotos` e
 - **Verkleinen:** de telefoon verkleint de foto vóór het uploaden tot max. 1600 px en ~300 kB, plus een kleine versie (480 px) voor de muur. Daarbij gaan ook de locatie- en cameragegevens (EXIF) eruit. Een foto van 3,4 MB werd bij de test 216 kB.
 - **Fotomuur:** *Spel → 📸 Fotomuur*, de nieuwste eerst, met naam, kamer, challenge en tijd. Tik op een foto om hem schermvullend te bekijken; veeg naar links of rechts (of gebruik de pijltjes) voor de volgende of vorige foto, en veeg omlaag om te sluiten. Aan het eind van de muur worden vanzelf meer foto's geladen. Nieuwe foto's verschijnen vanzelf (Supabase Realtime). Op Home staan de vier nieuwste.
 - **Privé:** de bucket is niet openbaar. De app vraagt per foto een tijdelijke link (signed URL) aan die een uur geldig is; dat kan alleen een apparaat dat in de app is aangemeld. Naam en kamer bij een foto zet de server erbij, niet de telefoon.
-- **Verwijderen:** iedereen kan zijn eigen foto's verwijderen; beheerders (ingelogd) kunnen elke foto verwijderen. Open de foto en tik op *Verwijderen*.
+- **Verwijderen:** alleen beheerders (ingelogd) kunnen foto's van de muur halen, ook de maker zelf niet. Open de foto en tik op *Verwijderen*. De database dwingt dat af (migratie `0009_fotos_alleen_beheer_verwijdert.sql`).
 - **Grenzen:** alleen JPEG of WebP, max. 1 MB per bestand. Het gratis abonnement heeft 1 GB opslag: genoeg voor duizenden foto's.
 - **Zonder internet** zie je de laatst geladen muur; uploaden kan alleen met verbinding.
 
