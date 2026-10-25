@@ -3022,8 +3022,8 @@ button {
 
 .radkaart {
   align-items: center;
-  gap: 14px;
-  padding-bottom: 70px;
+  gap: 12px;
+  padding: 14px 6px 62px;
   --sneeuwbank: var(--achtergrond);
   background: var(--hero);
   color: var(--hero-tekst);
@@ -3032,7 +3032,7 @@ button {
 
 .radkaart__wiel {
   width: 100%;
-  max-width: 330px;
+  max-width: 420px;
   height: auto;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
 }
@@ -3053,14 +3053,20 @@ button {
   text-align: center;
 }
 
+/* Klein knopje linksboven om het tikgeluid aan of uit te zetten */
 .radkaart__geluid {
-  min-height: 44px;
-  padding: 0 12px;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   border: 0;
-  background: none;
-  color: inherit;
-  font-family: var(--font-kop);
-  opacity: 0.85;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 1.2rem;
 }
 
 .raduitslag {

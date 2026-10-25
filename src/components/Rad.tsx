@@ -205,6 +205,16 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
       {keuzebalk}
 
       <section className="kaartje radkaart golf" aria-label="Rad">
+        <button
+          type="button"
+          className="radkaart__geluid"
+          onClick={() => setGeluidAan(!geluidAan)}
+          aria-pressed={geluidAan}
+          aria-label={geluidAan ? 'Geluid uitzetten' : 'Geluid aanzetten'}
+          title={geluidAan ? 'Geluid aan' : 'Geluid uit'}
+        >
+          {geluidAan ? '🔊' : '🔇'}
+        </button>
         <RadWiel opties={opties} soort={soort} groep={groep} hoek={hoek.current} />
         {opties.length < 2 ? (
           <p className="radkaart__tekort">{tekort}</p>
@@ -213,9 +223,6 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
             {bezig ? 'Draait…' : 'Draai!'}
           </button>
         )}
-        <button type="button" className="radkaart__geluid" onClick={() => setGeluidAan(!geluidAan)} aria-pressed={geluidAan}>
-          {geluidAan ? '🔊 Geluid aan' : '🔈 Geluid uit'}
-        </button>
       </section>
 
       {soort === 'klos' && <DeelnemersKiezer kamers={kamers} naam={naam} />}
