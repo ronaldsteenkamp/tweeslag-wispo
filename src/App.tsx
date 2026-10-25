@@ -6,6 +6,7 @@ import { Welkom } from './components/Welkom'
 import { config } from './config'
 import { haalAllesVooraf } from './lib/data'
 import { lees, schrijf, useOpgeslagen } from './lib/opslag'
+import { useSchermWakker } from './lib/wakker'
 import Home from './screens/Home'
 import Planning from './screens/Planning'
 import Paklijst from './screens/Paklijst'
@@ -40,6 +41,8 @@ export default function App() {
   const [naam] = useOpgeslagen<string | null>('naam', null)
   // De kamerverdeling is alleen voor de reisleiding (zie config.ts)
   const magVerdelen = naam !== null && config.reisleiding.includes(naam)
+  // Op de piste of in de bus: het scherm gaat niet op slot zolang de app open is
+  useSchermWakker()
 
   useEffect(() => {
     const opHash = () => setTab(tabUitAdres())

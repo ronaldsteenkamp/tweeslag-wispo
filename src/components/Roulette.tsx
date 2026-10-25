@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Kamers } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
 import { deelnemers, fractie, schud, useDeelnemersKeuze, willekeurig } from '../lib/rad'
+import { CasinoLogo } from './CasinoLogo'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
 import { DIAMANTEN, planWorp, R_BAAN, R_DIAMANT, R_VAKJE, type Stand, type Worp } from '../lib/roulette'
 import { minderBeweging, punt, rolgeluid, taartpunt, tik } from './Wiel'
@@ -238,7 +239,9 @@ export function Roulette({
       ) : (
         <section className="casino__tafel" aria-label="Jacco's Casino">
           <div className="casino__kopregel">
-            <h2 className="casino__titel">Jacco's Casino</h2>
+            <h2 className="casino__titel">
+              <CasinoLogo />
+            </h2>
             <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
               <span aria-hidden="true">🪙</span> {fiches(saldo)}
             </p>
