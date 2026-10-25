@@ -1,12 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Kamers } from '../lib/data'
 import { useDialoogFocus } from '../lib/dialoogFocus'
-import { useOpgeslagen } from '../lib/opslag'
+import { lees, schrijfEnMeld, useOpgeslagen } from '../lib/opslag'
 import { deelnemers, fractie, schud, useDeelnemersKeuze, willekeurig } from '../lib/rad'
+import { tabToetsen } from '../lib/tabbladen'
 import { CasinoLogo } from './CasinoLogo'
+import { Confetti } from './Confetti'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
-import { DIAMANTEN, planWorp, R_BAAN, R_DIAMANT, R_VAKJE, type Stand, type Worp } from '../lib/roulette'
-import { minderBeweging, punt, rolgeluid, taartpunt, tik } from './Wiel'
+import {
+  buitenInzetten,
+  DIAMANTEN,
+  helft,
+  kleurVan,
+  planWorp,
+  R_BAAN,
+  R_DIAMANT,
+  R_VAKJE,
+  uitbetaling,
+  type Buiten,
+  type Kleur,
+  type Stand,
+  type Worp,
+} from '../lib/roulette'
+import { minderBeweging, punt, rolgeluid, taartpunt, tik, tril } from './Wiel'
 
 /*
  * Jacco's casino: een roulettetafel met de deelnemers als getallen. Fiches zijn nep en staan
@@ -18,29 +34,13 @@ const START = 1000
 /** Fiches op, dan: een bak (bier in één keer leeg) voor zoveel nieuwe fiches */
 const LENING = 500
 
-type Buiten = 'rood' | 'zwart' | 'even' | 'oneven'
-const BUITEN: { sleutel: Buiten; label: string }[] = [
-  { sleutel: 'rood', label: 'Rood' },
-  { sleutel: 'zwart', label: 'Zwart' },
-  { sleutel: 'even', label: 'Even' },
-  { sleutel: 'oneven', label: 'Oneven' },
-]
+const BUITEN_LABEL: Record<Buiten, string> = { rood: 'Rood', zwart: 'Zwart', laag: 'Laag', hoog: 'Hoog' }
+/** Welke getallen Laag en Hoog zijn, klein onder de knop */
+const bereik = (b: Buiten, n: number) =>
+  b === 'laag' ? `1–${helft(n)}` : b === 'hoog' ? `${helft(n) + 1}–${2 * helft(n)}` : null
 
-const isRood = (g: number) => g % 2 === 1
-const kleurVan = (g: number) => (g === 0 ? 'groen' : isRood(g) ? 'rood' : 'zwart')
 const fiches = (n: number) => n.toLocaleString('nl-NL')
-
-/** Wint deze inzet bij uitslag g? Geeft het totale bedrag terug dat de bank uitbetaalt (incl. inzet). */
-function uitbetaling(sleutel: string, inzet: number, g: number, n: number): number {
-  if (/^\d+$/.test(sleutel)) return Number(sleutel) === g ? inzet * n : 0 // (N-1):1 plus de inzet terug
-  if (g === 0) return 0
-  const wint =
-    (sleutel === 'rood' && isRood(g)) ||
-    (sleutel === 'zwart' && !isRood(g)) ||
-    (sleutel === 'even' && g % 2 === 0) ||
-    (sleutel === 'oneven' && g % 2 === 1)
-  return wint ? inzet * 2 : 0
-}
+const som = (inzet: Record<string, number>) => Object.values(inzet).reduce((s, x) => s + x, 0)
 
 /** Een bedrag als stapeltje fiches (grootste eerst), voor op het speelveld */
 function stapel(bedrag: number): number[] {
@@ -70,13 +70,18 @@ export function Roulette({
   const [saldo, setSaldo] = useOpgeslagen('casino.fiches', START)
   const [geleend, setGeleend] = useOpgeslagen('casino.geleend', 0)
   const [fiche, setFiche] = useState<number>(25)
-  const [inzet, setInzet] = useState<Record<string, number>>({})
+  // Ook bewaard, zodat een inzet niet verdwijnt als de app tussendoor wordt gesloten
+  const [inzet, setInzet] = useOpgeslagen<Record<string, number>>('casino.inzet', {})
   const [bezig, setBezig] = useState(false)
   useEffect(() => onBezig?.(bezig), [bezig, onBezig])
   const [uitslag, setUitslag] = useState<Uitslag | null>(null)
+  // Eerst even het winnende vak (en confetti) laten zien, dan pas de popup
+  const [toonPopup, setToonPopup] = useState(false)
+  const popupTimer = useRef<number>()
+  const [ronde, setRonde] = useState(0)
   const [melding, setMelding] = useState<string | null>(null)
-  const popup = useDialoogFocus<HTMLDivElement>(uitslag !== null)
-  const [geluidAan] = useOpgeslagen('rad.geluid', true)
+  const popup = useDialoogFocus<HTMLDivElement>(uitslag !== null && toonPopup)
+  const [geluidAan, setGeluidAan] = useOpgeslagen('rad.geluid', true)
   const wiel = useRef<SVGGElement>(null)
   const bal = useRef<SVGCircleElement>(null)
   const staart = useRef<SVGPathElement>(null)
@@ -88,20 +93,42 @@ export function Roulette({
   const balStraal = useRef(R_VAKJE)
   const frame = useRef<number | null>(null)
   const rol = useRef<ReturnType<typeof rolgeluid>>(null)
-  useEffect(
-    () => () => {
+  // De worp die nu rolt (de uitslag ligt al vast) en de inzet van dit moment, voor als je weggaat
+  const lopend = useRef<{ getal: number; inzet: Record<string, number>; n: number } | null>(null)
+  const inzetNu = useRef(inzet)
+  inzetNu.current = inzet
+
+  useEffect(() => {
+    // Inzet van een vorige keer (app tussendoor gesloten): terug naar het saldo
+    const oud = som(lees<Record<string, number>>('casino.inzet', {}))
+    if (oud) {
+      inzetNu.current = {}
+      schrijfEnMeld('casino.inzet', {})
+      schrijfEnMeld('casino.fiches', lees('casino.fiches', START) + oud)
+      setMelding(`Je inzet van ${fiches(oud)} fiches staat weer bij je saldo.`)
+    }
+    return () => {
       if (frame.current) cancelAnimationFrame(frame.current)
       rol.current?.stop()
-    },
-    [],
-  )
+      window.clearTimeout(popupTimer.current)
+      // Weg van het casino: een lopende worp meteen afrekenen, anders de inzet terug
+      const l = lopend.current
+      const terug = l
+        ? Object.entries(l.inzet).reduce((t, [k, x]) => t + uitbetaling(k, x, l.getal, l.n), 0)
+        : som(inzetNu.current)
+      if (terug) schrijfEnMeld('casino.fiches', lees('casino.fiches', START) + terug)
+      if (l || terug) schrijfEnMeld('casino.inzet', {})
+      lopend.current = null
+      inzetNu.current = {}
+    }
+  }, [])
 
   const spelers = useMemo(() => deelnemers(keuze, kamers, naam), [keuze, kamers, naam])
   // Elk getal 1..N hoort bij één naam, per ronde opnieuw geschud. Tafel en wiel volgen deze
   // volgorde (niet de spelerslijst zelf), zodat ze niet veranderen terwijl het balletje rolt.
   const [volgorde, setVolgorde] = useState<string[]>(() => schud(spelers))
   const n = volgorde.length
-  const totaal = Object.values(inzet).reduce((s, x) => s + x, 0)
+  const totaal = som(inzet)
   const totaalNu = useRef(totaal)
   totaalNu.current = totaal
 
@@ -120,7 +147,7 @@ export function Roulette({
   }, [spelersSleutel, bezig, uitslag, setSaldo])
 
   useEffect(() => {
-    if (!uitslag) return
+    if (!uitslag || !toonPopup) return
     const opToets = (e: KeyboardEvent) => e.key === 'Escape' && volgendeRonde()
     window.addEventListener('keydown', opToets)
     return () => window.removeEventListener('keydown', opToets)
@@ -148,6 +175,8 @@ export function Roulette({
   }
 
   const volgendeRonde = () => {
+    window.clearTimeout(popupTimer.current)
+    setToonPopup(false)
     setUitslag(null)
     tafelVoor.current = spelersSleutel
     setVolgorde(schud(spelers))
@@ -195,6 +224,7 @@ export function Roulette({
           while (volgendTikje < worp.tikjes.length && worp.tikjes[volgendTikje].t <= t) {
             const tj = worp.tikjes[volgendTikje++]
             tik(tj.volume, tj.toon)
+            tril(4)
           }
           const v = Math.abs(st.balSnelheid)
           rol.current?.zet(st.rolt ? Math.min(0.05, v / 12000) : 0, 300 + v * 0.8)
@@ -224,15 +254,31 @@ export function Roulette({
       vakken,
       toeval: fractie,
     })
+    lopend.current = { getal, inzet, n }
     setBezig(true)
     setUitslag(null)
     await speel(worp)
+    if (!lopend.current) return // intussen weggegaan: al afgerekend
+    lopend.current = null
     const uitbetaald = Object.entries(inzet).reduce((s, [k, x]) => s + uitbetaling(k, x, getal, n), 0)
     setSaldo((s) => s + uitbetaald)
     setUitslag({ getal, naam: getal === 0 ? null : volgorde[getal - 1] ?? null, ingezet: totaal, uitbetaald })
+    setRonde((r) => r + 1)
     setInzet({})
     setBezig(false)
+    if (geluidAan) tril(uitbetaald > totaal ? [80, 60, 80, 60, 200] : 120)
+    popupTimer.current = window.setTimeout(() => setToonPopup(true), minderBeweging() ? 0 : 900)
   }
+
+  /** De uitslag als zin, voor schermlezers */
+  const uitslagTekst = (u: Uitslag) =>
+    `${u.getal}, ${kleurVan(u.getal, n)}. ${u.naam ? `${u.naam} neemt een slok!` : 'Iedereen drinkt!'} ${
+      u.uitbetaald > u.ingezet
+        ? `Je wint ${fiches(u.uitbetaald - u.ingezet)} fiches.`
+        : u.uitbetaald === u.ingezet
+          ? 'Quitte.'
+          : `Je verliest ${fiches(u.ingezet - u.uitbetaald)} fiches.`
+    }`
 
   const winnend = (sleutel: string) => {
     if (!uitslag) return false
@@ -249,12 +295,34 @@ export function Roulette({
             <h2 className="casino__titel">
               <CasinoLogo />
             </h2>
-            <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
-              <span aria-hidden="true">🪙</span> {fiches(saldo)}
-            </p>
+            <div className="casino__rechts">
+              <button
+                type="button"
+                className="casino__geluid"
+                onClick={() => setGeluidAan(!geluidAan)}
+                aria-pressed={geluidAan}
+                aria-label={geluidAan ? 'Geluid en trillen uitzetten' : 'Geluid en trillen aanzetten'}
+                title={geluidAan ? 'Geluid en trillen aan' : 'Geluid en trillen uit'}
+              >
+                {geluidAan ? '🔊' : '🔇'}
+              </button>
+              <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
+                <span aria-hidden="true">🪙</span> {fiches(saldo)}
+              </p>
+            </div>
           </div>
 
-          <RouletteWiel n={n} wiel={wiel} bal={bal} staart={staart} hoek={hoek.current} balHoek={balHoek.current ?? hoek.current + 180 / (n + 1)} balStraal={balStraal.current} />
+          <RouletteWiel
+            n={n}
+            wiel={wiel}
+            bal={bal}
+            staart={staart}
+            hoek={hoek.current}
+            balHoek={balHoek.current ?? hoek.current + 180 / (n + 1)}
+            balStraal={balStraal.current}
+            uitslag={uitslag?.getal ?? null}
+          />
+          {uitslag && uitslag.uitbetaald > uitslag.ingezet && <Confetti key={ronde} />}
 
           <div className="casino__veld">
             <Vak sleutel="0" label="0, iedereen drinkt" klasse="casino__vak casino__vak--nul" inzet={inzet} winnend={winnend('0')} onZet={zet} uit={!!uitslag || bezig}>
@@ -269,7 +337,7 @@ export function Roulette({
                     key={g}
                     sleutel={String(g)}
                     label={`${g}, ${speler}`}
-                    klasse={`casino__vak casino__vak--${isRood(g) ? 'rood' : 'zwart'}`}
+                    klasse={`casino__vak casino__vak--${kleurVan(g, n)}`}
                     inzet={inzet}
                     winnend={winnend(String(g))}
                     onZet={zet}
@@ -282,18 +350,19 @@ export function Roulette({
               })}
             </div>
             <div className="casino__buiten">
-              {BUITEN.map((b) => (
+              {buitenInzetten(n).map((b) => (
                 <Vak
-                  key={b.sleutel}
-                  sleutel={b.sleutel}
-                  label={b.label}
-                  klasse={`casino__vak casino__vak--buiten casino__vak--${b.sleutel}`}
+                  key={b}
+                  sleutel={b}
+                  label={bereik(b, n) ? `${BUITEN_LABEL[b]}, ${bereik(b, n)}` : BUITEN_LABEL[b]}
+                  klasse={`casino__vak casino__vak--buiten casino__vak--${b}`}
                   inzet={inzet}
-                  winnend={winnend(b.sleutel)}
+                  winnend={winnend(b)}
                   onZet={zet}
                   uit={!!uitslag || bezig}
                 >
-                  <strong>{b.label}</strong>
+                  <strong>{BUITEN_LABEL[b]}</strong>
+                  {bereik(b, n) && <span>{bereik(b, n)}</span>}
                 </Vak>
               ))}
             </div>
@@ -315,13 +384,19 @@ export function Roulette({
           ) : (
             <>
               <div className="casino__bediening">
-                <div className="casino__fiches" role="radiogroup" aria-label="Fiche">
+                <div
+                  className="casino__fiches"
+                  role="radiogroup"
+                  aria-label="Fiche"
+                  onKeyDown={tabToetsen<number>(FICHES, fiche, setFiche)}
+                >
                   {FICHES.map((f) => (
                     <button
                       key={f}
                       type="button"
                       role="radio"
                       aria-checked={fiche === f}
+                      tabIndex={fiche === f ? 0 : -1}
                       className={`fiche fiche--${f}${fiche === f ? ' is-gekozen' : ''}`}
                       onClick={() => setFiche(f)}
                     >
@@ -348,6 +423,9 @@ export function Roulette({
               </p>
             </>
           )}
+          <p className="verborgen" aria-live="polite">
+            {uitslag ? uitslagTekst(uitslag) : ''}
+          </p>
         </section>
       )}
 
@@ -362,8 +440,9 @@ export function Roulette({
         🍺 {geleend} {geleend === 1 ? 'bak' : 'bakken'} getrokken
       </p>
 
-      {uitslag && (
-        <div className="dialoog-achtergrond dialoog-achtergrond--midden" onClick={volgendeRonde}>
+      {uitslag && toonPopup && (
+        // Onderin en licht, zodat wiel en winnend vak zichtbaar blijven
+        <div className="dialoog-achtergrond dialoog-achtergrond--licht" onClick={volgendeRonde}>
           <div
             ref={popup}
             className="dialoog casino__popup"
@@ -373,8 +452,8 @@ export function Roulette({
             onClick={(e) => e.stopPropagation()}
           >
             <p className="casino__getal">
-              <span className={`casino__bol casino__bol--${kleurVan(uitslag.getal)}`}>{uitslag.getal}</span>
-              {uitslag.getal === 0 ? 'groen' : kleurVan(uitslag.getal)}
+              <span className={`casino__bol casino__bol--${kleurVan(uitslag.getal, n)}`}>{uitslag.getal}</span>
+              {kleurVan(uitslag.getal, n)}
             </p>
             <p className="casino__klos">{uitslag.naam ? `${uitslag.naam} neemt een slok!` : '🍻 Iedereen drinkt!'}</p>
             <p>
@@ -442,6 +521,8 @@ function Vak({
 }
 
 
+const WIELKLEUR: Record<Kleur, string> = { groen: '#1d8a4a', rood: '#b8141d', zwart: '#181818', blauw: '#2563b0' }
+
 function RouletteWiel({
   n,
   wiel,
@@ -450,6 +531,7 @@ function RouletteWiel({
   hoek,
   balHoek,
   balStraal,
+  uitslag,
 }: {
   n: number
   wiel: React.RefObject<SVGGElement>
@@ -458,11 +540,13 @@ function RouletteWiel({
   hoek: number
   balHoek: number
   balStraal: number
+  /** Na de worp: dit getal groot in het midden (ook leesbaar als het wiel klein is) */
+  uitslag: number | null
 }) {
   const vakken = n + 1
   const vak = 360 / vakken
   const letter = vakken <= 13 ? 8.5 : vakken <= 25 ? 7.5 : 6.5
-  const kleur = (g: number) => (g === 0 ? '#1d8a4a' : isRood(g) ? '#b8141d' : '#181818')
+  const kleur = (g: number) => WIELKLEUR[kleurVan(g, n)]
   const [bx, by] = punt(balStraal, balHoek)
   return (
     <svg className="casino__wiel" viewBox="-118 -118 236 236" role="img" aria-label={`Roulettewiel met 0 tot en met ${n}`}>
@@ -577,6 +661,14 @@ function RouletteWiel({
       <circle r="108" fill="url(#rw-licht)" pointerEvents="none" />
       <path ref={staart} d="" fill="none" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="6" strokeLinecap="round" />
       <circle ref={bal} cx={bx} cy={by} r="4.2" fill="url(#rw-bal)" className="casino__bal" />
+      {uitslag !== null && (
+        <g className="casino__wieluitslag" aria-hidden="true">
+          <circle r="27" fill={WIELKLEUR[kleurVan(uitslag, n)]} stroke="#e8c463" strokeWidth="3" />
+          <text textAnchor="middle" dominantBaseline="central" fontSize="30" fill="#ffffff" className="casino__wielgetal">
+            {uitslag}
+          </text>
+        </g>
+      )}
     </svg>
   )
 }

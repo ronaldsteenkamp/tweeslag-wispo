@@ -198,3 +198,36 @@ export function planWorp(o: {
 
   return { landing, einde: landing + UITROLLEN, tikjes, stand }
 }
+
+// ---------- Spelregels: kleuren, inzetten en uitbetaling ----------
+// Getallen 0..N (N = aantal spelers). 0 is groen ("iedereen drinkt"). Rood en zwart om en om, en
+// Laag/Hoog in plaats van Even/Oneven (die vielen samen met rood en zwart). Bij een oneven aantal
+// spelers is het hoogste getal blauw: dan hebben rood en zwart, en laag en hoog, evenveel getallen.
+
+export type Kleur = 'groen' | 'rood' | 'zwart' | 'blauw'
+export type Buiten = 'rood' | 'zwart' | 'laag' | 'hoog'
+
+export function kleurVan(g: number, n: number): Kleur {
+  if (g === 0) return 'groen'
+  if (n % 2 === 1 && g === n) return 'blauw'
+  return g % 2 === 1 ? 'rood' : 'zwart'
+}
+
+/** Laag = 1 t/m helft, Hoog = helft+1 t/m 2·helft */
+export const helft = (n: number) => Math.floor(n / 2)
+
+/** Laag/Hoog pas vanaf 4 spelers: met 2 of 3 is dat precies hetzelfde als rood/zwart */
+export const buitenInzetten = (n: number): Buiten[] => (n >= 4 ? ['rood', 'zwart', 'laag', 'hoog'] : ['rood', 'zwart'])
+
+/** Wint deze inzet bij uitslag g? Geeft het totale bedrag dat de bank uitbetaalt (inclusief inzet). */
+export function uitbetaling(sleutel: string, inzet: number, g: number, n: number): number {
+  if (/^\d+$/.test(sleutel)) return Number(sleutel) === g ? inzet * n : 0 // (N-1):1 plus de inzet terug
+  const kleur = kleurVan(g, n)
+  const h = helft(n)
+  const wint =
+    (sleutel === 'rood' && kleur === 'rood') ||
+    (sleutel === 'zwart' && kleur === 'zwart') ||
+    (sleutel === 'laag' && g >= 1 && g <= h) ||
+    (sleutel === 'hoog' && g > h && g <= 2 * h)
+  return wint ? inzet * 2 : 0
+}

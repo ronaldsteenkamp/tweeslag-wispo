@@ -64,6 +64,7 @@ function wisAlsBegonnen() {
   schrijfEnMeld('spel.bingo.kaart', null) // nieuwe, geschudde busbingokaart (ook op een open scherm)
   schrijfEnMeld('casino.fiches', 1000)
   schrijfEnMeld('casino.geleend', 0)
+  schrijfEnMeld('casino.inzet', {})
   schrijf(TESTMOMENT, null)
 }
 

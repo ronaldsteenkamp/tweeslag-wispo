@@ -140,7 +140,7 @@ npm run build
 npm run preview
 ```
 
-Het rekenwerk van het rad (`src/lib/radwiskunde.ts`: waar het rad stopt, pistes verdelen, tekst in de vakken) heeft tests. Die draaien met Node 22.18 of nieuwer:
+Het rekenwerk van het rad (`src/lib/radwiskunde.ts`: waar het rad stopt, pistes verdelen, tekst in de vakken) en van het casino (`src/lib/roulette.ts`: waar het balletje landt, kleuren en uitbetaling) heeft tests. Die draaien met Node 22.18 of nieuwer:
 ```bash
 npm test
 ```

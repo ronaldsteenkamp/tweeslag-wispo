@@ -75,3 +75,44 @@ test('tekst past in het vak: hoe meer vakken, hoe kleiner en korter', () => {
     vorige = nu
   }
 })
+
+// ---------- Casino ----------
+
+const roulette = await import('../src/lib/roulette.ts')
+
+test('casino: rood en zwart, en laag en hoog, hebben evenveel getallen en geen getal dubbel', () => {
+  for (let n = 2; n <= 40; n++) {
+    const tel = (s) => Array.from({ length: n + 1 }, (_, g) => roulette.uitbetaling(s, 1, g, n) > 0).filter(Boolean).length
+    assert.equal(tel('rood'), tel('zwart'), `n=${n}`)
+    assert.equal(tel('laag'), tel('hoog'), `n=${n}`)
+    assert.equal(tel('rood'), Math.floor(n / 2), `n=${n}`)
+    // Rood is niet meer hetzelfde als een van de andere inzetten (vanaf 4 spelers; daaronder is
+    // er geen Laag/Hoog, want met 1 rood en 1 zwart getal valt dat altijd samen)
+    if (n < 4) continue
+    const winnaars = (s) => Array.from({ length: n + 1 }, (_, g) => g).filter((g) => roulette.uitbetaling(s, 1, g, n) > 0).join(',')
+    assert.notEqual(winnaars('rood'), winnaars('laag'), `n=${n}`)
+    assert.notEqual(winnaars('rood'), winnaars('hoog'), `n=${n}`)
+  }
+})
+
+test('casino: een getal betaalt N keer de inzet, 0 betaalt alleen op 0', () => {
+  assert.equal(roulette.uitbetaling('7', 10, 7, 12), 120)
+  assert.equal(roulette.uitbetaling('7', 10, 8, 12), 0)
+  assert.equal(roulette.uitbetaling('0', 10, 0, 12), 120)
+  for (const s of ['rood', 'zwart', 'laag', 'hoog']) assert.equal(roulette.uitbetaling(s, 10, 0, 12), 0)
+})
+
+test('casino: het balletje landt altijd in het gekozen vakje', () => {
+  for (const spelers of [2, 7, 12, 40]) {
+    const vakken = spelers + 1
+    let wiel = 0, ws = 0, bal = null, straal = roulette.R_VAKJE
+    for (let k = 0; k < 40; k++) {
+      const getal = k % vakken
+      const w = roulette.planWorp({ wiel, wielSnelheid: ws, bal: bal ?? 180 / vakken, balStraal: straal, getal, vakken, toeval: zaad(k + 1) })
+      const eind = w.stand(w.einde)
+      const rel = (((eind.bal - eind.wiel) % 360) + 360) % 360
+      assert.equal(Math.floor(rel / (360 / vakken)), getal, `spelers=${spelers} getal=${getal}`)
+      ;({ wiel, wielSnelheid: ws, bal, straal } = { ...eind, bal: eind.bal })
+    }
+  }
+})
