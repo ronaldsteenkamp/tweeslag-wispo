@@ -1,5 +1,5 @@
 {
-  "_uitleg": "Inhoud van het tabblad Rad. pistes: echte pistes van Les Deux Alpes met hun kleur (groen, blauw, rood of zwart; namen en kleuren uit OpenStreetMap). drankjes en klosOpdrachten: vrij aan te vullen.",
+  "_uitleg": "Inhoud van het tabblad Rad. pistes: echte pistes van Les Deux Alpes met hun kleur (groen, blauw, rood of zwart; namen en kleuren uit OpenStreetMap). drankjes en klosOpdrachten: vrij aan te vullen. drankZinnen en pisteZinnen: de ondertitels onder de uitslag (bij pistes 'algemeen' plus per kleur), er wordt er steeds één gekozen.",
   "pistes": [
     { "naam": "Bosquet", "kleur": "groen" },
     { "naam": "Champamé", "kleur": "groen" },
@@ -31,6 +31,14 @@
     { "naam": "Diable 1", "kleur": "zwart" }
   ],
   "drankjes": ["Glühwein", "Bier", "Génépi", "Warme chocomel", "Vin chaud", "Jägerbomb", "Aperol spritz", "Rosé", "Shotje tequila", "Spa rood", "Café calva", "Radler"],
+  "drankZinnen": ["Proost!", "Santé!", "Cheers!", "Gezondheid!", "Wie trakteert?", "Op een mooie wispo!", "Glas omhoog!", "Op de Tweeslag!", "Eén rondje voor de hele tafel!", "Bestel het in het Frans, dat telt dubbel.", "Alcoholvrij mag natuurlijk ook."],
+  "pisteZinnen": {
+    "algemeen": ["Iedereen erachteraan!", "Wie het laatst beneden is, haalt de eerste ronde.", "Eerst nog even een groepsfoto bovenaan.", "Skibril op en gaan!", "Onderaan verzamelen bij de lift.", "Wie valt, trakteert.", "Even opwarmen en dan door.", "Zing onderweg het buslied."],
+    "groen": ["Lekker rustig aan, ook goed voor de beginners.", "Ideaal om warm te draaien.", "Tijd voor een sneeuwpopstop."],
+    "blauw": ["Genieten van het uitzicht.", "Mooi breed, dus carven maar.", "Iedereen kan mee."],
+    "rood": ["Nu wordt het menens!", "Knieën gebogen en gaan.", "Wie durft er zonder stokken?"],
+    "zwart": ["Alleen voor de durfals!", "Helm goed vast?", "Beginners mogen de lift terug nemen."]
+  },
   "klosOpdrachten": [
     "haalt de volgende ronde",
     "doet de afwas",

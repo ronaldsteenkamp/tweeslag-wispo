@@ -83,6 +83,9 @@ export interface Rad {
   pistes: { naam: string; kleur: PisteKleur }[]
   drankjes: string[]
   klosOpdrachten: string[]
+  /** Ondertitels onder de uitslag; er wordt er steeds één gekozen */
+  drankZinnen: string[]
+  pisteZinnen: { algemeen: string[] } & Record<PisteKleur, string[]>
 }
 
 interface DataTypes {
@@ -182,6 +185,14 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
         .filter((p) => p.naam && PISTE_KLEUREN.includes(p.kleur)),
       drankjes: teksten(r?.drankjes),
       klosOpdrachten: teksten(r?.klosOpdrachten),
+      drankZinnen: teksten(r?.drankZinnen),
+      pisteZinnen: {
+        algemeen: teksten(r?.pisteZinnen?.algemeen),
+        groen: teksten(r?.pisteZinnen?.groen),
+        blauw: teksten(r?.pisteZinnen?.blauw),
+        rood: teksten(r?.pisteZinnen?.rood),
+        zwart: teksten(r?.pisteZinnen?.zwart),
+      },
     }
   },
 }

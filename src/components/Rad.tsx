@@ -70,6 +70,8 @@ function verspreid<T extends { kleur: PisteKleur }>(lijst: T[]): T[] {
 
 interface Uitslag {
   soort: Soort
+  /** Ondertitel, bij het draaien gekozen */
+  zin?: string
   optie: string
   opdracht?: string
   kleur?: PisteKleur
@@ -117,6 +119,16 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     return () => window.removeEventListener('keydown', opToets)
   }, [popup])
 
+  /** Een willekeurige ondertitel uit rad.json (met een standaard als die leeg is) */
+  const ondertitel = (s: Soort, kleur?: PisteKleur) => {
+    if (s === 'drankje') return rad.drankZinnen.length ? kies(rad.drankZinnen) : 'Proost!'
+    if (s === 'piste') {
+      const zinnen = [...rad.pisteZinnen.algemeen, ...(kleur ? rad.pisteZinnen[kleur] : [])]
+      return zinnen.length ? kies(zinnen) : 'Iedereen erachteraan!'
+    }
+    return undefined
+  }
+
   const draaiRad = async () => {
     if (bezig || opties.length < 2) return
     const n = opties.length
@@ -142,6 +154,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
       optie: o.waarde,
       kleur: o.kleur,
       opdracht: soort === 'klos' && rad.klosOpdrachten.length ? kies(rad.klosOpdrachten) : undefined,
+      zin: ondertitel(soort, o.kleur),
     })
     setPopup(true)
     setBezig(false)
@@ -330,7 +343,7 @@ function RadWiel({
 const hoofdletter = (s: string) => s.charAt(0).toLocaleUpperCase('nl') + s.slice(1)
 
 function UitslagInhoud({ uitslag }: { uitslag: Uitslag }) {
-  const { soort, optie, opdracht, kleur } = uitslag
+  const { soort, optie, opdracht, kleur, zin } = uitslag
   return (
     <>
       {soort === 'klos' && (
@@ -344,13 +357,14 @@ function UitslagInhoud({ uitslag }: { uitslag: Uitslag }) {
           <p className="raduitslag__groot">
             {kleur && KLEUR_EMOJI[kleur]} {optie}
           </p>
-          {kleur && <p>{KLEUR_NAAM[kleur]} piste. Iedereen erachteraan!</p>}
+          {kleur && <p className="raduitslag__soort">{KLEUR_NAAM[kleur]} piste</p>}
+          {zin && <p>{zin}</p>}
         </>
       )}
       {soort === 'drankje' && (
         <>
           <p className="raduitslag__groot">🍻 {optie}!</p>
-          <p>Proost!</p>
+          {zin && <p>{zin}</p>}
         </>
       )}
       {soort === 'eigen' && <p className="raduitslag__groot">🎯 {optie}</p>}
