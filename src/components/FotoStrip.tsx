@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useBackend } from '../lib/backend'
-import { useFotos, type Foto } from '../lib/fotos'
+import { useFotos } from '../lib/fotos'
 import { FotoGroot, useKamerLabel } from '../screens/Fotomuur'
 import { Icoon } from './Icoon'
 
@@ -9,7 +9,7 @@ export function FotoStrip({ naarFotomuur }: { naarFotomuur: () => void }) {
   const backend = useBackend()
   const { fotos } = useFotos(4, backend.status !== 'uit')
   const kamerLabel = useKamerLabel()
-  const [open, setOpen] = useState<Foto | null>(null)
+  const [open, setOpen] = useState<number | null>(null)
   if (!fotos?.length) return null
 
   return (
@@ -21,13 +21,13 @@ export function FotoStrip({ naarFotomuur }: { naarFotomuur: () => void }) {
         </button>
       </div>
       <div className="fotostrip">
-        {fotos.map((f) => (
-          <button key={f.id} type="button" className="fotomuur__foto" onClick={() => setOpen(f)}>
+        {fotos.map((f, i) => (
+          <button key={f.id} type="button" className="fotomuur__foto" onClick={() => setOpen(i)}>
             {f.klein ? <img src={f.klein} alt={`${f.challenge_titel} door ${f.naam}`} loading="lazy" /> : <span>📷</span>}
           </button>
         ))}
       </div>
-      {open && <FotoGroot foto={open} kamerLabel={kamerLabel} onSluit={() => setOpen(null)} />}
+      {open !== null && <FotoGroot fotos={fotos} start={open} kamerLabel={kamerLabel} onSluit={() => setOpen(null)} />}
     </section>
   )
 }

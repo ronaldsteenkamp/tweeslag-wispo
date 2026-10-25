@@ -1819,17 +1819,66 @@ button {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: calc(16px + var(--boven)) 16px calc(16px + var(--onder));
-  background: rgba(3, 6, 24, 0.92);
+  padding: calc(16px + var(--boven)) 8px calc(16px + var(--onder));
+  background: rgba(3, 6, 24, 0.96);
   color: #fff;
+  /* Zelf swipen: de browser mag niet scrollen of zoomen tijdens het vegen */
+  touch-action: none;
+  user-select: none;
 }
 
 .foto-groot img {
   max-width: 100%;
-  max-height: calc(100dvh - 200px);
-  border-radius: 12px;
+  max-height: calc(100dvh - 170px - var(--boven) - var(--onder));
+  border-radius: 10px;
   object-fit: contain;
   background: rgba(255, 255, 255, 0.06);
+  will-change: transform;
+}
+
+.foto-groot__teller {
+  position: absolute;
+  top: calc(22px + var(--boven));
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-kop);
+  font-weight: 700;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Pijltjes voor wie niet swipet (computer); op een telefoon swipe je */
+.foto-groot__pijl {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 64px;
+  margin-top: -32px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.foto-groot__pijl--vorige {
+  left: 6px;
+}
+
+.foto-groot__pijl--volgende {
+  right: 6px;
+}
+
+@media (hover: none) {
+  .foto-groot__pijl {
+    background: rgba(255, 255, 255, 0.06);
+  }
 }
 
 .foto-groot__sluit {
