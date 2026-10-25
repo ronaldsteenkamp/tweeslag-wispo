@@ -64,8 +64,8 @@ export function CasinoLogo() {
         <circle r="11.8" fill="none" stroke="#c8141e" strokeWidth="0.5" />
         {/* Monogram JA: een grote rode J met een kleinere gouden A er schuin tegenaan */}
         <text
-          x="-2.6"
-          y="-0.4"
+          x="-3"
+          y="-1.9"
           textAnchor="middle"
           dominantBaseline="central"
           fontSize="17"
@@ -77,8 +77,8 @@ export function CasinoLogo() {
           J
         </text>
         <text
-          x="4.6"
-          y="3.6"
+          x="4.2"
+          y="2.1"
           textAnchor="middle"
           dominantBaseline="central"
           fontSize="11"
@@ -88,7 +88,7 @@ export function CasinoLogo() {
           stroke="#7a0a10"
           strokeWidth="0.9"
           paintOrder="stroke"
-          transform="rotate(14 4.6 3.6)"
+          transform="rotate(14 4.2 2.1)"
           className="casino-logo__letter"
         >
           A
@@ -134,7 +134,7 @@ export function CasinoLogo() {
         CASINO
       </text>
       {/* Sterretje */}
-      <path d="M190 14 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8" className="casino-logo__ster" />
+      <path d="M153 9 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8" className="casino-logo__ster" />
     </svg>
   )
 }
