@@ -301,11 +301,6 @@ export function Roulette({
               >
                 🍺 Trek een bak voor {fiches(LENING)} nieuwe fiches
               </button>
-              {geleend > 0 && (
-                <p className="klein">
-                  Al {geleend} {geleend === 1 ? 'bak' : 'bakken'} getrokken.
-                </p>
-              )}
             </div>
           ) : (
             <>
@@ -350,7 +345,9 @@ export function Roulette({
         <summary>Spelers ({n})</summary>
         <DeelnemersKiezer kamers={kamers} naam={naam} />
       </details>
-      <p className="klein casino__uitleg">Nepfiches: geen echt geld en geen punten. Ze staan alleen op deze telefoon.</p>
+      <p className="klein casino__bakken">
+        🍺 {geleend} {geleend === 1 ? 'bak' : 'bakken'} getrokken
+      </p>
 
       {uitslag && (
         <div className="dialoog-achtergrond dialoog-achtergrond--midden" onClick={volgendeRonde}>
