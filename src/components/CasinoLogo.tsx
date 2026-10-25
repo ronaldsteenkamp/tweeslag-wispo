@@ -134,7 +134,7 @@ export function CasinoLogo() {
         CASINO
       </text>
       {/* Sterretje */}
-      <path d="M153 9 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8" className="casino-logo__ster" />
+      <path d="M159 10 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8" className="casino-logo__ster" />
     </svg>
   )
 }
