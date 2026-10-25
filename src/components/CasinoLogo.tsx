@@ -1,12 +1,12 @@
 import { punt, taartpunt } from './Wiel'
 
 /*
- * Logo van Jacco's Casino: een echte casinofiche met een J, en de naam in goud met
+ * Logo van Jacco's Casino: een echte casinofiche met JA, en de naam in goud met
  * knipperende lampjes erboven zoals bij een casino in Las Vegas. Alleen bovenaan
  * lampjes: onder het logo begint het wiel.
  */
 
-const LAMPJES = Array.from({ length: 13 }, (_, i) => 62 + i * 11)
+const LAMPJES = Array.from({ length: 9 }, (_, i) => 64 + i * 11)
 /** De witte blokjes op de rand van de fiche (graden) */
 const RANDBLOKJES = [0, 60, 120, 180, 240, 300]
 
@@ -62,11 +62,13 @@ export function CasinoLogo() {
         {/* Ingelegd plaatje in het midden */}
         <circle r="14.4" fill="url(#cl-inleg)" stroke="url(#cl-goud)" strokeWidth="1.4" />
         <circle r="11.8" fill="none" stroke="#c8141e" strokeWidth="0.5" />
+        {/* Monogram JA: een grote rode J met een kleinere gouden A er schuin tegenaan */}
         <text
-          y="0.8"
+          x="-2.6"
+          y="-0.4"
           textAnchor="middle"
           dominantBaseline="central"
-          fontSize="18"
+          fontSize="17"
           fontWeight="800"
           fontStyle="italic"
           fill="#b3121b"
@@ -74,8 +76,25 @@ export function CasinoLogo() {
         >
           J
         </text>
-        {[45, 135, 225, 315].map((a) => {
-          const [x, y] = punt(9.6, a)
+        <text
+          x="4.6"
+          y="3.6"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize="11"
+          fontWeight="800"
+          fontStyle="italic"
+          fill="url(#cl-goud)"
+          stroke="#7a0a10"
+          strokeWidth="0.9"
+          paintOrder="stroke"
+          transform="rotate(14 4.6 3.6)"
+          className="casino-logo__letter"
+        >
+          A
+        </text>
+        {[45, 225].map((a) => {
+          const [x, y] = punt(9.8, a)
           return <circle key={a} cx={x} cy={y} r="0.8" fill="#d9a52e" />
         })}
         <circle r="25" fill="url(#cl-glans)" />
