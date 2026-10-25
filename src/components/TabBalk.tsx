@@ -1,6 +1,6 @@
 import { Icoon, type IcoonNaam } from './Icoon'
 
-export type Tab = 'home' | 'planning' | 'paklijst' | 'kamers' | 'kaart' | 'spel'
+export type Tab = 'home' | 'planning' | 'paklijst' | 'kamers' | 'kaart' | 'rad' | 'spel'
 
 export const TABS: { id: Tab; label: string; icoon: IcoonNaam }[] = [
   { id: 'home', label: 'Home', icoon: 'home' },
@@ -8,6 +8,7 @@ export const TABS: { id: Tab; label: string; icoon: IcoonNaam }[] = [
   { id: 'paklijst', label: 'Paklijst', icoon: 'paklijst' },
   { id: 'kamers', label: 'Kamers', icoon: 'kamers' },
   { id: 'kaart', label: 'Kaart', icoon: 'kaart' },
+  { id: 'rad', label: 'Rad', icoon: 'rad' },
   { id: 'spel', label: 'Spel', icoon: 'spel' },
 ]
 

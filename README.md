@@ -11,7 +11,7 @@ Web-app (PWA) voor de wintersport van G.S.B.V. Tweeslag: aftelklok, planning, pa
 > | `paklijst.json` | Categorieën met spullen om mee te nemen |
 > | `kamers.json` | Kamers met nummer, naam en bewoners |
 > | `spel.json` | Dagelijkse challenges, punten en de busbingovakjes |
-> | `rad.json` | Pistes, drankjes en klosopdrachten voor het rad, en wie een casino krijgt |
+> | `rad.json` | Pistes, drankjes en klosopdrachten voor het rad |
 >
 > Pas een bestand aan, zet het op GitHub en de app haalt de nieuwe versie op zodra iemand internet heeft. Zonder internet ziet iedereen de laatst bewaarde versie.
 
@@ -86,17 +86,16 @@ Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn 
 - **Testperiode:** zolang `spelTestperiode` in `src/config.ts` op `true` staat, is het spel daarvoor al open om uit te proberen, met bovenaan de melding *Testperiode*. Op het moment dat het echte spel begint, wist elke telefoon wat er in de testperiode is gedaan: afgevinkte challenges, busbingovinkjes (met een nieuwe kaart) en de casinofiches en bakken. De telefoon stuurt dan meteen een lege stand, zodat ook het klassement weer op 0 begint. Niet gewist worden profielen, stemmen, foto's op de fotomuur en bonuspunten van beheerders; haal die zo nodig zelf weg. Zet `spelTestperiode` op `false` om het spel tot de start op slot te houden.
 
 ### rad.json
-Inhoud van *Spel → Rad*. Het rad geeft geen punten en werkt helemaal zonder internet: de uitslag wordt op de telefoon zelf bepaald (met `crypto.getRandomValues`).
+Inhoud van het tabblad *Rad* (onderin, tussen Kaart en Spel). Het rad staat altijd open, ook vóór de reis, geeft geen punten en werkt helemaal zonder internet: de uitslag wordt op de telefoon zelf bepaald (met `crypto.getRandomValues`).
 ```json
 { "pistes": [ { "naam": "Mantel", "kleur": "rood" } ],
   "drankjes": ["Glühwein", "Génépi"],
-  "klosOpdrachten": ["haalt de volgende ronde", "doet de afwas"],
-  "casino": ["Josje"] }
+  "klosOpdrachten": ["haalt de volgende ronde", "doet de afwas"] }
 ```
-- **Vier radden:** *Klos* (een willekeurige persoon), *Piste*, *Drankje* en *Eigen* (zelf 2 tot 12 opties intypen; die blijven op de telefoon bewaard). Bij *Klos* kies je wie meedoet: iedereen, je eigen kamer, een paar kamers of zelf namen aanvinken (uit `kamers.json`). Na het draaien staat er bijvoorbeeld *Tom is de klos! Haalt de volgende ronde.*
+- **Vier radden en een casino:** *Klos* (een willekeurige persoon), *Piste*, *Drankje* en *Eigen* (zelf 2 tot 12 opties intypen; die blijven op de telefoon bewaard). Bij *Klos* kies je wie meedoet: iedereen, je eigen kamer, een paar kamers of zelf namen aanvinken (uit `kamers.json`). Na het draaien staat er bijvoorbeeld *Tom is de klos! Haalt de volgende ronde.*
 - **`pistes`:** naam en kleur (`groen`, `blauw`, `rood` of `zwart`). Bij het rad filter je op kleur, zodat beginners geen zwarte piste krijgen. De lijst bevat echte, benoemde pistes van Les Deux Alpes met hun kleur uit [OpenStreetMap](https://www.openstreetmap.org) (de genummerde stukjes zijn weggelaten).
 - **`drankjes`** en **`klosOpdrachten`:** vrij aan te vullen. Schrijf een klosopdracht zonder hoofdletter en zonder punt aan het eind (*haalt de volgende ronde*); de app zet er de naam voor.
-- **`casino`:** wie hier staat (precies zoals de naam in `kamers.json`), krijgt in plaats van het rad een roulettetafel: *Josje's casino*. Iemand toevoegen: `"casino": ["Josje", "Sten"]`. Via *Terug naar het rad* kan diegene ook het gewone rad gebruiken (en via *Naar je casino* weer terug).
+- **Casino:** de vijfde keuze bovenin het tabblad Rad, voor iedereen. Iedereen heeft zijn eigen casino (*Ronald's casino*) met eigen fiches op de eigen telefoon.
 - **Roulette:** een groene 0 en de getallen 1 tot het aantal spelers (zelfde keuze als bij *Klos*). Oneven is rood, even zwart; elk getal hoort bij één naam, elke ronde opnieuw geschud. De 0 betekent *Iedereen drinkt*. Inzetten met fiches van 10, 25 of 100 op een getal, de 0, rood/zwart of even/oneven, en dan *Rien ne va plus!*. Uitbetaling: rood/zwart/even/oneven 1:1, een getal of de 0 (aantal spelers − 1):1; valt de 0, dan verliezen rood/zwart/even/oneven. De fiches (start 1000) zijn nep en staan alleen op de telefoon. Zijn ze op, dan verschijnt *Een bak voor 500 nieuwe fiches*, met een teller hoeveel bakken er al getrokken zijn.
 - **Geluid en beweging:** bij het draaien klinkt een tikje (uit te zetten onder het rad). Staat op de telefoon *minder beweging* aan, dan verschijnt de uitslag meteen, zonder draaien.
 
@@ -314,4 +313,4 @@ Wie de app voor het eerst opent (bijvoorbeeld via de QR-code), krijgt een welkom
 - Vite + React + TypeScript, met `vite-plugin-pwa` voor het manifest en de service worker.
 - De app zelf, de iconen en de pistekaart worden vooraf bewaard (cache-first). De JSON-data gaat network-first: eerst internet (max. 5 seconden wachten), anders de bewaarde versie.
 - Persoonlijke gegevens staan in `localStorage` onder `tweeslag-wispo.*`.
-- Code: `src/screens/` (de zes schermen), `src/components/`, `src/lib/` (tijd, opslag, data, bingo, profiel).
+- Code: `src/screens/` (de zeven schermen), `src/components/`, `src/lib/` (tijd, opslag, data, bingo, profiel).

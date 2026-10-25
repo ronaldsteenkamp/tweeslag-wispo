@@ -327,7 +327,7 @@ button {
   z-index: 20;
   display: grid;
   /* minmax(0, …): kolommen mogen smaller dan het langste woord, anders loopt de balk op 320 px buiten beeld */
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   padding: 0 4px var(--onder);
   background: var(--tabbalk);
   border-top: 1px solid var(--rand);
@@ -354,22 +354,35 @@ button {
   color: var(--link);
 }
 
-@media (max-width: 350px) {
+/* Heel smalle telefoons (320 px) */
+@media (max-width: 340px) {
+  .tab.tab {
+    font-size: 0.58rem;
+  }
+
+  .tab.tab--actief svg {
+    width: 36px;
+    padding: 3px 6px;
+  }
+}
+
+/* Zeven tabbladen: op smalle telefoons kleinere letters, anders past "Planning" net niet */
+@media (max-width: 374px) {
   .tab {
     font-size: 0.64rem;
   }
 
   .tab--actief svg {
-    width: 44px;
-    padding: 3px 10px;
+    width: 40px;
+    padding: 3px 8px;
   }
 }
 
 .tab--actief svg {
   background: var(--accent-zacht);
   border-radius: 999px;
-  padding: 3px 14px;
-  width: 54px;
+  padding: 3px 10px;
+  width: 46px;
   height: 32px;
 }
 

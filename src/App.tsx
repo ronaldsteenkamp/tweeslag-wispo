@@ -12,6 +12,7 @@ import Paklijst from './screens/Paklijst'
 import Kamers from './screens/Kamers'
 import Kaart from './screens/Kaart'
 import Spel from './screens/Spel'
+import Rad from './screens/Rad'
 import Verdelen from './screens/Verdelen'
 import Weer from './screens/Weer'
 import Beheer from './screens/Beheer'
@@ -78,6 +79,7 @@ export default function App() {
         {tab === 'paklijst' && <Paklijst />}
         {tab === 'kamers' && <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />}
         {tab === 'kaart' && <Kaart />}
+        {tab === 'rad' && <Rad />}
         {tab === 'spel' && <Spel />}
         {tab === 'fotos' && <Fotomuur terug={() => kies('spel')} />}
         {tab === 'verdelen' &&

@@ -7,13 +7,14 @@ import { DeelnemersKiezer } from './DeelnemersKiezer'
 import { Roulette } from './Roulette'
 import { taartpunt, tik, useDraai } from './Wiel'
 
-type Soort = 'klos' | 'piste' | 'drankje' | 'eigen'
+type Soort = 'klos' | 'piste' | 'drankje' | 'eigen' | 'casino'
 
 const SOORTEN: { waarde: Soort; label: string }[] = [
   { waarde: 'klos', label: 'Klos' },
   { waarde: 'piste', label: 'Piste' },
   { waarde: 'drankje', label: 'Drankje' },
   { waarde: 'eigen', label: 'Eigen' },
+  { waarde: 'casino', label: 'Casino' },
 ]
 
 const KLEUR_EMOJI: Record<PisteKleur, string> = { groen: '🟢', blauw: '🔵', rood: '🔴', zwart: '⚫' }
@@ -36,36 +37,24 @@ interface Uitslag {
   kleur?: PisteKleur
 }
 
-/** Spel → Rad: het rad, of voor wie in "casino" staat de roulettetafel */
+/** Het tabblad Rad: vier radden en het casino (voor iedereen) */
 export function RadOnderdeel() {
   const { data: rad, fout } = useData('rad')
   const { data: kamers } = useData('kamers')
   const [naam] = useOpgeslagen<string | null>('naam', null)
-  const [casinoVerlaten, setCasinoVerlaten] = useOpgeslagen('casino.verlaten', false)
 
   if (!rad) return <DataStatus fout={fout} />
-  const casino = !!naam && rad.casino.includes(naam)
-  if (casino && !casinoVerlaten) return <Roulette naam={naam} kamers={kamers} onTerug={() => setCasinoVerlaten(true)} />
-  return <Rad rad={rad} kamers={kamers} naam={naam} naarCasino={casino ? () => setCasinoVerlaten(false) : undefined} />
+  return <Rad rad={rad} kamers={kamers} naam={naam} />
 }
 
-function Rad({
-  rad,
-  kamers,
-  naam,
-  naarCasino,
-}: {
-  rad: RadData
-  kamers?: Kamers
-  naam: string | null
-  naarCasino?: () => void
-}) {
+function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: string | null }) {
   const [soort, setSoort] = useOpgeslagen<Soort>('rad.soort', 'klos')
   const [keuze] = useDeelnemersKeuze()
   const [kleuren, setKleuren] = useOpgeslagen<PisteKleur[]>('rad.kleuren', PISTE_KLEUREN)
   const [eigen, setEigen] = useOpgeslagen<string[]>('rad.eigen', ['Ja', 'Nee'])
   const [geluidAan, setGeluidAan] = useOpgeslagen('rad.geluid', true)
   const [bezig, setBezig] = useState(false)
+  const [casinoBezig, setCasinoBezig] = useState(false)
   const [uitslag, setUitslag] = useState<Uitslag | null>(null)
   const groep = useRef<SVGGElement>(null)
   const { hoek, draai } = useDraai()
@@ -75,6 +64,7 @@ function Rad({
     if (soort === 'piste')
       return rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur }))
     if (soort === 'drankje') return rad.drankjes.map((d) => ({ waarde: d }))
+    if (soort === 'casino') return []
     return eigen.map((e) => e.trim()).filter(Boolean).map((e) => ({ waarde: e }))
   }, [soort, keuze, kamers, naam, rad, kleuren, eigen])
 
@@ -118,29 +108,36 @@ function Rad({
           ? 'Vul minstens twee opties in.'
           : 'Er staan nog geen drankjes in rad.json.'
 
+  const keuzebalk = (
+    <div className="segment segment--vijf" role="tablist" aria-label="Welk rad">
+      {SOORTEN.map((s) => (
+        <button
+          key={s.waarde}
+          type="button"
+          role="tab"
+          aria-selected={soort === s.waarde}
+          className={`segment__knop${soort === s.waarde ? ' is-actief' : ''}`}
+          onClick={() => setSoort(s.waarde)}
+          disabled={bezig || casinoBezig}
+        >
+          {s.label}
+        </button>
+      ))}
+    </div>
+  )
+
+  if (soort === 'casino') {
+    return (
+      <>
+        {keuzebalk}
+        <Roulette naam={naam} kamers={kamers} onBezig={setCasinoBezig} />
+      </>
+    )
+  }
+
   return (
     <>
-      {naarCasino && (
-        <button type="button" className="tekstknop" onClick={naarCasino}>
-          🎰 Naar je casino
-        </button>
-      )}
-
-      <div className="segment segment--vier" role="tablist" aria-label="Welk rad">
-        {SOORTEN.map((s) => (
-          <button
-            key={s.waarde}
-            type="button"
-            role="tab"
-            aria-selected={soort === s.waarde}
-            className={`segment__knop${soort === s.waarde ? ' is-actief' : ''}`}
-            onClick={() => setSoort(s.waarde)}
-            disabled={bezig}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
+      {keuzebalk}
 
       {soort === 'klos' && <DeelnemersKiezer kamers={kamers} naam={naam} />}
       {soort === 'piste' && (

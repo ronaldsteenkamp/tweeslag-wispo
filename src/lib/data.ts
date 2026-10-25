@@ -83,8 +83,6 @@ export interface Rad {
   pistes: { naam: string; kleur: PisteKleur }[]
   drankjes: string[]
   klosOpdrachten: string[]
-  /** Namen die een roulettetafel krijgen in plaats van het rad */
-  casino: string[]
 }
 
 interface DataTypes {
@@ -184,7 +182,6 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
         .filter((p) => p.naam && PISTE_KLEUREN.includes(p.kleur)),
       drankjes: teksten(r?.drankjes),
       klosOpdrachten: teksten(r?.klosOpdrachten),
-      casino: teksten(r?.casino),
     }
   },
 }

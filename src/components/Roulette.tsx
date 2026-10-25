@@ -55,13 +55,23 @@ interface Uitslag {
   uitbetaald: number
 }
 
-export function Roulette({ naam, kamers, onTerug }: { naam: string; kamers?: Kamers; onTerug: () => void }) {
+export function Roulette({
+  naam,
+  kamers,
+  onBezig,
+}: {
+  naam: string | null
+  kamers?: Kamers
+  /** Draait het wiel? (dan kan er niet van rad gewisseld worden) */
+  onBezig?: (bezig: boolean) => void
+}) {
   const [keuze] = useDeelnemersKeuze()
   const [saldo, setSaldo] = useOpgeslagen('casino.fiches', START)
   const [geleend, setGeleend] = useOpgeslagen('casino.geleend', 0)
   const [fiche, setFiche] = useState<number>(25)
   const [inzet, setInzet] = useState<Record<string, number>>({})
   const [bezig, setBezig] = useState(false)
+  useEffect(() => onBezig?.(bezig), [bezig, onBezig])
   const [uitslag, setUitslag] = useState<Uitslag | null>(null)
   const [melding, setMelding] = useState<string | null>(null)
   const wiel = useRef<SVGGElement>(null)
@@ -174,17 +184,13 @@ export function Roulette({ naam, kamers, onTerug }: { naam: string; kamers?: Kam
       <section className="kaartje casino__kop golf">
         <Sneeuw aantal={10} />
         <div className="casino__kopregel">
-          <h2>{vanWie(naam)} casino</h2>
+          <h2>{naam ? `${vanWie(naam)} casino` : 'Het casino'}</h2>
           <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
             <span aria-hidden="true">🪙</span> {fiches(saldo)}
           </p>
         </div>
         <p className="klein">Nepfiches, geen echt geld en geen punten. Ze staan alleen op deze telefoon.</p>
       </section>
-
-      <button type="button" className="tekstknop" onClick={onTerug} disabled={bezig}>
-        ← Terug naar het rad
-      </button>
 
       <details className="kaartje casino__spelers">
         <summary>Spelers ({n})</summary>

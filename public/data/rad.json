@@ -1,5 +1,5 @@
 {
-  "_uitleg": "Inhoud van het rad (Spel → Rad). pistes: echte pistes van Les Deux Alpes met hun kleur (groen, blauw, rood of zwart; namen en kleuren uit OpenStreetMap). drankjes en klosOpdrachten: vrij aan te vullen. casino: namen (precies zoals in kamers.json) die in plaats van het rad een roulettetafel krijgen.",
+  "_uitleg": "Inhoud van het tabblad Rad. pistes: echte pistes van Les Deux Alpes met hun kleur (groen, blauw, rood of zwart; namen en kleuren uit OpenStreetMap). drankjes en klosOpdrachten: vrij aan te vullen.",
   "pistes": [
     { "naam": "Bosquet", "kleur": "groen" },
     { "naam": "Champamé", "kleur": "groen" },
@@ -44,6 +44,5 @@
     "maakt het ontbijt klaar voor de kamer",
     "doet een dansje op de tafel",
     "mag niet meer dan twee woorden zeggen tot de volgende lift"
-  ],
-  "casino": ["Josje"]
+  ]
 }
