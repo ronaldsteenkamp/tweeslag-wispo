@@ -3,10 +3,11 @@ import type { Kamers } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
 import { deelnemers, fractie, schud, useDeelnemersKeuze, willekeurig } from '../lib/rad'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
-import { taartpunt, tik, useDraai } from './Wiel'
+import { DIAMANTEN, planWorp, R_BAAN, R_DIAMANT, R_VAKJE, type Stand, type Worp } from '../lib/roulette'
+import { minderBeweging, punt, rolgeluid, taartpunt, tik } from './Wiel'
 
 /*
- * Josje's casino: een roulettetafel met de deelnemers als getallen. Fiches zijn nep en staan
+ * Jacco's casino: een roulettetafel met de deelnemers als getallen. Fiches zijn nep en staan
  * alleen op deze telefoon; ze tellen nergens mee.
  */
 
@@ -72,12 +73,25 @@ export function Roulette({
   useEffect(() => onBezig?.(bezig), [bezig, onBezig])
   const [uitslag, setUitslag] = useState<Uitslag | null>(null)
   const [melding, setMelding] = useState<string | null>(null)
+  const [geluidAan] = useOpgeslagen('rad.geluid', true)
   const wiel = useRef<SVGGElement>(null)
   const bal = useRef<SVGCircleElement>(null)
-  // Waar het balletje nu ligt (graden, 0 = boven); een nieuwe draai begint daar
-  const balHoek = useRef(0)
-  const balStraal = useRef(95)
-  const { hoek, draai } = useDraai()
+  const staart = useRef<SVGPathElement>(null)
+  // Waar wiel en balletje nu zijn (graden, 0 = boven); een nieuwe draai begint daar.
+  // Het balletje ligt in rust in een vakje (null = nog nooit gedraaid: in het vakje van 0).
+  const hoek = useRef(0)
+  const wielSnelheid = useRef(0)
+  const balHoek = useRef<number | null>(null)
+  const balStraal = useRef(R_VAKJE)
+  const frame = useRef<number | null>(null)
+  const rol = useRef<ReturnType<typeof rolgeluid>>(null)
+  useEffect(
+    () => () => {
+      if (frame.current) cancelAnimationFrame(frame.current)
+      rol.current?.stop()
+    },
+    [],
+  )
 
   const spelers = useMemo(() => deelnemers(keuze, kamers, naam), [keuze, kamers, naam])
   const n = spelers.length
@@ -131,47 +145,80 @@ export function Roulette({
     setVolgorde(schud(spelers))
   }
 
+  const toon = (st: Stand) => {
+    hoek.current = st.wiel
+    wielSnelheid.current = st.wielSnelheid
+    balHoek.current = st.bal
+    balStraal.current = st.straal
+    wiel.current?.setAttribute('transform', `rotate(${st.wiel})`)
+    const [bx, by] = punt(st.straal, st.bal)
+    bal.current?.setAttribute('cx', String(bx))
+    bal.current?.setAttribute('cy', String(by))
+    // Bewegingsstaart: zo ziet een snel balletje er ook op 60 beelden per seconde vloeiend uit
+    const lengte = Math.min(30, Math.abs(st.balSnelheid) * 0.03)
+    if (lengte < 2) staart.current?.setAttribute('d', '')
+    else {
+      const van = st.bal - Math.sign(st.balSnelheid) * lengte
+      const [x1, y1] = punt(st.straal, van)
+      const [x2, y2] = punt(st.straal, st.bal)
+      const omloop = st.balSnelheid > 0 ? 1 : 0
+      staart.current?.setAttribute('d', `M${x1} ${y1} A${st.straal} ${st.straal} 0 0 ${omloop} ${x2} ${y2}`)
+    }
+  }
+
+  /** Speelt een worp af; klaar zodra het balletje stil ligt (het wiel draait daarna nog even uit) */
+  const speel = (worp: Worp) =>
+    new Promise<void>((klaar) => {
+      if (frame.current) cancelAnimationFrame(frame.current)
+      if (minderBeweging()) {
+        toon(worp.stand(worp.einde))
+        klaar()
+        return
+      }
+      rol.current = geluidAan ? rolgeluid() : null
+      const begin = performance.now()
+      let volgendTikje = 0
+      let geland = false
+      const stap = (nu: number) => {
+        const t = (nu - begin) / 1000
+        const st = worp.stand(t)
+        toon(st)
+        if (geluidAan) {
+          while (volgendTikje < worp.tikjes.length && worp.tikjes[volgendTikje].t <= t) {
+            const tj = worp.tikjes[volgendTikje++]
+            tik(tj.volume, tj.toon)
+          }
+          const v = Math.abs(st.balSnelheid)
+          rol.current?.zet(st.rolt ? Math.min(0.05, v / 12000) : 0, 300 + v * 0.8)
+        }
+        if (!geland && t >= worp.landing) {
+          geland = true
+          rol.current?.stop()
+          rol.current = null
+          window.setTimeout(klaar, 500)
+        }
+        if (t < worp.einde) frame.current = requestAnimationFrame(stap)
+        else frame.current = null
+      }
+      frame.current = requestAnimationFrame(stap)
+    })
+
   const draaiWiel = async () => {
     if (bezig || totaal === 0 || n < 2) return
     const vakken = n + 1
-    const vak = 360 / vakken
     const getal = willekeurig(vakken) // vak i = getal i (0, 1, 2, …, N)
-    // Het balletje eindigt op een willekeurige plek; het wiel draait zo dat het vakje daar ligt
-    const balEind = fractie() * 360
-    const wielRest = (((balEind - (getal + 0.5) * vak) % 360) + 360) % 360
-    const wielStart = hoek.current
-    const wielDoel = wielStart + 360 * 3 + ((((wielRest - (wielStart % 360)) % 360) + 360) % 360)
-    // Het balletje beweegt ten opzichte van het wiel: eerst hard de andere kant op, dan steeds
-    // langzamer tot het stil in het vakje ligt (vanaf 85% draait het gewoon met het wiel mee).
-    // Zo komt het precies goed uit zonder sprongen, wat het wiel ook doet.
-    const relStart = balHoek.current - wielStart
-    const relVakje = (getal + 0.5) * vak
-    const relEind = relVakje + 360 * Math.floor((relStart - 360 * 6 - relVakje) / 360)
-    const straalStart = balStraal.current
+    const worp = planWorp({
+      wiel: hoek.current,
+      wielSnelheid: wielSnelheid.current,
+      bal: balHoek.current ?? hoek.current + 180 / vakken,
+      balStraal: balStraal.current,
+      getal,
+      vakken,
+      toeval: fractie,
+    })
     setBezig(true)
     setUitslag(null)
-    await draai({
-      doel: wielDoel,
-      duur: 4200 + fractie() * 600,
-      vak,
-      onTik: tik,
-      onFrame: (h, t) => {
-        wiel.current?.setAttribute('transform', `rotate(${h})`)
-        const tb = Math.min(1, t / 0.85)
-        const rel = relStart + (relEind - relStart) * (1 - Math.pow(1 - tb, 3))
-        // Eerst uit het vakje terug de baan op (95), aan het eind vallen in het vakje (73) met een paar kleine hupjes
-        const zacht = (x: number) => x * x * (3 - 2 * x)
-        const op = zacht(Math.min(1, tb / 0.1))
-        const u = Math.min(1, Math.max(0, (tb - 0.55) / 0.45))
-        const hupje = 4 * Math.abs(Math.sin(Math.PI * 3 * u)) * (1 - u)
-        const r = straalStart + (95 - straalStart) * op - 22 * zacht(u) + hupje
-        balStraal.current = r
-        balHoek.current = h + rel
-        const a = ((h + rel - 90) * Math.PI) / 180
-        bal.current?.setAttribute('cx', String(Math.cos(a) * r))
-        bal.current?.setAttribute('cy', String(Math.sin(a) * r))
-      },
-    })
+    await speel(worp)
     const uitbetaald = Object.entries(inzet).reduce((s, [k, x]) => s + uitbetaling(k, x, getal, n), 0)
     setSaldo((s) => s + uitbetaald)
     setUitslag({ getal, naam: getal === 0 ? null : volgorde[getal - 1] ?? null, ingezet: totaal, uitbetaald })
@@ -189,15 +236,15 @@ export function Roulette({
       {n < 2 ? (
         <p className="melding">Kies minstens twee spelers (tik hieronder op Spelers).</p>
       ) : (
-        <section className="casino__tafel" aria-label="Josjes casino">
+        <section className="casino__tafel" aria-label="Jacco's Casino">
           <div className="casino__kopregel">
-            <h2 className="casino__titel">Josjes casino</h2>
+            <h2 className="casino__titel">Jacco's Casino</h2>
             <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
               <span aria-hidden="true">🪙</span> {fiches(saldo)}
             </p>
           </div>
 
-          <RouletteWiel n={n} wiel={wiel} bal={bal} hoek={hoek.current} />
+          <RouletteWiel n={n} wiel={wiel} bal={bal} staart={staart} hoek={hoek.current} balHoek={balHoek.current ?? hoek.current + 180 / (n + 1)} balStraal={balStraal.current} />
 
           <div className="casino__veld">
             <Vak sleutel="0" label="0, iedereen drinkt" klasse="casino__vak casino__vak--nul" inzet={inzet} winnend={winnend('0')} onZet={zet} uit={!!uitslag || bezig}>
@@ -383,48 +430,103 @@ function Vak({
   )
 }
 
+
 function RouletteWiel({
   n,
   wiel,
   bal,
+  staart,
   hoek,
+  balHoek,
+  balStraal,
 }: {
   n: number
   wiel: React.RefObject<SVGGElement>
   bal: React.RefObject<SVGCircleElement>
+  staart: React.RefObject<SVGPathElement>
   hoek: number
+  balHoek: number
+  balStraal: number
 }) {
   const vakken = n + 1
   const vak = 360 / vakken
-  const letter = vakken <= 13 ? 9 : vakken <= 25 ? 8 : 7
+  const letter = vakken <= 13 ? 8.5 : vakken <= 25 ? 7.5 : 6.5
+  const kleur = (g: number) => (g === 0 ? '#1d8a4a' : isRood(g) ? '#b8141d' : '#181818')
+  const [bx, by] = punt(balStraal, balHoek)
   return (
     <svg className="casino__wiel" viewBox="-118 -118 236 236" role="img" aria-label={`Roulettewiel met 0 tot en met ${n}`}>
       <defs>
-        <radialGradient id="hout" cx="50%" cy="50%" r="50%">
-          <stop offset="80%" stopColor="#7a4a22" />
-          <stop offset="100%" stopColor="#4a2a10" />
+        <radialGradient id="rw-rand" cx="0" cy="0" r="117" gradientUnits="userSpaceOnUse">
+          <stop offset="92%" stopColor="#6e3f1b" />
+          <stop offset="96%" stopColor="#8a5428" />
+          <stop offset="100%" stopColor="#3d210c" />
         </radialGradient>
-        <radialGradient id="kegel" cx="50%" cy="45%" r="55%">
-          <stop offset="0%" stopColor="#f6e7a8" />
-          <stop offset="60%" stopColor="#b88a3b" />
-          <stop offset="100%" stopColor="#6b4518" />
+        {/* Vaste deel: de baan langs de rand en de schuine helling naar het wiel */}
+        <radialGradient id="rw-kom" cx="0" cy="0" r="108" gradientUnits="userSpaceOnUse">
+          <stop offset="81%" stopColor="#1c120a" />
+          <stop offset="89%" stopColor="#4a3020" />
+          <stop offset="90.5%" stopColor="#2b1a0d" />
+          <stop offset="96%" stopColor="#5c3b20" />
+          <stop offset="100%" stopColor="#24150a" />
+        </radialGradient>
+        <radialGradient id="rw-kegel" cx="40%" cy="35%" r="70%">
+          <stop offset="0%" stopColor="#a8703a" />
+          <stop offset="55%" stopColor="#6e4220" />
+          <stop offset="100%" stopColor="#3a210e" />
+        </radialGradient>
+        <radialGradient id="rw-goud" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stopColor="#fff4c4" />
+          <stop offset="50%" stopColor="#e2b752" />
+          <stop offset="100%" stopColor="#8a6420" />
+        </radialGradient>
+        <linearGradient id="rw-chroom" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="50%" stopColor="#b9bec4" />
+          <stop offset="100%" stopColor="#6d737a" />
+        </linearGradient>
+        {/* Diepte in de vakjes: donkerder aan de randen */}
+        <radialGradient id="rw-diepte" cx="0" cy="0" r="88" gradientUnits="userSpaceOnUse">
+          <stop offset="71.5%" stopColor="#000" stopOpacity="0.55" />
+          <stop offset="78%" stopColor="#000" stopOpacity="0" />
+          <stop offset="84%" stopColor="#000" stopOpacity="0.05" />
+          <stop offset="87.5%" stopColor="#000" stopOpacity="0.5" />
+          <stop offset="88%" stopColor="#000" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="rw-licht" cx="35%" cy="22%" r="65%">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="rw-bal" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="60%" stopColor="#ecebe6" />
+          <stop offset="100%" stopColor="#a9a8a2" />
         </radialGradient>
       </defs>
-      <circle r="116" fill="url(#hout)" />
-      <circle r="102" fill="#2a1a0c" stroke="#f3d36b" strokeWidth="1.5" />
+      <circle r="117" fill="url(#rw-rand)" />
+      <circle r="108.5" fill="url(#rw-kom)" stroke="#e8c463" strokeWidth="1" />
+      <circle r={R_BAAN - 5.2} fill="none" stroke="#000" strokeOpacity="0.35" strokeWidth="0.8" />
+      {DIAMANTEN.map((d, i) => (
+        <polygon
+          key={d}
+          points={i % 2 ? '-4.5,0 0,-1.8 4.5,0 0,1.8' : '0,-4.5 1.8,0 0,4.5 -1.8,0'}
+          fill="url(#rw-chroom)"
+          stroke="#4b4f55"
+          strokeWidth="0.4"
+          transform={`rotate(${d}) translate(0 ${-R_DIAMANT})`}
+        />
+      ))}
       <g ref={wiel} transform={`rotate(${hoek})`}>
+        <circle r="89" fill="url(#rw-chroom)" />
         {Array.from({ length: vakken }, (_, g) => (
           <g key={g}>
-            <path
-              d={taartpunt(88, g * vak, (g + 1) * vak, 62)}
-              fill={g === 0 ? '#1f8a4c' : isRood(g) ? '#c0262d' : '#1b1b1b'}
-              stroke="#f3d36b"
-              strokeWidth="0.8"
-            />
+            {/* Getallenring buiten, vakjes binnen (zoals bij een echt wiel) */}
+            <path d={taartpunt(88, g * vak, (g + 1) * vak, 77)} fill={kleur(g)} />
+            <path d={taartpunt(77, g * vak, (g + 1) * vak, 63)} fill={kleur(g)} />
             <text
               transform={`rotate(${(g + 0.5) * vak})`}
-              y={-77}
+              y={-82.5}
               textAnchor="middle"
+              dominantBaseline="central"
               fontSize={letter}
               fill="#ffffff"
               className="casino__wielgetal"
@@ -433,13 +535,37 @@ function RouletteWiel({
             </text>
           </g>
         ))}
-        <circle r="62" fill="url(#kegel)" stroke="#f3d36b" strokeWidth="1.5" />
+        <circle r="88" fill="url(#rw-diepte)" />
+        {Array.from({ length: vakken }, (_, g) => {
+          const [x1, y1] = punt(88, g * vak)
+          const [x2, y2] = punt(77, g * vak)
+          const [x3, y3] = punt(63, g * vak)
+          return (
+            <g key={g}>
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#e8c463" strokeWidth="0.5" />
+              {/* Schotje tussen twee vakjes */}
+              <line x1={x2} y1={y2} x2={x3} y2={y3} stroke="#d4d8dc" strokeWidth="1.6" strokeLinecap="round" />
+            </g>
+          )
+        })}
+        <circle r="77" fill="none" stroke="#e8c463" strokeWidth="1.2" />
+        <circle r="63.5" fill="url(#rw-kegel)" stroke="#c9ced3" strokeWidth="2" />
+        <circle r="50" fill="none" stroke="#000" strokeOpacity="0.25" strokeWidth="0.8" />
+        <circle r="30" fill="none" stroke="#000" strokeOpacity="0.25" strokeWidth="0.8" />
+        {/* Het kruis in het midden waaraan de croupier het wiel draait */}
         {[0, 90, 180, 270].map((a) => (
-          <rect key={a} x="-3" y="-40" width="6" height="34" rx="3" fill="#f3d36b" transform={`rotate(${a})`} />
+          <g key={a} transform={`rotate(${a})`}>
+            <rect x="-2.2" y="-38" width="4.4" height="30" rx="2.2" fill="url(#rw-goud)" stroke="#7a561a" strokeWidth="0.4" />
+            <circle cy="-40" r="4.6" fill="url(#rw-goud)" stroke="#7a561a" strokeWidth="0.4" />
+          </g>
         ))}
-        <circle r="9" fill="#f3d36b" stroke="#6b4518" strokeWidth="2" />
+        <circle r="11" fill="url(#rw-goud)" stroke="#7a561a" strokeWidth="0.6" />
+        <circle r="5" fill="url(#rw-goud)" stroke="#7a561a" strokeWidth="0.4" />
       </g>
-      <circle ref={bal} cx="0" cy="-95" r="4.2" fill="#ffffff" stroke="#c9c9c9" strokeWidth="0.8" className="casino__bal" />
+      {/* Licht van boven: draait niet mee, zoals een echte weerspiegeling */}
+      <circle r="108" fill="url(#rw-licht)" pointerEvents="none" />
+      <path ref={staart} d="" fill="none" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="6" strokeLinecap="round" />
+      <circle ref={bal} cx={bx} cy={by} r="4.2" fill="url(#rw-bal)" className="casino__bal" />
     </svg>
   )
 }

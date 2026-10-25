@@ -13,7 +13,7 @@ const uitlopen = (t: number) => 1 - Math.pow(1 - t, 4)
 let geluid: AudioContext | null = null
 
 /** Kort tikje (Web Audio, geen bestand nodig). Alleen na een tik van de gebruiker toegestaan. */
-export function tik() {
+export function tik(sterkte = 0.05, toon = 1700) {
   try {
     geluid ??= new AudioContext()
     if (geluid.state === 'suspended') void geluid.resume()
@@ -21,14 +21,48 @@ export function tik() {
     const osc = geluid.createOscillator()
     const volume = geluid.createGain()
     osc.type = 'square'
-    osc.frequency.value = 1700
-    volume.gain.setValueAtTime(0.05, nu)
+    osc.frequency.value = toon
+    volume.gain.setValueAtTime(sterkte, nu)
     volume.gain.exponentialRampToValueAtTime(0.0001, nu + 0.03)
     osc.connect(volume).connect(geluid.destination)
     osc.start(nu)
     osc.stop(nu + 0.035)
   } catch {
     // Geen geluid mogelijk: dan maar stil
+  }
+}
+
+/** Ruisend rolgeluid (balletje over de baan); `zet` past volume en toonhoogte aan */
+export function rolgeluid() {
+  try {
+    geluid ??= new AudioContext()
+    if (geluid.state === 'suspended') void geluid.resume()
+    const ctx = geluid
+    const ruis = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate)
+    const data = ruis.getChannelData(0)
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
+    const bron = ctx.createBufferSource()
+    bron.buffer = ruis
+    bron.loop = true
+    const filter = ctx.createBiquadFilter()
+    filter.type = 'bandpass'
+    filter.Q.value = 1.5
+    const volume = ctx.createGain()
+    volume.gain.value = 0
+    bron.connect(filter).connect(volume).connect(ctx.destination)
+    bron.start()
+    return {
+      zet(sterkte: number, toon: number) {
+        volume.gain.setTargetAtTime(sterkte, ctx.currentTime, 0.05)
+        filter.frequency.setTargetAtTime(toon, ctx.currentTime, 0.05)
+      },
+      stop() {
+        volume.gain.setTargetAtTime(0, ctx.currentTime, 0.05)
+        bron.stop(ctx.currentTime + 0.3)
+      },
+    }
+  } catch {
+    return null
   }
 }
 
