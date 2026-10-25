@@ -13,6 +13,9 @@ import { startStemming } from './lib/stemming'
 import './styles/theme.css'
 import './styles/app.css'
 
+// Safari negeert user-scalable=no: knijpen naar de pagina hier tegenhouden (de kaart zoomt zelf)
+document.addEventListener('gesturestart', (e) => e.preventDefault())
+
 // Zo vroeg mogelijk, anders missen we het beforeinstallprompt-event van Chrome
 vangInstallatieMelding()
 // Gedeelde functies (alleen als Supabase is ingesteld; anders gebeurt er niets)

@@ -47,6 +47,12 @@ body {
   color: var(--tekst);
 }
 
+/* Niet in- of uitzoomen in de app (ook niet met dubbeltikken): alleen de kaart zoomt,
+   en die doet dat zelf (zie ZoomKaart) */
+html {
+  touch-action: pan-x pan-y;
+}
+
 body {
   min-height: 100dvh;
   background-image: var(--sneeuwpatroon);
