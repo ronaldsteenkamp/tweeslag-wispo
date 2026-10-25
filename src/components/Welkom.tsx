@@ -71,6 +71,12 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
             <div className="kaartje installatie">
               <InstallatieUitleg direct />
             </div>
+            {platform === 'ios' && (
+              <p className="klein">
+                Op een iPhone heeft de app op je beginscherm een eigen geheugen, los van Safari. Kies daar je naam dus nog
+                één keer. Gebruik daarna die app: Safari vergeet je naam als je de site een week niet opent.
+              </p>
+            )}
             <button type="button" className="knop knop--secundair knop--breed" onClick={onKlaar}>
               {kanDirectInstalleren ? 'Later' : 'Klaar'}
             </button>

@@ -143,7 +143,7 @@ De app werkt volledig zonder backend. Met een (gratis) Supabase-project komen er
 
 **Hoe het werkt**
 - Deelnemers loggen niet in. Elk apparaat krijgt stil een eigen anonieme gebruiker (*Anonymous Sign-ins*). De gekozen naam en de kamer uit `kamers.json` worden daaraan gekoppeld.
-- Kiest iemand op een tweede apparaat dezelfde naam (bijvoorbeeld Safari én de app op het beginscherm van dezelfde iPhone), dan neemt het nieuwe apparaat de naam over. Elke telefoon bewaart zijn eigen voortgang en stuurt die steeds opnieuw, dus dat herstelt zichzelf.
+- Kiest iemand op een tweede apparaat zelf dezelfde naam (bijvoorbeeld Safari én de app op het beginscherm van dezelfde iPhone, die elk een eigen opslag hebben), dan neemt dat apparaat de naam over. Het oude apparaat pakt hem daarna niet vanzelf terug bij het opnieuw verbinden: het laat de naam los en toont op Home *"… is op een ander apparaat gekozen"* met de knop *Toch dit apparaat gebruiken*. Zo springen naam en score niet meer heen en weer als iemand afwisselend Safari en de app opent (bijvoorbeeld via een link in de groepsapp, die op een iPhone in Safari opent).
 - De reisleiding logt in via *Kamers → ⚙️ Beheer (reisleiding)* met een inlogmail (link én code). Wie beheerder is, staat in de tabel `beheerders`.
 - Elke tabel heeft Row Level Security: iedereen leest alleen wat nodig is, schrijft alleen eigen rijen; alleen beheerders mogen corrigeren en verwijderen.
 - Alle SQL staat in `supabase/migrations/` (op volgorde uitvoeren; elk bestand mag vaker gedraaid worden).
@@ -262,7 +262,7 @@ Dit maakt `qr/tweeslag-wispo-qr.png` (om te printen) en `qr/tweeslag-wispo-qr.sv
 
 ## Installeren op de telefoon
 
-Wie de app voor het eerst opent (bijvoorbeeld via de QR-code), krijgt een welkomstscherm: eerst de eigen naam kiezen, daarna uitleg om de app op het beginscherm te zetten. Op een iPhone heeft de app op het beginscherm een eigen opslag, dus daar wordt de naam bij de eerste keer openen nog één keer gevraagd. Zolang de app nog niet op het beginscherm staat, laat Home ook een banner met uitleg zien:
+Wie de app voor het eerst opent (bijvoorbeeld via de QR-code), krijgt een welkomstscherm: eerst de eigen naam kiezen, daarna uitleg om de app op het beginscherm te zetten. Op een iPhone heeft de app op het beginscherm een eigen opslag, dus daar wordt de naam bij de eerste keer openen nog één keer gevraagd; het welkomstscherm zegt dat er ook bij. Wie alleen Safari gebruikt, raakt naam en voortgang kwijt als de site een week niet geopend wordt (Safari wist dan alle opslag van een website); de app op het beginscherm heeft daar geen last van. Zolang de app nog niet op het beginscherm staat, laat Home ook een banner met uitleg zien:
 - **iPhone (Safari):** Deel-knop → *Zet op beginscherm* → *Voeg toe*.
 - **Android (Chrome):** knop *Installeren* in de app, of menu ⋮ → *App installeren*.
 

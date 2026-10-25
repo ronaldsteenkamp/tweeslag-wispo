@@ -11,6 +11,7 @@ import { StemmingOpHome } from '../components/Stemmen'
 import { WeerKaart } from '../components/WeerKaart'
 import type { Tab } from '../components/TabBalk'
 import { config } from '../config'
+import { NAAM_OVERGENOMEN } from '../lib/backend'
 import { useData, type Dag } from '../lib/data'
 import { platform } from '../lib/installatie'
 import { useNu } from '../lib/nu'
@@ -26,6 +27,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
   const { data: planning, fout } = useData('planning')
   const [naam] = useOpgeslagen<string | null>('naam', null)
   const [naamKiezen, setNaamKiezen] = useState(false)
+  const [overgenomen] = useOpgeslagen<string | null>(NAAM_OVERGENOMEN, null)
   const sluitNaamKiezen = useCallback(() => setNaamKiezen(false), [])
 
   const dagen = planning?.dagen ?? []
@@ -91,6 +93,18 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
           <p className="hero__tekst">Welkom thuis! Wat was het een mooie week. Tot de volgende wispo ❄️</p>
         )}
       </header>
+
+      {overgenomen && !naam && (
+        <section className="kaartje melding">
+          <p>
+            <strong>{overgenomen}</strong> is op een ander apparaat gekozen
+            {platform() === 'ios' ? ', bijvoorbeeld in de app op je beginscherm' : ''}. Je score telt daar.
+          </p>
+          <button type="button" className="knop knop--secundair knop--breed" onClick={() => setNaamKiezen(true)}>
+            Toch dit apparaat gebruiken
+          </button>
+        </section>
+      )}
 
       {fase !== 'na' && <WeerKaart nu={nu} voorVertrek={nu < vertrek} onOpen={naarWeer} />}
 

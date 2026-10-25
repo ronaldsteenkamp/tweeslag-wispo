@@ -91,7 +91,7 @@ export default function Beheer({ terug }: { terug: () => void }) {
             </div>
           </dl>
           {b.status === 'verbonden' && !b.gekoppeld && (
-            <button type="button" className="tekstknop" onClick={() => void stuurProfiel(true)}>
+            <button type="button" className="tekstknop" onClick={() => void stuurProfiel(true, true)}>
               Naam opnieuw versturen
             </button>
           )}

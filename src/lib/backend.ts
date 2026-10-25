@@ -1,7 +1,7 @@
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { laad } from './data'
-import { abonneer, lees, schrijf } from './opslag'
+import { abonneer, lees, schrijf, schrijfEnMeld } from './opslag'
 
 /*
  * Koppeling met Supabase voor de gedeelde functies (scorebord, stemming, meldingen, foto's).
@@ -164,27 +164,38 @@ async function kamerVan(naam: string): Promise<string | null> {
 
 let profielBezig: Promise<void> | null = null
 let profielNogmaals = false
+let nogmaalsOvernemen = false
+
+/** Deze naam is door een ander apparaat overgenomen (zie stuurProfiel), of null */
+export const NAAM_OVERGENOMEN = 'naam.overgenomen'
 
 /**
  * Stuurt de gekozen naam (en de kamer uit kamers.json) naar de server, als dat nog niet gebeurd is.
  * Nooit twee tegelijk: komt er een verzoek bij terwijl er één loopt, dan volgt er daarna nog één.
+ *
+ * `overnemen`: alleen als iemand op dit apparaat zelf de naam kiest, mag het de naam van een
+ * ander apparaat afpakken. Anders pakken Safari en de app op het beginscherm van dezelfde iPhone
+ * (elk met een eigen opslag) elkaar bij elk openen de naam af, en springt de score heen en weer.
  */
-export function stuurProfiel(forceer = false): Promise<void> {
+export function stuurProfiel(forceer = false, overnemen = false): Promise<void> {
   if (profielBezig) {
     profielNogmaals = true
+    nogmaalsOvernemen ||= overnemen
     return profielBezig
   }
-  profielBezig = stuurProfielNu(forceer).finally(() => {
+  profielBezig = stuurProfielNu(forceer, overnemen).finally(() => {
     profielBezig = null
     if (profielNogmaals) {
+      const o = nogmaalsOvernemen
       profielNogmaals = false
-      void stuurProfiel()
+      nogmaalsOvernemen = false
+      void stuurProfiel(false, o)
     }
   })
   return profielBezig
 }
 
-async function stuurProfielNu(forceer: boolean) {
+async function stuurProfielNu(forceer: boolean, overnemen: boolean) {
   const cb = supabase()
   const naam = lees<string | null>('naam', null)
   if (!cb || !naam || !stand.userId || stand.status === 'offline') return
@@ -196,6 +207,20 @@ async function stuurProfielNu(forceer: boolean) {
   }
   try {
     const c = await cb
+    if (!overnemen) {
+      // Hoort de naam inmiddels bij een ander apparaat? Dan niet terugpakken, maar loslaten
+      const { data: anderen, error } = await c.from('deelnemers').select('user_id, naam').neq('user_id', stand.userId)
+      if (error) throw error
+      if ((anderen ?? []).some((d) => d.naam.trim().toLowerCase() === naam.trim().toLowerCase())) {
+        if (lees<string | null>('naam', null) === naam) {
+          schrijf('backend.profiel', '')
+          zet({ gekoppeld: null })
+          schrijfEnMeld('naam', null)
+          schrijfEnMeld(NAAM_OVERGENOMEN, naam)
+        }
+        return
+      }
+    }
     const { error } = await c.rpc('kies_naam', { p_naam: naam, p_kamer: kamer })
     if (error?.code === '23503') {
       // Deze gebruiker bestaat niet meer op de server (bijv. na opruimen): opnieuw aanmelden
@@ -265,8 +290,12 @@ export function startBackend() {
   window.setInterval(() => {
     if (stand.status !== 'verbonden') void verbind()
   }, 60_000)
-  // Andere naam gekozen: meteen doorgeven
-  abonneer('naam', () => void stuurProfiel())
+  // Zelf een (andere) naam gekozen: meteen doorgeven, ook als een ander apparaat hem had
+  abonneer('naam', (n) => {
+    if (n === null) return
+    schrijfEnMeld(NAAM_OVERGENOMEN, null)
+    void stuurProfiel(false, true)
+  })
 }
 
 export function useBackend(): BackendStand {

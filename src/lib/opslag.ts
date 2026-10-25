@@ -24,6 +24,12 @@ export function schrijf<T>(sleutel: string, waarde: T): void {
 const luisteraars = new Map<string, Set<(waarde: unknown) => void>>()
 const GEEN = Symbol('geen')
 
+/** Bewaren buiten React, en schermen en abonnees meteen laten meekijken */
+export function schrijfEnMeld<T>(sleutel: string, waarde: T): void {
+  schrijf(sleutel, waarde)
+  luisteraars.get(sleutel)?.forEach((f) => f(waarde))
+}
+
 /** Buiten React luisteren naar wijzigingen van een bewaarde waarde (bijv. de naam) */
 export function abonneer(sleutel: string, f: (waarde: unknown) => void): () => void {
   const set = luisteraars.get(sleutel) ?? new Set()
