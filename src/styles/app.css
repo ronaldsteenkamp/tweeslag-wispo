@@ -173,6 +173,11 @@ button {
   gap: 12px;
 }
 
+/* Beheer: een lange verbindingsstatus mag onder de kop, in plaats van de pagina breder te maken */
+.beheer .kaartje__kop {
+  flex-wrap: wrap;
+}
+
 .laadtekst {
   color: var(--tekst-zacht);
   text-align: center;
@@ -1182,6 +1187,8 @@ button {
 }
 
 .verdelen__weg {
+  /* Breed genoeg voor een duim (met handschoen) */
+  min-width: 44px;
   padding: 0 12px 0 8px;
   color: var(--tekst-zacht);
 }
@@ -2620,6 +2627,7 @@ button {
   border-radius: 10px;
   background: var(--oppervlak);
   color: var(--tekst);
+  /* Op een smal scherm (360 px) past niet meer; vanaf 380 px groter, zie hieronder */
   font-size: 0.66rem;
   font-weight: 600;
   line-height: 1.15;
@@ -2640,6 +2648,13 @@ button {
 .bingo__emoji {
   font-size: 1.3rem;
   line-height: 1;
+}
+
+/* De busbingo speel je 's nachts in een donkere bus: zo groot als past (gemeten met alle vakjes) */
+@media (min-width: 380px) {
+  .bingo__vak {
+    font-size: 0.72rem;
+  }
 }
 
 @media (min-width: 420px) {

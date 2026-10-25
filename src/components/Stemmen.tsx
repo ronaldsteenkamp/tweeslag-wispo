@@ -3,10 +3,11 @@ import { useBackend } from '../lib/backend'
 import { alleDeelnemers, useData } from '../lib/data'
 import { useNu } from '../lib/nu'
 import { useOpgeslagen } from '../lib/opslag'
-import { stem, useStemmingen, winnaars, type StemmingInfo, type StemStand } from '../lib/stemming'
+import { stem, useStemmingen, winnaars, type StemmingInfo, type StemStand, type Uitslag } from '../lib/stemming'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 import { BevestigDialoog } from './BevestigDialoog'
 import { Icoon } from './Icoon'
+import { normaal } from './NaamKiezer'
 import { Verbinding } from './Verbinding'
 
 /** '21:30' voor vandaag, anders 'vr 12 om 12:00' */
@@ -110,7 +111,10 @@ function StemKaart({
   const [keuze, setKeuze] = useState<string | null>(null)
   const [bezig, setBezig] = useState(false)
   const [fout, setFout] = useState<string | null>(null)
+  const [zoek, setZoek] = useState('')
   const mijn = stand?.mijn[s.id]
+  const q = normaal(zoek)
+  const zichtbaar = q ? kandidaten.filter((k) => normaal(k).includes(q)) : kandidaten
   const totaal = stand?.totalen[s.id] ?? 0
   const eigen = naam?.toLowerCase()
 
@@ -147,8 +151,27 @@ function StemKaart({
         <p className="melding">Kies eerst je naam op Home, dan kun je stemmen.</p>
       ) : (
         <>
+          {/* Zoals bij het kiezen van je naam: met veel namen eerst zoeken */}
+          {kandidaten.length > 8 && (
+            <div className="zoekveld">
+              <Icoon naam="zoek" />
+              <label className="verborgen" htmlFor={`zoek-${s.id}`}>
+                Zoek een naam
+              </label>
+              <input
+                id={`zoek-${s.id}`}
+                type="search"
+                className="invoer"
+                placeholder="Zoek een naam"
+                value={zoek}
+                onChange={(e) => setZoek(e.target.value)}
+                autoComplete="off"
+                enterKeyHint="search"
+              />
+            </div>
+          )}
           <div className="stemming__kandidaten">
-            {kandidaten.map((k) => {
+            {zichtbaar.map((k) => {
               const zelf = k.toLowerCase() === eigen
               return (
                 <button
@@ -164,6 +187,7 @@ function StemKaart({
               )
             })}
           </div>
+          {zichtbaar.length === 0 && <p className="laadtekst">Geen naam gevonden met ‘{zoek}’.</p>}
           {!kanStemmen && <p className="klein">Geen verbinding. Stemmen kan zodra er weer internet is.</p>}
         </>
       )}
@@ -233,6 +257,9 @@ function AlleStemmingen({ stemmingen, nu, beheerder }: { stemmingen: StemmingInf
 
 const MEDAILLES = ['🥇', '🥈', '🥉']
 
+/** Plaats met gedeelde plekken: 10, 10, 7, 5 stemmen geeft 1, 1, 3, 4 (dus goud, goud, brons) */
+const plaats = (uitslag: Uitslag[], i: number) => 1 + uitslag.filter((u) => u.stemmen > uitslag[i].stemmen).length
+
 function UitslagKaart({ s, stand, naam }: { s: StemmingInfo; stand: StemStand | null; naam: string | null }) {
   const uitslag = stand?.uitslagen[s.id]
   const totaal = stand?.totalen[s.id]
@@ -264,7 +291,7 @@ function UitslagKaart({ s, stand, naam }: { s: StemmingInfo; stand: StemStand | 
           <ol className="ranglijst ranglijst--klein">
             {uitslag.map((u, i) => (
               <li key={u.kandidaat} className={u.kandidaat === naam ? 'is-eigen' : ''}>
-                <span className="ranglijst__plek">{u.stemmen === top[0].stemmen ? MEDAILLES[0] : MEDAILLES[i] ?? i + 1}</span>
+                <span className="ranglijst__plek">{MEDAILLES[plaats(uitslag, i) - 1] ?? plaats(uitslag, i)}</span>
                 <span className="ranglijst__naam">{u.kandidaat}</span>
                 <span className="ranglijst__punten">{u.stemmen}</span>
               </li>

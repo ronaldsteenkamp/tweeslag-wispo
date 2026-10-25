@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { useBackend } from '../lib/backend'
 import { useData } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
+import { tabToetsen } from '../lib/tabbladen'
 import { useKlassement, useSyncStatus, verwijderCorrectie, voegCorrectieToe } from '../lib/scorebord'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 import { BevestigDialoog } from './BevestigDialoog'
@@ -212,13 +213,22 @@ function BonusFormulier({
     <section className="kaartje bonus">
       <h2>⭐ Bonuspunten of correctie (beheer)</h2>
       <form className="bonus__formulier" onSubmit={verstuur}>
-        <div className="segment" role="tablist" aria-label="Voor wie">
+        <div
+          className="segment"
+          role="tablist"
+          aria-label="Voor wie"
+          onKeyDown={tabToetsen(['kamer', 'persoon'] as const, soort, (s) => {
+            setSoort(s)
+            setDoel('')
+          })}
+        >
           {(['kamer', 'persoon'] as const).map((s) => (
             <button
               key={s}
               type="button"
               role="tab"
               aria-selected={soort === s}
+              tabIndex={soort === s ? 0 : -1}
               className={`segment__knop${soort === s ? ' is-actief' : ''}`}
               onClick={() => {
                 setSoort(s)

@@ -13,13 +13,16 @@ import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
 import { testOntgrendeld, useNu } from '../lib/nu'
 import { isTestperiode } from '../lib/testperiode'
 import { useOpgeslagen } from '../lib/opslag'
+import { tabToetsen } from '../lib/tabbladen'
 import { datumISO, datumLabel, lokaalNaarDate } from '../lib/tijd'
 
 const spelOpen = lokaalNaarDate(config.spelOpen)
+const ONDERDELEN = ['challenges', 'bingo', 'stemmen', 'klassement'] as const
 const openMoment = (d: ChallengeDag) => lokaalNaarDate(`${d.datum}T${d.openOm ?? config.challengesOpenOm}`)
 
 export default function Spel() {
-  const nu = useNu(1000)
+  // Challenges gaan op hele minuten open; de aftelklok tikt zelf elke seconde
+  const nu = useNu(10_000)
   const { data, fout } = useData('spel')
 
   if (!testOntgrendeld && !config.spelTestperiode && nu < spelOpen) {
@@ -35,7 +38,7 @@ export default function Spel() {
             Het gaat open op {datumLabel(config.spelOpen.slice(0, 10))} om {config.spelOpen.slice(11)}, als de bus
             bijna vertrekt.
           </p>
-          <Aftelklok doel={spelOpen} nu={nu} />
+          <Aftelklok doel={spelOpen} />
           <p className="klein">Wat er gaat gebeuren? Geheim! 🤫</p>
         </section>
       </div>
@@ -125,13 +128,19 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         </p>
       </section>
 
-      <div className="segment segment--vier" role="tablist" aria-label="Onderdeel">
-        {(['challenges', 'bingo', 'stemmen', 'klassement'] as const).map((o) => (
+      <div
+        className="segment segment--vier"
+        role="tablist"
+        aria-label="Onderdeel"
+        onKeyDown={tabToetsen(ONDERDELEN, onderdeel, setOnderdeel)}
+      >
+        {ONDERDELEN.map((o) => (
           <button
             key={o}
             type="button"
             role="tab"
             aria-selected={onderdeel === o}
+            tabIndex={onderdeel === o ? 0 : -1}
             className={`segment__knop${onderdeel === o ? ' is-actief' : ''}`}
             onClick={() => setOnderdeel(o)}
           >

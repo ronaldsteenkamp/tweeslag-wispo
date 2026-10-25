@@ -115,7 +115,7 @@ Vertrektijd, thuiskomst, het openen van het spel en de links naar de Les 2 Alpes
 
 ## Pistekaart en logo vervangen
 
-**Pistekaart:** `public/img/pistekaart.jpg` is de officiële kaart van Les 2 Alpes voor winter 2025-2026 (`2026-Plan_Hiver.jpg` van les2alpes.com), licht gecomprimeerd tot ca. 2 MB. Komt de kaart voor 2026-2027 uit, vervang dan dit bestand en houd de naam `pistekaart.jpg` aan. Groot mag (tot 25 MB), maar 2–6 MB laadt prettiger. De kaart wordt automatisch op de telefoon bewaard voor offline gebruik. Let op: de kaart is van Les 2 Alpes en via de openbare URL voor iedereen te zien.
+**Pistekaart:** `public/img/pistekaart.webp` is de officiële kaart van Les 2 Alpes voor winter 2025-2026 (`2026-Plan_Hiver.jpg` van les2alpes.com), als WebP (kwaliteit 75) ca. 1,1 MB: dat scheelt bij de eerste keer openen via de QR-code. Komt de kaart voor 2026-2027 uit, zet hem dan om en houd de naam `pistekaart.webp` aan, bijvoorbeeld met `node -e "require('sharp')('nieuw.jpg').webp({quality:75}).toFile('public/img/pistekaart.webp')"`. Groot mag (tot 25 MB), maar hoe kleiner, hoe sneller. De kaart wordt automatisch op de telefoon bewaard voor offline gebruik. Let op: de kaart is van Les 2 Alpes en via de openbare URL voor iedereen te zien.
 
 **Logo / app-icoon:** het app-icoon (`public/logo.svg`) en het woordmerk bovenaan Home (`public/img/2slag-wit.svg`) zijn winterversies van het officiële 2slag-logo uit de huisstijl, met sneeuw op de letters, sneeuwvlokken en besneeuwde bergen. Een ander icoon? Vervang `public/logo.svg` (vierkant). Bij elke build worden daaruit automatisch de app-iconen, de favicon en de splashscreens voor iPhone gemaakt. De achtergrondkleur en de ruimte rond het logo stel je in met `ACHTERGROND` en `padding` in `pwa-assets.config.ts`. Heeft je logo een transparante achtergrond, zet dan bij `transparent` de `padding` op bijvoorbeeld `0.1`. Heb je alleen een PNG, zet dan in `pwa-assets.config.ts` `images: ['public/logo.png']` en pas in `index.html` en `src/screens/Home.tsx` `logo.svg` aan naar `logo.png`.
 
@@ -267,7 +267,7 @@ Migratie: `supabase/migrations/0006_locaties.sql` (maakt ook een cronjob die oud
 - **Alleen met de app open:** een webapp krijgt geen locatie als hij op de achtergrond staat of het scherm uit is. Dan blijft je laatste positie staan, met de tijd erbij. Open je de app weer, dan gaat het vanzelf verder.
 - **Privacy:** alleen wie zelf op *Deel mijn locatie* tikt, deelt iets. Alleen apparaten in de app zien de locaties, en alleen van het afgelopen uur. *Stop* verwijdert je locatie meteen van de server; oudere locaties ruimt de server elk uur op. Posities worden afgerond op ongeveer 1 meter.
 
-**Hoe komt een GPS-positie op de getekende pistekaart?** De pistekaart is een panoramatekening, geen kaart op schaal. In `src/lib/georef.ts` staan 13 ijkpunten: liftstations met hun echte coördinaten (uit OpenStreetMap) en hun plek op de tekening. Een *thin-plate spline* buigt de tekening zo vloeiend mogelijk tussen die punten. Op een ijkpunt klopt het precies; ertussen zit het gemiddeld zo'n 50 pixels (ongeveer een pistebreedte op de tekening) naast. Voor de exacte plek is er de knop naar Google Maps. Vervang je `pistekaart.jpg` door een nieuwe kaart, zoek dan dezelfde stations op en pas hun `x`/`y` (in pixels) in `georef.ts` aan.
+**Hoe komt een GPS-positie op de getekende pistekaart?** De pistekaart is een panoramatekening, geen kaart op schaal. In `src/lib/georef.ts` staan 13 ijkpunten: liftstations met hun echte coördinaten (uit OpenStreetMap) en hun plek op de tekening. Een *thin-plate spline* buigt de tekening zo vloeiend mogelijk tussen die punten. Op een ijkpunt klopt het precies; ertussen zit het gemiddeld zo'n 50 pixels (ongeveer een pistebreedte op de tekening) naast. Voor de exacte plek is er de knop naar Google Maps. Vervang je `pistekaart.webp` door een nieuwe kaart, zoek dan dezelfde stations op en pas hun `x`/`y` (in pixels) in `georef.ts` aan.
 
 ### Profielen (fase 7)
 Migratie: `supabase/migrations/0007_profielen.sql` (uitvoeren na 0006). Gebruikt de bucket `fotos` uit 0005 voor de profielfoto's.
@@ -317,6 +317,6 @@ Wie de app voor het eerst opent (bijvoorbeeld via de QR-code), krijgt een welkom
 ## Hoe het werkt (voor wie verder wil bouwen)
 
 - Vite + React + TypeScript, met `vite-plugin-pwa` voor het manifest en de service worker.
-- De app zelf, de iconen en de pistekaart worden vooraf bewaard (cache-first). De JSON-data gaat network-first: eerst internet (max. 5 seconden wachten), anders de bewaarde versie.
+- De app zelf, de iconen en de pistekaart worden vooraf bewaard (cache-first). De JSON-data gaat network-first: eerst internet (max. 2 seconden wachten), anders de bewaarde versie.
 - Persoonlijke gegevens staan in `localStorage` onder `tweeslag-wispo.*`.
 - Code: `src/screens/` (de zeven schermen), `src/components/`, `src/lib/` (tijd, opslag, data, bingo, profiel).

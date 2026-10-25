@@ -261,8 +261,12 @@ const SCHERMEN = [
   ['#planning', 'Planning'],
   ['#paklijst', 'Paklijst'],
   ['#kamers', 'Kamers'],
+  ['#kaart', 'Kaart'],
+  ['#rad', 'Rad'],
   ['#spel', 'Spel'],
   ['#stemmen', 'Stemmen'],
+  ['#fotos', 'Fotomuur'],
+  ['#weer', 'Weer'],
 ] as const
 
 /** Meldingen: bericht aan iedereen, aantal aangemelde apparaten en wat er verstuurd is */

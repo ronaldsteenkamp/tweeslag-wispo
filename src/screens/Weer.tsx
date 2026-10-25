@@ -3,6 +3,7 @@ import { config } from '../config'
 import { useData } from '../lib/data'
 import { useNu } from '../lib/nu'
 import { useOpgeslagen } from '../lib/opslag'
+import { tabToetsen } from '../lib/tabbladen'
 import { datumISO, datumLabel, lokaalNaarDate } from '../lib/tijd'
 import { cm, dagdelen, graden, meters, useWeer, verversWeer, weerIcoon, weerTekst } from '../lib/weer'
 
@@ -65,13 +66,23 @@ export default function Weer({ terug }: { terug: () => void }) {
             </section>
           )}
 
-          <div className="segment" role="tablist" aria-label="Plek">
+          <div
+            className="segment"
+            role="tablist"
+            aria-label="Plek"
+            onKeyDown={tabToetsen(
+              weer.locaties.map((l) => l.id),
+              plek.id,
+              setPlekId,
+            )}
+          >
             {weer.locaties.map((l) => (
               <button
                 key={l.id}
                 type="button"
                 role="tab"
                 aria-selected={plek.id === l.id}
+                tabIndex={plek.id === l.id ? 0 : -1}
                 className={`segment__knop${plek.id === l.id ? ' is-actief' : ''}`}
                 onClick={() => setPlekId(l.id)}
               >

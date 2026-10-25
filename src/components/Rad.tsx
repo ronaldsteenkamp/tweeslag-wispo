@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PISTE_KLEUREN, useData, type Kamers, type PisteKleur, type Rad as RadData } from '../lib/data'
 import { lees, useOpgeslagen } from '../lib/opslag'
+import { tabToetsen } from '../lib/tabbladen'
 import { BevestigDialoog } from './BevestigDialoog'
 import { deelnemers, fractie, initialen, kies, useDeelnemersKeuze, willekeurig } from '../lib/rad'
 import { doelHoek, vakTekst, verspreid } from '../lib/radwiskunde'
@@ -195,19 +196,17 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
           ? 'Vul minstens twee opties in.'
           : 'Kies minstens twee drankjes.'
 
-  // Met een toetsenbord: pijltjes (en Home/End) gaan naar het vorige of volgende rad
-  const opPijltje = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const nu = SOORTEN.findIndex((s) => s.waarde === soort)
-    const stap = { ArrowLeft: -1, ArrowRight: 1 }[e.key]
-    const nieuw = e.key === 'Home' ? 0 : e.key === 'End' ? SOORTEN.length - 1 : stap ? (nu + stap + SOORTEN.length) % SOORTEN.length : -1
-    if (nieuw < 0) return
-    e.preventDefault()
-    setSoort(SOORTEN[nieuw].waarde)
-    ;(e.currentTarget.children[nieuw] as HTMLElement | undefined)?.focus()
-  }
-
   const keuzebalk = (
-    <div className="segment segment--vijf" role="tablist" aria-label="Welk rad" onKeyDown={opPijltje}>
+    <div
+      className="segment segment--vijf"
+      role="tablist"
+      aria-label="Welk rad"
+      onKeyDown={tabToetsen(
+        SOORTEN.map((s) => s.waarde),
+        soort,
+        setSoort,
+      )}
+    >
       {SOORTEN.map((s) => (
         <button
           key={s.waarde}

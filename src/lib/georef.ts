@@ -6,7 +6,7 @@
 // een ijkpunt klopt het; ertussen is het "ongeveer op de goede piste".
 //
 // Nieuwe pistekaart? Zoek dezelfde stations op de nieuwe tekening op en pas x/y hieronder aan
-// (pixels in public/img/pistekaart.jpg).
+// (pixels in public/img/pistekaart.webp).
 
 export const KAART_PX = { b: 2126, h: 3543 }
 

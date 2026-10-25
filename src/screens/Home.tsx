@@ -23,7 +23,8 @@ const vertrek = lokaalNaarDate(config.vertrek)
 const thuiskomst = lokaalNaarDate(config.thuiskomst)
 
 export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void; naarWeer: () => void }) {
-  const nu = useNu(1000)
+  // De aftelklok tikt zelf elke seconde; de rest van Home hoeft maar af en toe te verversen
+  const nu = useNu(10_000)
   const { data: planning, fout } = useData('planning')
   const [naam] = useOpgeslagen<string | null>('naam', null)
   const profiel = useMijnProfiel()
@@ -62,7 +63,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
         {fase === 'voor' && (
           <>
             <p className="hero__tekst">Nog even en dan vertrekken we naar de sneeuw:</p>
-            <Aftelklok doel={vertrek} nu={nu} />
+            <Aftelklok doel={vertrek} />
             <p className="hero__klein">
               Vertrek {datumLabel(config.vertrek.slice(0, 10))} om {config.vertrek.slice(11)}
             </p>

@@ -5,118 +5,11 @@ import { Icoon } from '../components/Icoon'
 import { normaal } from '../components/NaamKiezer'
 import { config } from '../config'
 import { backendIngesteld, useBackend } from '../lib/backend'
-import { alleDeelnemers, useData, type Kamers } from '../lib/data'
+import { useData } from '../lib/data'
 import { SERVER_VERSIE, slaKamerverdelingOp, type ServerVersie } from '../lib/kamerverdeling'
 import { useOpgeslagen } from '../lib/opslag'
+import { bijwerken, naarJson, nieuwId, uitData, verdeelAutomatisch, zonder, type Concept, type ConceptKamer } from '../lib/verdeling'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
-
-interface ConceptKamer {
-  id: string
-  nummer: string
-  naam: string
-  bedden: number
-  bewoners: string[]
-}
-
-interface Concept {
-  verblijf: string
-  kamers: ConceptKamer[]
-  /** Deelnemers die nog geen kamer hebben */
-  over: string[]
-  /** Namen en verblijf uit kamers.json toen het concept voor het laatst is bijgewerkt */
-  basis?: Basis
-  /** De verdeling op de server waar dit concept op voortbouwt ('bijgewerkt'), of null als er nog geen was */
-  serverVersie?: string | null
-}
-
-interface Basis {
-  namen: string[]
-  verblijf: string
-}
-
-const basisVan = (data: Kamers): Basis => ({ namen: alleDeelnemers(data).sort(), verblijf: data.verblijf ?? '' })
-
-const UITLEG =
-  "Kamers met nummer, een naam (mag je weglaten), het aantal bedden en de bewoners. Wie nog geen kamer heeft staat onder zonderKamer. ALLEEN VOORNAMEN, geen achternamen. Twee mensen met dezelfde naam? Schrijf dan bijvoorbeeld 'Lisa' en 'Lisa 2'. Iedereen kiest in de app zijn naam uit deze lijst. Tip: maak de verdeling in de app via Kamers → Kamerverdeling maken."
-
-const nieuwId = () => Math.random().toString(36).slice(2, 9)
-
-function uitData(data: Kamers, serverVersie: string | null): Concept {
-  return {
-    serverVersie,
-    verblijf: data.verblijf ?? '',
-    kamers: data.kamers.map((k) => ({
-      id: nieuwId(),
-      nummer: k.nummer,
-      naam: k.naam ?? '',
-      bedden: k.bedden ?? Math.max(k.bewoners.length, 2),
-      bewoners: [...k.bewoners],
-    })),
-    over: [...data.zonderKamer],
-    basis: basisVan(data),
-  }
-}
-
-/**
- * Brengt wijzigingen in kamers.json (bijv. nieuwe deelnemers of een andere naam van het verblijf)
- * over naar een concept dat al op deze telefoon stond, zonder de eigen indeling kwijt te raken.
- * Geeft null als er niets veranderd is.
- */
-function bijwerken(c: Concept, data: Kamers): { concept: Concept; tekst: string } | null {
-  const nu = basisVan(data)
-  if (c.basis && JSON.stringify(c.basis) === JSON.stringify(nu)) return null
-  const inConcept = new Set([...c.over, ...c.kamers.flatMap((k) => k.bewoners)])
-  const erbij = nu.namen.filter((n) => !inConcept.has(n) && !c.basis?.namen.includes(n))
-  // Alleen weghalen wat eerder uit kamers.json kwam; zelf toegevoegde namen blijven staan
-  const weg = (c.basis?.namen ?? []).filter((n) => !nu.namen.includes(n) && inConcept.has(n))
-  // Verblijf alleen overnemen als het hier niet zelf is aangepast (oude concepten: de voorbeeldnaam)
-  const eigenVerblijf = c.basis ? c.verblijf !== c.basis.verblijf : c.verblijf.trim() !== '' && !/voorbeeld/i.test(c.verblijf)
-  const verblijf = !eigenVerblijf && nu.verblijf && nu.verblijf !== c.verblijf ? nu.verblijf : c.verblijf
-  const concept: Concept = {
-    ...c,
-    verblijf,
-    over: [...c.over.filter((n) => !weg.includes(n)), ...erbij],
-    kamers: c.kamers.map((k) => ({ ...k, bewoners: k.bewoners.filter((b) => !weg.includes(b)) })),
-    basis: nu,
-  }
-  const delen = [
-    erbij.length ? `${erbij.join(', ')} ${erbij.length === 1 ? 'staat' : 'staan'} erbij bij "Nog in te delen".` : '',
-    weg.length ? `${weg.join(', ')} ${weg.length === 1 ? 'is' : 'zijn'} uit de lijst gehaald.` : '',
-    verblijf !== c.verblijf ? `Verblijf is nu "${verblijf}".` : '',
-  ].filter(Boolean)
-  return { concept, tekst: delen.join(' ') }
-}
-
-/** kamers.json in dezelfde, goed leesbare vorm als het origineel: één kamer per regel */
-function naarJson(c: Concept): string {
-  const regel = (k: ConceptKamer) => {
-    const delen = [`"nummer": ${JSON.stringify(k.nummer.trim())}`]
-    if (k.naam.trim()) delen.push(`"naam": ${JSON.stringify(k.naam.trim())}`)
-    delen.push(`"bedden": ${k.bedden}`)
-    delen.push(`"bewoners": [${k.bewoners.map((b) => JSON.stringify(b)).join(', ')}]`)
-    return `    { ${delen.join(', ')} }`
-  }
-  return [
-    '{',
-    `  "_uitleg": ${JSON.stringify(UITLEG)},`,
-    `  "verblijf": ${JSON.stringify(c.verblijf.trim())},`,
-    '  "kamers": [',
-    c.kamers.map(regel).join(',\n'),
-    c.over.length ? '  ],' : '  ]',
-    ...(c.over.length ? [`  "zonderKamer": [${c.over.map((b) => JSON.stringify(b)).join(', ')}]`] : []),
-    '}',
-    '',
-  ].join('\n')
-}
-
-function schud<T>(lijst: T[]): T[] {
-  const a = [...lijst]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
 
 /** Kamerverdeling maken (voor de reisleiding). Alles blijft op dit apparaat tot je kamers.json op GitHub zet. */
 export default function Verdelen({ terug }: { terug: () => void }) {
@@ -175,13 +68,6 @@ export default function Verdelen({ terug }: { terug: () => void }) {
   const wijzigKamer = (id: string, f: (k: ConceptKamer) => ConceptKamer) =>
     wijzig((c) => ({ ...c, kamers: c.kamers.map((k) => (k.id === id ? f(k) : k)) }))
 
-  /** Haalt een naam overal weg (uit de lijst en uit alle kamers) */
-  const zonder = (c: Concept, naam: string): Concept => ({
-    ...c,
-    over: c.over.filter((n) => n !== naam),
-    kamers: c.kamers.map((k) => ({ ...k, bewoners: k.bewoners.filter((b) => b !== naam) })),
-  })
-
   const plaats = (kamer: ConceptKamer) => {
     if (!gekozen) return
     if (kamer.bewoners.includes(gekozen)) {
@@ -239,21 +125,9 @@ export default function Verdelen({ terug }: { terug: () => void }) {
     wijzig((c) => ({ ...c, over: [...c.over, ...kamer.bewoners], kamers: c.kamers.filter((k) => k.id !== kamer.id) }))
 
   const automatisch = () => {
-    // Om de beurt een persoon per kamer met een vrij bed, zodat de kamers ongeveer even vol raken
-    const over = schud(concept.over)
-    const kamers = concept.kamers.map((k) => ({ ...k, bewoners: [...k.bewoners] }))
-    let geplaatst = true
-    while (over.length && geplaatst) {
-      geplaatst = false
-      for (const k of [...kamers].sort((a, b) => a.bewoners.length / a.bedden - b.bewoners.length / b.bedden)) {
-        if (!over.length) break
-        if (k.bewoners.length < k.bedden) {
-          k.bewoners.push(over.shift()!)
-          geplaatst = true
-        }
-      }
-    }
-    setConcept({ ...concept, kamers, over })
+    const nieuw = verdeelAutomatisch(concept)
+    setConcept(nieuw)
+    const over = nieuw.over
     if (over.length) setMelding(`Niet genoeg bedden: ${over.join(', ')} ${over.length === 1 ? 'heeft' : 'hebben'} nog geen plek.`)
   }
 

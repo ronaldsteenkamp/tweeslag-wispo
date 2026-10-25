@@ -1,6 +1,9 @@
+import { useNu } from '../lib/nu'
 import { resterend } from '../lib/tijd'
 
-export function Aftelklok({ doel, nu }: { doel: Date; nu: Date }) {
+/** Telt elke seconde af; alleen dit blokje rendert dan opnieuw, niet het hele scherm */
+export function Aftelklok({ doel }: { doel: Date }) {
+  const nu = useNu(1000)
   const r = resterend(doel.getTime() - nu.getTime())
   const blokken = [
     { waarde: r.dagen, label: r.dagen === 1 ? 'dag' : 'dagen' },

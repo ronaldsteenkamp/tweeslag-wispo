@@ -8,7 +8,7 @@ import { startDelen, stopDelen, useDelen, useLocaties, type GedeeldeLocatie } fr
 import { useNu } from '../lib/nu'
 import { lees, schrijf, useOpgeslagen } from '../lib/opslag'
 
-const KAART = `${import.meta.env.BASE_URL}img/pistekaart.jpg`
+const KAART = `${import.meta.env.BASE_URL}img/pistekaart.webp`
 const omzetter = maakOmzetter()
 /** Verder dan dit van het dichtstbijzijnde liftstation: niet op de kaart */
 const MAX_AFSTAND_M = 2500
