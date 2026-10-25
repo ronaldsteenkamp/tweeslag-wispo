@@ -52,6 +52,19 @@ body {
   background-image: var(--sneeuwpatroon);
   background-size: 220px 220px;
   overscroll-behavior-y: none;
+  /* Lang drukken op een woord selecteert niets (voelt meer als een app); geen menu bij lang drukken op iPhone */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* In invulvelden moet selecteren, kopiëren en plakken wel blijven werken */
+input,
+textarea,
+[contenteditable='true'] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 h1,
