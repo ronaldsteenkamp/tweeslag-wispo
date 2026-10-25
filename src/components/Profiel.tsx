@@ -120,7 +120,7 @@ function ProfielInhoud({ p }: { p: Bekeken }) {
           <dd>{p.feitje}</dd>
         </div>
         <div>
-          <dt>🎤 Karaokenummer of buslied</dt>
+          <dt>🎤 Karaokenummer</dt>
           <dd>
             {p.karaoke}
             {p.artiest && <span className="profielkaart__artiest"> – {p.artiest}</span>}
@@ -278,20 +278,31 @@ export function ProfielFormulier({
         placeholder="Ik heb ooit een speer gegooid op het NK"
         lang
       />
-      <Tekstveld
-        label="🎤 Karaokenummer of buslied"
-        waarde={karaoke}
-        max={MAX.karaoke}
-        onWijzig={setKaraoke}
-        placeholder="Bijv. Dancing Queen"
-      />
-      <Tekstveld
-        label="🎙️ Van welke artiest?"
-        waarde={artiest}
-        max={MAX.artiest}
-        onWijzig={setArtiest}
-        placeholder="Bijv. ABBA"
-      />
+      <fieldset className="veld">
+        <legend>🎤 Karaokenummer</legend>
+        <div className="karaoke">
+          <label>
+            <span className="verborgen">Nummer</span>
+            <input
+              className="invoer"
+              value={karaoke}
+              maxLength={MAX.karaoke}
+              placeholder="Nummer"
+              onChange={(e) => setKaraoke(e.target.value)}
+            />
+          </label>
+          <label>
+            <span className="verborgen">Artiest</span>
+            <input
+              className="invoer"
+              value={artiest}
+              maxLength={MAX.artiest}
+              placeholder="Artiest"
+              onChange={(e) => setArtiest(e.target.value)}
+            />
+          </label>
+        </div>
+      </fieldset>
       <Tekstveld
         label="🥶 Grootste angst"
         waarde={angst}

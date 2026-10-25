@@ -2709,6 +2709,14 @@ button {
 .keuzes {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr; /* alle vakjes even hoog, ook als er een over twee regels loopt */
+  gap: 8px;
+}
+
+/* Nummer en artiest naast elkaar onder één vraag */
+.karaoke {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
