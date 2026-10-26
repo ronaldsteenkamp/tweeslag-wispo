@@ -20,6 +20,16 @@ self.addEventListener('push', (event) => {
   )
 })
 
+// De browser heeft het abonnement vernieuwd of laten verlopen: meteen opnieuw aanmelden met dezelfde
+// sleutel. De app zet het nieuwe abonnement op de server zodra hij weer opent (zie herstel in meldingen.ts).
+self.addEventListener('pushsubscriptionchange', (event) => {
+  const sleutel = event.oldSubscription && event.oldSubscription.options && event.oldSubscription.options.applicationServerKey
+  if (!sleutel) return
+  event.waitUntil(
+    self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: sleutel }).catch(() => {}),
+  )
+})
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   const doel = (event.notification.data && event.notification.data.url) || self.registration.scope

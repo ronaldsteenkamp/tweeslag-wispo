@@ -8,6 +8,10 @@ import { lees, schrijf } from './opslag'
  * Het abonnement (endpoint + sleutels) gaat naar de tabel push_abonnementen; de Edge
  * Function `meldingen` verstuurt. Op een iPhone kan het alleen in de app op het
  * beginscherm (iOS 16.4 of nieuwer).
+ *
+ * Eén keer aanzetten is genoeg: zolang er toestemming is en je ze niet zelf uitzet, staan ze aan.
+ * Is de browser het abonnement kwijt of heeft hij het vernieuwd, dan meldt de app zich
+ * vanzelf opnieuw aan en zet het nieuwe abonnement op de server (zie herstel).
  */
 
 export type MeldingStatus =
@@ -18,8 +22,27 @@ export type MeldingStatus =
   | 'uit'
   | 'aan'
 
+/** Van een eerdere versie: waar = aan. Alleen nog gebruikt om 'uitgezet' te bepalen. */
 const AAN = 'meldingen.aan'
+/** Zelf op Uitzetten getikt (of nog nooit aangezet) */
+const UITGEZET = 'meldingen.uitgezet'
+/** Welk abonnement van welke gebruiker op de server staat, en wanneer dat voor het laatst is doorgegeven */
 const GEKOPPELD = 'meldingen.gekoppeld'
+/** Zo vaak het abonnement opnieuw doorgeven, voor als de server het intussen kwijt is */
+const OPNIEUW_MS = 12 * 60 * 60 * 1000
+
+function uitgezet(): boolean {
+  const v = lees<boolean | null>(UITGEZET, null)
+  if (v !== null) return v
+  // Eerdere versie: de app zette 'aan' zelf uit als de browser het abonnement kwijt was. Alleen wie
+  // zelf op Uitzetten tikte (dan is 'gekoppeld' leeg) of nooit aanzette, blijft uit.
+  const oud = !lees(AAN, false) && !lees(GEKOPPELD, '')
+  schrijf(UITGEZET, oud)
+  return oud
+}
+
+/** Opnieuw aanmelden zonder tik lukte niet (sommige browsers willen een tik): dan de knop tonen */
+let herstelMislukt = false
 
 const ondersteund = () =>
   typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
@@ -28,7 +51,7 @@ export function meldingStatus(): MeldingStatus {
   if (!backendIngesteld) return 'geen-backend'
   if (!ondersteund()) return platform() === 'ios' && !isGeinstalleerd() ? 'ios-beginscherm' : 'niet-ondersteund'
   if (Notification.permission === 'denied') return 'geblokkeerd'
-  return Notification.permission === 'granted' && lees(AAN, false) ? 'aan' : 'uit'
+  return Notification.permission === 'granted' && !uitgezet() && !herstelMislukt ? 'aan' : 'uit'
 }
 
 const luisteraars = new Set<() => void>()
@@ -88,7 +111,25 @@ async function bewaarOpServer(sub: PushSubscription) {
   const c = await cb
   const { error } = await c.rpc('bewaar_abonnement', { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth })
   if (error) throw error
-  schrijf(GEKOPPELD, `${backendStand().userId}|${j.endpoint}`)
+  schrijf(GEKOPPELD, { sleutel: `${backendStand().userId}|${j.endpoint}`, tijd: Date.now() })
+}
+
+/** Het abonnement van deze browser, met de goede sleutel; maakt er een als dat zonder tik kan */
+async function abonnement(maakAan: boolean): Promise<PushSubscription | null> {
+  const reg = await navigator.serviceWorker.ready
+  const sleutel = naarBytes(await publiekeSleutel())
+  let sub = await reg.pushManager.getSubscription()
+  if (sub) {
+    // Aangemeld met een andere sleutel (bijv. ander project)? Dan opnieuw.
+    const huidig = sub.options.applicationServerKey
+    const zelfde = huidig && new Uint8Array(huidig).every((b, i) => b === sleutel[i])
+    if (!zelfde) {
+      await sub.unsubscribe()
+      sub = null
+    }
+  }
+  if (!sub && maakAan) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: sleutel })
+  return sub
 }
 
 /** Na een tik op de knop: toestemming vragen, aanmelden en op de server zetten. Geeft een fout terug of null. */
@@ -104,21 +145,11 @@ export async function zetMeldingenAan(): Promise<string | null> {
   }
   if (backendStand().status !== 'verbonden') return 'Geen verbinding. Probeer het zo opnieuw.'
   try {
-    const reg = await navigator.serviceWorker.ready
-    const sleutel = naarBytes(await publiekeSleutel())
-    let sub = await reg.pushManager.getSubscription()
-    if (sub) {
-      // Aangemeld met een andere sleutel (bijv. ander project)? Dan opnieuw.
-      const huidig = sub.options.applicationServerKey
-      const zelfde = huidig && new Uint8Array(huidig).every((b, i) => b === sleutel[i])
-      if (!zelfde) {
-        await sub.unsubscribe()
-        sub = null
-      }
-    }
-    sub ??= await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: sleutel })
+    const sub = await abonnement(true)
+    if (!sub) throw new Error('Geen abonnement gekregen')
     await bewaarOpServer(sub)
-    schrijf(AAN, true)
+    schrijf(UITGEZET, false)
+    herstelMislukt = false
     meld()
     return null
   } catch (e) {
@@ -127,8 +158,8 @@ export async function zetMeldingenAan(): Promise<string | null> {
 }
 
 export async function zetMeldingenUit(): Promise<void> {
-  schrijf(AAN, false)
-  schrijf(GEKOPPELD, '')
+  schrijf(UITGEZET, true)
+  schrijf(GEKOPPELD, null)
   try {
     const reg = await navigator.serviceWorker.ready
     const sub = await reg.pushManager.getSubscription()
@@ -188,20 +219,36 @@ export async function haalLogboek(): Promise<{ regels: LogRegel[]; apparaten: nu
 
 // ---------- Starten ----------
 
-/** Na wisselen van gebruiker (of opnieuw aanmelden) het abonnement opnieuw aan de juiste gebruiker koppelen */
+/**
+ * Houdt meldingen aan zonder dat je opnieuw hoeft te tikken: is de browser het abonnement kwijt,
+ * dan meldt hij zich opnieuw aan; is het abonnement nieuw, van een andere gebruiker, of al een
+ * tijdje niet doorgegeven, dan gaat het (opnieuw) naar de server.
+ */
 async function herstel(altijd = false) {
   const b = backendStand()
-  if (b.status !== 'verbonden' || !b.userId || meldingStatus() !== 'aan') return
+  if (b.status !== 'verbonden' || !b.userId || !ondersteund()) return
+  if (Notification.permission !== 'granted' || uitgezet()) return
+  let sub: PushSubscription | null
   try {
-    const reg = await navigator.serviceWorker.ready
-    const sub = await reg.pushManager.getSubscription()
-    if (!sub) {
-      // De browser is het abonnement kwijt: opnieuw aanzetten via de knop
-      schrijf(AAN, false)
+    sub = await abonnement(true)
+  } catch {
+    // Opnieuw aanmelden kan hier alleen na een tik: de knop "Meldingen aanzetten" komt terug
+    if (!herstelMislukt) {
+      herstelMislukt = true
       meld()
-      return
     }
-    if (altijd || lees(GEKOPPELD, '') !== `${b.userId}|${sub.endpoint}`) await bewaarOpServer(sub)
+    return
+  }
+  if (!sub) return
+  if (herstelMislukt) {
+    herstelMislukt = false
+    meld()
+  }
+  const g = lees<{ sleutel?: string; tijd?: number } | string | null>(GEKOPPELD, null)
+  const opServer = typeof g === 'object' && g?.sleutel === `${b.userId}|${sub.endpoint}` && Date.now() - (g.tijd ?? 0) < OPNIEUW_MS
+  if (!altijd && opServer) return
+  try {
+    await bewaarOpServer(sub)
   } catch {
     // Volgende keer opnieuw
   }
@@ -221,4 +268,9 @@ export function startMeldingen() {
       void herstel()
     }
   })
+  // Ook bij terugkomen in de app en af en toe, zodat een vernieuwd abonnement snel weer op de server staat
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void herstel()
+  })
+  window.setInterval(() => void herstel(), 60 * 60 * 1000)
 }

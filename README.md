@@ -230,6 +230,7 @@ Migratie: `supabase/migrations/0003_stemming.sql` (uitvoeren na 0002).
 Migratie: `supabase/migrations/0004_meldingen.sql`. Edge Function: `supabase/functions/meldingen/` (`index.ts` en `planner.ts`). Planning: `supabase/cron_meldingen.sql`.
 
 - **Aanzetten:** op Home staat een kaart *🔔 Meldingen* met de knop **Meldingen aanzetten**. Pas na die tik vraagt de telefoon om toestemming. Daarna staan er *Testmelding* en *Uitzetten*.
+- **Blijft aan:** één keer aanzetten is genoeg. Raakt de browser het abonnement kwijt of vernieuwt hij het, dan meldt de app zich zelf opnieuw aan (bij openen, bij terugkomen in de app en elk uur) en zet het nieuwe abonnement op de server; elke 12 uur wordt het ook opnieuw doorgegeven. Alleen als de browser dat zonder tik niet toestaat, komt de knop terug.
 - **iPhone:** meldingen werken alleen in de app op het beginscherm, vanaf iOS 16.4. In Safari legt de kaart uit hoe je de app eerst op je beginscherm zet.
 - **Automatisch** (elke 5 minuten kijkt de server wat er aan de beurt is):
   - 30 minuten vóór elk item in `planning.json` met `"melding": true` (in de planning staat daar een 🔔 bij);
