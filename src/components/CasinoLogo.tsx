@@ -1,7 +1,7 @@
 import { punt, taartpunt } from './Wiel'
 
 /*
- * Logo van Jacco's Casino: een echte casinofiche met JA, en de naam in goud met
+ * Logo van het Jaccasino: een echte casinofiche met JA, en de naam in goud met
  * knipperende lampjes erboven zoals bij een casino in Las Vegas. Alleen bovenaan
  * lampjes: onder het logo begint het wiel.
  */
@@ -12,7 +12,7 @@ const RANDBLOKJES = [0, 60, 120, 180, 240, 300]
 
 export function CasinoLogo() {
   return (
-    <svg className="casino-logo" viewBox="0 0 210 54" role="img" aria-label="Jacco's Casino">
+    <svg className="casino-logo" viewBox="0 0 210 54" role="img" aria-label="Jaccasino">
       <defs>
         <linearGradient id="cl-goud" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#fff6c8" />
@@ -105,36 +105,25 @@ export function CasinoLogo() {
         <circle key={x} cx={x} cy="4" r="2.1" fill="url(#cl-lampje)" className={`casino-logo__lampje${i % 2 ? ' is-om' : ''}`} />
       ))}
 
+      {/* Eén woord, passend gemaakt op de breedte naast de fiche */}
       <text
-        x="60"
-        y="29"
-        fontSize="25"
+        x="59"
+        y="39"
+        fontSize="28"
         fontWeight="800"
         fontStyle="italic"
+        textLength="132"
+        lengthAdjust="spacingAndGlyphs"
         fill="url(#cl-goud)"
         stroke="#3d2405"
         strokeWidth="1.4"
         paintOrder="stroke"
         className="casino-logo__naam"
       >
-        Jacco’s
+        Jaccasino
       </text>
-      <text
-        x="62"
-        y="49"
-        fontSize="15.5"
-        fontWeight="800"
-        letterSpacing="6.2"
-        fill="url(#cl-goud)"
-        stroke="#3d2405"
-        strokeWidth="1.2"
-        paintOrder="stroke"
-        className="casino-logo__naam"
-      >
-        CASINO
-      </text>
-      {/* Sterretje */}
-      <path d="M159 10 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8" className="casino-logo__ster" />
+      {/* Sterretje rechtsboven naast de naam */}
+      <path d="M200 9 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8" className="casino-logo__ster" />
     </svg>
   )
 }

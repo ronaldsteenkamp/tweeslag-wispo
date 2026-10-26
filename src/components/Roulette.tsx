@@ -25,7 +25,7 @@ import {
 import { minderBeweging, punt, rolgeluid, taartpunt, tik, tril } from './Wiel'
 
 /*
- * Jacco's casino: een roulettetafel met de deelnemers als getallen. Fiches zijn nep en staan
+ * Het Jaccasino: een roulettetafel met de deelnemers als getallen. Fiches zijn nep en staan
  * alleen op deze telefoon; ze tellen nergens mee.
  */
 
@@ -290,7 +290,7 @@ export function Roulette({
       {n < 2 ? (
         <p className="melding">Kies minstens twee spelers (tik hieronder op Spelers).</p>
       ) : (
-        <section className="casino__tafel" aria-label="Jacco's Casino">
+        <section className="casino__tafel" aria-label="Jaccasino">
           <div className="casino__kopregel">
             <h2 className="casino__titel">
               <CasinoLogo />
