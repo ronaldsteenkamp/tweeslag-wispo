@@ -295,22 +295,21 @@ export function Roulette({
             <h2 className="casino__titel">
               <CasinoLogo />
             </h2>
-            <div className="casino__rechts">
-              <button
-                type="button"
-                className="casino__geluid"
-                onClick={() => setGeluidAan(!geluidAan)}
-                aria-pressed={geluidAan}
-                aria-label={geluidAan ? 'Geluid en trillen uitzetten' : 'Geluid en trillen aanzetten'}
-                title={geluidAan ? 'Geluid en trillen aan' : 'Geluid en trillen uit'}
-              >
-                {geluidAan ? '🔊' : '🔇'}
-              </button>
-              <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
-                <span aria-hidden="true">🪙</span> {fiches(saldo)}
-              </p>
-            </div>
+            <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
+              <span aria-hidden="true">🪙</span> {fiches(saldo)}
+            </p>
           </div>
+          {/* Onder de fiche van het logo, in de lege hoek naast het ronde wiel */}
+          <button
+            type="button"
+            className="casino__geluid"
+            onClick={() => setGeluidAan(!geluidAan)}
+            aria-pressed={geluidAan}
+            aria-label={geluidAan ? 'Geluid en trillen uitzetten' : 'Geluid en trillen aanzetten'}
+            title={geluidAan ? 'Geluid en trillen aan' : 'Geluid en trillen uit'}
+          >
+            {geluidAan ? '🔊' : '🔇'}
+          </button>
 
           <RouletteWiel
             n={n}

@@ -2,11 +2,13 @@ import { punt, taartpunt } from './Wiel'
 
 /*
  * Logo van het Jaccasino: een echte casinofiche met JA, en de naam in goud met
- * knipperende lampjes erboven zoals bij een casino in Las Vegas. Alleen bovenaan
- * lampjes: onder het logo begint het wiel.
+ * knipperende lampjes erboven zoals bij een casino in Las Vegas, in één rij tot aan het
+ * sterretje. Alleen bovenaan lampjes: onder het logo begint het wiel.
  */
 
-const LAMPJES = Array.from({ length: 9 }, (_, i) => 64 + i * 11)
+const LAMPJES = Array.from({ length: 12 }, (_, i) => 64 + i * 11)
+/** Hoogte van de rij lampjes (en het sterretje aan het eind) */
+const LAMP_Y = 5.6
 /** De witte blokjes op de rand van de fiche (graden) */
 const RANDBLOKJES = [0, 60, 120, 180, 240, 300]
 
@@ -102,13 +104,13 @@ export function CasinoLogo() {
 
       {/* Lampjes boven de naam */}
       {LAMPJES.map((x, i) => (
-        <circle key={x} cx={x} cy="4" r="2.1" fill="url(#cl-lampje)" className={`casino-logo__lampje${i % 2 ? ' is-om' : ''}`} />
+        <circle key={x} cx={x} cy={LAMP_Y} r="2.1" fill="url(#cl-lampje)" className={`casino-logo__lampje${i % 2 ? ' is-om' : ''}`} />
       ))}
 
       {/* Eén woord, passend gemaakt op de breedte naast de fiche */}
       <text
         x="59"
-        y="39"
+        y="36"
         fontSize="28"
         fontWeight="800"
         fontStyle="italic"
@@ -122,8 +124,8 @@ export function CasinoLogo() {
       >
         Jaccasino
       </text>
-      {/* Sterretje rechtsboven naast de naam */}
-      <path d="M200 9 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8" className="casino-logo__ster" />
+      {/* Sterretje aan het eind van de rij lampjes */}
+      <path d="M197 0 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8" className="casino-logo__ster" />
     </svg>
   )
 }

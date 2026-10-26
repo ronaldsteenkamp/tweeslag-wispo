@@ -3395,14 +3395,11 @@ button {
   }
 }
 
-.casino__rechts {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .casino__geluid {
-  flex: none;
+  position: absolute;
+  top: 54px;
+  left: 10px;
+  z-index: 1;
   display: grid;
   place-items: center;
   width: 44px;
@@ -3429,7 +3426,7 @@ button {
 
 /* Het wiel groeit mee met de schermhoogte, zodat alles op één scherm past */
 .casino__wiel {
-  width: clamp(150px, calc(100dvh - 660px), 300px);
+  width: clamp(150px, calc(100dvh - 610px), 300px);
   height: auto;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
 }
@@ -3452,11 +3449,12 @@ button {
 
 .casino__raster {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Vier naast elkaar: twaalf spelers in drie rijen, zodat het wiel groter kan */
+  grid-template-columns: repeat(4, 1fr);
   grid-auto-rows: 44px;
   gap: 4px;
-  /* Vier rijen zichtbaar; bij meer spelers scrolt het raster */
-  max-height: calc(4 * 44px + 3 * 4px + 4px);
+  /* Drie rijen zichtbaar; bij meer spelers scrolt het raster */
+  max-height: calc(3 * 44px + 2 * 4px + 4px);
   overflow-y: auto;
   padding: 2px;
   overscroll-behavior: contain;
