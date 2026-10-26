@@ -21,6 +21,10 @@ const SOORTEN: { waarde: Soort; label: string }[] = [
   { waarde: 'casino', label: 'Casino' },
 ]
 
+/** Wie op zijn eigen telefoon bij het klos-rad altijd zelf de klos is */
+const GRAP_NAAM = 'menno'
+const sleutelNaam = (n: string) => n.trim().toLocaleLowerCase('nl')
+
 const KLEUR_EMOJI: Record<PisteKleur, string> = { groen: '🟢', blauw: '🔵', rood: '🔴', zwart: '⚫' }
 const KLEUR_NAAM: Record<PisteKleur, string> = { groen: 'Groene', blauw: 'Blauwe', rood: 'Rode', zwart: 'Zwarte' }
 /** Rand van een pistevak in de kleur van de piste (blauw lichter dan het clubblauw, zwart met een witte rand) */
@@ -152,7 +156,12 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     // Deze lijst blijft op het rad staan tot de uitslag er is, ook als er intussen iets verandert
     const lijst = opties
     const n = lijst.length
-    const i = willekeurig(n)
+    // Grapje: draait Menno zelf het klos-rad (op zijn eigen telefoon), dan is hij altijd de klos
+    const grap =
+      soort === 'klos' && naam !== null && sleutelNaam(naam) === GRAP_NAAM
+        ? lijst.findIndex((o) => sleutelNaam(o.waarde) === GRAP_NAAM)
+        : -1
+    const i = grap >= 0 ? grap : willekeurig(n)
     // Vak i komt onder de pijl (boven), ergens binnen het vak en niet precies op de grens
     const doel = doelHoek(i, n, hoek.current, fractie())
     window.clearTimeout(popupTimer.current)
