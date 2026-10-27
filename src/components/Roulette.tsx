@@ -37,9 +37,9 @@ const LENING = 500
 /**
  * Grapje: op hun eigen telefoon zit het geluk een beetje mee of tegen. Positief: een verloren
  * worp wordt met deze kans nog één keer overgegooid. Negatief: een gewonnen worp net zo.
- * Op rood/zwart (10 spelers) wordt dat ongeveer +6% i.p.v. −9% per worp, resp. −21%.
+ * Op rood/zwart (10 spelers) wordt dat ongeveer +18% i.p.v. −9% per worp, resp. −21%.
  */
-const GELUK: Record<string, number> = { jacco: 0.3, josje: -0.25 }
+const GELUK: Record<string, number> = { jacco: 0.55, josje: -0.25 }
 const sleutelNaam = (s: string) => s.trim().toLocaleLowerCase('nl')
 
 const BUITEN_LABEL:Record<Buiten, string> = { rood: 'Rood', zwart: 'Zwart', laag: 'Laag', hoog: 'Hoog' }
