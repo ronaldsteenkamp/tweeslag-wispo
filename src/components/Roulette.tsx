@@ -34,7 +34,15 @@ const START = 1000
 /** Fiches op, dan: een bak (bier in één keer leeg) voor zoveel nieuwe fiches */
 const LENING = 500
 
-const BUITEN_LABEL: Record<Buiten, string> = { rood: 'Rood', zwart: 'Zwart', laag: 'Laag', hoog: 'Hoog' }
+/**
+ * Grapje: op hun eigen telefoon zit het geluk een beetje mee of tegen. Positief: een verloren
+ * worp wordt met deze kans nog één keer overgegooid. Negatief: een gewonnen worp net zo.
+ * Op rood/zwart (10 spelers) wordt dat ongeveer +6% i.p.v. −9% per worp, resp. −21%.
+ */
+const GELUK: Record<string, number> = { jacco: 0.3, josje: -0.25 }
+const sleutelNaam = (s: string) => s.trim().toLocaleLowerCase('nl')
+
+const BUITEN_LABEL:Record<Buiten, string> = { rood: 'Rood', zwart: 'Zwart', laag: 'Laag', hoog: 'Hoog' }
 /** Welke getallen Laag en Hoog zijn, klein onder de knop */
 const bereik = (b: Buiten, n: number) =>
   b === 'laag' ? `1–${helft(n)}` : b === 'hoog' ? `${helft(n) + 1}–${2 * helft(n)}` : null
@@ -244,7 +252,10 @@ export function Roulette({
   const draaiWiel = async () => {
     if (bezig || totaal === 0 || n < 2) return
     const vakken = n + 1
-    const getal = willekeurig(vakken) // vak i = getal i (0, 1, 2, …, N)
+    let getal = willekeurig(vakken) // vak i = getal i (0, 1, 2, …, N)
+    const geluk = naam ? GELUK[sleutelNaam(naam)] ?? 0 : 0
+    const netto = (g: number) => Object.entries(inzet).reduce((s, [k, x]) => s + uitbetaling(k, x, g, n), 0) - totaal
+    if ((geluk > 0 ? netto(getal) < 0 : netto(getal) > 0) && fractie() < Math.abs(geluk)) getal = willekeurig(vakken)
     const worp = planWorp({
       wiel: hoek.current,
       wielSnelheid: wielSnelheid.current,
