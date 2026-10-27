@@ -104,12 +104,22 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
 
 const minderBeweging = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
+interface Zoom {
+  s: number
+  x: number
+  y: number
+}
+const GEEN_ZOOM: Zoom = { s: 1, x: 0, y: 0 }
+const MAX_ZOOM = 4
+const DUBBELTIK_ZOOM = 2.5
+
 /** Grote versies (tijdelijke links) die al zijn opgehaald, zodat terugswipen meteen werkt */
 const grootGeheugen = new Map<string, string>()
 
 /**
  * Foto's schermvullend bekijken. Swipe naar links of rechts (of gebruik de pijltjes) voor de
- * volgende of vorige foto, swipe omlaag om te sluiten. Met verwijderen voor beheerders.
+ * volgende of vorige foto, swipe omlaag om te sluiten. Inzoomen met knijpen, dubbeltikken of
+ * scrollen (en + / -); ingezoomd sleep je de foto rond. Met verwijderen voor beheerders.
  */
 export function FotoGroot({
   fotos,
@@ -137,6 +147,42 @@ export function FotoGroot({
   const vinger = useRef<{ x: number; y: number; t: number; richting: 'x' | 'y' | null } | null>(null)
   const gesleept = useRef(false)
   const dialoog = useDialoogFocus<HTMLDivElement>()
+  // Inzoomen. Ingezoomd sleep je de foto rond in plaats van te bladeren of te sluiten.
+  const [zoom, setZoom] = useState<Zoom>(GEEN_ZOOM)
+  const zoomNu = useRef(zoom)
+  zoomNu.current = zoom
+  const beeld = useRef<HTMLImageElement>(null)
+  const vingers = useRef(new Map<number, { x: number; y: number }>())
+  const knijp = useRef<{ afstand: number; zoom: Zoom; mx: number; my: number; cx: number; cy: number } | null>(null)
+  const schuif = useRef<{ x: number; y: number; zoom: Zoom } | null>(null)
+  const laatsteTik = useRef({ t: 0, x: 0, y: 0 })
+
+  /** Midden van de foto op het scherm zonder verschuiving, en zijn maat zonder zoom */
+  const midden = () => {
+    const r = beeld.current?.getBoundingClientRect()
+    const z = zoomNu.current
+    return r ? { x: r.left + r.width / 2 - z.x, y: r.top + r.height / 2 - z.y, b: r.width / z.s, h: r.height / z.s } : null
+  }
+
+  /** Niet verder dan 4x, en niet zo ver schuiven dat er naast de foto leeg scherm komt */
+  const begrens = (z: Zoom): Zoom => {
+    const m = midden()
+    const zs = Math.min(MAX_ZOOM, Math.max(1, z.s))
+    if (!m || zs === 1) return GEEN_ZOOM
+    const maxX = Math.max(0, (m.b * zs - window.innerWidth) / 2)
+    const maxY = Math.max(0, (m.h * zs - window.innerHeight) / 2)
+    return { s: zs, x: Math.min(maxX, Math.max(-maxX, z.x)), y: Math.min(maxY, Math.max(-maxY, z.y)) }
+  }
+
+  /** Zoomen tot `zs`, waarbij het punt (px, py) op het scherm op zijn plek blijft */
+  const zoomRond = (zs: number, px: number, py: number) => {
+    const m = midden()
+    if (!m) return
+    const z0 = zoomNu.current
+    const qx = (px - m.x - z0.x) / z0.s
+    const qy = (py - m.y - z0.y) / z0.s
+    setZoom(begrens({ s: zs, x: px - m.x - zs * qx, y: py - m.y - zs * qy }))
+  }
 
   const i = Math.min(index, fotos.length - 1)
   const foto = fotos[i]
@@ -166,6 +212,22 @@ export function FotoGroot({
   useEffect(() => {
     if (i >= fotos.length - 3) bijnaEind.current?.()
   }, [i, fotos.length])
+
+  // Andere foto: weer helemaal in beeld
+  useEffect(() => setZoom(GEEN_ZOOM), [i])
+
+  // Scrollen (computer) zoomt rond de muis; de pagina erachter scrolt niet mee
+  useEffect(() => {
+    const el = dialoog.current
+    if (!el) return
+    const wiel = (e: WheelEvent) => {
+      e.preventDefault()
+      setGlijden(false)
+      zoomRond(zoomNu.current.s * Math.exp(-e.deltaY * 0.0025), e.clientX, e.clientY)
+    }
+    el.addEventListener('wheel', wiel, { passive: false })
+    return () => el.removeEventListener('wheel', wiel)
+  })
 
   const ga = useCallback(
     (richting: 1 | -1) => {
@@ -207,6 +269,10 @@ export function FotoGroot({
       if (e.key === 'Escape') sluit.current()
       if (e.key === 'ArrowRight') ga(1)
       if (e.key === 'ArrowLeft') ga(-1)
+      if (e.key === '+' || e.key === '=' || e.key === '-') {
+        setGlijden(true)
+        zoomRond(zoomNu.current.s * (e.key === '-' ? 1 / 1.5 : 1.5), window.innerWidth / 2, window.innerHeight / 2)
+      }
     }
     window.addEventListener('keydown', opToets)
     return () => window.removeEventListener('keydown', opToets)
@@ -214,11 +280,56 @@ export function FotoGroot({
 
   const neer = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('button, .foto-groot__onder')) return
-    vinger.current = { x: e.clientX, y: e.clientY, t: performance.now(), richting: null }
-    gesleept.current = false
+    vingers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     setGlijden(false)
+    if (vingers.current.size === 2) {
+      // Tweede vinger: knijpen (geen swipe meer)
+      const [a, b] = [...vingers.current.values()]
+      const m = midden()
+      if (!m) return
+      knijp.current = {
+        afstand: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)),
+        zoom: zoomNu.current,
+        mx: (a.x + b.x) / 2,
+        my: (a.y + b.y) / 2,
+        cx: m.x,
+        cy: m.y,
+      }
+      vinger.current = null
+      schuif.current = null
+      gesleept.current = true
+      setDx(0)
+      setDy(0)
+      return
+    }
+    if (vingers.current.size > 2) return
+    gesleept.current = false
+    if (zoomNu.current.s > 1) {
+      schuif.current = { x: e.clientX, y: e.clientY, zoom: zoomNu.current }
+      return
+    }
+    vinger.current = { x: e.clientX, y: e.clientY, t: performance.now(), richting: null }
   }
   const beweeg = (e: React.PointerEvent) => {
+    if (vingers.current.has(e.pointerId)) vingers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    const k = knijp.current
+    if (k && vingers.current.size >= 2) {
+      const [a, b] = [...vingers.current.values()]
+      const zs = (k.zoom.s * Math.hypot(a.x - b.x, a.y - b.y)) / k.afstand
+      // Het punt tussen je vingers blijft tussen je vingers
+      const qx = (k.mx - k.cx - k.zoom.x) / k.zoom.s
+      const qy = (k.my - k.cy - k.zoom.y) / k.zoom.s
+      setZoom(begrens({ s: zs, x: (a.x + b.x) / 2 - k.cx - zs * qx, y: (a.y + b.y) / 2 - k.cy - zs * qy }))
+      return
+    }
+    const p = schuif.current
+    if (p) {
+      const x = e.clientX - p.x
+      const y = e.clientY - p.y
+      if (Math.hypot(x, y) > 8) gesleept.current = true
+      setZoom(begrens({ ...p.zoom, x: p.zoom.x + x, y: p.zoom.y + y }))
+      return
+    }
     const v = vinger.current
     if (!v) return
     const x = e.clientX - v.x
@@ -230,6 +341,22 @@ export function FotoGroot({
     if (v.richting === 'y') setDy(Math.max(0, y))
   }
   const los = (e: React.PointerEvent) => {
+    vingers.current.delete(e.pointerId)
+    if (knijp.current) {
+      if (vingers.current.size < 2) {
+        knijp.current = null
+        // Bijna niet ingezoomd: netjes terug naar de hele foto
+        if (zoomNu.current.s < 1.05) {
+          setGlijden(true)
+          setZoom(GEEN_ZOOM)
+        }
+      }
+      return
+    }
+    if (schuif.current) {
+      schuif.current = null
+      return
+    }
     const v = vinger.current
     vinger.current = null
     if (!v || !v.richting) return
@@ -261,7 +388,7 @@ export function FotoGroot({
       className="foto-groot"
       role="dialog"
       aria-modal="true"
-      aria-label={`Foto ${i + 1} van ${fotos.length}: ${foto.challenge_titel}`}
+      aria-label={`Foto ${i + 1} van ${fotos.length}: ${foto.challenge_titel}. Knijp, dubbeltik of gebruik + en - om te zoomen.`}
       onClick={() => !gesleept.current && onSluit()}
       onPointerDown={neer}
       onPointerMove={beweeg}
@@ -302,16 +429,30 @@ export function FotoGroot({
         </button>
       )}
       <img
+        ref={beeld}
         key={foto.id}
         src={grootGeheugen.get(foto.id) ?? foto.klein}
         alt={`${foto.challenge_titel} door ${foto.naam}`}
         draggable={false}
+        className={zoom.s > 1 ? 'is-ingezoomd' : undefined}
         style={{
           aspectRatio: foto.breedte && foto.hoogte ? `${foto.breedte} / ${foto.hoogte}` : undefined,
-          transform: `translate(${dx}px, ${dy}px)`,
+          transform: `translate(${dx + zoom.x}px, ${dy + zoom.y}px) scale(${zoom.s})`,
           transition: glijden ? 'transform 0.18s ease-out' : 'none',
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation()
+          if (gesleept.current) return
+          // Dubbeltik: inzoomen op die plek, of terug naar de hele foto
+          const nu = performance.now()
+          const vorige = laatsteTik.current
+          if (nu - vorige.t < 300 && Math.hypot(e.clientX - vorige.x, e.clientY - vorige.y) < 30) {
+            laatsteTik.current = { t: 0, x: 0, y: 0 }
+            setGlijden(true)
+            if (zoomNu.current.s > 1) setZoom(GEEN_ZOOM)
+            else zoomRond(DUBBELTIK_ZOOM, e.clientX, e.clientY)
+          } else laatsteTik.current = { t: nu, x: e.clientX, y: e.clientY }
+        }}
       />
       <div className="foto-groot__onder" onClick={(e) => e.stopPropagation()}>
         <p>
