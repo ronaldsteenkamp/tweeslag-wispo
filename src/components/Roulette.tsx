@@ -17,6 +17,7 @@ import {
   R_DIAMANT,
   R_VAKJE,
   uitbetaling,
+  wielVolgorde,
   type Buiten,
   type Kleur,
   type Stand,
@@ -252,7 +253,7 @@ export function Roulette({
   const draaiWiel = async () => {
     if (bezig || totaal === 0 || n < 2) return
     const vakken = n + 1
-    let getal = willekeurig(vakken) // vak i = getal i (0, 1, 2, …, N)
+    let getal = willekeurig(vakken) // 0, 1, 2, …, N
     const geluk = naam ? GELUK[sleutelNaam(naam)] ?? 0 : 0
     const netto = (g: number) => Object.entries(inzet).reduce((s, [k, x]) => s + uitbetaling(k, x, g, n), 0) - totaal
     if ((geluk > 0 ? netto(getal) < 0 : netto(getal) > 0) && fractie() < Math.abs(geluk)) getal = willekeurig(vakken)
@@ -261,7 +262,7 @@ export function Roulette({
       wielSnelheid: wielSnelheid.current,
       bal: balHoek.current ?? hoek.current + 180 / vakken,
       balStraal: balStraal.current,
-      getal,
+      vakje: wielVolgorde(n).indexOf(getal),
       vakken,
       toeval: fractie,
     })
@@ -557,6 +558,7 @@ function RouletteWiel({
   const vak = 360 / vakken
   const letter = vakken <= 13 ? 8.5 : vakken <= 25 ? 7.5 : 6.5
   const kleur = (g: number) => WIELKLEUR[kleurVan(g, n)]
+  const ring = useMemo(() => wielVolgorde(n), [n])
   const [bx, by] = punt(balStraal, balHoek)
   return (
     <svg className="casino__wiel" viewBox="-118 -118 236 236" role="img" aria-label={`Roulettewiel met 0 tot en met ${n}`}>
@@ -622,13 +624,13 @@ function RouletteWiel({
       ))}
       <g ref={wiel} transform={`rotate(${hoek})`}>
         <circle r="89" fill="url(#rw-chroom)" />
-        {Array.from({ length: vakken }, (_, g) => (
+        {ring.map((g, i) => (
           <g key={g}>
             {/* Getallenring buiten, vakjes binnen (zoals bij een echt wiel) */}
-            <path d={taartpunt(88, g * vak, (g + 1) * vak, 77)} fill={kleur(g)} />
-            <path d={taartpunt(77, g * vak, (g + 1) * vak, 63)} fill={kleur(g)} />
+            <path d={taartpunt(88, i * vak, (i + 1) * vak, 77)} fill={kleur(g)} />
+            <path d={taartpunt(77, i * vak, (i + 1) * vak, 63)} fill={kleur(g)} />
             <text
-              transform={`rotate(${(g + 0.5) * vak})`}
+              transform={`rotate(${(i + 0.5) * vak})`}
               y={-82.5}
               textAnchor="middle"
               dominantBaseline="central"

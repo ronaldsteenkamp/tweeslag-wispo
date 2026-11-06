@@ -102,16 +102,35 @@ test('casino: een getal betaalt N keer de inzet, 0 betaalt alleen op 0', () => {
   for (const s of ['rood', 'zwart', 'laag', 'hoog']) assert.equal(roulette.uitbetaling(s, 10, 0, 12), 0)
 })
 
+test('casino: het wiel heeft elk getal één keer, begint bij 0, en rood en zwart wisselen af', () => {
+  for (let n = 2; n <= 40; n++) {
+    const w = roulette.wielVolgorde(n)
+    assert.equal(w[0], 0, `n=${n}`)
+    assert.deepEqual([...w].sort((a, b) => a - b), Array.from({ length: n + 1 }, (_, i) => i), `n=${n}`)
+    w.forEach((g, i) => {
+      assert.notEqual(roulette.kleurVan(g, n), roulette.kleurVan(w[(i + 1) % w.length], n), `n=${n} bij ${g}`)
+    })
+    assert.deepEqual(roulette.wielVolgorde(n), w, `n=${n}: elke keer hetzelfde wiel`)
+  }
+})
+
+test('casino: vanaf 7 spelers staan er geen opeenvolgende getallen naast elkaar op het wiel', () => {
+  for (let n = 7; n <= 40; n++) {
+    const w = roulette.wielVolgorde(n)
+    w.forEach((g, i) => assert.notEqual(Math.abs(g - w[(i + 1) % w.length]), 1, `n=${n} bij ${g}`))
+  }
+})
+
 test('casino: het balletje landt altijd in het gekozen vakje', () => {
   for (const spelers of [2, 7, 12, 40]) {
     const vakken = spelers + 1
     let wiel = 0, ws = 0, bal = null, straal = roulette.R_VAKJE
     for (let k = 0; k < 40; k++) {
-      const getal = k % vakken
-      const w = roulette.planWorp({ wiel, wielSnelheid: ws, bal: bal ?? 180 / vakken, balStraal: straal, getal, vakken, toeval: zaad(k + 1) })
+      const vakje = k % vakken
+      const w = roulette.planWorp({ wiel, wielSnelheid: ws, bal: bal ?? 180 / vakken, balStraal: straal, vakje, vakken, toeval: zaad(k + 1) })
       const eind = w.stand(w.einde)
       const rel = (((eind.bal - eind.wiel) % 360) + 360) % 360
-      assert.equal(Math.floor(rel / (360 / vakken)), getal, `spelers=${spelers} getal=${getal}`)
+      assert.equal(Math.floor(rel / (360 / vakken)), vakje, `spelers=${spelers} vakje=${vakje}`)
       ;({ wiel, wielSnelheid: ws, bal, straal } = { ...eind, bal: eind.bal })
     }
   }

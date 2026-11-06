@@ -70,7 +70,8 @@ export function planWorp(o: {
   wielSnelheid: number
   bal: number
   balStraal: number
-  getal: number
+  /** In welk vakje het balletje moet landen (plek op het wiel, zie wielVolgorde) */
+  vakje: number
   vakken: number
   toeval: () => number
 }): Worp {
@@ -134,7 +135,7 @@ export function planWorp(o: {
   // ∫ van de oude en de nieuwe snelheid (met de aanloop en het langzame afremmen erin)
   const J2 = (x: number) => (x <= AANLOOP_WIEL ? F(x) : F(AANLOOP_WIEL) + E(x) - E(AANLOOP_WIEL))
   const J1 = (x: number) => (x <= AANLOOP_WIEL ? E(x) - F(x) : E(AANLOOP_WIEL) - F(AANLOOP_WIEL))
-  const pEind = (o.getal + 0.5) * vak // midden van het vakje, gezien vanaf het wiel
+  const pEind = (o.vakje + 0.5) * vak // midden van het vakje, gezien vanaf het wiel
   const hupjes = 1 + 3 * toeval() // zoveel vakjes stuitert het nog terug
   const pIn = pEind + hupjes * vak
   const basis = o.wiel + o.wielSnelheid * J1(t1) + W_WIEL_MIN * J2(t1)
@@ -211,6 +212,46 @@ export function kleurVan(g: number, n: number): Kleur {
   if (g === 0) return 'groen'
   if (n % 2 === 1 && g === n) return 'blauw'
   return g % 2 === 1 ? 'rood' : 'zwart'
+}
+
+/**
+ * De getallen in de volgorde waarin ze op het wiel staan, te beginnen bij 0. Net als op een
+ * echt wiel door elkaar, met rood en zwart om en om, en zo min mogelijk opeenvolgende getallen
+ * naast elkaar. Hangt alleen af van n: elk wiel met evenveel spelers ziet er hetzelfde uit.
+ * Het blauwe getal staat tegenover de 0 (zoals de 00 op een Amerikaans wiel).
+ */
+export function wielVolgorde(n: number): number[] {
+  const getallen = Array.from({ length: n }, (_, i) => i + 1)
+  const rood = getallen.filter((g) => kleurVan(g, n) === 'rood')
+  const zwart = getallen.filter((g) => kleurVan(g, n) === 'zwart')
+  let zaad = n
+  const toeval = (m: number) => {
+    zaad = (Math.imul(zaad, 1664525) + 1013904223) >>> 0
+    return Math.floor((zaad / 0x1_0000_0000) * m)
+  }
+  const schud = (lijst: number[]) => {
+    const a = [...lijst]
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = toeval(i + 1)
+      ;[a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
+  }
+  let beste: number[] = []
+  let minste = Infinity
+  for (let poging = 0; poging < 5000 && minste > 0; poging++) {
+    const r = schud(rood)
+    const z = schud(zwart)
+    const ring = r.flatMap((g, i) => [g, z[i]])
+    if (n % 2 === 1) ring.splice(2 * Math.floor(r.length / 2), 0, n)
+    const wiel = [0, ...ring]
+    const buren = wiel.filter((g, i) => Math.abs(g - wiel[(i + 1) % wiel.length]) === 1).length
+    if (buren < minste) {
+      minste = buren
+      beste = wiel
+    }
+  }
+  return beste
 }
 
 /** Laag = 1 t/m helft, Hoog = helft+1 t/m 2·helft */
