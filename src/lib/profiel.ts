@@ -19,7 +19,7 @@ export const SKI_KEUZES: { waarde: Ski; label: string }[] = [
   { waarde: 'ski', label: 'Ski' },
   { waarde: 'board', label: 'Board' },
   { waarde: 'allebei', label: 'Allebei' },
-  { waarde: 'nooit', label: 'Nog nooit gedaan' },
+  { waarde: 'nooit', label: 'Hier voor bier' },
 ]
 
 export const NIVEAUS = [
