@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import { resetCasinoAlsNodig } from './components/Roulette'
 import { startBackend } from './lib/backend'
 import { vangInstallatieMelding } from './lib/installatie'
 import { startKamerverdeling } from './lib/kamerverdeling'
@@ -31,6 +32,7 @@ startStemming()
 startMeldingen()
 startLocatie()
 startFotoWachtrij()
+resetCasinoAlsNodig()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

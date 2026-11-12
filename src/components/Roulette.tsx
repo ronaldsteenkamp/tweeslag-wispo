@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useToonNaam } from '../lib/bijnamen'
 import type { Kamers } from '../lib/data'
 import { useDialoogFocus } from '../lib/dialoogFocus'
-import { lees, schrijfEnMeld, useOpgeslagen } from '../lib/opslag'
+import { lees, schrijf, schrijfEnMeld, useOpgeslagen } from '../lib/opslag'
 import { deelnemers, fractie, schud, useDeelnemersKeuze, willekeurig } from '../lib/rad'
 import { tabToetsen } from '../lib/tabbladen'
 import { CasinoLogo } from './CasinoLogo'
@@ -48,6 +48,21 @@ const BUITEN_LABEL:Record<Buiten, string> = { rood: 'Rood', zwart: 'Zwart', laag
 /** Welke getallen Laag en Hoog zijn, klein onder de knop */
 const bereik = (b: Buiten, n: number) =>
   b === 'laag' ? `1–${helft(n)}` : b === 'hoog' ? `${helft(n) + 1}–${2 * helft(n)}` : null
+
+/**
+ * Iedereen opnieuw laten beginnen (fiches terug naar START, bakken op 0): verander deze
+ * waarde. Elke telefoon reset dan één keer, bij de eerste keer openen na de update.
+ */
+const CASINO_RESET = '2026-11-12'
+
+/** Eén keer bij het starten van de app, vóór het tekenen */
+export function resetCasinoAlsNodig() {
+  if (lees<string | null>('casino.reset', null) === CASINO_RESET) return
+  schrijf('casino.fiches', START)
+  schrijf('casino.geleend', 0)
+  schrijf('casino.inzet', {})
+  schrijf('casino.reset', CASINO_RESET)
+}
 
 const fiches = (n: number) => n.toLocaleString('nl-NL')
 const som = (inzet: Record<string, number>) => Object.values(inzet).reduce((s, x) => s + x, 0)
