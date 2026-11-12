@@ -417,7 +417,7 @@ export function BijnaamVeld({ namen }: { namen: string[] }) {
           className="invoer"
           value={tekst}
           maxLength={MAX_BIJNAAM}
-          placeholder="Optioneel, bijv. De Sneeuwkoning"
+          placeholder="Optioneel"
           autoComplete="off"
           onChange={(e) => {
             setTekst(e.target.value)
