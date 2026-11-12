@@ -3,7 +3,7 @@
   "verblijf": "Résidence La Muzelle",
   "kamers": [
     { "nummer": "101", "naam": "Gletsjer", "bedden": 3, "bewoners": ["Sten", "Tom", "Ronald"] },
-    { "nummer": "102", "naam": "Poedersneeuw", "bedden": 3, "bewoners": ["Leah", "Selma", "Josje"] }
+    { "nummer": "102", "naam": "Poedersneeuw", "bedden": 3, "bewoners": ["Iepie Leah", "Selma", "Josje"] }
   ],
-  "zonderKamer": ["Jacco", "Menno", "Laura", "Bente", "Ilse", "Roos"]
+  "zonderKamer": ["Jacco", "Menno", "Laura", "Bente", "Ilse", "Roos", "Amy", "Anemoon", "Bas", "Catharina Anna Elena", "Heert", "Jelle", "Joey Levi", "Jorrit", "Marije", "Nanne", "Rachel", "Renske", "Ruby"]
 }
