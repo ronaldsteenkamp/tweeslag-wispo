@@ -40,7 +40,7 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
   return (
     <div className="welkom" role="dialog" aria-modal="true" aria-labelledby="welkom-titel" ref={vak}>
       <header className="welkom__kop golf">
-        <Sneeuw aantal={20} />
+        <Sneeuw aantal={20} maan />
         <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="Tweeslag" className="welkom__logo" />
         <p className="welkom__onder">Wispo 2027 · Les Deux Alpes</p>
         <h1 id="welkom-titel">

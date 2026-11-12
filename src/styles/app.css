@@ -491,14 +491,15 @@ button {
   pointer-events: none;
 }
 
+/* Hoogte vast, breedte volgt: de bergen herhalen zich in plaats van uit te rekken */
 .golf::before {
-  height: 64px;
-  background: var(--bergen) bottom / 100% 100% no-repeat;
+  height: var(--bergen-hoogte, 72px);
+  background: var(--bergen) bottom left / auto 100% repeat-x;
 }
 
 /* Sneeuwbank: golvende rand in de kleur van de pagina, zoals de golf uit de huisstijl */
 .golf::after {
-  height: 30px;
+  height: 22px;
   background: var(--sneeuwbank, var(--achtergrond));
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 30' preserveAspectRatio='none'%3E%3Cpath d='M0 16 C 70 2, 140 26, 220 12 S 350 2, 400 14 V30 H0 Z'/%3E%3C/svg%3E")
     bottom / 100% 100% no-repeat;
@@ -529,10 +530,44 @@ button {
   background: #ffffff;
 }
 
-.sneeuw svg {
+.sneeuw span svg {
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+
+/* Twinkelende sterren */
+.sneeuw__ster {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #ffffff;
+  animation: twinkelen ease-in-out infinite;
+}
+
+.sneeuw__ster--groot {
+  width: 3px;
+  height: 3px;
+}
+
+@keyframes twinkelen {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* Maansikkel rechtsboven (uitgespaard met een masker, dus ook goed op elke achtergrond) */
+.sneeuw__maan {
+  position: absolute;
+  top: calc(var(--boven, 0px) + 14px);
+  right: 22px;
+  width: 34px;
+  height: 34px;
 }
 
 @keyframes vallen {
@@ -710,6 +745,38 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.22);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
+}
+
+/*
+ * Sneeuwkapjes op de aftel-tegels en de lichtblauwe knoppen, in één laagje met twee achtergronden:
+ * - de sneeuwrand (rekt mee met de breedte, ronde uiteinden die over de hoeken vallen);
+ * - daarbinnen bultjes met druppels in een vaste maat die zich herhalen ('round': altijd hele
+ *   bultjes), zodat ze op een brede knop niet uitgerekt worden.
+ * Geen mask: een filter komt vóór het masker, dus dan viel de schaduwrand weg. Nu volgt het
+ * schaduwrandje de vorm, zodat witte sneeuw ook op een witte kaart zichtbaar blijft.
+ */
+.aftelklok__blok,
+.knop--accent {
+  position: relative;
+}
+
+.aftelklok__blok::before,
+.knop--accent::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 3px;
+  right: 3px;
+  height: 16px;
+  padding: 0 9px;
+  box-sizing: border-box;
+  pointer-events: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 16'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='14'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M0 5C6 1.5 16 1.5 22 4C28 2 38 1.5 44 5V11.5H37C37 15.8 32 15.8 32 11.5H25.5C25.5 13.3 23 13.3 23 11.5H15C15 14.5 12 14.5 12 11.5H0Z' fill='url(%23g)'/%3E%3C/svg%3E")
+      0 0 / 44px 16px round no-repeat content-box,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 16' preserveAspectRatio='none'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='14'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M0 14C0.5 8 4 5 10 5H90C96 5 99.5 8 100 14C97 12.5 93 11.5 88 11.5H12C7 11.5 3 12.5 0 14Z' fill='url(%23g)'/%3E%3C/svg%3E")
+      0 0 / 100% 100% no-repeat border-box;
+  filter: drop-shadow(0 0.5px 0.4px rgba(13, 0, 88, 0.4)) drop-shadow(0 1px 1px rgba(13, 0, 88, 0.12));
 }
 
 .aftelklok__getal {
@@ -2489,6 +2556,7 @@ button {
   align-items: center;
   text-align: center;
   padding-bottom: 64px;
+  --bergen-hoogte: 58px;
   --sneeuwbank: var(--oppervlak);
   background: var(--hero);
   color: var(--hero-tekst);
@@ -3198,6 +3266,7 @@ button {
   align-items: center;
   gap: 12px;
   padding: 14px 6px 62px;
+  --bergen-hoogte: 58px;
   --sneeuwbank: var(--achtergrond);
   background: var(--hero);
   color: var(--hero-tekst);

@@ -40,7 +40,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
   return (
     <div className="scherm">
       <header className="hero golf">
-        <Sneeuw />
+        <Sneeuw maan />
         <div className="hero__top">
           <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="Tweeslag" className="hero__logo" />
           <div>
