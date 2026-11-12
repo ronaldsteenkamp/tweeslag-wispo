@@ -2,8 +2,12 @@
   "_uitleg": "Kamers met nummer, een naam (mag je weglaten), het aantal bedden en de bewoners. Wie nog geen kamer heeft staat onder zonderKamer. ALLEEN VOORNAMEN, geen achternamen. Twee mensen met dezelfde naam? Schrijf dan bijvoorbeeld 'Lisa' en 'Lisa 2'. Iedereen kiest in de app zijn naam uit deze lijst. Tip: maak de verdeling in de app via Kamers → Kamerverdeling maken.",
   "verblijf": "Résidence La Muzelle",
   "kamers": [
-    { "nummer": "101", "naam": "Gletsjer", "bedden": 3, "bewoners": ["Sten", "Tom", "Ronald"] },
-    { "nummer": "102", "naam": "Poedersneeuw", "bedden": 3, "bewoners": ["Iepie Leah", "Selma", "Josje"] }
-  ],
-  "zonderKamer": ["Jacco", "Menno", "Laura", "Bente", "Ilse", "Roos", "Amy", "Anemoon", "Bas", "Catharina Anna Elena", "Heert", "Jelle", "Joey Levi", "Jorrit", "Marije", "Nanne", "Rachel", "Renske", "Ruby"]
+    { "nummer": "101", "naam": "Gletsjer", "bedden": 4, "bewoners": ["Sten", "Tom", "Ronald", "Nanne"] },
+    { "nummer": "102", "naam": "Poedersneeuw", "bedden": 4, "bewoners": ["Iepie Leah", "Selma", "Josje", "Ilse"] },
+    { "nummer": "103", "naam": "Lawine", "bedden": 4, "bewoners": ["Menno", "Rachel", "Bente", "Anemoon"] },
+    { "nummer": "104", "naam": "Sneeuwvlok", "bedden": 4, "bewoners": ["Laura", "Joey Levi", "Renske", "Catharina Anna Elena"] },
+    { "nummer": "105", "naam": "IJspegel", "bedden": 4, "bewoners": ["Jorrit", "Bas", "Roos"] },
+    { "nummer": "106", "naam": "Zwarte Piste", "bedden": 4, "bewoners": ["Amy", "Ruby", "Heert"] },
+    { "nummer": "107", "naam": "Après-ski", "bedden": 4, "bewoners": ["Jelle", "Jacco", "Marije"] }
+  ]
 }
