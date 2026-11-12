@@ -142,10 +142,14 @@ async function geslotenStemmingen(nu: number): Promise<GeslotenStemming[]> {
     .select('stemming_id, kandidaat')
     .in('stemming_id', st.map((s) => s.id))
   if (e2) throw e2
+  // In de melding de bijnaam (migratie 0010), net als in de app. Lukt dat niet, dan gewoon de naam.
+  const { data: bijnamen } = await db.from('bijnamen').select('naam, bijnaam')
+  const bijnaam = new Map((bijnamen ?? []).map((b) => [String(b.naam).toLowerCase(), String(b.bijnaam)]))
+  const toon = (naam: string) => bijnaam.get(naam.toLowerCase()) ?? naam
   return st.map((s) => {
     const telling = new Map<string, number>()
     for (const v of stemmen ?? []) if (v.stemming_id === s.id) telling.set(v.kandidaat, (telling.get(v.kandidaat) ?? 0) + 1)
-    return { ...s, uitslag: [...telling].map(([kandidaat, n]) => ({ kandidaat, stemmen: n })) }
+    return { ...s, uitslag: [...telling].map(([kandidaat, n]) => ({ kandidaat: toon(kandidaat), stemmen: n })) }
   })
 }
 

@@ -2957,6 +2957,50 @@ button {
   overflow-wrap: anywhere;
 }
 
+/* De gewone naam klein onder de bijnaam */
+.profielkaart__naam small {
+  display: block;
+  font-family: var(--font-tekst);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--tekst-zacht);
+}
+
+/* Bijnaam invullen: veld met een knop ernaast */
+.bijnaam {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bijnaam__rij {
+  display: flex;
+  gap: 8px;
+}
+
+.bijnaam__rij .invoer {
+  flex: 1;
+  min-width: 0;
+}
+
+.bijnaam .melding,
+.bijnaam .klein {
+  margin: 0;
+}
+
+/* In de namenkiezer: de bijnaam klein onder de echte naam */
+.knop--naam:has(.knop__bijnaam) {
+  flex-direction: column;
+  gap: 0;
+}
+
+.knop__bijnaam {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--tekst-zacht);
+}
+
 .profielkaart__lijst {
   display: flex;
   flex-direction: column;

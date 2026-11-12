@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useBackend } from '../lib/backend'
+import { useToonNaam } from '../lib/bijnamen'
 import { alleDeelnemers, useData } from '../lib/data'
 import { useNu } from '../lib/nu'
 import { useOpgeslagen } from '../lib/opslag'
@@ -114,7 +115,8 @@ function StemKaart({
   const [zoek, setZoek] = useState('')
   const mijn = stand?.mijn[s.id]
   const q = normaal(zoek)
-  const zichtbaar = q ? kandidaten.filter((k) => normaal(k).includes(q)) : kandidaten
+  const toon = useToonNaam()
+  const zichtbaar = q ? kandidaten.filter((k) => normaal(k).includes(q) || normaal(toon(k)).includes(q)) : kandidaten
   const totaal = stand?.totalen[s.id] ?? 0
   const eigen = naam?.toLowerCase()
 
@@ -143,7 +145,7 @@ function StemKaart({
         <p className="stemming__gestemd">
           <Icoon naam="vink" grootte={22} />
           <span>
-            Je stemde op <strong>{mijn}</strong>. De uitslag komt {wanneer(s.sluit, nu).includes(' om ') ? 'op' : 'om'}{' '}
+            Je stemde op <strong>{toon(mijn)}</strong>. De uitslag komt {wanneer(s.sluit, nu).includes(' om ') ? 'op' : 'om'}{' '}
             {wanneer(s.sluit, nu)}.
           </span>
         </p>
@@ -181,7 +183,7 @@ function StemKaart({
                   disabled={zelf || !kanStemmen || bezig}
                   onClick={() => setKeuze(k)}
                 >
-                  {k}
+                  {toon(k)}
                   {zelf && <small> (jij)</small>}
                 </button>
               )
@@ -200,7 +202,7 @@ function StemKaart({
 
       <BevestigDialoog
         open={keuze !== null}
-        titel={`Stemmen op ${keuze ?? ''}?`}
+        titel={`Stemmen op ${keuze ? toon(keuze) : ''}?`}
         tekst={`${s.vraag}. Je kunt je stem daarna niet meer veranderen.`}
         bevestigLabel="Stem"
         onAnnuleer={() => setKeuze(null)}
@@ -267,6 +269,7 @@ function UitslagKaart({ s, stand, naam }: { s: StemmingInfo; stand: StemStand | 
   const bekend = !!stand && stand.opgehaald >= s.sluit
   const top = winnaars(uitslag)
   const mijn = stand?.mijn[s.id]
+  const toon = useToonNaam()
 
   return (
     <section className="kaartje stemming">
@@ -281,7 +284,7 @@ function UitslagKaart({ s, stand, naam }: { s: StemmingInfo; stand: StemStand | 
       ) : (
         <>
           <p className="stemming__winnaar">
-            🏆 {top.map((w) => w.kandidaat).join(' & ')}
+            🏆 {top.map((w) => toon(w.kandidaat)).join(' & ')}
             <small>
               {' '}
               · {stemmenTekst(top[0].stemmen)}
@@ -292,13 +295,13 @@ function UitslagKaart({ s, stand, naam }: { s: StemmingInfo; stand: StemStand | 
             {uitslag.map((u, i) => (
               <li key={u.kandidaat} className={u.kandidaat === naam ? 'is-eigen' : ''}>
                 <span className="ranglijst__plek">{MEDAILLES[plaats(uitslag, i) - 1] ?? plaats(uitslag, i)}</span>
-                <span className="ranglijst__naam">{u.kandidaat}</span>
+                <span className="ranglijst__naam">{toon(u.kandidaat)}</span>
                 <span className="ranglijst__punten">{u.stemmen}</span>
               </li>
             ))}
           </ol>
           <p className="klein">
-            {stemmenTekst(totaal ?? 0)} in totaal{mijn ? ` · jij stemde op ${mijn}` : ''}
+            {stemmenTekst(totaal ?? 0)} in totaal{mijn ? ` · jij stemde op ${toon(mijn)}` : ''}
           </p>
         </>
       )}
@@ -312,6 +315,7 @@ export function StemmingOpHome({ naarStemmen }: { naarStemmen: () => void }) {
   const backend = useBackend()
   const { stemmingen, stand } = useStemmingen(backend.status !== 'uit')
   const [naam] = useOpgeslagen<string | null>('naam', null)
+  const toon = useToonNaam()
   if (backend.status === 'uit') return null
 
   const t = nu.getTime()
@@ -354,7 +358,7 @@ export function StemmingOpHome({ naarStemmen }: { naarStemmen: () => void }) {
                 <li key={s.id}>
                   <span className="winnaars__vraag">{s.vraag}</span>
                   <strong className="winnaars__naam">
-                    {top.length ? top.map((w) => w.kandidaat).join(' & ') : 'niemand gestemd'}
+                    {top.length ? top.map((w) => toon(w.kandidaat)).join(' & ') : 'niemand gestemd'}
                   </strong>
                 </li>
               )

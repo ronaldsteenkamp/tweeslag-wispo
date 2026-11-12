@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { metEchteNaam, useToonNaam } from '../lib/bijnamen'
 import { Verbinding } from '../components/Verbinding'
 import { controleerCode, stuurInlogmail, stuurProfiel, uitloggen, useBackend, verbind } from '../lib/backend'
 import { alleDeelnemers, useData } from '../lib/data'
@@ -188,6 +189,7 @@ function StemmingBeheer() {
   const { data: kamers } = useData('kamers')
   const [stemming, setStemming] = useState('')
   const [kiezer, setKiezer] = useState('')
+  const toon = useToonNaam()
   const [melding, setMelding] = useState<string | null>(null)
   const namen = alleDeelnemers(kamers).sort((a, b) => a.localeCompare(b, 'nl'))
   const nu = Date.now()
@@ -242,7 +244,7 @@ function StemmingBeheer() {
             <option value="">Van wie…</option>
             {namen.map((n) => (
               <option key={n} value={n}>
-                {n}
+                {metEchteNaam(toon, n)}
               </option>
             ))}
           </select>

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { useToonNaam } from '../lib/bijnamen'
 import { useData } from '../lib/data'
 import { useInstallatie } from '../lib/installatie'
 import { useOpgeslagen } from '../lib/opslag'
 import { InstallatieUitleg } from './InstallatieBanner'
 import { profielAfVoor, useMijnProfiel } from '../lib/profiel'
 import { NaamKiezer, useAlleNamen } from './NaamKiezer'
-import { ProfielFormulier } from './Profiel'
+import { BijnaamVeld, ProfielFormulier } from './Profiel'
 import { Sneeuw } from './Sneeuw'
 
 /**
@@ -19,6 +20,7 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
   const { platform, geinstalleerd, kanDirectInstalleren } = useInstallatie()
   const [stap, setStap] = useState<'naam' | 'profiel' | 'installeren'>('naam')
   const profiel = useMijnProfiel()
+  const toon = useToonNaam()
   const vak = useRef<HTMLDivElement>(null)
 
   // Installeren heeft alleen zin als de app nog niet op het beginscherm staat
@@ -42,7 +44,7 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
         <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="Tweeslag" className="welkom__logo" />
         <p className="welkom__onder">Wispo 2027 · Les Deux Alpes</p>
         <h1 id="welkom-titel">
-          {stap === 'naam' ? 'Welkom! Wie ben jij?' : stap === 'profiel' ? 'Vertel iets over jezelf' : naam ? `Hoi ${naam}!` : 'Hoi!'}
+          {stap === 'naam' ? 'Welkom! Wie ben jij?' : stap === 'profiel' ? 'Vertel iets over jezelf' : naam ? `Hoi ${toon(naam)}!` : 'Hoi!'}
         </h1>
       </header>
 
@@ -75,6 +77,7 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
               Zo leren de anderen je een beetje kennen. Druk op iemands naam (bij Kamers of in het klassement) om
               diens profiel te zien.
             </p>
+            <BijnaamVeld namen={namen} />
             <ProfielFormulier profiel={profiel} onKlaar={naNaam} />
           </>
         ) : (

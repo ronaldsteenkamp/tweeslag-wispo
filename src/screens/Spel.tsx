@@ -8,6 +8,7 @@ import { Stemmen } from '../components/Stemmen'
 import { Sneeuw } from '../components/Sneeuw'
 import { config } from '../config'
 import { backendIngesteld } from '../lib/backend'
+import { useToonNaam } from '../lib/bijnamen'
 import { bingoScore, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
 import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
 import { testOntgrendeld, useNu } from '../lib/nu'
@@ -66,6 +67,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   }, [onderdeel, setOnderdeel])
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
+  const toon = useToonNaam()
   const [fotoVoor, setFotoVoor] = useState<{ id: string; titel: string } | null>(null)
   const [fotoGelukt, setFotoGelukt] = useState<string | null>(null)
   useEffect(() => {
@@ -114,7 +116,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
 
       <section className="kaartje score golf" aria-live="polite">
         <Sneeuw aantal={14} />
-        <p className="score__label">{naam ? `Score van ${naam}` : 'Jouw score'}</p>
+        <p className="score__label">{naam ? `Score van ${toon(naam)}` : 'Jouw score'}</p>
         <p className="score__totaal">
           {challengePunten + bingo.totaal} <span>punten</span>
         </p>

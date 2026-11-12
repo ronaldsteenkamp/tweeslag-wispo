@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useToonNaam } from '../lib/bijnamen'
 import { alleDeelnemers, type Kamers } from '../lib/data'
 import { deelnemers, useDeelnemersKeuze, type DeelnemersSoort } from '../lib/rad'
 
@@ -12,6 +13,7 @@ const KEUZE_LABELS: { waarde: DeelnemersSoort; label: string }[] = [
 /** Wie doen er mee? Iedereen / Mijn kamer / Kamers kiezen / Zelf kiezen (gedeeld met de roulette) */
 export function DeelnemersKiezer({ kamers, naam }: { kamers?: Kamers; naam: string | null }) {
   const [keuze, setKeuze] = useDeelnemersKeuze()
+  const toon = useToonNaam()
   const alle = useMemo(() => alleDeelnemers(kamers), [kamers])
   const mee = deelnemers(keuze, kamers, naam)
   const wissel = <T,>(lijst: T[], x: T) => (lijst.includes(x) ? lijst.filter((y) => y !== x) : [...lijst, x])
@@ -62,7 +64,7 @@ export function DeelnemersKiezer({ kamers, naam }: { kamers?: Kamers; naam: stri
                 aria-pressed={keuze.namen.includes(n)}
                 onClick={() => setKeuze((oud) => ({ ...oud, namen: wissel(oud.namen, n) }))}
               >
-                {n}
+                {toon(n)}
               </button>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useToonNaam } from '../lib/bijnamen'
 import type { Kamers } from '../lib/data'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { lees, schrijfEnMeld, useOpgeslagen } from '../lib/opslag'
@@ -133,6 +134,7 @@ export function Roulette({
   }, [])
 
   const spelers = useMemo(() => deelnemers(keuze, kamers, naam), [keuze, kamers, naam])
+  const toonNaam = useToonNaam()
   // Elk getal 1..N hoort bij één naam, per ronde opnieuw geschud. Tafel en wiel volgen deze
   // volgorde (niet de spelerslijst zelf), zodat ze niet veranderen terwijl het balletje rolt.
   const [volgorde, setVolgorde] = useState<string[]>(() => schud(spelers))
@@ -274,7 +276,8 @@ export function Roulette({
     lopend.current = null
     const uitbetaald = Object.entries(inzet).reduce((s, [k, x]) => s + uitbetaling(k, x, getal, n), 0)
     setSaldo((s) => s + uitbetaald)
-    setUitslag({ getal, naam: getal === 0 ? null : volgorde[getal - 1] ?? null, ingezet: totaal, uitbetaald })
+    const winnaar = getal === 0 ? null : (volgorde[getal - 1] ?? null)
+    setUitslag({ getal, naam: winnaar && toonNaam(winnaar), ingezet: totaal, uitbetaald })
     setRonde((r) => r + 1)
     setInzet({})
     setBezig(false)
@@ -347,7 +350,7 @@ export function Roulette({
                   <Vak
                     key={g}
                     sleutel={String(g)}
-                    label={`${g}, ${speler}`}
+                    label={`${g}, ${toonNaam(speler)}`}
                     klasse={`casino__vak casino__vak--${kleurVan(g, n)}`}
                     inzet={inzet}
                     winnend={winnend(String(g))}
@@ -355,7 +358,7 @@ export function Roulette({
                     uit={!!uitslag || bezig}
                   >
                     <strong>{g}</strong>
-                    <span>{speler}</span>
+                    <span>{toonNaam(speler)}</span>
                   </Vak>
                 )
               })}

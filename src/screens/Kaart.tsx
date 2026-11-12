@@ -3,6 +3,7 @@ import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Icoon } from '../components/Icoon'
 import { ZoomKaart, type KaartMarker } from '../components/ZoomKaart'
 import { useBackend } from '../lib/backend'
+import { useToonNaam } from '../lib/bijnamen'
 import { KAART_PX, maakOmzetter } from '../lib/georef'
 import { startDelen, stopDelen, useDelen, useLocaties, type GedeeldeLocatie } from '../lib/locatie'
 import { useNu } from '../lib/nu'
@@ -34,6 +35,7 @@ export default function Kaart() {
   const delen = useDelen()
   const nu = useNu(15_000).getTime()
   const [naam] = useOpgeslagen<string | null>('naam', null)
+  const toon = useToonNaam()
   const metBackend = backend.status !== 'uit'
   const { locaties } = useLocaties(metBackend)
   const [gekozen, setGekozen] = useState<string | null>(null)
@@ -81,12 +83,12 @@ export default function Kaart() {
       id: p.user_id,
       x: p.plek!.x,
       y: p.plek!.y,
-      label: p.eigen ? 'Jij' : p.naam,
-      kort: p.naam.slice(0, 2),
+      label: p.eigen ? 'Jij' : toon(p.naam),
+      kort: toon(p.naam).slice(0, 2),
       kleur: kleurVoor(p.naam),
       eigen: p.eigen,
       oud: nu - Date.parse(p.bijgewerkt) > 5 * 60_000,
-      beschrijving: `${p.eigen ? 'Jij' : p.naam}, ${geleden(p.bijgewerkt, nu)}`,
+      beschrijving: `${p.eigen ? 'Jij' : toon(p.naam)}, ${geleden(p.bijgewerkt, nu)}`,
     }))
   if (eigenStip && eigenPlek) {
     markers.push({
@@ -94,7 +96,7 @@ export default function Kaart() {
       x: eigenStip.x,
       y: eigenStip.y,
       label: 'Jij',
-      kort: (naam ?? 'Ik').slice(0, 2),
+      kort: (naam ? toon(naam) : 'Ik').slice(0, 2),
       kleur: '#0d0058',
       eigen: true,
       oud: nu - eigenPlek.tijd > 5 * 60_000,
@@ -159,7 +161,7 @@ export default function Kaart() {
               <div className="locatiebalk__buiten">
                 {buiten.map((p) => (
                   <button key={p.user_id} type="button" className="buitenchip" onClick={() => setGekozen(p.user_id)}>
-                    {p.eigen ? 'Jij' : p.naam} · buiten de kaart
+                    {p.eigen ? 'Jij' : toon(p.naam)} · buiten de kaart
                   </button>
                 ))}
               </div>
@@ -187,10 +189,11 @@ export default function Kaart() {
 }
 
 function PersoonBlad({ p, nu, onSluit }: { p: GedeeldeLocatie & { plek: { x: number; y: number } | null; eigen: boolean }; nu: number; onSluit: () => void }) {
+  const toon = useToonNaam()
   return (
     <section className="onderblad" aria-labelledby="onderblad-titel" style={{ ['--kleur' as string]: kleurVoor(p.naam) }}>
       <div className="onderblad__kop">
-        <h2 id="onderblad-titel">{p.eigen ? `Jij (${p.naam})` : p.naam}</h2>
+        <h2 id="onderblad-titel">{p.eigen ? `Jij (${toon(p.naam)})` : toon(p.naam)}</h2>
         <button type="button" className="icoonknop" aria-label="Sluiten" onClick={onSluit}>
           <Icoon naam="kruis" />
         </button>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useToonNaam } from '../lib/bijnamen'
 import { alleDeelnemers, type Kamers } from '../lib/data'
 import { Icoon } from './Icoon'
 
@@ -13,8 +14,9 @@ export function useAlleNamen(kamers?: Kamers) {
 /** Raster met grote naamknoppen en een zoekveld */
 export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: string) => void }) {
   const [zoek, setZoek] = useState('')
+  const toon = useToonNaam()
   const q = normaal(zoek)
-  const lijst = q ? namen.filter((n) => normaal(n).includes(q)) : namen
+  const lijst = q ? namen.filter((n) => normaal(n).includes(q) || normaal(toon(n)).includes(q)) : namen
   return (
     <>
       {namen.length > 8 && (
@@ -38,6 +40,8 @@ export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: str
         {lijst.map((n) => (
           <button key={n} type="button" className="knop knop--naam" onClick={() => onKies(n)}>
             {n}
+            {/* Hier de echte naam (je kiest wie je bent), met de bijnaam erbij */}
+            {toon(n) !== n && <small className="knop__bijnaam">{toon(n)}</small>}
           </button>
         ))}
       </div>

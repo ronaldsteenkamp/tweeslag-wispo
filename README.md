@@ -291,6 +291,9 @@ Migratie: `supabase/migrations/0007_profielen.sql` (uitvoeren na 0006). Gebruikt
 ### Kamerverdeling opslaan
 Migratie: `supabase/migrations/0008_kamerverdeling.sql` (uitvoeren na 0007). Open *SQL Editor → New query*, plak het bestand en klik op *Run*; het mag vaker. Daarna werkt **Opslaan in de app** bij *Kamerverdeling maken*. Iedereen in de app kan de verdeling lezen; alleen ingelogde beheerders (tabel `beheerders`) kunnen hem opslaan. Zolang de migratie niet gedraaid is, zegt de app dat bij het opslaan en blijft `kamers.json` gelden.
 
+### Bijnamen
+Migratie: `supabase/migrations/0010_bijnamen.sql` (uitvoeren na 0009, mag vaker). Iedereen kan bij *Jouw profiel* (en in het welkomstscherm) een bijnaam invullen; de app toont die overal in plaats van de gewone naam: kamers, klassement, stemmen, rad, casino, fotomuur, kaart. De gewone naam uit `kamers.json` blijft de sleutel voor scores en stemmen. Bij het kiezen van je naam en in beheerlijsten staat de echte naam erbij. Een bijnaam mag niet de naam van een ander zijn en twee mensen kunnen niet dezelfde hebben. Een beheerder kan een ongepaste bijnaam wissen via het profielkaartje (*Bijnaam wissen (beheer)*). De uitslagmelding van de stemmingen gebruikt ook de bijnaam (Edge Function `meldingen`).
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 

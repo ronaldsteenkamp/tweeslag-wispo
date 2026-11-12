@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PISTE_KLEUREN, useData, type Kamers, type PisteKleur, type Rad as RadData } from '../lib/data'
+import { useToonNaam } from '../lib/bijnamen'
 import { lees, useOpgeslagen } from '../lib/opslag'
 import { tabToetsen } from '../lib/tabbladen'
 import { BevestigDialoog } from './BevestigDialoog'
@@ -42,6 +43,8 @@ const vakKleur = (i: number, n: number) => VAKKLEUREN[n % 3 === 1 && i === n - 1
 
 interface Optie {
   waarde: string
+  /** Wat er in beeld komt, als dat anders is dan de waarde (bijv. een bijnaam) */
+  tekst?: string
   kleur?: PisteKleur
 }
 
@@ -105,7 +108,11 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
   const { hoek, draai } = useDraai()
 
   // Per rad apart, zodat bijvoorbeeld een nieuwe kamerverdeling de pistes niet opnieuw schudt
-  const namen = useMemo(() => deelnemers(keuze, kamers, naam).map((n) => ({ waarde: n })), [keuze, kamers, naam])
+  const toon = useToonNaam()
+  const namen = useMemo(
+    () => deelnemers(keuze, kamers, naam).map((n) => ({ waarde: n, tekst: toon(n) })),
+    [keuze, kamers, naam, toon],
+  )
   const pistes = useMemo(
     () => verspreid(rad.pistes.filter((p) => kleuren.includes(p.kleur)).map((p) => ({ waarde: p.naam, kleur: p.kleur })), fractie),
     [rad.pistes, kleuren],
@@ -184,7 +191,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
     const o = lijst[i]
     const nieuw: Uitslag = {
       soort,
-      optie: o.waarde,
+      optie: o.tekst ?? o.waarde,
       kleur: o.kleur,
       opdracht: soort === 'klos' && rad.klosOpdrachten.length ? kies(rad.klosOpdrachten) : undefined,
       zin: ondertitel(soort, o.kleur),
@@ -376,7 +383,7 @@ function RadWiel({
   // Pas bij heel veel namen initialen; anders kleinere tekst (en afkappen)
   const kort = soort === 'klos' && n > 40
   const label = (o: Optie) => {
-    const t = kort ? initialen(o.waarde) : o.waarde
+    const t = kort ? initialen(o.tekst ?? o.waarde) : (o.tekst ?? o.waarde)
     return t.length > maxTekens ? `${t.slice(0, maxTekens - 1)}…` : t
   }
 

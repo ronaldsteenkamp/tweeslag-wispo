@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useBackend } from '../lib/backend'
+import { metEchteNaam, useToonNaam } from '../lib/bijnamen'
 import { useData } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
 import { tabToetsen } from '../lib/tabbladen'
@@ -30,6 +31,7 @@ export function Klassement() {
   const { klassement, mislukt } = useKlassement(backend.status !== 'uit')
   const { data: kamersData } = useData('kamers')
   const [naam] = useOpgeslagen<string | null>('naam', null)
+  const toon = useToonNaam()
 
   const kamerNaam = useMemo(() => {
     const m = new Map<string, string>()
@@ -93,7 +95,7 @@ export function Klassement() {
                   <span className="ranglijst__plek">{i + 1}</span>
                   <span className="ranglijst__naam">
                     <button type="button" className="ranglijst__persoon" onClick={() => toonProfiel(p.naam)}>
-                      {p.naam}
+                      {toon(p.naam)}
                       {p.naam === naam && <span className="label label--accent">jij</span>}
                     </button>
                     <small>
@@ -144,6 +146,8 @@ function CorrectieRegel({
   beheerder: boolean
 }) {
   const [vragen, setVragen] = useState(false)
+  const toon = useToonNaam()
+  const wie = c.naam !== null ? toon(c.naam) : `kamer ${kamerLabel(c.kamer)}`
   return (
     <li>
       <span className={`correcties__punten${c.punten < 0 ? ' is-min' : ''}`}>
@@ -151,7 +155,7 @@ function CorrectieRegel({
         {c.punten}
       </span>
       <span className="correcties__tekst">
-        <strong>{c.naam ?? `kamer ${kamerLabel(c.kamer)}`}</strong> · {c.reden}
+        <strong>{wie}</strong> · {c.reden}
       </span>
       {beheerder && (
         <>
@@ -161,7 +165,7 @@ function CorrectieRegel({
           <BevestigDialoog
             open={vragen}
             titel="Correctie verwijderen?"
-            tekst={`${c.punten > 0 ? '+' : ''}${c.punten} voor ${c.naam ?? `kamer ${kamerLabel(c.kamer)}`}: ${c.reden}`}
+            tekst={`${c.punten > 0 ? '+' : ''}${c.punten} voor ${wie}: ${c.reden}`}
             bevestigLabel="Verwijderen"
             gevaarlijk
             onAnnuleer={() => setVragen(false)}
@@ -191,6 +195,7 @@ function BonusFormulier({
   const [reden, setReden] = useState('')
   const [melding, setMelding] = useState<string | null>(null)
   const [bezig, setBezig] = useState(false)
+  const toon = useToonNaam()
 
   const opties = soort === 'kamer' ? kamers : [...namen].sort((a, b) => a.localeCompare(b, 'nl'))
   const getal = Number(punten)
@@ -204,7 +209,7 @@ function BonusFormulier({
     setBezig(false)
     if (fout) setMelding(`Lukte niet: ${fout}`)
     else {
-      setMelding(`${getal > 0 ? '+' : ''}${getal} voor ${soort === 'kamer' ? `kamer ${kamerLabel(doel)}` : doel} ✓`)
+      setMelding(`${getal > 0 ? '+' : ''}${getal} voor ${soort === 'kamer' ? `kamer ${kamerLabel(doel)}` : toon(doel)} ✓`)
       setReden('')
     }
   }
@@ -245,7 +250,7 @@ function BonusFormulier({
             <option value="">Kies…</option>
             {opties.map((o) => (
               <option key={o} value={o}>
-                {soort === 'kamer' ? kamerLabel(o) : o}
+                {soort === 'kamer' ? kamerLabel(o) : metEchteNaam(toon, o)}
               </option>
             ))}
           </select>

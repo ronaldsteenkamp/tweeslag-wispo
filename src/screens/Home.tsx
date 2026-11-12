@@ -11,6 +11,7 @@ import { WeerKaart } from '../components/WeerKaart'
 import type { Tab } from '../components/TabBalk'
 import { config } from '../config'
 import { NAAM_OVERGENOMEN } from '../lib/backend'
+import { useToonNaam } from '../lib/bijnamen'
 import { useData, type Dag } from '../lib/data'
 import { isAf, useMijnProfiel } from '../lib/profiel'
 import { platform } from '../lib/installatie'
@@ -27,6 +28,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
   const nu = useNu(10_000)
   const { data: planning, fout } = useData('planning')
   const [naam] = useOpgeslagen<string | null>('naam', null)
+  const toon = useToonNaam()
   const profiel = useMijnProfiel()
   const [overgenomen] = useOpgeslagen<string | null>(NAAM_OVERGENOMEN, null)
 
@@ -53,9 +55,9 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
             type="button"
             className="hero__naam"
             onClick={() => openMijnProfiel()}
-            aria-label={naam ? `${naam}, tik voor je profiel of een andere naam` : 'Kies je naam'}
+            aria-label={naam ? `${toon(naam)}, tik voor je profiel of een andere naam` : 'Kies je naam'}
           >
-            {naam ?? 'jij'}
+            {naam ? toon(naam) : 'jij'}
           </button>
           !
         </h1>
@@ -97,7 +99,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
       {overgenomen && !naam && (
         <section className="kaartje melding">
           <p>
-            <strong>{overgenomen}</strong> is op een ander apparaat gekozen
+            <strong>{toon(overgenomen)}</strong> is op een ander apparaat gekozen
             {platform() === 'ios' ? ', bijvoorbeeld in de app op je beginscherm' : ''}. Je score telt daar.
           </p>
           <button type="button" className="knop knop--secundair knop--breed" onClick={() => openMijnProfiel(true)}>

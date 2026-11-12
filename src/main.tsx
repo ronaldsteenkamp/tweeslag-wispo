@@ -5,6 +5,7 @@ import { startBackend } from './lib/backend'
 import { vangInstallatieMelding } from './lib/installatie'
 import { startKamerverdeling } from './lib/kamerverdeling'
 import { startProfielen } from './lib/profiel'
+import { startBijnamen } from './lib/bijnamen'
 import { startScorebord } from './lib/scorebord'
 import { startTestperiode } from './lib/testperiode'
 import { startLocatie } from './lib/locatie'
@@ -24,6 +25,7 @@ startBackend()
 startTestperiode()
 startScorebord()
 startProfielen()
+startBijnamen()
 startKamerverdeling()
 startStemming()
 startMeldingen()

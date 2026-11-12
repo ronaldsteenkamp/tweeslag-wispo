@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useBackend } from '../lib/backend'
+import {
+  bijnaamFout,
+  MAX_BIJNAAM,
+  slaBijnaamOp,
+  useBijnaamVan,
+  useEigenBijnaam,
+  useToonNaam,
+  wisBijnaam,
+} from '../lib/bijnamen'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
@@ -73,9 +82,10 @@ export function Avatar({
   groot?: boolean
 }) {
   const url = useProfielFoto(pad, lokaal)
+  const toon = useToonNaam()
   return (
     <span className={`avatar${groot ? ' avatar--groot' : ''}`} aria-hidden="true">
-      {url ? <img src={url} alt="" /> : initialen(naam)}
+      {url ? <img src={url} alt="" /> : initialen(toon(naam))}
     </span>
   )
 }
@@ -98,12 +108,23 @@ type Bekeken = Pick<ProfielRij, 'naam' | 'ski' | 'niveau' | 'feitje' | 'karaoke'
   fotoLokaal?: string | null
 }
 
+/** Bijnaam (of naam) als titel, met de gewone naam er klein onder als er een bijnaam is */
+function NaamKop({ naam }: { naam: string }) {
+  const bijnaam = useBijnaamVan(naam)
+  return (
+    <h2 id="venster-titel" className="profielkaart__naam">
+      {bijnaam ?? naam}
+      {bijnaam && <small>{naam}</small>}
+    </h2>
+  )
+}
+
 function ProfielInhoud({ p }: { p: Bekeken }) {
   return (
     <div className="profielkaart">
       <div className="profielkaart__kop">
         <Avatar naam={p.naam} pad={p.foto_pad} lokaal={p.fotoLokaal} groot />
-        <h2 id="venster-titel">{p.naam}</h2>
+        <NaamKop naam={p.naam} />
       </div>
       <dl className="profielkaart__lijst">
         <div>
@@ -358,6 +379,72 @@ function Tekstveld({
   )
 }
 
+// ---------- Bijnaam ----------
+
+/**
+ * Je bijnaam invullen of aanpassen. Wordt los van de rest van het profiel opgeslagen,
+ * zodat dat ook kan als je profiel nog niet af is.
+ */
+export function BijnaamVeld({ namen }: { namen: string[] }) {
+  const [naam] = useOpgeslagen<string | null>('naam', null)
+  const { bijnaam, fout: serverFout, teVersturen } = useEigenBijnaam()
+  const [tekst, setTekst] = useState(bijnaam ?? '')
+  const [opgeslagen, setOpgeslagen] = useState(false)
+  // Komt er van de server een andere bijnaam binnen (bijv. al bezet), dan het veld bijwerken
+  useEffect(() => setTekst(bijnaam ?? ''), [bijnaam])
+  if (!naam) return null
+
+  const fout = bijnaamFout(tekst, naam, namen)
+  const gewijzigd = tekst.trim() !== (bijnaam ?? '')
+  const opslaan = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (fout || !gewijzigd) return
+    slaBijnaamOp(tekst)
+    setOpgeslagen(true)
+  }
+
+  return (
+    <form className="veld bijnaam" onSubmit={opslaan}>
+      <label className="veld__kop" htmlFor="bijnaam-invoer">
+        <span>😎 Bijnaam</span>
+        <span className={`teller${tekst.length >= MAX_BIJNAAM ? ' teller--klaar' : ''}`}>
+          {tekst.length}/{MAX_BIJNAAM}
+        </span>
+      </label>
+      <div className="bijnaam__rij">
+        <input
+          id="bijnaam-invoer"
+          className="invoer"
+          value={tekst}
+          maxLength={MAX_BIJNAAM}
+          placeholder="Optioneel, bijv. De Sneeuwkoning"
+          autoComplete="off"
+          onChange={(e) => {
+            setTekst(e.target.value)
+            setOpgeslagen(false)
+          }}
+        />
+        <button type="submit" className="knop knop--secundair" disabled={!!fout || !gewijzigd}>
+          {tekst.trim() || !bijnaam ? 'Bewaar' : 'Weghalen'}
+        </button>
+      </div>
+      {fout ? (
+        <p className="melding melding--fout">{fout}</p>
+      ) : serverFout && !gewijzigd ? (
+        <p className="melding melding--fout">{serverFout}</p>
+      ) : (
+        <p className="klein">
+          {opgeslagen && !gewijzigd
+            ? teVersturen
+              ? 'Bewaard. Hij gaat naar de anderen zodra er verbinding is.'
+              : 'Bewaard ✓'
+            : 'Iedereen ziet deze bijnaam in de app in plaats van je naam.'}
+        </p>
+      )}
+    </form>
+  )
+}
+
 // ---------- Het venster ----------
 
 /** Eén keer in App: toont een profielkaartje of je eigen profiel om aan te passen */
@@ -401,7 +488,10 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
   const { perNaam } = useProfielen()
   const backend = useBackend()
   const [wissen, setWissen] = useState(false)
+  const [bijnaamWissen, setBijnaamWissen] = useState(false)
   const [fout, setFout] = useState<string | null>(null)
+  const bijnaam = useBijnaamVan(naam)
+  const toon = useToonNaam()
 
   const eigen = mijnNaam !== null && sleutel(mijnNaam) === sleutel(naam)
   const rij = perNaam.get(sleutel(naam))
@@ -420,9 +510,9 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
         <>
           <div className="profielkaart__kop">
             <Avatar naam={naam} pad={null} groot />
-            <h2 id="venster-titel">{naam}</h2>
+            <NaamKop naam={naam} />
           </div>
-          <p>{eigen ? 'Je hebt je profiel nog niet ingevuld.' : `${naam} heeft nog geen profiel ingevuld.`}</p>
+          <p>{eigen ? 'Je hebt je profiel nog niet ingevuld.' : `${toon(naam)} heeft nog geen profiel ingevuld.`}</p>
         </>
       )}
       {eigen && (
@@ -435,6 +525,23 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
           Profiel wissen (beheer)
         </button>
       )}
+      {!eigen && bijnaam && backend.beheerder && (
+        <button type="button" className="knop knop--gevaar knop--breed" onClick={() => setBijnaamWissen(true)}>
+          Bijnaam wissen (beheer)
+        </button>
+      )}
+      <BevestigDialoog
+        open={bijnaamWissen}
+        titel={`Bijnaam "${bijnaam ?? ''}" wissen?`}
+        tekst={`Daarna staat ${naam} weer met de gewone naam in de app. Diegene kan een nieuwe bijnaam kiezen.`}
+        bevestigLabel="Wissen"
+        gevaarlijk
+        onAnnuleer={() => setBijnaamWissen(false)}
+        onBevestig={() => {
+          setBijnaamWissen(false)
+          void wisBijnaam(naam).then((f) => setFout(f))
+        }}
+      />
       {fout && <p className="melding melding--fout">{fout}</p>}
       <button type="button" className="knop knop--secundair knop--breed" onClick={onSluit}>
         Sluiten
@@ -442,7 +549,7 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
       {rij && (
         <BevestigDialoog
           open={wissen}
-          titel={`Profiel van ${naam} wissen?`}
+          titel={`Profiel van ${toon(naam)} wissen?`}
           tekst="Het hele profiel en de profielfoto verdwijnen. Diegene kan daarna een nieuw profiel invullen."
           bevestigLabel="Wissen"
           gevaarlijk
@@ -500,6 +607,7 @@ function MijnProfiel({ naamKiezen, onSluit }: { naamKiezen: boolean; onSluit: ()
           Andere naam kiezen
         </button>
       </p>
+      <BijnaamVeld namen={namen} />
       {/* Opnieuw beginnen zodra het profiel van de server binnen is (na het kiezen van een naam) */}
       <ProfielFormulier
         key={`${profiel.naam}|${profiel.verstuurd ? 'server' : 'lokaal'}`}

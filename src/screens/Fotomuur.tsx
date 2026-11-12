@@ -3,6 +3,7 @@ import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Icoon } from '../components/Icoon'
 import { Verbinding } from '../components/Verbinding'
 import { useBackend } from '../lib/backend'
+import { useToonNaam } from '../lib/bijnamen'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData } from '../lib/data'
 import { grooteLink, useFotos, verwijderFoto, type Foto } from '../lib/fotos'
@@ -27,6 +28,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
   const backend = useBackend()
   const { fotos, mislukt, meer, laadMeer } = useFotos(30, backend.status !== 'uit')
   const kamerLabel = useKamerLabel()
+  const toon = useToonNaam()
   const [open, setOpen] = useState<number | null>(null)
   const wachtend = useFotoWachtrij()
 
@@ -67,10 +69,10 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
                 {fotos.map((f, i) => (
                   <li key={f.id}>
                     <button type="button" className="fotomuur__foto" onClick={() => setOpen(i)}>
-                      {f.klein ? <img src={f.klein} alt={`${f.challenge_titel} door ${f.naam}`} loading="lazy" /> : <span>📷</span>}
+                      {f.klein ? <img src={f.klein} alt={`${f.challenge_titel} door ${toon(f.naam)}`} loading="lazy" /> : <span>📷</span>}
                     </button>
                     <p className="fotomuur__onderschrift">
-                      <strong>{f.naam}</strong>
+                      <strong>{toon(f.naam)}</strong>
                       {f.kamer && <span> · kamer {kamerLabel(f.kamer)}</span>}
                       <br />
                       {f.challenge_titel}
@@ -136,6 +138,7 @@ export function FotoGroot({
   onBijnaAanHetEind?: () => void
 }) {
   const backend = useBackend()
+  const toon = useToonNaam()
   const [index, setIndex] = useState(start)
   const [, ververs] = useState(0)
   const [vragen, setVragen] = useState(false)
@@ -432,7 +435,7 @@ export function FotoGroot({
         ref={beeld}
         key={foto.id}
         src={grootGeheugen.get(foto.id) ?? foto.klein}
-        alt={`${foto.challenge_titel} door ${foto.naam}`}
+        alt={`${foto.challenge_titel} door ${toon(foto.naam)}`}
         draggable={false}
         className={zoom.s > 1 ? 'is-ingezoomd' : undefined}
         style={{
@@ -456,7 +459,7 @@ export function FotoGroot({
       />
       <div className="foto-groot__onder" onClick={(e) => e.stopPropagation()}>
         <p>
-          <strong>{foto.naam}</strong>
+          <strong>{toon(foto.naam)}</strong>
           {foto.kamer && ` · kamer ${kamerLabel(foto.kamer)}`}
           <br />
           {foto.challenge_titel} · {wanneerGemaakt(foto.gemaakt)}
@@ -471,7 +474,7 @@ export function FotoGroot({
       <BevestigDialoog
         open={vragen}
         titel="Foto verwijderen?"
-        tekst={`De foto van ${foto.naam} bij "${foto.challenge_titel}" verdwijnt voor iedereen.`}
+        tekst={`De foto van ${toon(foto.naam)} bij "${foto.challenge_titel}" verdwijnt voor iedereen.`}
         bevestigLabel="Verwijderen"
         gevaarlijk
         onAnnuleer={() => setVragen(false)}

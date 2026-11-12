@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useBackend } from '../lib/backend'
+import { useToonNaam } from '../lib/bijnamen'
 import { useFotos } from '../lib/fotos'
 import { FotoGroot, useKamerLabel } from '../screens/Fotomuur'
 import { Icoon } from './Icoon'
@@ -9,6 +10,7 @@ export function FotoStrip({ naarFotomuur }: { naarFotomuur: () => void }) {
   const backend = useBackend()
   const { fotos } = useFotos(4, backend.status !== 'uit')
   const kamerLabel = useKamerLabel()
+  const toon = useToonNaam()
   const [open, setOpen] = useState<number | null>(null)
   if (!fotos?.length) return null
 
@@ -23,7 +25,7 @@ export function FotoStrip({ naarFotomuur }: { naarFotomuur: () => void }) {
       <div className="fotostrip">
         {fotos.map((f, i) => (
           <button key={f.id} type="button" className="fotomuur__foto" onClick={() => setOpen(i)}>
-            {f.klein ? <img src={f.klein} alt={`${f.challenge_titel} door ${f.naam}`} loading="lazy" /> : <span>📷</span>}
+            {f.klein ? <img src={f.klein} alt={`${f.challenge_titel} door ${toon(f.naam)}`} loading="lazy" /> : <span>📷</span>}
           </button>
         ))}
       </div>

@@ -5,6 +5,7 @@ import { NaamKiezer, normaal, useAlleNamen } from '../components/NaamKiezer'
 import { openMijnProfiel, toonProfiel } from '../components/Profiel'
 import { config } from '../config'
 import { useData, type Kamer } from '../lib/data'
+import { useToonNaam } from '../lib/bijnamen'
 import { useOpgeslagen } from '../lib/opslag'
 import { profielAfVoor } from '../lib/profiel'
 
@@ -15,6 +16,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   const [zoek, setZoek] = useState('')
 
   const alleNamen = useAlleNamen(data)
+  const toon = useToonNaam()
   const isReisleiding = naam !== null && config.reisleiding.includes(naam)
 
   if (!data) {
@@ -58,15 +60,13 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
 
   const eigenKamer = data.kamers.find((k) => k.bewoners.includes(naam))
   const q = normaal(zoek)
+  const past = (b: string) => normaal(b).includes(q) || normaal(toon(b)).includes(q)
   const gevonden = q
     ? data.kamers.filter(
-        (k) =>
-          k.bewoners.some((b) => normaal(b).includes(q)) ||
-          normaal(k.nummer).includes(q) ||
-          normaal(k.naam ?? '').includes(q),
+        (k) => k.bewoners.some(past) || normaal(k.nummer).includes(q) || normaal(k.naam ?? '').includes(q),
       )
     : data.kamers.filter((k) => k !== eigenKamer)
-  const zonderKamer = q ? data.zonderKamer.filter((b) => normaal(b).includes(q)) : data.zonderKamer
+  const zonderKamer = q ? data.zonderKamer.filter(past) : data.zonderKamer
 
   return (
     <div className="scherm">
@@ -78,7 +78,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
           <p className="kamer__label">Jouw kamer</p>
           <KamerInhoud kamer={eigenKamer} jij={naam} />
           <button type="button" className="tekstknop" onClick={() => setWijzigen(true)}>
-            Ben je niet {naam}? Kies een andere naam
+            Ben je niet {toon(naam)}? Kies een andere naam
           </button>
         </section>
       )}
@@ -88,7 +88,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
           <p className="kamer__label">Jouw kamer</p>
           <p>Je hebt nog geen kamer. De reisleiding maakt de kamerverdeling; daarna staat je kamer hier.</p>
           <button type="button" className="tekstknop" onClick={() => setWijzigen(true)}>
-            Ben je niet {naam}? Kies een andere naam
+            Ben je niet {toon(naam)}? Kies een andere naam
           </button>
         </section>
       )}
@@ -163,15 +163,18 @@ function KamerInhoud({ kamer, jij, zoek = '' }: { kamer: Kamer; jij: string; zoe
 }
 
 function Bewoners({ namen, jij, zoek }: { namen: string[]; jij: string; zoek: string }) {
+  const toon = useToonNaam()
   return (
     <ul className="bewoners">
       {namen.map((b) => (
         <li
           key={b}
-          className={`${b === jij ? 'is-jij' : ''}${zoek && normaal(b).includes(zoek) ? ' is-gevonden' : ''}`}
+          className={`${b === jij ? 'is-jij' : ''}${
+            zoek && (normaal(b).includes(zoek) || normaal(toon(b)).includes(zoek)) ? ' is-gevonden' : ''
+          }`}
         >
           <button type="button" className="bewoners__naam" onClick={() => toonProfiel(b)}>
-            {b}
+            {toon(b)}
             {b === jij && <span className="label label--accent">jij</span>}
           </button>
         </li>
