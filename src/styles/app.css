@@ -516,23 +516,34 @@ button {
 
 .sneeuw span {
   position: absolute;
-  top: -12px;
-  border-radius: 50%;
-  background: #ffffff;
+  top: -20px;
+  line-height: 0;
   animation-name: vallen;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
 
+/* Kleine stipjes (sneeuw verder weg); de grote vlokken zijn een svg */
+.sneeuw .sneeuw__stip {
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.sneeuw svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
 @keyframes vallen {
   0% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) rotate(0deg);
   }
   50% {
-    transform: translate(var(--drift), 300px);
+    transform: translate(var(--drift), 300px) rotate(calc(var(--draai, 0deg) / 2));
   }
   100% {
-    transform: translate(0, 620px);
+    transform: translate(0, 620px) rotate(var(--draai, 0deg));
   }
 }
 
