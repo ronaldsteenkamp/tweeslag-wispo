@@ -2,7 +2,9 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
+import { SchermKop } from '../components/SchermKop'
 import { useData } from '../lib/data'
+import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { useOpgeslagen } from '../lib/opslag'
 
 interface EigenItem {
@@ -19,6 +21,7 @@ export default function Paklijst() {
   const [eigen, setEigen] = useOpgeslagen<EigenItem[]>('paklijst.eigen', [])
   const [nieuw, setNieuw] = useState('')
   const [resetVragen, setResetVragen] = useState(false)
+  const nieuweKop = useNieuweKoppen()
 
   const aangevinkt = useMemo(() => new Set(vinkjes), [vinkjes])
 
@@ -52,32 +55,47 @@ export default function Paklijst() {
   if (!data) {
     return (
       <div className="scherm">
-        <h1>Paklijst</h1>
+        {nieuweKop ? <SchermKop titel="Paklijst" /> : <h1>Paklijst</h1>}
         <DataStatus fout={fout} />
       </div>
     )
   }
 
+  const allesKlaar = klaar === totaal && totaal > 0
+  const balk = (
+    <div
+      className="voortgang__balk"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={procent}
+      aria-label="Voortgang paklijst"
+    >
+      <div style={{ width: `${procent}%` }} />
+    </div>
+  )
+
   return (
     <div className="scherm">
-      <h1>Paklijst</h1>
+      {nieuweKop ? (
+        <SchermKop
+          titel="Paklijst"
+          ondertitel={<span aria-live="polite">{allesKlaar ? 'Alles ingepakt! 🎉' : `${klaar} van ${totaal} ingepakt · ${procent}%`}</span>}
+        >
+          {balk}
+        </SchermKop>
+      ) : (
+        <h1>Paklijst</h1>
+      )}
 
-      <div className="kaartje voortgang" aria-live="polite">
+      {/* Het oude voortgangskaartje: met de nieuwe kop staat de voortgang in de kop */}
+      {!nieuweKop && <div className="kaartje voortgang" aria-live="polite">
         <div className="voortgang__tekst">
-          <strong>{klaar === totaal && totaal > 0 ? 'Alles ingepakt! 🎉' : `${klaar} van ${totaal} ingepakt`}</strong>
+          <strong>{allesKlaar ? 'Alles ingepakt! 🎉' : `${klaar} van ${totaal} ingepakt`}</strong>
           <span>{procent}%</span>
         </div>
-        <div
-          className="voortgang__balk"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={procent}
-          aria-label="Voortgang paklijst"
-        >
-          <div style={{ width: `${procent}%` }} />
-        </div>
-      </div>
+        {balk}
+      </div>}
 
       {data.categorieen.map((c) => {
         const inCategorie = c.items.filter((i) => aangevinkt.has(sleutel(c.naam, i))).length
