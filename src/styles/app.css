@@ -748,35 +748,60 @@ button {
 }
 
 /*
- * Sneeuwkapjes op de aftel-tegels en de lichtblauwe knoppen, in één laagje met twee achtergronden:
- * - de sneeuwrand (rekt mee met de breedte, ronde uiteinden die over de hoeken vallen);
- * - daarbinnen bultjes met druppels in een vaste maat die zich herhalen ('round': altijd hele
- *   bultjes), zodat ze op een brede knop niet uitgerekt worden.
- * Geen mask: een filter komt vóór het masker, dus dan viel de schaduwrand weg. Nu volgt het
- * schaduwrandje de vorm, zodat witte sneeuw ook op een witte kaart zichtbaar blijft.
+ * Sneeuwkapjes op de aftel-tegels en de lichtblauwe knoppen, alleen in de donkerblauwe blokken
+ * (.golf): op een witte kaart zag wit op wit er rommelig uit.
+ *
+ * Eén laagje (::before) met drie achtergronden:
+ * - links en rechts een vast uiteinde (20 px) dat rond over de hoek van de knop hangt;
+ * - daartussen bultjes met druppels die zich herhalen ('round': altijd hele bultjes), zodat ze op
+ *   een brede knop niet uitgerekt worden. Drie varianten met een eigen ritme, zodat niet elk
+ *   kapje hetzelfde is (de vierde aftel-tegel is de eerste variant gespiegeld).
+ * Het kapje steekt aan beide kanten 3 px buiten de knop. De sneeuwlaag loopt tot 4,5 px onder de
+ * bovenrand van de knop; daarboven is nergens blauw van de knop te zien (ook niet in de hoeken).
  */
 .aftelklok__blok,
-.knop--accent {
+.golf .knop--accent {
   position: relative;
 }
 
 .aftelklok__blok::before,
-.knop--accent::before {
+.golf .knop--accent::before {
+  --kap-midden: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 18' preserveAspectRatio='none'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M0 5C6 1.5 16 1.5 22 4C28 2 38 1.5 44 5V12.5H37C37 17 32 17 32 12.5H25.5C25.5 14.5 23 14.5 23 12.5H15C15 15.5 12 15.5 12 12.5H0Z' fill='url(%23g)'/%3E%3C/svg%3E");
+  --kap-tegel: 44px;
   content: '';
   position: absolute;
-  top: -7px;
-  left: 3px;
-  right: 3px;
-  height: 16px;
-  padding: 0 9px;
+  top: -8px;
+  left: -3px;
+  right: -3px;
+  height: 18px;
+  padding: 0 18px;
   box-sizing: border-box;
   pointer-events: none;
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 16'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='14'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M0 5C6 1.5 16 1.5 22 4C28 2 38 1.5 44 5V11.5H37C37 15.8 32 15.8 32 11.5H25.5C25.5 13.3 23 13.3 23 11.5H15C15 14.5 12 14.5 12 11.5H0Z' fill='url(%23g)'/%3E%3C/svg%3E")
-      0 0 / 44px 16px round no-repeat content-box,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 16' preserveAspectRatio='none'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='14'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M0 14C0.5 8 4 5 10 5H90C96 5 99.5 8 100 14C97 12.5 93 11.5 88 11.5H12C7 11.5 3 12.5 0 14Z' fill='url(%23g)'/%3E%3C/svg%3E")
-      0 0 / 100% 100% no-repeat border-box;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M20 5C14 3.5 6 3 3 6C0.5 8.5 0 12 1.5 14.5C3 17.5 8 18 10 15.5C11.5 13.5 14 12.5 20 12.5Z' fill='url(%23g)'/%3E%3C/svg%3E")
+      left top / 20px 18px no-repeat border-box,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath transform='matrix(-1 0 0 1 20 0)' d='M20 5C14 3.5 6 3 3 6C0.5 8.5 0 12 1.5 14.5C3 17.5 8 18 10 15.5C11.5 13.5 14 12.5 20 12.5Z' fill='url(%23g)'/%3E%3C/svg%3E")
+      right top / 20px 18px no-repeat border-box,
+    var(--kap-midden) 0 0 / var(--kap-tegel) 18px round no-repeat content-box;
   filter: drop-shadow(0 0.5px 0.4px rgba(13, 0, 88, 0.4)) drop-shadow(0 1px 1px rgba(13, 0, 88, 0.12));
+}
+
+/* Variant 2: kleine bultjes, één lange druppel in het midden */
+.aftelklok__blok:nth-child(2)::before,
+.golf .knop--accent::before {
+  --kap-midden: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 18' preserveAspectRatio='none'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M0 5C4 2.5 10 2 15 3.5C21 1 30 1.5 34 3.5C38 2.5 42 3 44 5V12.5H40C40 14.5 37.5 14.5 37.5 12.5H20C20 16.5 15.5 16.5 15.5 12.5H7C7 14 5 14 5 12.5H0Z' fill='url(%23g)'/%3E%3C/svg%3E");
+  --kap-tegel: 38px;
+}
+
+/* Variant 3: één grote bult, twee druppels */
+.aftelklok__blok:nth-child(3)::before {
+  --kap-midden: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 18' preserveAspectRatio='none'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M0 5C8 2 14 3 20 2.5C26 2 30 0.5 36 3C40 3.5 43 4 44 5V12.5H30C30 17.5 25 17.5 25 12.5H10C10 14.8 7.5 14.8 7.5 12.5H0Z' fill='url(%23g)'/%3E%3C/svg%3E");
+  --kap-tegel: 50px;
+}
+
+/* Variant 4: de eerste, gespiegeld */
+.aftelklok__blok:nth-child(4)::before {
+  transform: scaleX(-1);
 }
 
 .aftelklok__getal {
