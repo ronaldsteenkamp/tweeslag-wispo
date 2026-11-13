@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Feestregen } from '../components/Feestregen'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
@@ -21,7 +20,6 @@ export default function Paklijst() {
   const [vinkjes, setVinkjes] = useOpgeslagen<string[]>('paklijst.vinkjes', [])
   const [eigen, setEigen] = useOpgeslagen<EigenItem[]>('paklijst.eigen', [])
   const [nieuw, setNieuw] = useState('')
-  const [resetVragen, setResetVragen] = useState(false)
   const nieuweKop = useNieuweKoppen()
 
   const aangevinkt = useMemo(() => new Set(vinkjes), [vinkjes])
@@ -81,7 +79,11 @@ export default function Paklijst() {
     vorigProcent.current = procent
     if (vorig === null || vorig === 100 || procent !== 100) return
     setFeest((n) => n + 1)
-  }, [data, procent])
+    // Helemaal naar boven, naar "Alles ingepakt!" in de kop
+    if (!nieuweKop) return
+    const zacht = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: zacht ? 'smooth' : 'auto' })
+  }, [data, procent, nieuweKop])
 
   const wissel = (s: string) => {
     const wordtAan = !aangevinkt.has(s)
@@ -286,27 +288,6 @@ export default function Paklijst() {
         </form>
       </section>
 
-      <button
-        type="button"
-        className="knop knop--secundair knop--breed"
-        onClick={() => setResetVragen(true)}
-        disabled={klaar === 0}
-      >
-        <Icoon naam="herstel" /> Alles resetten
-      </button>
-
-      <BevestigDialoog
-        open={resetVragen}
-        titel="Alle vinkjes weghalen?"
-        tekst="Je begint dan weer met een lege paklijst. Je eigen items blijven staan."
-        bevestigLabel="Ja, resetten"
-        gevaarlijk
-        onAnnuleer={() => setResetVragen(false)}
-        onBevestig={() => {
-          setVinkjes([])
-          setResetVragen(false)
-        }}
-      />
 
       {nieuweKop && feest > 0 && <Feestregen key={feest} onKlaar={() => setFeest(0)} />}
     </div>
