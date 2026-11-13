@@ -21,9 +21,6 @@ const DREMPEL = 0.35
 const FLICK = 0.3
 /** Afloop: snel begin, zacht einde (zoals iOS-paginering) */
 const AFLOOP = 'cubic-bezier(0.22, 1, 0.36, 1)'
-/** Duur van het nieuwe scherm laten inschuiven na een tik op de tabbalk */
-const INSCHUIF = 48
-const AFREMMEN = 'cubic-bezier(0.05, 0.7, 0.1, 1)'
 
 /** Elementen met een eigen veeggebaar of vensters. De kaart alleen als je ingezoomd bent. */
 const EIGEN_GEBAAR =
@@ -39,20 +36,6 @@ export function wisselPaneel(): HTMLElement | null {
 }
 
 const buurPaneel = () => document.querySelector<HTMLElement>('.buurpaneel')
-
-/** Na een tik op de tabbalk: nieuw scherm schuift een stukje in vanaf die kant (+1 = van rechts) */
-export function schuifIn(richting: 1 | -1) {
-  const el = wisselPaneel()
-  if (!el || minderBeweging()) return
-  el.getAnimations().forEach((a) => a.cancel())
-  el.animate(
-    [
-      { transform: `translateX(${richting * INSCHUIF}px)`, opacity: 0 },
-      { transform: 'none', opacity: 1 },
-    ],
-    { duration: 260, easing: AFREMMEN },
-  )
-}
 
 /** Ligt het startpunt in iets dat zelf horizontaal scrollt (zoals de dagkiezer)? */
 function scrolltHorizontaal(el: Element | null): boolean {
@@ -71,7 +54,7 @@ interface Opties {
   kan: (richting: 1 | -1) => boolean
   /** Toon het buurscherm in die richting naast het huidige (null = weghalen) */
   onBuur: (richting: 1 | -1 | null) => void
-  /** Wissel naar de tab in die richting (en haal het buurscherm weg), zonder eigen animatie */
+  /** Wissel naar de tab in die richting (en haal het buurscherm weg) */
   onWissel: (richting: 1 | -1) => void
 }
 

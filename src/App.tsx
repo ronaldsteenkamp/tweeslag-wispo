@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ProfielVenster } from './components/Profiel'
 import { TabBalk, TABS, type Tab } from './components/TabBalk'
 import { UpdateMelding } from './components/UpdateMelding'
@@ -7,7 +7,7 @@ import { config } from './config'
 import { haalAllesVooraf } from './lib/data'
 import { lees, schrijf, useOpgeslagen } from './lib/opslag'
 import { useSchermWakker } from './lib/wakker'
-import { schuifIn, useTabSwipe } from './lib/tabswipe'
+import { useTabSwipe } from './lib/tabswipe'
 import Home from './screens/Home'
 import Planning from './screens/Planning'
 import Paklijst from './screens/Paklijst'
@@ -68,23 +68,13 @@ export default function App() {
     return () => navigator.serviceWorker?.removeEventListener('controllerchange', haalAllesVooraf)
   }, [])
 
-  // Bij wisselen tussen tabs schuift het nieuwe scherm in vanaf de kant waar die tab staat
-  const inschuiven = useRef<1 | -1 | null>(null)
-  useLayoutEffect(() => {
-    if (inschuiven.current) schuifIn(inschuiven.current)
-    inschuiven.current = null
-  }, [tab])
-
+  // Tikken op de tabbalk wisselt direct, zonder animatie (zoals Instagram); alleen vegen schuift
   const kies = useCallback(
-    (t: Scherm, geveegd = false) => {
+    (t: Scherm) => {
       if (t === tab) {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
-      const van = TABS.findIndex((x) => x.id === hoofdTab(tab))
-      const naar = TABS.findIndex((x) => x.id === hoofdTab(t))
-      // Na vegen ligt het nieuwe scherm al op zijn plek; alleen bij tikken inschuiven
-      inschuiven.current = !geveegd && naar !== van ? (naar > van ? 1 : -1) : null
       const { pathname, search } = window.location
       window.history.replaceState(null, '', `${pathname}${search}#${t}`)
       setTab(t)
@@ -106,7 +96,7 @@ export default function App() {
     onWissel: (richting) => {
       setBuur(null)
       const volgende = TABS[tabIndex + richting]
-      if (volgende) kies(volgende.id, true)
+      if (volgende) kies(volgende.id)
     },
   })
 

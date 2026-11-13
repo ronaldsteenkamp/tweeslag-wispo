@@ -175,11 +175,13 @@ function AppKnop() {
   const links = config.les2alpesApp
   return (
     <section className="kaartje">
-      <h2>Liften, weer en webcams</h2>
+      <h2>Liften, pistes en webcams</h2>
       <p>
-        Welke liften draaien er, hoe wordt het weer en hoe ziet het er nu uit op de berg? Kijk live mee via de webcams
-        in de officiële app.
+        In de officiële app van Les 2 Alpes zie je live welke liften en pistes open zijn, hoeveel sneeuw er ligt en hoe
+        het er nu uitziet via de webcams. Ook handig: de tijden van de gratis pendelbusjes door het dorp, en met Ski+ houd
+        je je afdalingen, kilometers en hoogtemeters bij en daag je elkaar uit.
       </p>
+      <p className="klein">De app is grotendeels in het Frans.</p>
       {p === 'anders' ? (
         <div className="knoppenrij">
           <a className="knop knop--primair" href={links.ios} target="_blank" rel="noopener">
@@ -192,8 +194,16 @@ function AppKnop() {
       ) : (
         <a
           className="knop knop--accent knop--breed"
-          href={p === 'ios' ? links.ios : links.android}
-          target="_blank"
+          // Android: een intent-link opent de app als hij er al op staat, anders Google Play.
+          // iPhone: kan niet zonder een (onbekende) eigen link van de app; daar opent de App Store,
+          // die een "Open"-knop toont als de app al geïnstalleerd is.
+          href={
+            p === 'ios'
+              ? links.ios
+              : `intent://#Intent;package=${links.androidPakket};S.browser_fallback_url=${encodeURIComponent(links.android)};end`
+          }
+          // Intent-links niet in een nieuw tabblad, anders blijft er een leeg tabblad achter
+          target={p === 'ios' ? '_blank' : undefined}
           rel="noopener"
         >
           Open de Les 2 Alpes-app
