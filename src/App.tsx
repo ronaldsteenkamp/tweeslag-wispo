@@ -5,6 +5,7 @@ import { UpdateMelding } from './components/UpdateMelding'
 import { Welkom } from './components/Welkom'
 import { config } from './config'
 import { haalAllesVooraf } from './lib/data'
+import { verwerkKopSchakelaar } from './lib/nieuweKoppen'
 import { lees, schrijf, useOpgeslagen } from './lib/opslag'
 import { useSchermWakker } from './lib/wakker'
 import { useTabSwipe } from './lib/tabswipe'
@@ -33,6 +34,12 @@ function hoofdTab(s: Scherm): Tab {
 
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
+  // #nieuwekop / #oudekop: schakelaar voor de nieuwe schermkoppen (zie lib/nieuweKoppen.ts)
+  if (verwerkKopSchakelaar(h)) {
+    const { pathname, search } = window.location
+    window.history.replaceState(null, '', `${pathname}${search}#home`)
+    return 'home'
+  }
   // Vanuit een melding over de uitslag: meteen naar Spel → Stemmen
   if (h === 'stemmen') {
     schrijf('spel.onderdeel', 'stemmen')

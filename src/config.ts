@@ -22,6 +22,13 @@ export const config = {
    * met het filter op 'test-' live staat, anders krijgt iedereen elke nacht een uitslagmelding.
    */
   testStemmingen: false,
+  /**
+   * Nieuwe schermkoppen (donkerblauwe kop met bergen op elk scherm, zie components/SchermKop.tsx).
+   * 'uit': de oude koppen, alles zoals het was.
+   * 'test': alleen wie de app één keer opent met #nieuwekop achter het adres (met #oudekop weer terug).
+   * 'aan': iedereen ziet de nieuwe koppen.
+   */
+  nieuweKoppen: 'test' as 'uit' | 'test' | 'aan',
   /** Standaardtijd waarop de challenges van een dag opengaan (als 'openOm' ontbreekt in spel.json) */
   challengesOpenOm: '07:00',
 
