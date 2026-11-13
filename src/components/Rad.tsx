@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { PISTE_KLEUREN, useData, type Kamers, type PisteKleur, type Rad as RadData } from '../lib/data'
 import { useToonNaam } from '../lib/bijnamen'
 import { lees, useOpgeslagen } from '../lib/opslag'
@@ -71,17 +71,37 @@ function voorleesTekst(u: Uitslag) {
   return u.optie
 }
 
-/** Het tabblad Rad: vier radden en het casino (voor iedereen) */
-export function RadOnderdeel() {
+/**
+ * Het tabblad Rad: vier radden en het casino (voor iedereen).
+ * Met `kop` tekent de aanroeper zelf de schermkop, met de keuze van het rad erin (nieuwe koppen);
+ * zonder `kop` staat de keuzebalk gewoon bovenaan.
+ */
+export function RadOnderdeel({ kop }: { kop?: (keuzebalk?: ReactNode) => ReactNode } = {}) {
   const { data: rad, fout } = useData('rad')
   const { data: kamers } = useData('kamers')
   const [naam] = useOpgeslagen<string | null>('naam', null)
 
-  if (!rad) return <DataStatus fout={fout} />
-  return <Rad rad={rad} kamers={kamers} naam={naam} />
+  if (!rad)
+    return (
+      <>
+        {kop?.()}
+        <DataStatus fout={fout} />
+      </>
+    )
+  return <Rad rad={rad} kamers={kamers} naam={naam} kop={kop} />
 }
 
-function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: string | null }) {
+function Rad({
+  rad,
+  kamers,
+  naam,
+  kop,
+}: {
+  rad: RadData
+  kamers?: Kamers
+  naam: string | null
+  kop?: (keuzebalk?: ReactNode) => ReactNode
+}) {
   const [soort, setSoort] = useOpgeslagen<Soort>('rad.soort', 'klos')
   const [keuze] = useDeelnemersKeuze()
   const [kleuren, setKleuren] = useOpgeslagen<PisteKleur[]>('rad.kleuren', PISTE_KLEUREN)
@@ -244,7 +264,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
   if (soort === 'casino') {
     return (
       <>
-        {keuzebalk}
+        {kop ? kop(keuzebalk) : keuzebalk}
         <Roulette naam={naam} kamers={kamers} onBezig={setCasinoBezig} />
       </>
     )
@@ -252,7 +272,7 @@ function Rad({ rad, kamers, naam }: { rad: RadData; kamers?: Kamers; naam: strin
 
   return (
     <>
-      {keuzebalk}
+      {kop ? kop(keuzebalk) : keuzebalk}
 
       <section className="kaartje radkaart golf" aria-label="Rad">
         <button

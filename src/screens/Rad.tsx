@@ -7,8 +7,19 @@ export default function Rad() {
   const nieuweKop = useNieuweKoppen()
   return (
     <div className="scherm">
-      {nieuweKop ? <SchermKop titel="Rad" ondertitel="Klos, piste, drankje, eigen rad of casino" /> : <h1>Rad</h1>}
-      <RadOnderdeel />
+      {nieuweKop ? (
+        // De keuze van het rad staat in de kop, zodat het rad zelf hoger op het scherm komt
+        <RadOnderdeel
+          kop={(keuzebalk) => (
+            <SchermKop titel="Rad">{keuzebalk && <div className="schermkop__keuze">{keuzebalk}</div>}</SchermKop>
+          )}
+        />
+      ) : (
+        <>
+          <h1>Rad</h1>
+          <RadOnderdeel />
+        </>
+      )}
     </div>
   )
 }
