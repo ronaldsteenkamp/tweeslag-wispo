@@ -60,6 +60,8 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
   const teken = useCallback(() => {
     const { s, x, y } = stand.current
     const t = `translate3d(${x}px, ${y}px, 0) scale(${s})`
+    // Helemaal uitgezoomd: dan mag je over de kaart naar een andere tab vegen (zie tabswipe.ts)
+    vak.current?.toggleAttribute('data-uitgezoomd', s <= 1.01)
     if (beeld.current) beeld.current.style.transform = t
     if (laag.current) {
       laag.current.style.transform = t
@@ -242,6 +244,7 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
       <div
         ref={vak}
         className="kaartvak"
+        data-uitgezoomd=""
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}

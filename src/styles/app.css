@@ -138,29 +138,10 @@ button {
   padding-top: 0;
 }
 
-/* Na vegen tussen tabs: nieuw scherm schuift in vanaf de kant waarheen je veegde */
-.inhoud--veeg-links {
-  animation: veeg-van-rechts 0.22s ease-out;
-}
-.inhoud--veeg-rechts {
-  animation: veeg-van-links 0.22s ease-out;
-}
-@keyframes veeg-van-rechts {
-  from { transform: translateX(40px); opacity: 0.4; }
-}
-@keyframes veeg-van-links {
-  from { transform: translateX(-40px); opacity: 0.4; }
-}
-/* De kaart staat position: fixed; een transform op main zou hem laten verspringen */
-.inhoud--kaart.inhoud--veeg-links,
-.inhoud--kaart.inhoud--veeg-rechts {
-  animation: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .inhoud--veeg-links,
-  .inhoud--veeg-rechts {
-    animation: none;
-  }
+/* Vegen tussen tabs schuift de inhoud opzij (zie tabswipe.ts): niet zijwaarts laten scrollen.
+   clip i.p.v. hidden, zodat sticky (dagkiezer) blijft werken. */
+#root {
+  overflow-x: clip;
 }
 
 .scherm {

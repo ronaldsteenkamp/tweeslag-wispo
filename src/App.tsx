@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ProfielVenster } from './components/Profiel'
 import { TabBalk, TABS, type Tab } from './components/TabBalk'
 import { UpdateMelding } from './components/UpdateMelding'
@@ -7,7 +7,7 @@ import { config } from './config'
 import { haalAllesVooraf } from './lib/data'
 import { lees, schrijf, useOpgeslagen } from './lib/opslag'
 import { useSchermWakker } from './lib/wakker'
-import { useTabSwipe } from './lib/tabswipe'
+import { schuifIn, useTabSwipe } from './lib/tabswipe'
 import Home from './screens/Home'
 import Planning from './screens/Planning'
 import Paklijst from './screens/Paklijst'
@@ -60,8 +60,12 @@ export default function App() {
     return () => navigator.serviceWorker?.removeEventListener('controllerchange', haalAllesVooraf)
   }, [])
 
-  // Na een veeg schuift het nieuwe scherm in vanaf die kant (bij tikken niet)
-  const [veeg, setVeeg] = useState<{ richting: 1 | -1; n: number } | null>(null)
+  // Bij wisselen tussen tabs schuift het nieuwe scherm in vanaf de kant waar die tab staat
+  const inschuiven = useRef<1 | -1 | null>(null)
+  useLayoutEffect(() => {
+    if (inschuiven.current) schuifIn(inschuiven.current)
+    inschuiven.current = null
+  }, [tab])
 
   const kies = useCallback(
     (t: Scherm) => {
@@ -69,7 +73,9 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
-      setVeeg(null)
+      const van = TABS.findIndex((x) => x.id === tab)
+      const naar = TABS.findIndex((x) => x.id === t)
+      inschuiven.current = van >= 0 && naar >= 0 ? (naar > van ? 1 : -1) : null
       const { pathname, search } = window.location
       window.history.replaceState(null, '', `${pathname}${search}#${t}`)
       setTab(t)
@@ -80,19 +86,18 @@ export default function App() {
 
   // Vegen tussen de tabs van de tabbalk (niet in subschermen en niet tijdens het welkomstscherm)
   const tabIndex = TABS.findIndex((t) => t.id === tab)
-  useTabSwipe(welkomGehad && tabIndex >= 0, (richting) => {
-    const volgende = TABS[tabIndex + richting]
-    if (!volgende) return
-    kies(volgende.id)
-    setVeeg((v) => ({ richting, n: (v?.n ?? 0) + 1 }))
+  useTabSwipe({
+    aan: welkomGehad && tabIndex >= 0,
+    kan: (richting) => !!TABS[tabIndex + richting],
+    onWissel: (richting) => {
+      const volgende = TABS[tabIndex + richting]
+      if (volgende) kies(volgende.id)
+    },
   })
 
   return (
     <>
-      <main
-        key={veeg ? `veeg-${veeg.n}` : 'tik'}
-        className={`inhoud inhoud--${tab}${veeg ? ` inhoud--veeg-${veeg.richting > 0 ? 'links' : 'rechts'}` : ''}`}
-      >
+      <main className={`inhoud inhoud--${tab}`}>
         {tab === 'home' && <Home naarTab={kies} naarWeer={() => kies('weer')} />}
         {tab === 'weer' && <Weer terug={() => kies('home')} />}
         {tab === 'beheer' && <Beheer terug={() => kies('kamers')} />}
