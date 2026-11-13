@@ -7,6 +7,7 @@ import { config } from './config'
 import { haalAllesVooraf } from './lib/data'
 import { lees, schrijf, useOpgeslagen } from './lib/opslag'
 import { useSchermWakker } from './lib/wakker'
+import { useTabSwipe } from './lib/tabswipe'
 import Home from './screens/Home'
 import Planning from './screens/Planning'
 import Paklijst from './screens/Paklijst'
@@ -59,12 +60,16 @@ export default function App() {
     return () => navigator.serviceWorker?.removeEventListener('controllerchange', haalAllesVooraf)
   }, [])
 
+  // Na een veeg schuift het nieuwe scherm in vanaf die kant (bij tikken niet)
+  const [veeg, setVeeg] = useState<{ richting: 1 | -1; n: number } | null>(null)
+
   const kies = useCallback(
     (t: Scherm) => {
       if (t === tab) {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
+      setVeeg(null)
       const { pathname, search } = window.location
       window.history.replaceState(null, '', `${pathname}${search}#${t}`)
       setTab(t)
@@ -73,9 +78,21 @@ export default function App() {
     [tab],
   )
 
+  // Vegen tussen de tabs van de tabbalk (niet in subschermen en niet tijdens het welkomstscherm)
+  const tabIndex = TABS.findIndex((t) => t.id === tab)
+  useTabSwipe(welkomGehad && tabIndex >= 0, (richting) => {
+    const volgende = TABS[tabIndex + richting]
+    if (!volgende) return
+    kies(volgende.id)
+    setVeeg((v) => ({ richting, n: (v?.n ?? 0) + 1 }))
+  })
+
   return (
     <>
-      <main className={`inhoud inhoud--${tab}`}>
+      <main
+        key={veeg ? `veeg-${veeg.n}` : 'tik'}
+        className={`inhoud inhoud--${tab}${veeg ? ` inhoud--veeg-${veeg.richting > 0 ? 'links' : 'rechts'}` : ''}`}
+      >
         {tab === 'home' && <Home naarTab={kies} naarWeer={() => kies('weer')} />}
         {tab === 'weer' && <Weer terug={() => kies('home')} />}
         {tab === 'beheer' && <Beheer terug={() => kies('kamers')} />}
