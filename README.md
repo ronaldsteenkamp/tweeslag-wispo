@@ -111,6 +111,14 @@ Het weerbericht komt van [Open-Meteo](https://open-meteo.com) (gratis, geen key 
 ### Overige instellingen
 Vertrektijd, thuiskomst, het openen van het spel en de links naar de Les 2 Alpes-app staan in `src/config.ts`.
 
+### Nieuwe schermkoppen (schakelaar)
+De schermen naast Home kunnen een kleine versie van de Home-kop krijgen: donkerblauw met bergen, een persoonlijke ondertitel en een balk die bovenaan blijft staan als je scrolt. Daarbij horen een paar extraatjes op Planning (icoontjes per activiteit, lichtblauw kaartje voor wat nu bezig is) en Paklijst (vinkanimatie, klare categorieën klappen in, confetti bij 100%). Dit staat achter `nieuweKoppen` in `src/config.ts`:
+- `'uit'`: alles zoals het was.
+- `'test'` (standaard): alleen wie de app één keer opent met `#nieuwekop` achter het adres ziet de nieuwe koppen, bijvoorbeeld `https://ronaldsteenkamp.github.io/tweeslag-wispo/#nieuwekop`. De telefoon onthoudt dat. Met `#oudekop` zet je het op die telefoon weer terug.
+- `'aan'`: iedereen ziet de nieuwe koppen.
+
+**Terugzetten:** zet `nieuweKoppen` op `'uit'` en push, dan ziet niemand er meer iets van. Helemaal weghalen kan door de commits van de branch `nieuwe-koppen` terug te draaien (`git revert`). De code staat in `src/components/SchermKop.tsx`, `src/lib/nieuweKoppen.ts` en het gemarkeerde blok *NIEUWE SCHERMKOPPEN* onderaan `src/styles/app.css`; elk scherm kiest met één regel tussen de oude `<h1>` en `<SchermKop>`.
+
 ---
 
 ## Pistekaart en logo vervangen

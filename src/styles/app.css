@@ -4026,3 +4026,331 @@ button {
     grid-column: 2;
   }
 }
+
+
+/* =====================================================================================
+ * NIEUWE SCHERMKOPPEN (config.nieuweKoppen, components/SchermKop.tsx)
+ * Alles van de nieuwe koppen en de extraatjes op Planning en Paklijst staat in dit blok.
+ * Weghalen: dit blok verwijderen (of de vlag op 'uit' zetten, dan wordt niets hiervan gebruikt).
+ * ===================================================================================== */
+
+:root {
+  /* Hoogte van de smalle balk bovenaan als de kop weggescrold is */
+  --schermkop-balk: calc(var(--boven) + 48px);
+}
+
+/* Houder van 0 hoog die bovenaan blijft staan; de balk hangt erin */
+.schermkop__balkplek {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  height: 0;
+  margin-top: calc(-16px - var(--boven));
+  margin-bottom: -16px; /* de tussenruimte van .scherm opheffen */
+}
+
+.schermkop__balk {
+  --krimp: 0;
+  position: absolute;
+  top: 0;
+  left: -16px;
+  right: -16px;
+  height: var(--schermkop-balk);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 20px 11px;
+  background: var(--hero);
+  color: var(--hero-tekst);
+  border-bottom: 3px solid var(--tweeslag-lichtblauw);
+  box-shadow: 0 2px 10px rgba(13, 0, 88, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  cursor: pointer;
+}
+
+.schermkop__balk[data-klein] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.schermkop__balktitel {
+  font-family: var(--font-kop);
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.schermkop {
+  --krimp: 0;
+  --bergen-hoogte: 54px;
+  margin: 0 -16px;
+  padding: calc(var(--boven) + 16px) 20px 66px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--hero);
+  color: var(--hero-tekst);
+}
+
+.schermkop__rij {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.schermkop__tekst {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  transform-origin: left bottom;
+}
+
+.schermkop__terug {
+  margin: -6px 0 2px -4px;
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: var(--font-kop);
+  font-size: 0.9rem;
+  font-weight: 700;
+  opacity: 0.9;
+  touch-action: manipulation;
+}
+
+.schermkop__boven {
+  font-family: var(--font-kop);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9fe3f4; /* lichtblauw, iets lichter voor contrast op donkerblauw */
+}
+
+.schermkop__titel {
+  font-size: 1.85rem;
+  line-height: 1.1;
+}
+
+.schermkop__onder {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.schermkop__rechts {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-family: var(--font-kop);
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.schermkop__groot {
+  font-size: 1.6rem;
+}
+
+.schermkop__klein {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+/* Voortgangsbalk in de kop (Paklijst) */
+.schermkop__extra .voortgang__balk {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.schermkop__extra .voortgang__balk > div {
+  background: linear-gradient(90deg, #7fd3ea, var(--tweeslag-lichtblauw));
+}
+
+/* Tijdens het wegscrollen wordt de inhoud kleiner en lichter; de balk komt er zacht in.
+   Alleen zonder 'minder beweging': anders scrolt de kop gewoon weg en staat de balk er ineens. */
+@media (prefers-reduced-motion: no-preference) {
+  .schermkop__tekst {
+    transform: scale(calc(1 - var(--krimp) * 0.22));
+  }
+  .schermkop__rij,
+  .schermkop__extra {
+    opacity: calc(1 - var(--krimp) * 1.2);
+  }
+  .schermkop__balk {
+    visibility: visible;
+    opacity: clamp(0, calc((var(--krimp) - 0.75) * 4), 1);
+    pointer-events: none;
+  }
+  .schermkop__balk[data-klein] {
+    pointer-events: auto;
+  }
+}
+
+/* Wat onder de kop 'sticky' is, blijft onder de smalle balk hangen in plaats van erachter */
+.scherm:has(> .schermkop) .dagkiezer {
+  top: var(--schermkop-balk);
+  padding-top: 8px;
+}
+.scherm:has(> .schermkop) .dag {
+  scroll-margin-top: calc(var(--schermkop-balk) + 72px);
+}
+.scherm:has(> .schermkop) .verdelen__hint {
+  top: calc(var(--schermkop-balk) + 8px);
+}
+/* ---- Planning: rond icoontje per activiteit, en een lichtblauw kaartje voor wat nu bezig is ---- */
+
+.tijdlijn--iconen .tijdlijn__item {
+  grid-template-columns: 50px 32px 1fr;
+  gap: 10px;
+}
+
+/* De lijn loopt door het midden van de icoontjes; het stipje is niet nodig */
+.tijdlijn--iconen .tijdlijn__item::before {
+  left: 75px;
+}
+
+.tijdlijn--iconen .tijdlijn__item:first-child::before {
+  top: 24px;
+}
+
+.tijdlijn--iconen .tijdlijn__item:last-child::before {
+  bottom: calc(100% - 24px);
+}
+
+.tijdlijn--iconen .tijdlijn__item::after {
+  display: none;
+}
+
+.tijdlijn--iconen .tijdlijn__inhoud {
+  padding-left: 0;
+  padding-top: 4px;
+}
+
+.tijdlijn--iconen .tijdlijn__tijd {
+  padding-top: 5px;
+}
+
+.tijdlijn__icoon {
+  position: relative; /* boven de lijn */
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--oppervlak-2);
+  border: 2px solid var(--accent);
+  color: var(--primair);
+}
+
+.tijdlijn--iconen .tijdlijn__item.is-straks .tijdlijn__icoon {
+  background: var(--accent-zacht);
+}
+
+.tijdlijn--iconen .tijdlijn__item.is-bezig .tijdlijn__icoon {
+  background: var(--primair);
+  border-color: var(--primair);
+  color: var(--primair-tekst);
+}
+
+/* Wat nu bezig is: een lichtblauw kaartje (schaduw i.p.v. marge, zodat de lijn op zijn plek blijft) */
+.tijdlijn--iconen .tijdlijn__item.is-bezig {
+  border-radius: 6px;
+  background: var(--accent-zacht);
+  box-shadow:
+    0 0 0 6px var(--accent-zacht),
+    0 0 0 8px var(--accent);
+  margin: 8px 0;
+}
+/* ---- Paklijst: vinkanimatie, klare categorie met groene rand die inklapt, confetti bij 100% ---- */
+
+.categorie--klaar {
+  border: 2px solid var(--succes);
+}
+
+.categorie.is-ingeklapt {
+  padding: 0;
+}
+
+.categorie__regel button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  font: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.categorie__regel {
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.categorie__inklappen {
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  font-size: 1rem;
+  touch-action: manipulation;
+}
+
+.paklijst__confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+@keyframes vink-plop {
+  0% {
+    transform: scale(0.8);
+  }
+  55% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes vink-teken {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .vinkregel.is-net .vinkregel__vak {
+    animation: vink-plop 0.35s ease-out;
+  }
+  .vinkregel.is-net .vinkregel__vak path {
+    stroke-dasharray: 22;
+    stroke-dashoffset: 22;
+    animation: vink-teken 0.3s 0.05s ease-out forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paklijst__confetti {
+    display: none;
+  }
+}

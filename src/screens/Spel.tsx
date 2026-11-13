@@ -13,7 +13,10 @@ import { bingoScore, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
 import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
 import { testOntgrendeld, useNu } from '../lib/nu'
 import { isTestperiode } from '../lib/testperiode'
-import { useOpgeslagen } from '../lib/opslag'
+import { lees, useOpgeslagen } from '../lib/opslag'
+import { useNieuweKoppen } from '../lib/nieuweKoppen'
+import { KLASSEMENT_CACHE, type Klassement as KlassementData } from '../lib/scorebord'
+import { SchermKop } from '../components/SchermKop'
 import { tabToetsen } from '../lib/tabbladen'
 import { datumISO, datumLabel, lokaalNaarDate } from '../lib/tijd'
 
@@ -25,6 +28,7 @@ export default function Spel() {
   // Challenges gaan op hele minuten open; de aftelklok tikt zelf elke seconde
   const nu = useNu(10_000)
   const { data, fout } = useData('spel')
+  const nieuweKop = useNieuweKoppen()
 
   if (!testOntgrendeld && !config.spelTestperiode && nu < spelOpen) {
     return (
@@ -49,7 +53,7 @@ export default function Spel() {
   if (!data) {
     return (
       <div className="scherm">
-        <h1>Spel</h1>
+        {nieuweKop ? <SchermKop titel="Spel" /> : <h1>Spel</h1>}
         <DataStatus fout={fout} />
       </div>
     )
@@ -97,9 +101,38 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
     .reduce((som, c) => som + (gedaanSet.has(c.id) ? c.punten : 0), 0)
   const bingo = bingoScore(kaart, gemarkeerdSet, data.punten)
 
+  // Voor de nieuwe kop: je plek in het klassement, zoals het laatst is opgehaald (als dat er is)
+  const nieuweKop = useNieuweKoppen()
+  const mijnPlek = useMemo(() => {
+    // Zonder backend is er geen klassement (een oude bewaarde stand niet tonen)
+    if (!nieuweKop || !naam || !backendIngesteld) return null
+    const personen = lees<KlassementData | null>(KLASSEMENT_CACHE, null)?.personen ?? []
+    const ik = personen.find((p) => p.naam === naam)
+    if (!ik) return null
+    return { plek: 1 + personen.filter((p) => p.totaal > ik.totaal).length, van: personen.length, punten: ik.totaal }
+    // nu: af en toe opnieuw lezen, want het klassement wordt op de achtergrond bijgewerkt
+  }, [nieuweKop, naam, nu])
+
   return (
     <div className="scherm">
-      <h1>Spel</h1>
+      {nieuweKop ? (
+        <SchermKop
+          titel="Spel"
+          ondertitel={mijnPlek ? `${mijnPlek.punten} punten in het klassement` : undefined}
+          rechts={
+            mijnPlek && (
+              <span>
+                <span className="schermkop__groot">{mijnPlek.plek}e</span>
+                <br />
+                <span className="schermkop__klein">van {mijnPlek.van}</span>
+                <span className="verborgen"> in het klassement</span>
+              </span>
+            )
+          }
+        />
+      ) : (
+        <h1>Spel</h1>
+      )}
       {testOntgrendeld && <p className="melding melding--test">Testmodus: alles is open (?unlock=1)</p>}
       {isTestperiode(nu) && (
         <p className="melding">

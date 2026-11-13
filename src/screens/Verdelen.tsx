@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { SchermKop } from '../components/SchermKop'
+import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
@@ -14,6 +16,7 @@ import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 /** Kamerverdeling maken (voor de reisleiding). Alles blijft op dit apparaat tot je kamers.json op GitHub zet. */
 export default function Verdelen({ terug }: { terug: () => void }) {
   const { data, fout } = useData('kamers')
+  const nieuweKop = useNieuweKoppen()
   const [concept, setConcept] = useOpgeslagen<Concept | null>('verdeling.concept', null)
   const [serverVersie] = useOpgeslagen<ServerVersie | null>(SERVER_VERSIE, null)
   const [mijnNaam] = useOpgeslagen<string | null>('naam', null)
@@ -56,7 +59,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
   if (!concept) {
     return (
       <div className="scherm">
-        <h1>Kamerverdeling</h1>
+        {nieuweKop ? <SchermKop titel="Kamerverdeling" boven="Reisleiding" terug={{ label: 'Kamers', onClick: terug }} /> : <h1>Kamerverdeling</h1>}
         <DataStatus fout={fout} />
       </div>
     )
@@ -182,10 +185,12 @@ export default function Verdelen({ terug }: { terug: () => void }) {
 
   return (
     <div className="scherm verdelen">
-      <button type="button" className="tekstknop" onClick={terug}>
-        ← Terug naar Kamers
-      </button>
-      <h1>Kamerverdeling</h1>
+      {!nieuweKop && (
+        <button type="button" className="tekstknop" onClick={terug}>
+          ← Terug naar Kamers
+        </button>
+      )}
+      {nieuweKop ? <SchermKop titel="Kamerverdeling" boven="Reisleiding" terug={{ label: 'Kamers', onClick: terug }} /> : <h1>Kamerverdeling</h1>}
       <p>
         Voor de reisleiding. Tik op een naam en daarna op een kamer. Je werk wordt op deze telefoon bewaard; de groep
         ziet het pas als je onderaan op <strong>Opslaan in de app</strong> tikt.

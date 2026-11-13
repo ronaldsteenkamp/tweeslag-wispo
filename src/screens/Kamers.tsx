@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { NaamKiezer, useAlleNamen } from '../components/NaamKiezer'
 import { openMijnProfiel, toonProfiel } from '../components/Profiel'
+import { SchermKop } from '../components/SchermKop'
+import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { config } from '../config'
 import { useData, type Kamer } from '../lib/data'
 import { useToonNaam } from '../lib/bijnamen'
@@ -12,6 +14,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   const { data, fout } = useData('kamers')
   const [naam, setNaam] = useOpgeslagen<string | null>('naam', null)
   const [wijzigen, setWijzigen] = useState(false)
+  const nieuweKop = useNieuweKoppen()
 
   const alleNamen = useAlleNamen(data)
   const toon = useToonNaam()
@@ -20,7 +23,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   if (!data) {
     return (
       <div className="scherm">
-        <h1>Kamers</h1>
+        {nieuweKop ? <SchermKop titel="Kamers" /> : <h1>Kamers</h1>}
         <DataStatus fout={fout} />
       </div>
     )
@@ -30,7 +33,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   if (!naamBekend || wijzigen) {
     return (
       <div className="scherm">
-        <h1>Wie ben jij?</h1>
+        {nieuweKop ? <SchermKop titel="Wie ben jij?" boven="Kamers" /> : <h1>Wie ben jij?</h1>}
         <p>
           {naam !== null && !naamBekend
             ? 'Je naam staat niet meer in de kamerlijst. Kies hem opnieuw.'
@@ -59,10 +62,22 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   const andere = data.kamers.filter((k) => k !== eigenKamer)
   const zonderKamer = data.zonderKamer
 
+  // Met de nieuwe kop: "Jij slaapt in kamer N met …" (de anderen met hun bijnaam, zoals overal)
+  const kamergenoten = eigenKamer?.bewoners.filter((b) => b !== naam).map(toon) ?? []
+  const eigenOndertitel = eigenKamer
+    ? `Jij slaapt in kamer ${eigenKamer.nummer}${kamergenoten.length ? ` met ${opsomming(kamergenoten)}` : ''}`
+    : data.verblijf
+
   return (
     <div className="scherm">
-      <h1>Kamers</h1>
-      {data.verblijf && <p className="ondertitel">{data.verblijf}</p>}
+      {nieuweKop ? (
+        <SchermKop titel="Kamers" ondertitel={eigenOndertitel} boven={eigenKamer ? data.verblijf : undefined} />
+      ) : (
+        <>
+          <h1>Kamers</h1>
+          {data.verblijf && <p className="ondertitel">{data.verblijf}</p>}
+        </>
+      )}
 
       {eigenKamer && (
         <section className="kaartje kamer kamer--eigen" aria-label="Jouw kamer">
@@ -113,6 +128,11 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
       )}
     </div>
   )
+}
+
+/** "Anna, Bram en Cas" */
+function opsomming(namen: string[]): string {
+  return namen.length <= 1 ? (namen[0] ?? '') : `${namen.slice(0, -1).join(', ')} en ${namen[namen.length - 1]}`
 }
 
 function KamerInhoud({ kamer, jij }: { kamer: Kamer; jij: string }) {

@@ -1,4 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { SchermKop } from '../components/SchermKop'
+import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { metEchteNaam, useToonNaam } from '../lib/bijnamen'
 import { Verbinding } from '../components/Verbinding'
 import { controleerCode, stuurInlogmail, stuurProfiel, uitloggen, useBackend, verbind } from '../lib/backend'
@@ -11,6 +13,7 @@ import { tijdUUMM } from '../lib/tijd'
 /** Beheer voor de reisleiding: verbinding, dit apparaat en inloggen met e-mail */
 export default function Beheer({ terug }: { terug: () => void }) {
   const b = useBackend()
+  const nieuweKop = useNieuweKoppen()
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [mailVerstuurd, setMailVerstuurd] = useState(false)
@@ -42,10 +45,12 @@ export default function Beheer({ terug }: { terug: () => void }) {
 
   return (
     <div className="scherm beheer">
-      <button type="button" className="tekstknop" onClick={terug}>
-        ← Terug naar Kamers
-      </button>
-      <h1>Beheer</h1>
+      {!nieuweKop && (
+        <button type="button" className="tekstknop" onClick={terug}>
+          ← Terug naar Kamers
+        </button>
+      )}
+      {nieuweKop ? <SchermKop titel="Beheer" boven="Reisleiding" terug={{ label: 'Kamers', onClick: terug }} /> : <h1>Beheer</h1>}
 
       <section className="kaartje">
         <div className="kaartje__kop">

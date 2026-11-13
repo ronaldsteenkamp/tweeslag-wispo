@@ -1,19 +1,34 @@
 import { useEffect, useRef, useState } from 'react'
 import { DataStatus } from '../components/DataStatus'
-import { Icoon } from '../components/Icoon'
+import { Icoon, type IcoonNaam } from '../components/Icoon'
+import { SchermKop } from '../components/SchermKop'
+import { config } from '../config'
 import { useData, type Dag } from '../lib/data'
+import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { useNu } from '../lib/nu'
-import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
+import { datumISO, datumLabel, lokaalNaarDate, tijdUUMM } from '../lib/tijd'
 import { graden, useWeer, weerIcoon, weerTekst } from '../lib/weer'
 
+/** Soort activiteit aan de hand van trefwoorden in de titel (voor het icoontje bij de nieuwe koppen) */
+export function soortActiviteit(titel: string): IcoonNaam {
+  const t = titel.toLowerCase()
+  // Après-ski eerst, anders telt het als skiën
+  if (/apr[eè]s|feest|karaoke/.test(t)) return 'muziek'
+  if (/ontbijt|lunch|diner/.test(t)) return 'eten'
+  if (/bus|vertrek/.test(t)) return 'bus'
+  // 'les' als los woord, maar niet in 'Les Deux Alpes'
+  if (/ski|piste|\bles\b(?! deux)/.test(t)) return 'ski'
+  return 'sneeuwvlok'
+}
+
 /** De items van één dag als tijdlijn. Met nuTijd worden voorbije items gedimd en is 'straks' gemarkeerd. */
-export function Programma({ dag, nuTijd }: { dag: Dag; nuTijd?: string }) {
+export function Programma({ dag, nuTijd, metIconen = false }: { dag: Dag; nuTijd?: string; metIconen?: boolean }) {
   if (dag.items.length === 0) return <p className="klein">Nog geen programma.</p>
   const volgende = nuTijd ? dag.items.findIndex((i) => i.tijd > nuTijd) : -1
   // Het item dat het laatst begonnen is (geen als we geen tijd weten of er nog niets begonnen is)
   const huidig = nuTijd === undefined ? -1 : volgende === -1 ? dag.items.length - 1 : volgende - 1
   return (
-    <ol className="tijdlijn">
+    <ol className={`tijdlijn${metIconen ? ' tijdlijn--iconen' : ''}`}>
       {dag.items.map((item, i) => {
         const voorbij = i < huidig
         const bezig = i === huidig
@@ -23,6 +38,11 @@ export function Programma({ dag, nuTijd }: { dag: Dag; nuTijd?: string }) {
             className={`tijdlijn__item${voorbij ? ' is-voorbij' : ''}${bezig ? ' is-bezig' : ''}${i === volgende ? ' is-straks' : ''}`}
           >
             <span className="tijdlijn__tijd">{item.tijd}</span>
+            {metIconen && (
+              <span className="tijdlijn__icoon">
+                <Icoon naam={soortActiviteit(item.titel)} grootte={18} />
+              </span>
+            )}
             <div className="tijdlijn__inhoud">
               <h3>
                 {item.titel}
@@ -70,6 +90,7 @@ export default function Planning() {
   const nu = useNu(30000)
   const vandaag = datumISO(nu)
   const { weer } = useWeer()
+  const nieuw = useNieuweKoppen()
   // Weer in het dorp, per datum (alleen voor dagen binnen de verwachting)
   const weerPerDag = new Map((weer?.locaties[0]?.dagen ?? []).map((d) => [d.datum, d]))
   const dagRefs = useRef(new Map<string, HTMLElement>())
@@ -126,11 +147,48 @@ export default function Planning() {
   if (!data) {
     return (
       <div className="scherm">
-        <h1>Planning</h1>
+        {nieuw ? <SchermKop titel="Planning" /> : <h1>Planning</h1>}
         <DataStatus fout={fout} />
       </div>
     )
   }
+
+  // Voor de nieuwe kop: welke dag het is, wat er straks is en het weer van vandaag
+  const dagIndex = data.dagen.findIndex((d) => d.datum === vandaag)
+  const straks = dagIndex >= 0 ? data.dagen[dagIndex].items.find((i) => i.tijd > tijdUUMM(nu)) : undefined
+  const dagenTotVertrek = Math.ceil((lokaalNaarDate(`${config.vertrek.slice(0, 10)}T00:00`).getTime() - nu.getTime()) / 86_400_000)
+  const weerVandaag = weerPerDag.get(vandaag)
+  const kop = (
+    <SchermKop
+      titel="Planning"
+      boven={
+        dagIndex >= 0
+          ? `Dag ${dagIndex + 1} van ${data.dagen.length}`
+          : dagenTotVertrek > 0
+            ? `Nog ${dagenTotVertrek} ${dagenTotVertrek === 1 ? 'dag' : 'dagen'}`
+            : undefined
+      }
+      ondertitel={
+        straks
+          ? `Straks: ${straks.titel} om ${straks.tijd}`
+          : dagenTotVertrek > 0
+            ? `Vertrek ${datumLabel(config.vertrek.slice(0, 10))} om ${config.vertrek.slice(11)}`
+            : undefined
+      }
+      rechts={
+        weerVandaag && (
+          <span title={`${weerTekst(weerVandaag.code)} in het dorp`}>
+            <span className="schermkop__groot" aria-hidden="true">
+              {weerIcoon(weerVandaag.code)}
+            </span>
+            <br />
+            {graden(weerVandaag.tMax)}
+            <span className="verborgen"> in het dorp vandaag, {weerTekst(weerVandaag.code)}</span>
+          </span>
+        )
+      }
+    />
+  )
 
   const naarDag = (datum: string) => {
     // Even niet laten meelopen, anders springt de balk langs alle tussenliggende dagen
@@ -141,7 +199,7 @@ export default function Planning() {
 
   return (
     <div className="scherm">
-      <h1>Planning</h1>
+      {nieuw ? kop : <h1>Planning</h1>}
       <div ref={balk} className="dagkiezer" role="navigation" aria-label="Spring naar dag">
         {data.dagen.map((d) => (
           <button
@@ -185,7 +243,7 @@ export default function Planning() {
               {isVandaag && <span className="label label--accent">Vandaag</span>}
             </div>
             <h2>{dag.titel}</h2>
-            <Programma dag={dag} nuTijd={isVandaag ? tijdUUMM(nu) : undefined} />
+            <Programma dag={dag} nuTijd={isVandaag ? tijdUUMM(nu) : undefined} metIconen={nieuw} />
           </section>
         )
       })}

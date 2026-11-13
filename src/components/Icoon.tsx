@@ -19,6 +19,12 @@ const paden = {
   menu: 'M12 5.5v.01M12 12v.01M12 18.5v.01',
   camera: 'M4 8h3.5l2-2.5h5L16.5 8H20v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
   prullenbak: 'M5 7h14M10 4h4M7 7l1 13h8l1-13M10 11v6M14 11v6',
+  // Soorten activiteit in de planning (nieuwe koppen)
+  eten: 'M7 3v6.5a2 2 0 0 0 4 0V3M9 3v18M16.5 21V3c-2 1.2-3 3.8-3 7v4h3',
+  ski: 'M15 5.5a1.5 1.5 0 1 0 0-.01M8 9l5 1.5-2 4 4 3M3.5 15.5 20 21M17 10.5l-3-1',
+  bus: 'M5.5 4h13v13h-13zM5.5 11.5h13M8 20v-3M16 20v-3M8.5 14.25h.01M15.5 14.25h.01M5.5 7.5h13',
+  muziek: 'M9 17.5V5.5l10.5-2v12M9 17.5a2.75 2.75 0 1 1-5.5 0 2.75 2.75 0 0 1 5.5 0zM19.5 15.5a2.75 2.75 0 1 1-5.5 0 2.75 2.75 0 0 1 5.5 0z',
+  sneeuwvlok: 'M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 6l2.5-1.5M9.5 19.5 12 18l2.5 1.5',
 } as const
 
 export type IcoonNaam = keyof typeof paden

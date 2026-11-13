@@ -178,7 +178,8 @@ async function haalKlassement(): Promise<Klassement> {
   }
 }
 
-const KLASSEMENT_CACHE = 'scorebord.klassement'
+/** Laatst opgehaalde klassement (ook gelezen door de nieuwe kop op Spel) */
+export const KLASSEMENT_CACHE = 'scorebord.klassement'
 
 /** Klassement met live verversen (Realtime) en elke 30 seconden als vangnet */
 export function useKlassement(actief: boolean) {
