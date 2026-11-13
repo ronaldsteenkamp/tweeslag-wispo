@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Icoon } from '../components/Icoon'
 import { Verbinding } from '../components/Verbinding'
 import { useBackend } from '../lib/backend'
 import { useToonNaam } from '../lib/bijnamen'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData } from '../lib/data'
-import { grooteLink, useFotos, verwijderFoto, type Foto } from '../lib/fotos'
+import { grooteLink, useFotos, type Foto } from '../lib/fotos'
 import { useFotoWachtrij } from '../lib/fotowachtrij'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 
@@ -123,7 +122,7 @@ const grootGeheugen = new Map<string, string>()
 /**
  * Foto's schermvullend bekijken. Swipe naar links of rechts (of gebruik de pijltjes) voor de
  * volgende of vorige foto, swipe omlaag om te sluiten. Inzoomen met knijpen, dubbeltikken of
- * scrollen (en + / -); ingezoomd sleep je de foto rond. Met verwijderen voor beheerders.
+ * scrollen (en + / -); ingezoomd sleep je de foto rond.
  */
 export function FotoGroot({
   fotos,
@@ -139,12 +138,9 @@ export function FotoGroot({
   /** Bijna bij de laatste foto: meer laden (als dat kan) */
   onBijnaAanHetEind?: () => void
 }) {
-  const backend = useBackend()
   const toon = useToonNaam()
   const [index, setIndex] = useState(start)
   const [, ververs] = useState(0)
-  const [vragen, setVragen] = useState(false)
-  const [fout, setFout] = useState<string | null>(null)
   // Verschuiving tijdens het swipen, en of die geanimeerd terug of weg gaat
   const [dx, setDx] = useState(0)
   const [dy, setDy] = useState(0)
@@ -191,8 +187,6 @@ export function FotoGroot({
 
   const i = Math.min(index, fotos.length - 1)
   const foto = fotos[i]
-  // Alleen beheerders (ingelogd) mogen foto's van de muur halen, ook niet de maker zelf
-  const magVerwijderen = !!foto && backend.beheerder
 
   // Grote versie van deze foto en de buren alvast ophalen
   useEffect(() => {
@@ -261,7 +255,6 @@ export function FotoGroot({
         setDx(0)
         return
       }
-      setFout(null)
       if (minderBeweging()) {
         setIndex(doel)
         setDx(0)
@@ -391,13 +384,6 @@ export function FotoGroot({
 
   if (!foto) return null
 
-  const verwijder = async () => {
-    setVragen(false)
-    const f = await verwijderFoto(foto)
-    if (f) setFout(f)
-    else onSluit()
-  }
-
   return (
     <div
       ref={dialoog}
@@ -500,22 +486,7 @@ export function FotoGroot({
           <br />
           {foto.challenge_titel} · {wanneerGemaakt(foto.gemaakt)}
         </p>
-        {magVerwijderen && (
-          <button type="button" className="knop knop--gevaar knop--klein" onClick={() => setVragen(true)}>
-            <Icoon naam="prullenbak" grootte={18} /> Verwijderen
-          </button>
-        )}
-        {fout && <p className="melding melding--fout">{fout}</p>}
       </div>
-      <BevestigDialoog
-        open={vragen}
-        titel="Foto verwijderen?"
-        tekst={`De foto van ${toon(foto.naam)} bij "${foto.challenge_titel}" verdwijnt voor iedereen.`}
-        bevestigLabel="Verwijderen"
-        gevaarlijk
-        onAnnuleer={() => setVragen(false)}
-        onBevestig={() => void verwijder()}
-      />
     </div>
   )
 }

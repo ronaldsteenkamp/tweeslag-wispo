@@ -76,14 +76,15 @@ export default function App() {
   }, [tab])
 
   const kies = useCallback(
-    (t: Scherm) => {
+    (t: Scherm, geveegd = false) => {
       if (t === tab) {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
       const van = TABS.findIndex((x) => x.id === hoofdTab(tab))
       const naar = TABS.findIndex((x) => x.id === hoofdTab(t))
-      inschuiven.current = naar !== van ? (naar > van ? 1 : -1) : null
+      // Na vegen ligt het nieuwe scherm al op zijn plek; alleen bij tikken inschuiven
+      inschuiven.current = !geveegd && naar !== van ? (naar > van ? 1 : -1) : null
       const { pathname, search } = window.location
       window.history.replaceState(null, '', `${pathname}${search}#${t}`)
       setTab(t)
@@ -95,35 +96,60 @@ export default function App() {
   // Vegen tussen de tabs van de tabbalk (niet tijdens het welkomstscherm). Vanuit een
   // subscherm (bijv. de fotomuur) ga je naar de buren van de tab waar het onder valt.
   const tabIndex = TABS.findIndex((t) => t.id === hoofdTab(tab))
+  // Tijdens het vegen: het buurscherm dat naast het huidige ligt (zie tabswipe.ts)
+  const [buur, setBuur] = useState<1 | -1 | null>(null)
+  const buurTab = buur ? TABS[tabIndex + buur]?.id : undefined
   useTabSwipe({
     aan: welkomGehad,
     kan: (richting) => !!TABS[tabIndex + richting],
+    onBuur: setBuur,
     onWissel: (richting) => {
+      setBuur(null)
       const volgende = TABS[tabIndex + richting]
-      if (volgende) kies(volgende.id)
+      if (volgende) kies(volgende.id, true)
     },
   })
 
+  const scherm = (s: Scherm) => {
+    switch (s) {
+      case 'home':
+        return <Home naarTab={kies} naarWeer={() => kies('weer')} />
+      case 'weer':
+        return <Weer terug={() => kies('home')} />
+      case 'beheer':
+        return <Beheer terug={() => kies('kamers')} />
+      case 'planning':
+        return <Planning />
+      case 'paklijst':
+        return <Paklijst />
+      case 'kamers':
+        return <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />
+      case 'kaart':
+        return <Kaart />
+      case 'rad':
+        return <Rad />
+      case 'spel':
+        return <Spel />
+      case 'fotos':
+        return <Fotomuur terug={() => kies('spel')} />
+      case 'verdelen':
+        return magVerdelen ? (
+          <Verdelen terug={() => kies('kamers')} />
+        ) : (
+          <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />
+        )
+    }
+  }
+
   return (
     <>
-      <main className={`inhoud inhoud--${tab}`}>
-        {tab === 'home' && <Home naarTab={kies} naarWeer={() => kies('weer')} />}
-        {tab === 'weer' && <Weer terug={() => kies('home')} />}
-        {tab === 'beheer' && <Beheer terug={() => kies('kamers')} />}
-        {tab === 'planning' && <Planning />}
-        {tab === 'paklijst' && <Paklijst />}
-        {tab === 'kamers' && <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />}
-        {tab === 'kaart' && <Kaart />}
-        {tab === 'rad' && <Rad />}
-        {tab === 'spel' && <Spel />}
-        {tab === 'fotos' && <Fotomuur terug={() => kies('spel')} />}
-        {tab === 'verdelen' &&
-          (magVerdelen ? (
-            <Verdelen terug={() => kies('kamers')} />
-          ) : (
-            <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />
-          ))}
-      </main>
+      <main className={`inhoud inhoud--${tab}`}>{scherm(tab)}</main>
+      {buurTab && (
+        // Het buurscherm, zoals het eruitziet als je er bovenaan binnenkomt. Niet aan te raken.
+        <div className={`buurpaneel buurpaneel--${buur! > 0 ? 'rechts' : 'links'}`} aria-hidden="true" ref={(el) => el?.setAttribute('inert', '')}>
+          <div className={`inhoud inhoud--${buurTab}`}>{scherm(buurTab)}</div>
+        </div>
+      )}
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <ProfielVenster />
       <UpdateMelding />

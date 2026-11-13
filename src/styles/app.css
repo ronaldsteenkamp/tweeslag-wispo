@@ -144,6 +144,22 @@ button {
   overflow-x: clip;
 }
 
+/* Het buurscherm naast het huidige tijdens het vegen (positie zet tabswipe.ts) */
+.buurpaneel {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: clip;
+  pointer-events: none;
+  will-change: transform;
+}
+.buurpaneel--rechts {
+  transform: translateX(100%);
+}
+.buurpaneel--links {
+  transform: translateX(-100%);
+}
+
 .scherm {
   display: flex;
   flex-direction: column;
@@ -2748,6 +2764,12 @@ button {
   font-weight: 800;
   font-size: 1.05rem;
   touch-action: manipulation;
+}
+
+/* Alleen een stand (punten krijg je via een foto): niet als knop laten ogen */
+.challenge__knop--stand:not(.is-klaar) {
+  border-style: dashed;
+  color: var(--tekst-zacht);
 }
 
 .challenge__knop.is-klaar {

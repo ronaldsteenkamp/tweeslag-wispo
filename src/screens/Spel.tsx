@@ -179,14 +179,12 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
           challenge={fotoVoor}
           onSluit={() => setFotoVoor(null)}
           onGelukt={(later) => {
-            // Bewijs geleverd: dan telt de challenge ook als gedaan
+            // Bewijs geleverd: dan telt de challenge als gedaan (een extra inzending geeft geen extra punten)
             const id = fotoVoor.id
+            const extra = gedaanSet.has(id)
             setGedaan((oud) => (oud.includes(id) ? oud : [...oud, id]))
-            setFotoGelukt(
-              later
-                ? `Foto bewaard ✓ Hij gaat naar de fotomuur zodra er bereik is. "${fotoVoor.titel}" is afgevinkt.`
-                : `Foto staat op de fotomuur ✓ "${fotoVoor.titel}" is afgevinkt.`,
-            )
+            const waar = later ? 'Foto bewaard ✓ Hij gaat naar de fotomuur zodra er bereik is.' : 'Foto staat op de fotomuur ✓'
+            setFotoGelukt(extra ? `${waar} Extra inzending voor "${fotoVoor.titel}".` : `${waar} "${fotoVoor.titel}" is afgevinkt.`)
             setFotoVoor(null)
           }}
         />
@@ -245,19 +243,31 @@ function Challenges({
                   {c.omschrijving && <p>{c.omschrijving}</p>}
                   {onFoto && (
                     <button type="button" className="challenge__foto" onClick={() => onFoto({ id: c.id, titel: c.titel })}>
-                      <Icoon naam="camera" grootte={18} /> Foto als bewijs
+                      <Icoon naam="camera" grootte={18} /> {klaar ? 'Betere inzending?' : 'Foto als bewijs'}
                     </button>
                   )}
                 </div>
-                <button
-                  type="button"
-                  className={`challenge__knop${klaar ? ' is-klaar' : ''}`}
-                  aria-pressed={klaar}
-                  aria-label={`${c.titel}: ${klaar ? 'gedaan' : 'nog niet gedaan'}`}
-                  onClick={() => onWissel(c.id)}
-                >
-                  {klaar ? <Icoon naam="vink" grootte={28} /> : <span>+{c.punten}</span>}
-                </button>
+                {onFoto ? (
+                  // Met fotomuur: punten krijg je alleen door een foto in te sturen, niet zelf aan te vinken
+                  <span
+                    className={`challenge__knop challenge__knop--stand${klaar ? ' is-klaar' : ''}`}
+                    role="img"
+                    aria-label={`${c.titel}: ${klaar ? `gedaan, ${c.punten} punten` : `stuur een foto in voor ${c.punten} punten`}`}
+                  >
+                    {klaar ? <Icoon naam="vink" grootte={28} /> : <span>+{c.punten}</span>}
+                  </span>
+                ) : (
+                  // Zonder backend (geen fotomuur) blijft zelf afvinken de enige manier
+                  <button
+                    type="button"
+                    className={`challenge__knop${klaar ? ' is-klaar' : ''}`}
+                    aria-pressed={klaar}
+                    aria-label={`${c.titel}: ${klaar ? 'gedaan' : 'nog niet gedaan'}`}
+                    onClick={() => onWissel(c.id)}
+                  >
+                    {klaar ? <Icoon naam="vink" grootte={28} /> : <span>+{c.punten}</span>}
+                  </button>
+                )}
               </article>
             )
           })}
