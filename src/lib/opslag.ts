@@ -22,7 +22,6 @@ export function schrijf<T>(sleutel: string, waarde: T): void {
 
 // Zodat bijvoorbeeld een naam die je in het welkomstscherm kiest meteen ook op Home staat
 const luisteraars = new Map<string, Set<(waarde: unknown) => void>>()
-const GEEN = Symbol('geen')
 
 /** Bewaren buiten React, en schermen en abonnees meteen laten meekijken */
 export function schrijfEnMeld<T>(sleutel: string, waarde: T): void {
@@ -45,31 +44,55 @@ export function useOpgeslagen<T>(sleutel: string, standaard: T) {
   const [waarde, setWaarde] = useState<T>(() => lees(sleutel, standaard))
   const huidig = useRef<T>(waarde)
   huidig.current = waarde
-  const vanElders = useRef<unknown>(GEEN)
+  // Waarden die van een ander scherm kwamen (daar al bewaard): nooit terugschrijven. Een set,
+  // omdat er twee meldingen kort na elkaar kunnen komen voordat dit scherm opnieuw tekent.
+  const vanElders = useRef(new Set<unknown>())
 
   useEffect(() => {
     const set = luisteraars.get(sleutel) ?? new Set()
     luisteraars.set(sleutel, set)
     const luister = (w: unknown) => {
       if (Object.is(w, huidig.current)) return
-      vanElders.current = w
+      vanElders.current.add(w)
       setWaarde(w as T)
     }
     set.add(luister)
+    // Bijwerken als de waarde veranderde tussen het lezen bij het openen en nu (bijv. een naam
+    // die net op een ander scherm gekozen is terwijl dit scherm openging)
+    const nu = lees(sleutel, standaard)
+    if (JSON.stringify(nu) !== JSON.stringify(huidig.current)) luister(nu)
     return () => {
       set.delete(luister)
     }
+    // standaard hoort bij de sleutel; niet bij elke render opnieuw abonneren
   }, [sleutel])
 
+  // De beginwaarde komt uit de opslag: bij het openen van het scherm nooit terugschrijven. Een
+  // net geopend scherm kan namelijk een verouderde waarde hebben gelezen (bijv. de oude naam,
+  // als de nieuwe in hetzelfde moment op een ander scherm gekozen is).
+  const geopend = useRef(false)
   useEffect(() => {
-    // Een waarde die van een ander scherm kwam is daar al bewaard
-    if (Object.is(vanElders.current, waarde)) {
-      vanElders.current = GEEN
+    if (!geopend.current) {
+      geopend.current = true
       return
     }
+    if (vanElders.current.has(waarde)) {
+      vanElders.current.clear()
+      return
+    }
+    // Staat dit al zo bewaard: niet opnieuw schrijven en melden
+    if (ruw(sleutel) === JSON.stringify(waarde)) return
     schrijf(sleutel, waarde)
     luisteraars.get(sleutel)?.forEach((f) => f(waarde))
   }, [sleutel, waarde])
 
   return [waarde, setWaarde] as const
+}
+
+function ruw(sleutel: string): string | null {
+  try {
+    return window.localStorage.getItem(VOORVOEGSEL + sleutel)
+  } catch {
+    return null
+  }
 }
