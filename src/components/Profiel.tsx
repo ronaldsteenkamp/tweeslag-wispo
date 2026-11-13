@@ -12,6 +12,7 @@ import {
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData } from '../lib/data'
 import { useOpgeslagen } from '../lib/opslag'
+import { useTerugSluit } from '../lib/terugknop'
 import {
   isAf,
   MAX,
@@ -452,6 +453,8 @@ export function ProfielVenster() {
   const v = useVenster()
   const sluit = () => zetVenster(null)
   const venster = useDialoogFocus<HTMLDivElement>(v !== null)
+  // Terugknop (Android, of terugvegen) sluit het profielvenster, niet de app
+  useTerugSluit(v !== null, sluit)
 
   useEffect(() => {
     if (!v) return

@@ -11,6 +11,15 @@ export function useAlleNamen(kamers?: Kamers) {
   return useMemo(() => alleDeelnemers(kamers).sort((a, b) => a.localeCompare(b, 'nl')), [kamers])
 }
 
+/** Het venster of overlay dat zelf scrolt (bijv. het profielvenster), of null voor de pagina */
+function scrollHouder(el: HTMLElement | null): HTMLElement | null {
+  for (let e = el?.parentElement ?? null; e && e !== document.body; e = e.parentElement) {
+    const oy = getComputedStyle(e).overflowY
+    if ((oy === 'auto' || oy === 'scroll') && e.scrollHeight > e.clientHeight) return e
+  }
+  return null
+}
+
 /** Raster met grote naamknoppen en een zoekveld */
 export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: string) => void }) {
   const [zoek, setZoek] = useState('')
@@ -18,14 +27,27 @@ export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: str
   // niet korter wordt bij elke letter (anders schuift alles naar beneden, achter het toetsenbord)
   const [zoekend, setZoekend] = useState(false)
   const veld = useRef<HTMLDivElement>(null)
+  const schuifTimer = useRef<number | undefined>(undefined)
   const toon = useToonNaam()
   const q = normaal(zoek)
   const lijst = q ? namen.filter((n) => normaal(n).includes(q) || normaal(toon(n)).includes(q)) : namen
 
+  // Naam gekozen: terug naar boven. Tijdens het zoeken stond het zoekveld bovenaan in beeld; het
+  // scherm daarna (bijv. je profiel in hetzelfde venster) zou anders half naar beneden beginnen.
+  const kies = (n: string) => {
+    const houder = scrollHouder(veld.current)
+    window.clearTimeout(schuifTimer.current)
+    setZoekend(false)
+    // Meteen (vóór het nieuwe scherm verschijnt): bovenaan blijft bovenaan
+    ;(houder ?? window).scrollTo(0, 0)
+    onKies(n)
+  }
+
   const naarBoven = () => {
     setZoekend(true)
     // Na het openen van het toetsenbord (dat schuift zelf ook nog)
-    window.setTimeout(() => veld.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 250)
+    window.clearTimeout(schuifTimer.current)
+    schuifTimer.current = window.setTimeout(() => veld.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 250)
   }
 
   return (
@@ -51,7 +73,7 @@ export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: str
       )}
       <div className={`namenraster${zoekend ? ' namenraster--zoekend' : ''}`}>
         {lijst.map((n) => (
-          <button key={n} type="button" className="knop knop--naam" onClick={() => onKies(n)}>
+          <button key={n} type="button" className="knop knop--naam" onClick={() => kies(n)}>
             {n}
             {/* Hier de echte naam (je kiest wie je bent), met de bijnaam erbij */}
             {toon(n) !== n && <small className="knop__bijnaam">{toon(n)}</small>}

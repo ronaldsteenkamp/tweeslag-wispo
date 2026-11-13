@@ -8,6 +8,7 @@ import { useData } from '../lib/data'
 import { grooteLink, useFotos, type Foto } from '../lib/fotos'
 import { useFotoWachtrij } from '../lib/fotowachtrij'
 import { lees, schrijfEnMeld } from '../lib/opslag'
+import { useTerugSluit } from '../lib/terugknop'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 
 export function wanneerGemaakt(iso: string) {
@@ -286,22 +287,8 @@ export function FotoGroot({
   const sluit = useRef(onSluit)
   sluit.current = onSluit
 
-  // Terugknop (Android, of terugvegen) sluit alleen de foto, niet de app: bij openen een stap
-  // in de geschiedenis zetten; "terug" haalt die weg en sluit de foto. Sluit je hem zelf (kruisje,
-  // omlaag vegen), dan halen we die stap weer weg, zodat de geschiedenis klopt.
-  useEffect(() => {
-    window.history.pushState({ fotoOpen: true }, '')
-    let viaTerug = false
-    const opTerug = () => {
-      viaTerug = true
-      sluit.current()
-    }
-    window.addEventListener('popstate', opTerug)
-    return () => {
-      window.removeEventListener('popstate', opTerug)
-      if (!viaTerug && window.history.state?.fotoOpen) window.history.back()
-    }
-  }, [])
+  // Terugknop (Android, of terugvegen) sluit alleen de foto, niet de app
+  useTerugSluit(true, onSluit)
 
   useEffect(() => {
     const opToets = (e: KeyboardEvent) => {
