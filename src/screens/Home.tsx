@@ -200,7 +200,9 @@ function AppKnop() {
           href={
             p === 'ios'
               ? links.ios
-              : `intent://#Intent;package=${links.androidPakket};S.browser_fallback_url=${encodeURIComponent(links.android)};end`
+              : // Expliciet "start de app" (MAIN/LAUNCHER): zonder actie vindt Chrome geen scherm om
+                // te openen en valt hij terug op Google Play, ook als de app er al op staat
+                `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${links.androidPakket};S.browser_fallback_url=${encodeURIComponent(links.android)};end`
           }
           // Intent-links niet in een nieuw tabblad, anders blijft er een leeg tabblad achter
           target={p === 'ios' ? '_blank' : undefined}
