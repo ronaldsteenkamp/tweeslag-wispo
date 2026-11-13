@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { BevestigDialoog } from '../components/BevestigDialoog'
-import { Confetti } from '../components/Confetti'
+import { Feestregen } from '../components/Feestregen'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { SchermKop } from '../components/SchermKop'
@@ -37,7 +37,7 @@ export default function Paklijst() {
   const totaal = alleSleutels.length
   const procent = totaal ? Math.round((klaar / totaal) * 100) : 0
 
-  // ---- Extraatjes met de nieuwe koppen: klare categorieën inklappen, confetti bij 100% ----
+  // ---- Extraatjes met de nieuwe koppen: klare categorieën inklappen, feest bij 100% ----
   const klareCategorieen = useMemo(
     () =>
       new Set(
@@ -68,27 +68,27 @@ export default function Paklijst() {
     }, 900)
   }, [data, klareCategorieen])
 
-  const klapOpen = (naam: string, open: boolean) => {
+  /** Op de kop van een klare categorie tikken: open of weer dicht */
+  const wisselOpen = (naam: string, nuIngeklapt: boolean) => {
     setOpengetikt((s) => {
       const n = new Set(s)
-      if (open) n.add(naam)
+      if (nuIngeklapt) n.add(naam)
       else n.delete(naam)
       return n
     })
-    if (!open) setNetKlaar((s) => new Set(Array.from(s).filter((x) => x !== naam)))
+    if (!nuIngeklapt) setNetKlaar((s) => new Set(Array.from(s).filter((x) => x !== naam)))
   }
 
-  // Confetti één keer op het moment dat alles ingepakt is (niet bij het openen van een volle lijst)
-  const [confetti, setConfetti] = useState(false)
+  // Feest over het hele scherm op het moment dat alles ingepakt is (niet bij het openen van een volle lijst).
+  // Een nummer i.p.v. aan/uit: nog een keer 100% halen start een nieuw feest.
+  const [feest, setFeest] = useState(0)
   const vorigProcent = useRef<number | null>(null)
   useEffect(() => {
     if (!data) return
     const vorig = vorigProcent.current
     vorigProcent.current = procent
     if (vorig === null || vorig === 100 || procent !== 100) return
-    setConfetti(true)
-    const id = window.setTimeout(() => setConfetti(false), 2600)
-    return () => window.clearTimeout(id)
+    setFeest((n) => n + 1)
   }, [data, procent])
 
   const wissel = (s: string) =>
@@ -163,48 +163,65 @@ export default function Paklijst() {
             {c.naam}
           </>
         )
-        if (ingeklapt) {
+        const lijst = (
+          <ul className="vinklijst">
+            {c.items.map((item) => {
+              const s = sleutel(c.naam, item)
+              return (
+                <li key={s}>
+                  <VinkRegel tekst={item} aan={aangevinkt.has(s)} onWissel={() => wissel(s)} animeer={nieuweKop} />
+                </li>
+              )
+            })}
+          </ul>
+        )
+        if (!nieuweKop) {
+          // Zoals het altijd was
           return (
-            <section className="kaartje categorie categorie--klaar is-ingeklapt" key={c.naam}>
-              <h2 className="categorie__regel">
-                <button type="button" aria-expanded={false} onClick={() => klapOpen(c.naam, true)}>
-                  <span>{kopTekst}</span>
-                  <span className="teller teller--klaar">Klaar ✓</span>
-                </button>
-              </h2>
-            </section>
-          )
-        }
-        return (
-          <section className={`kaartje categorie${isKlaar ? ' categorie--klaar' : ''}`} key={c.naam}>
-            <div className="kaartje__kop">
-              <h2>{kopTekst}</h2>
-              {isKlaar ? (
-                <button
-                  type="button"
-                  className="teller teller--klaar categorie__inklappen"
-                  aria-expanded={true}
-                  aria-label={`${c.naam} is klaar, inklappen`}
-                  onClick={() => klapOpen(c.naam, false)}
-                >
-                  Klaar ✓
-                </button>
-              ) : (
+            <section className="kaartje categorie" key={c.naam}>
+              <div className="kaartje__kop">
+                <h2>{kopTekst}</h2>
                 <span className={`teller${inCategorie === c.items.length ? ' teller--klaar' : ''}`}>
                   {inCategorie}/{c.items.length}
                 </span>
-              )}
+              </div>
+              {lijst}
+            </section>
+          )
+        }
+        const lijstId = `paklijst-${c.naam.replace(/\W+/g, '-')}`
+        return (
+          <section
+            className={`kaartje categorie${isKlaar ? ' categorie--klaar' : ''}${ingeklapt ? ' is-ingeklapt' : ''}`}
+            key={c.naam}
+          >
+            {isKlaar ? (
+              // Klaar: de hele kop is een knop die de categorie open- en dichtklapt
+              <h2 className="categorie__kop">
+                <button
+                  type="button"
+                  className="categorie__knop"
+                  aria-expanded={!ingeklapt}
+                  aria-controls={lijstId}
+                  onClick={() => wisselOpen(c.naam, ingeklapt)}
+                >
+                  <span className="categorie__naam">{kopTekst}</span>
+                  <span className="teller teller--klaar">
+                    Klaar ✓<span className="categorie__pijl" aria-hidden="true" />
+                  </span>
+                </button>
+              </h2>
+            ) : (
+              <div className="kaartje__kop">
+                <h2>{kopTekst}</h2>
+                <span className="teller">
+                  {inCategorie}/{c.items.length}
+                </span>
+              </div>
+            )}
+            <div className="categorie__inhoud" id={lijstId}>
+              {lijst}
             </div>
-            <ul className="vinklijst">
-              {c.items.map((item) => {
-                const s = sleutel(c.naam, item)
-                return (
-                  <li key={s}>
-                    <VinkRegel tekst={item} aan={aangevinkt.has(s)} onWissel={() => wissel(s)} animeer={nieuweKop} />
-                  </li>
-                )
-              })}
-            </ul>
           </section>
         )
       })}
@@ -282,11 +299,7 @@ export default function Paklijst() {
         }}
       />
 
-      {nieuweKop && confetti && (
-        <div className="paklijst__confetti">
-          <Confetti />
-        </div>
-      )}
+      {nieuweKop && feest > 0 && <Feestregen key={feest} onKlaar={() => setFeest(0)} />}
     </div>
   )
 }

@@ -4281,51 +4281,98 @@ button {
     0 0 0 8px var(--accent);
   margin: 8px 0;
 }
-/* ---- Paklijst: vinkanimatie, klare categorie met groene rand die inklapt, confetti bij 100% ---- */
+/* ---- Paklijst: vinkanimatie, klare categorie die inklapt (tik op de kop: open/dicht), feest bij 100% ---- */
 
+/* Groene rand zonder dat de kaart groter wordt: de rand blijft 1px, een schaduw aan de binnenkant
+   maakt hem dikker */
 .categorie--klaar {
-  border: 2px solid var(--succes);
+  border-color: var(--succes);
+  box-shadow:
+    inset 0 0 0 1px var(--succes),
+    var(--schaduw);
 }
 
-.categorie.is-ingeklapt {
-  padding: 0;
+.categorie__kop {
+  margin: -18px; /* de hele bovenkant van de kaart is de knop */
 }
 
-.categorie__regel button {
+.categorie__knop {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  min-height: 56px;
-  padding: 12px 18px;
+  min-height: 64px;
+  padding: 18px;
   border: 0;
-  border-radius: inherit;
+  border-radius: var(--radius);
   background: none;
   font: inherit;
   text-align: left;
   touch-action: manipulation;
 }
 
-.categorie__regel {
-  border-radius: calc(var(--radius) - 2px);
+.categorie__knop:active {
+  background: var(--succes-zacht);
 }
 
-.categorie__inklappen {
-  padding: 6px 2px;
-  border: 0;
-  background: none;
-  font-size: 1rem;
-  touch-action: manipulation;
+.categorie__knop .teller {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem; /* niet de grote letters van de kop */
+  white-space: nowrap;
 }
 
-.paklijst__confetti {
+/* Pijltje: wijst omlaag als de categorie dicht is, omhoog als hij open is */
+.categorie__pijl {
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.25s ease;
+}
+
+.categorie:not(.is-ingeklapt) .categorie__pijl {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+/* Inklappen: de lijst schuift soepel dicht (grid-rij van 1fr naar 0fr), de kaart houdt dezelfde opbouw */
+.categorie__inhoud {
+  display: grid;
+  grid-template-rows: 1fr;
+  margin-top: 0;
+  transition:
+    grid-template-rows 0.3s ease,
+    margin-top 0.3s ease,
+    visibility 0s;
+}
+
+.categorie__inhoud > .vinklijst {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.categorie.is-ingeklapt .categorie__inhoud {
+  grid-template-rows: 0fr;
+  margin-top: -10px; /* de tussenruimte van .kaartje opheffen */
+  visibility: hidden; /* niet meer aan te tikken of voor te lezen */
+  transition:
+    grid-template-rows 0.3s ease,
+    margin-top 0.3s ease,
+    visibility 0s 0.3s;
+}
+
+/* Feest over het hele scherm (components/Feestregen.tsx) */
+.feestregen {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 70;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
-
 @keyframes vink-plop {
   0% {
     transform: scale(0.8);
@@ -4355,11 +4402,6 @@ button {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .paklijst__confetti {
-    display: none;
-  }
-}
 /* Spel: de score staat in de kop; een korte regel eronder */
 .schermkop__notitie {
   font-family: var(--font-kop);
