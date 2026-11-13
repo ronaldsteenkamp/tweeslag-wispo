@@ -1963,6 +1963,26 @@ button {
   gap: 6px;
 }
 
+/* Foto die je nog niet geopend hebt: label en een lichtblauwe rand */
+.fotomuur__foto.is-nieuw {
+  position: relative;
+  box-shadow: 0 0 0 3px var(--opvallend);
+}
+.fotomuur__nieuw {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--opvallend);
+  color: #fff;
+  font-family: var(--font-kop);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
 .foto-groot {
   position: fixed;
   inset: 0;

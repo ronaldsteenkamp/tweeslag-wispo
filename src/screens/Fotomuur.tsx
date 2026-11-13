@@ -7,6 +7,7 @@ import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData } from '../lib/data'
 import { grooteLink, useFotos, type Foto } from '../lib/fotos'
 import { useFotoWachtrij } from '../lib/fotowachtrij'
+import { lees, schrijfEnMeld } from '../lib/opslag'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
 
 export function wanneerGemaakt(iso: string) {
@@ -103,6 +104,9 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
   )
 }
 
+/** Opslagsleutel: id's van foto's die je groot hebt geopend */
+export const GEZIEN = 'fotos.gezien'
+
 const minderBeweging = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
 interface Zoom {
@@ -188,6 +192,16 @@ export function FotoGroot({
   const i = Math.min(index, fotos.length - 1)
   const foto = fotos[i]
 
+  // Bijhouden welke foto's je groot bekeken hebt (voor "Nieuw" op Home). Rechtstreeks bewaren
+  // en melden (één schrijfactie): met een eigen useOpgeslagen hier schreef het openen eerst de
+  // beginwaarde weg en kon Home die daarna over de nieuwe lijst heen terugschrijven.
+  const fotoId = foto?.id
+  useEffect(() => {
+    if (!fotoId) return
+    const oud = lees<string[]>(GEZIEN, [])
+    if (!oud.includes(fotoId)) schrijfEnMeld(GEZIEN, [fotoId, ...oud].slice(0, 1000))
+  }, [fotoId])
+
   // Grote versie van deze foto en de buren alvast ophalen
   useEffect(() => {
     let actief = true
@@ -271,6 +285,24 @@ export function FotoGroot({
 
   const sluit = useRef(onSluit)
   sluit.current = onSluit
+
+  // Terugknop (Android, of terugvegen) sluit alleen de foto, niet de app: bij openen een stap
+  // in de geschiedenis zetten; "terug" haalt die weg en sluit de foto. Sluit je hem zelf (kruisje,
+  // omlaag vegen), dan halen we die stap weer weg, zodat de geschiedenis klopt.
+  useEffect(() => {
+    window.history.pushState({ fotoOpen: true }, '')
+    let viaTerug = false
+    const opTerug = () => {
+      viaTerug = true
+      sluit.current()
+    }
+    window.addEventListener('popstate', opTerug)
+    return () => {
+      window.removeEventListener('popstate', opTerug)
+      if (!viaTerug && window.history.state?.fotoOpen) window.history.back()
+    }
+  }, [])
+
   useEffect(() => {
     const opToets = (e: KeyboardEvent) => {
       if (e.key === 'Escape') sluit.current()
