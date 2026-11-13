@@ -778,9 +778,9 @@ button {
   box-sizing: border-box;
   pointer-events: none;
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M20 5C14 3.5 6 3 3 6C0.5 8.5 0 12 1.5 14.5C3 17.5 8 18 10 15.5C11.5 13.5 14 12.5 20 12.5Z' fill='url(%23g)'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath d='M20 5C14 4 6 4 3 6.5C1 8 0.5 10.5 1.5 12.5C2.5 14.5 6 14.8 8 13.5C10 12.8 14 12.5 20 12.5Z' fill='url(%23g)'/%3E%3C/svg%3E")
       left top / 20px 18px no-repeat border-box,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath transform='matrix(-1 0 0 1 20 0)' d='M20 5C14 3.5 6 3 3 6C0.5 8.5 0 12 1.5 14.5C3 17.5 8 18 10 15.5C11.5 13.5 14 12.5 20 12.5Z' fill='url(%23g)'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='3' x2='0' y2='15'%3E%3Cstop offset='.35' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23dceef7'/%3E%3C/linearGradient%3E%3Cpath transform='matrix(-1 0 0 1 20 0)' d='M20 5C14 4 6 4 3 6.5C1 8 0.5 10.5 1.5 12.5C2.5 14.5 6 14.8 8 13.5C10 12.8 14 12.5 20 12.5Z' fill='url(%23g)'/%3E%3C/svg%3E")
       right top / 20px 18px no-repeat border-box,
     var(--kap-midden) 0 0 / var(--kap-tegel) 18px round no-repeat content-box;
   filter: drop-shadow(0 0.5px 0.4px rgba(13, 0, 88, 0.4)) drop-shadow(0 1px 1px rgba(13, 0, 88, 0.12));
