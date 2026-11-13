@@ -47,37 +47,29 @@ export default function Paklijst() {
       ),
     [data, aangevinkt],
   )
-  // Klare categorieën die je zelf weer opengetikt hebt
-  const [opengetikt, setOpengetikt] = useState<Set<string>>(() => new Set())
-  // Net klaar: nog even open laten, zodat je het laatste vinkje ziet verschijnen
-  const [netKlaar, setNetKlaar] = useState<Set<string>>(() => new Set())
-  const vorigeKlaar = useRef<Set<string> | null>(null)
+  // Klare categorieën zijn ingeklapt, behalve deze. Een categorie die net klaar is, komt hier
+  // meteen bij het laatste vinkje in (in dezelfde tekenbeurt) en gaat er na een korte pauze weer
+  // uit: zo zie je het vinkje verschijnen en klapt hij daarna één keer soepel dicht.
+  const [open, setOpen] = useState<Set<string>>(() => new Set())
+  const klapTimers = useRef(new Map<string, number>())
   useEffect(() => {
-    if (!data) return
-    const vorige = vorigeKlaar.current
-    vorigeKlaar.current = klareCategorieen
-    // Bij het openen van het scherm zijn klare categorieën meteen ingeklapt
-    if (!vorige) return
-    // Niet meer klaar: de volgende keer dat hij klaar is, klapt hij weer in
-    setOpengetikt((s) => (Array.from(s).every((n) => klareCategorieen.has(n)) ? s : new Set(Array.from(s).filter((n) => klareCategorieen.has(n)))))
-    const net = Array.from(klareCategorieen).filter((n) => !vorige.has(n))
-    if (net.length === 0) return
-    setNetKlaar((s) => new Set([...s, ...net]))
-    window.setTimeout(() => {
-      setNetKlaar((s) => new Set(Array.from(s).filter((n) => !net.includes(n))))
-    }, 900)
-  }, [data, klareCategorieen])
-
-  /** Op de kop van een klare categorie tikken: open of weer dicht */
-  const wisselOpen = (naam: string, nuIngeklapt: boolean) => {
-    setOpengetikt((s) => {
+    const timers = klapTimers.current
+    return () => timers.forEach((id) => window.clearTimeout(id))
+  }, [])
+  const zetOpen = (naam: string, isOpen: boolean) => {
+    window.clearTimeout(klapTimers.current.get(naam))
+    klapTimers.current.delete(naam)
+    setOpen((s) => {
+      if (s.has(naam) === isOpen) return s
       const n = new Set(s)
-      if (nuIngeklapt) n.add(naam)
+      if (isOpen) n.add(naam)
       else n.delete(naam)
       return n
     })
-    if (!nuIngeklapt) setNetKlaar((s) => new Set(Array.from(s).filter((x) => x !== naam)))
   }
+
+  /** Op de kop van een klare categorie tikken: open of weer dicht */
+  const wisselOpen = (naam: string, nuIngeklapt: boolean) => zetOpen(naam, nuIngeklapt)
 
   // Feest over het hele scherm op het moment dat alles ingepakt is (niet bij het openen van een volle lijst).
   // Een nummer i.p.v. aan/uit: nog een keer 100% halen start een nieuw feest.
@@ -91,8 +83,25 @@ export default function Paklijst() {
     setFeest((n) => n + 1)
   }, [data, procent])
 
-  const wissel = (s: string) =>
+  const wissel = (s: string) => {
+    const wordtAan = !aangevinkt.has(s)
     setVinkjes((oud) => (oud.includes(s) ? oud.filter((x) => x !== s) : [...oud, s]))
+    if (!nieuweKop) return
+    const c = data?.categorieen.find((cat) => cat.items.some((i) => sleutel(cat.naam, i) === s))
+    if (!c) return
+    if (!wordtAan) {
+      // Niet meer klaar: de volgende keer dat hij klaar is, klapt hij weer in
+      zetOpen(c.naam, false)
+      return
+    }
+    const wordtKlaar = c.items.every((i) => sleutel(c.naam, i) === s || aangevinkt.has(sleutel(c.naam, i)))
+    if (!wordtKlaar) return
+    zetOpen(c.naam, true)
+    klapTimers.current.set(
+      c.naam,
+      window.setTimeout(() => zetOpen(c.naam, false), 900),
+    )
+  }
 
   const voegToe = (e: FormEvent) => {
     e.preventDefault()
@@ -156,7 +165,7 @@ export default function Paklijst() {
         const inCategorie = c.items.filter((i) => aangevinkt.has(sleutel(c.naam, i))).length
         // Met de nieuwe koppen: een klare categorie krijgt een groene rand en klapt in tot één regel
         const isKlaar = nieuweKop && klareCategorieen.has(c.naam)
-        const ingeklapt = isKlaar && !opengetikt.has(c.naam) && !netKlaar.has(c.naam)
+        const ingeklapt = isKlaar && !open.has(c.naam)
         const kopTekst = (
           <>
             {c.icoon && <span aria-hidden="true">{c.icoon} </span>}

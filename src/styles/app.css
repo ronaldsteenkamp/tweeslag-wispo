@@ -4302,8 +4302,7 @@ button {
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  min-height: 64px;
-  padding: 18px;
+  padding: 18px; /* geen min-height: dan is de kop precies even hoog als bij een open categorie */
   border: 0;
   border-radius: var(--radius);
   background: none;
