@@ -1,4 +1,6 @@
 import { bijgewerkt } from '../components/WeerKaart'
+import { SchermKop } from '../components/SchermKop'
+import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { config } from '../config'
 import { useData } from '../lib/data'
 import { useNu } from '../lib/nu'
@@ -13,6 +15,7 @@ const vertrek = lokaalNaarDate(config.vertrek)
 export default function Weer({ terug }: { terug: () => void }) {
   const nu = useNu(60_000)
   const { weer, laden, mislukt } = useWeer()
+  const nieuweKop = useNieuweKoppen()
   const { data: planning } = useData('planning')
   const [plekId, setPlekId] = useOpgeslagen<string>('weer.plek', config.weer.locaties[0].id)
   const vandaag = datumISO(nu)
@@ -27,10 +30,12 @@ export default function Weer({ terug }: { terug: () => void }) {
 
   return (
     <div className="scherm weer">
-      <button type="button" className="tekstknop" onClick={terug}>
-        ← Terug
-      </button>
-      <h1>Weer en sneeuw</h1>
+      {!nieuweKop && (
+        <button type="button" className="tekstknop" onClick={terug}>
+          ← Terug
+        </button>
+      )}
+      {nieuweKop ? <SchermKop titel="Weer en sneeuw" ondertitel={config.bestemming} terug={{ label: 'Terug', onClick: terug }} /> : <h1>Weer en sneeuw</h1>}
 
       {!weer || !plek ? (
         <p className="laadtekst">
