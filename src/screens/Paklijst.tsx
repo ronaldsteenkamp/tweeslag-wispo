@@ -12,6 +12,11 @@ interface EigenItem {
   naam: string
 }
 
+/** Zo lang blijft een net voltooide categorie open (je ziet het laatste vinkje), daarna klapt hij dicht */
+const KLAP_PAUZE = 900
+/** Duur van het dichtklappen; gelijk aan de overgang van .categorie__inhoud in app.css */
+const KLAP_DUUR = 300
+
 const sleutel = (categorie: string, item: string) => `${categorie}::${item}`
 const eigenSleutel = (id: string) => `eigen::${id}`
 
@@ -73,16 +78,23 @@ export default function Paklijst() {
   // Een nummer i.p.v. aan/uit: nog een keer 100% halen start een nieuw feest.
   const [feest, setFeest] = useState(0)
   const vorigProcent = useRef<number | null>(null)
+  const scrollTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(scrollTimer.current), [])
   useEffect(() => {
     if (!data) return
     const vorig = vorigProcent.current
     vorigProcent.current = procent
+    // Toch niet meer alles ingepakt voordat we naar boven gingen: blijven staan
+    if (procent !== 100) window.clearTimeout(scrollTimer.current)
     if (vorig === null || vorig === 100 || procent !== 100) return
     setFeest((n) => n + 1)
-    // Helemaal naar boven, naar "Alles ingepakt!" in de kop
+    // Helemaal naar boven, naar "Alles ingepakt!" in de kop. Klapt de laatste categorie nog dicht,
+    // dan eerst dat afwachten (pauze + dichtklappen), zodat de pagina niet onder het scrollen krimpt.
     if (!nieuweKop) return
     const zacht = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    window.scrollTo({ top: 0, behavior: zacht ? 'smooth' : 'auto' })
+    const wacht = klapTimers.current.size > 0 ? KLAP_PAUZE + (zacht ? KLAP_DUUR : 0) + 50 : 0
+    window.clearTimeout(scrollTimer.current)
+    scrollTimer.current = window.setTimeout(() => window.scrollTo({ top: 0, behavior: zacht ? 'smooth' : 'auto' }), wacht)
   }, [data, procent, nieuweKop])
 
   const wissel = (s: string) => {
@@ -101,7 +113,7 @@ export default function Paklijst() {
     zetOpen(c.naam, true)
     klapTimers.current.set(
       c.naam,
-      window.setTimeout(() => zetOpen(c.naam, false), 900),
+      window.setTimeout(() => zetOpen(c.naam, false), KLAP_PAUZE),
     )
   }
 
