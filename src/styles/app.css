@@ -4211,3 +4211,67 @@ button {
 .scherm:has(> .schermkop) .verdelen__hint {
   top: calc(var(--schermkop-balk) + 8px);
 }
+/* ---- Planning: rond icoontje per activiteit, en een lichtblauw kaartje voor wat nu bezig is ---- */
+
+.tijdlijn--iconen .tijdlijn__item {
+  grid-template-columns: 50px 32px 1fr;
+  gap: 10px;
+}
+
+/* De lijn loopt door het midden van de icoontjes; het stipje is niet nodig */
+.tijdlijn--iconen .tijdlijn__item::before {
+  left: 75px;
+}
+
+.tijdlijn--iconen .tijdlijn__item:first-child::before {
+  top: 24px;
+}
+
+.tijdlijn--iconen .tijdlijn__item:last-child::before {
+  bottom: calc(100% - 24px);
+}
+
+.tijdlijn--iconen .tijdlijn__item::after {
+  display: none;
+}
+
+.tijdlijn--iconen .tijdlijn__inhoud {
+  padding-left: 0;
+  padding-top: 4px;
+}
+
+.tijdlijn--iconen .tijdlijn__tijd {
+  padding-top: 5px;
+}
+
+.tijdlijn__icoon {
+  position: relative; /* boven de lijn */
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--oppervlak-2);
+  border: 2px solid var(--accent);
+  color: var(--primair);
+}
+
+.tijdlijn--iconen .tijdlijn__item.is-straks .tijdlijn__icoon {
+  background: var(--accent-zacht);
+}
+
+.tijdlijn--iconen .tijdlijn__item.is-bezig .tijdlijn__icoon {
+  background: var(--primair);
+  border-color: var(--primair);
+  color: var(--primair-tekst);
+}
+
+/* Wat nu bezig is: een lichtblauw kaartje (schaduw i.p.v. marge, zodat de lijn op zijn plek blijft) */
+.tijdlijn--iconen .tijdlijn__item.is-bezig {
+  border-radius: 6px;
+  background: var(--accent-zacht);
+  box-shadow:
+    0 0 0 6px var(--accent-zacht),
+    0 0 0 8px var(--accent);
+  margin: 8px 0;
+}
