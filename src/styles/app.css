@@ -921,10 +921,16 @@ button {
   font-size: 0.95rem;
 }
 
-/* Ruimte achter de laatste dag, zodat ook die helemaal naar links kan schuiven */
+/* Ruimte achter de laatste dag: aan het eind van de balk staat de laatste dag rechts, met
+   dezelfde afstand tot de rand als de eerste dag links (8px + 8px tussenruimte = 16px).
+   Geen padding rechts: die telt niet in elke browser mee bij het scrollen (Safari wel/niet),
+   dit lege vakje wel. */
+.dagkiezer {
+  padding-right: 0;
+}
 .dagkiezer::after {
   content: '';
-  flex: 0 0 calc(100% - 48px);
+  flex: 0 0 8px;
 }
 
 .dagkiezer__dag.is-vandaag {
