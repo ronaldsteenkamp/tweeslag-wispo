@@ -178,10 +178,8 @@ function AppKnop() {
       <h2>Liften, pistes en webcams</h2>
       <p>
         In de officiële app van Les 2 Alpes zie je live welke liften en pistes open zijn, hoeveel sneeuw er ligt en hoe
-        het er nu uitziet via de webcams. Ook handig: de tijden van de gratis pendelbusjes door het dorp, en met Ski+ houd
-        je je afdalingen, kilometers en hoogtemeters bij en daag je elkaar uit.
+        het er nu uitziet via de webcams.
       </p>
-      <p className="klein">De app is grotendeels in het Frans.</p>
       {p === 'anders' ? (
         <div className="knoppenrij">
           <a className="knop knop--primair" href={links.ios} target="_blank" rel="noopener">
@@ -196,19 +194,14 @@ function AppKnop() {
         // daarvoor gemarkeerd zijn (BROWSABLE) en deze app heeft geen eigen link (getest met een
         // intent-link: die viel steeds terug op Google Play). Op iPhone net zo. Dus naar de winkel,
         // die een "Openen"-knop toont als de app er al op staat.
-        <>
-          <a
-            className="knop knop--accent knop--breed"
-            href={p === 'ios' ? links.ios : links.android}
-            target="_blank"
-            rel="noopener"
-          >
-            Naar de Les 2 Alpes-app
-          </a>
-          <p className="klein">
-            Staat hij er al op? Tik dan in {p === 'ios' ? 'de App Store' : 'Google Play'} op {p === 'ios' ? '‘Open’' : '‘Openen’'}.
-          </p>
-        </>
+        <a
+          className="knop knop--accent knop--breed"
+          href={p === 'ios' ? links.ios : links.android}
+          target="_blank"
+          rel="noopener"
+        >
+          Naar de Les 2 Alpes-app
+        </a>
       )}
     </section>
   )
