@@ -104,7 +104,8 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   // Voor de nieuwe kop: je plek in het klassement, zoals het laatst is opgehaald (als dat er is)
   const nieuweKop = useNieuweKoppen()
   const mijnPlek = useMemo(() => {
-    if (!nieuweKop || !naam) return null
+    // Zonder backend is er geen klassement (een oude bewaarde stand niet tonen)
+    if (!nieuweKop || !naam || !backendIngesteld) return null
     const personen = lees<KlassementData | null>(KLASSEMENT_CACHE, null)?.personen ?? []
     const ik = personen.find((p) => p.naam === naam)
     if (!ik) return null
