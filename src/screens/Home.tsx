@@ -192,24 +192,23 @@ function AppKnop() {
           </a>
         </div>
       ) : (
-        <a
-          className="knop knop--accent knop--breed"
-          // Android: een intent-link opent de app als hij er al op staat, anders Google Play.
-          // iPhone: kan niet zonder een (onbekende) eigen link van de app; daar opent de App Store,
-          // die een "Open"-knop toont als de app al geïnstalleerd is.
-          href={
-            p === 'ios'
-              ? links.ios
-              : // Expliciet "start de app" (MAIN/LAUNCHER): zonder actie vindt Chrome geen scherm om
-                // te openen en valt hij terug op Google Play, ook als de app er al op staat
-                `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${links.androidPakket};S.browser_fallback_url=${encodeURIComponent(links.android)};end`
-          }
-          // Intent-links niet in een nieuw tabblad, anders blijft er een leeg tabblad achter
-          target={p === 'ios' ? '_blank' : undefined}
-          rel="noopener"
-        >
-          Open de Les 2 Alpes-app
-        </a>
+        // De app zelf openen kan niet vanaf een website: Chrome start alleen app-schermen die
+        // daarvoor gemarkeerd zijn (BROWSABLE) en deze app heeft geen eigen link (getest met een
+        // intent-link: die viel steeds terug op Google Play). Op iPhone net zo. Dus naar de winkel,
+        // die een "Openen"-knop toont als de app er al op staat.
+        <>
+          <a
+            className="knop knop--accent knop--breed"
+            href={p === 'ios' ? links.ios : links.android}
+            target="_blank"
+            rel="noopener"
+          >
+            Naar de Les 2 Alpes-app
+          </a>
+          <p className="klein">
+            Staat hij er al op? Tik dan in {p === 'ios' ? 'de App Store' : 'Google Play'} op {p === 'ios' ? '‘Open’' : '‘Openen’'}.
+          </p>
+        </>
       )}
     </section>
   )

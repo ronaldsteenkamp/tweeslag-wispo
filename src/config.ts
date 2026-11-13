@@ -29,8 +29,6 @@ export const config = {
   les2alpesApp: {
     ios: 'https://apps.apple.com/nl/app/les-2-alpes/id344912914',
     android: 'https://play.google.com/store/apps/details?id=com.lumiplan.montagne.LesDeuxAlpes',
-    /** Android-pakketnaam: daarmee opent de knop de app zelf als hij geïnstalleerd is */
-    androidPakket: 'com.lumiplan.montagne.LesDeuxAlpes',
   },
 
   /**
