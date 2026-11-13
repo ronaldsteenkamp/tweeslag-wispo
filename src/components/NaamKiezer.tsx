@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useToonNaam } from '../lib/bijnamen'
 import { alleDeelnemers, type Kamers } from '../lib/data'
 import { Icoon } from './Icoon'
@@ -14,13 +14,24 @@ export function useAlleNamen(kamers?: Kamers) {
 /** Raster met grote naamknoppen en een zoekveld */
 export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: string) => void }) {
   const [zoek, setZoek] = useState('')
+  // Aan het zoeken: het zoekveld staat bovenaan en de lijst houdt zijn hoogte, zodat de pagina
+  // niet korter wordt bij elke letter (anders schuift alles naar beneden, achter het toetsenbord)
+  const [zoekend, setZoekend] = useState(false)
+  const veld = useRef<HTMLDivElement>(null)
   const toon = useToonNaam()
   const q = normaal(zoek)
   const lijst = q ? namen.filter((n) => normaal(n).includes(q) || normaal(toon(n)).includes(q)) : namen
+
+  const naarBoven = () => {
+    setZoekend(true)
+    // Na het openen van het toetsenbord (dat schuift zelf ook nog)
+    window.setTimeout(() => veld.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 250)
+  }
+
   return (
     <>
       {namen.length > 8 && (
-        <div className="zoekveld">
+        <div className="zoekveld zoekveld--naam" ref={veld}>
           <Icoon naam="zoek" />
           <label className="verborgen" htmlFor="zoek-naam">
             Zoek je naam
@@ -32,11 +43,13 @@ export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: str
             placeholder="Zoek je naam"
             value={zoek}
             onChange={(e) => setZoek(e.target.value)}
+            onFocus={naarBoven}
             autoComplete="off"
+            enterKeyHint="search"
           />
         </div>
       )}
-      <div className="namenraster">
+      <div className={`namenraster${zoekend ? ' namenraster--zoekend' : ''}`}>
         {lijst.map((n) => (
           <button key={n} type="button" className="knop knop--naam" onClick={() => onKies(n)}>
             {n}

@@ -108,7 +108,7 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
   const passen = useCallback(() => {
     const v = vak.current
     const el = beeld.current
-    if (!v || !el || !el.naturalWidth) return
+    if (!v || !el || !el.naturalWidth || !v.clientWidth || !v.clientHeight) return
     const schaal = Math.min(v.clientWidth / el.naturalWidth, v.clientHeight / el.naturalHeight)
     pas.current = {
       b: el.naturalWidth * schaal,
@@ -125,8 +125,16 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
   }, [zet])
 
   useEffect(() => {
+    // Opnieuw passen als het kaartvak van formaat verandert (ook als het bij het laden van de
+    // afbeelding nog even 0 hoog was, bijv. midden in een tabwissel; anders blijft hij leeg)
+    const v = vak.current
+    const ro = v && 'ResizeObserver' in window ? new ResizeObserver(() => passen()) : null
+    if (ro && v) ro.observe(v)
     window.addEventListener('resize', passen)
-    return () => window.removeEventListener('resize', passen)
+    return () => {
+      ro?.disconnect()
+      window.removeEventListener('resize', passen)
+    }
   }, [passen])
 
   useEffect(() => {

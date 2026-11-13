@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { DataStatus } from '../components/DataStatus'
-import { Icoon } from '../components/Icoon'
-import { NaamKiezer, normaal, useAlleNamen } from '../components/NaamKiezer'
+import { NaamKiezer, useAlleNamen } from '../components/NaamKiezer'
 import { openMijnProfiel, toonProfiel } from '../components/Profiel'
 import { config } from '../config'
 import { useData, type Kamer } from '../lib/data'
@@ -13,7 +12,6 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   const { data, fout } = useData('kamers')
   const [naam, setNaam] = useOpgeslagen<string | null>('naam', null)
   const [wijzigen, setWijzigen] = useState(false)
-  const [zoek, setZoek] = useState('')
 
   const alleNamen = useAlleNamen(data)
   const toon = useToonNaam()
@@ -44,7 +42,6 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
           onKies={(n) => {
             setNaam(n)
             setWijzigen(false)
-            setZoek('')
             window.scrollTo(0, 0)
             if (!profielAfVoor(n)) openMijnProfiel()
           }}
@@ -59,21 +56,15 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   }
 
   const eigenKamer = data.kamers.find((k) => k.bewoners.includes(naam))
-  const q = normaal(zoek)
-  const past = (b: string) => normaal(b).includes(q) || normaal(toon(b)).includes(q)
-  const gevonden = q
-    ? data.kamers.filter(
-        (k) => k.bewoners.some(past) || normaal(k.nummer).includes(q) || normaal(k.naam ?? '').includes(q),
-      )
-    : data.kamers.filter((k) => k !== eigenKamer)
-  const zonderKamer = q ? data.zonderKamer.filter(past) : data.zonderKamer
+  const andere = data.kamers.filter((k) => k !== eigenKamer)
+  const zonderKamer = data.zonderKamer
 
   return (
     <div className="scherm">
       <h1>Kamers</h1>
       {data.verblijf && <p className="ondertitel">{data.verblijf}</p>}
 
-      {eigenKamer && !q && (
+      {eigenKamer && (
         <section className="kaartje kamer kamer--eigen" aria-label="Jouw kamer">
           <p className="kamer__label">Jouw kamer</p>
           <KamerInhoud kamer={eigenKamer} jij={naam} />
@@ -83,7 +74,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
         </section>
       )}
 
-      {!eigenKamer && !q && (
+      {!eigenKamer && (
         <section className="kaartje kamer kamer--eigen" aria-label="Jouw kamer">
           <p className="kamer__label">Jouw kamer</p>
           <p>Je hebt nog geen kamer. De reisleiding maakt de kamerverdeling; daarna staat je kamer hier.</p>
@@ -93,31 +84,11 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
         </section>
       )}
 
-      <div className="zoekveld">
-        <Icoon naam="zoek" />
-        <label className="verborgen" htmlFor="zoek-kamer">
-          Zoek op naam
-        </label>
-        <input
-          id="zoek-kamer"
-          type="search"
-          className="invoer"
-          placeholder="Zoek op naam of kamer"
-          value={zoek}
-          onChange={(e) => setZoek(e.target.value)}
-          autoComplete="off"
-          enterKeyHint="search"
-        />
-      </div>
+      <h2 className="tussenkop">Alle kamers</h2>
 
-      {!q && <h2 className="tussenkop">Alle kamers</h2>}
-      {q && gevonden.length === 0 && zonderKamer.length === 0 && (
-        <p className="laadtekst">Niemand gevonden met ‘{zoek}’.</p>
-      )}
-
-      {gevonden.map((k) => (
-        <section className={`kaartje kamer${k === eigenKamer ? ' kamer--eigen' : ''}`} key={k.nummer + (k.naam ?? '')}>
-          <KamerInhoud kamer={k} jij={naam} zoek={q} />
+      {andere.map((k) => (
+        <section className="kaartje kamer" key={k.nummer + (k.naam ?? '')}>
+          <KamerInhoud kamer={k} jij={naam} />
         </section>
       ))}
 
@@ -126,7 +97,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
           <div className="kamer__kop">
             <h2>Nog geen kamer</h2>
           </div>
-          <Bewoners namen={zonderKamer} jij={naam} zoek={q} />
+          <Bewoners namen={zonderKamer} jij={naam} />
         </section>
       )}
 
@@ -144,7 +115,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   )
 }
 
-function KamerInhoud({ kamer, jij, zoek = '' }: { kamer: Kamer; jij: string; zoek?: string }) {
+function KamerInhoud({ kamer, jij }: { kamer: Kamer; jij: string }) {
   return (
     <>
       <div className="kamer__kop">
@@ -157,22 +128,17 @@ function KamerInhoud({ kamer, jij, zoek = '' }: { kamer: Kamer; jij: string; zoe
           </span>
         )}
       </div>
-      <Bewoners namen={kamer.bewoners} jij={jij} zoek={zoek} />
+      <Bewoners namen={kamer.bewoners} jij={jij} />
     </>
   )
 }
 
-function Bewoners({ namen, jij, zoek }: { namen: string[]; jij: string; zoek: string }) {
+function Bewoners({ namen, jij }: { namen: string[]; jij: string }) {
   const toon = useToonNaam()
   return (
     <ul className="bewoners">
       {namen.map((b) => (
-        <li
-          key={b}
-          className={`${b === jij ? 'is-jij' : ''}${
-            zoek && (normaal(b).includes(zoek) || normaal(toon(b)).includes(zoek)) ? ' is-gevonden' : ''
-          }`}
-        >
+        <li key={b} className={b === jij ? 'is-jij' : ''}>
           <button type="button" className="bewoners__naam" onClick={() => toonProfiel(b)}>
             {toon(b)}
             {b === jij && <span className="label label--accent">jij</span>}

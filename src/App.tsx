@@ -143,13 +143,25 @@ export default function App() {
 
   return (
     <>
-      <main className={`inhoud inhoud--${tab}`}>{scherm(tab)}</main>
-      {buurTab && (
-        // Het buurscherm, zoals het eruitziet als je er bovenaan binnenkomt. Niet aan te raken.
-        <div className={`buurpaneel buurpaneel--${buur! > 0 ? 'rechts' : 'links'}`} aria-hidden="true" ref={(el) => el?.setAttribute('inert', '')}>
-          <div className={`inhoud inhoud--${buurTab}`}>{scherm(buurTab)}</div>
+      {/* Elk scherm in een eigen vak met de tab als key. Tijdens het vegen staat het buurscherm
+          ernaast; na het wisselen wórdt dat vak het huidige scherm (zelfde key, zelfde element),
+          zodat er niets opnieuw opgebouwd wordt: geen knipperen, geen opnieuw ladende kaart. */}
+      <main>
+        <div key={tab} className={`inhoud inhoud--${tab} huidig`} ref={(el) => el?.removeAttribute('inert')}>
+          {scherm(tab)}
         </div>
-      )}
+        {buurTab && (
+          // Het buurscherm, zoals het eruitziet als je er bovenaan binnenkomt. Niet aan te raken.
+          <div
+            key={buurTab}
+            className={`inhoud inhoud--${buurTab} buurpaneel buurpaneel--${buur! > 0 ? 'rechts' : 'links'}`}
+            aria-hidden="true"
+            ref={(el) => el?.setAttribute('inert', '')}
+          >
+            {scherm(buurTab)}
+          </div>
+        )}
+      </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <ProfielVenster />
       <UpdateMelding />

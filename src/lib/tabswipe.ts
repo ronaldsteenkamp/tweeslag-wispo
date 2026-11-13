@@ -35,7 +35,7 @@ function minderBeweging() {
 
 /** Het element dat meeschuift: de inhoud, of op de kaart het vaste kaartscherm */
 export function wisselPaneel(): HTMLElement | null {
-  return document.querySelector<HTMLElement>('main .kaartscherm') ?? document.querySelector<HTMLElement>('main.inhoud')
+  return document.querySelector<HTMLElement>('.huidig .kaartscherm') ?? document.querySelector<HTMLElement>('.huidig')
 }
 
 const buurPaneel = () => document.querySelector<HTMLElement>('.buurpaneel')
@@ -168,8 +168,11 @@ export function useTabSwipe({ aan, kan, onBuur, onWissel }: Opties) {
       const klaar = () => {
         if (wissel && r) flushSync(() => opties.current.onWissel(r))
         else flushSync(() => opties.current.onBuur(null))
-        opruimen(el)
-        el?.getAnimations().forEach((a) => a.cancel())
+        // Het buurvak is nu (bij wisselen) het huidige scherm: verschuiving eraf
+        for (const x of [el, bp]) {
+          opruimen(x)
+          x?.getAnimations().forEach((a) => a.cancel())
+        }
         buur = null
         dx = 0
         bezig = false

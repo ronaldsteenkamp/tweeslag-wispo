@@ -147,7 +147,10 @@ button {
 /* Het buurscherm naast het huidige tijdens het vegen (positie zet tabswipe.ts) */
 .buurpaneel {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100dvh;
   z-index: 10;
   overflow: clip;
   pointer-events: none;
@@ -1238,6 +1241,16 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
+}
+
+/* Zoeken naar je naam: zoekveld bovenaan in beeld, lijst houdt een schermhoogte zodat de
+   pagina niet krimpt (en dus niet naar beneden schuift) terwijl je typt */
+.zoekveld--naam {
+  scroll-margin-top: calc(var(--boven) + 12px);
+}
+.namenraster--zoekend {
+  align-content: start;
+  min-height: 100dvh;
 }
 
 .knop--naam {
