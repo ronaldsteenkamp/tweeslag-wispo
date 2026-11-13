@@ -1,5 +1,6 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { BevestigDialoog } from '../components/BevestigDialoog'
+import { Confetti } from '../components/Confetti'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { SchermKop } from '../components/SchermKop'
@@ -35,6 +36,60 @@ export default function Paklijst() {
   const klaar = alleSleutels.filter((s) => aangevinkt.has(s)).length
   const totaal = alleSleutels.length
   const procent = totaal ? Math.round((klaar / totaal) * 100) : 0
+
+  // ---- Extraatjes met de nieuwe koppen: klare categorieën inklappen, confetti bij 100% ----
+  const klareCategorieen = useMemo(
+    () =>
+      new Set(
+        (data?.categorieen ?? [])
+          .filter((c) => c.items.length > 0 && c.items.every((i) => aangevinkt.has(sleutel(c.naam, i))))
+          .map((c) => c.naam),
+      ),
+    [data, aangevinkt],
+  )
+  // Klare categorieën die je zelf weer opengetikt hebt
+  const [opengetikt, setOpengetikt] = useState<Set<string>>(() => new Set())
+  // Net klaar: nog even open laten, zodat je het laatste vinkje ziet verschijnen
+  const [netKlaar, setNetKlaar] = useState<Set<string>>(() => new Set())
+  const vorigeKlaar = useRef<Set<string> | null>(null)
+  useEffect(() => {
+    if (!data) return
+    const vorige = vorigeKlaar.current
+    vorigeKlaar.current = klareCategorieen
+    // Bij het openen van het scherm zijn klare categorieën meteen ingeklapt
+    if (!vorige) return
+    // Niet meer klaar: de volgende keer dat hij klaar is, klapt hij weer in
+    setOpengetikt((s) => (Array.from(s).every((n) => klareCategorieen.has(n)) ? s : new Set(Array.from(s).filter((n) => klareCategorieen.has(n)))))
+    const net = Array.from(klareCategorieen).filter((n) => !vorige.has(n))
+    if (net.length === 0) return
+    setNetKlaar((s) => new Set([...s, ...net]))
+    window.setTimeout(() => {
+      setNetKlaar((s) => new Set(Array.from(s).filter((n) => !net.includes(n))))
+    }, 900)
+  }, [data, klareCategorieen])
+
+  const klapOpen = (naam: string, open: boolean) => {
+    setOpengetikt((s) => {
+      const n = new Set(s)
+      if (open) n.add(naam)
+      else n.delete(naam)
+      return n
+    })
+    if (!open) setNetKlaar((s) => new Set(Array.from(s).filter((x) => x !== naam)))
+  }
+
+  // Confetti één keer op het moment dat alles ingepakt is (niet bij het openen van een volle lijst)
+  const [confetti, setConfetti] = useState(false)
+  const vorigProcent = useRef<number | null>(null)
+  useEffect(() => {
+    if (!data) return
+    const vorig = vorigProcent.current
+    vorigProcent.current = procent
+    if (vorig === null || vorig === 100 || procent !== 100) return
+    setConfetti(true)
+    const id = window.setTimeout(() => setConfetti(false), 2600)
+    return () => window.clearTimeout(id)
+  }, [data, procent])
 
   const wissel = (s: string) =>
     setVinkjes((oud) => (oud.includes(s) ? oud.filter((x) => x !== s) : [...oud, s]))
@@ -99,23 +154,53 @@ export default function Paklijst() {
 
       {data.categorieen.map((c) => {
         const inCategorie = c.items.filter((i) => aangevinkt.has(sleutel(c.naam, i))).length
-        return (
-          <section className="kaartje categorie" key={c.naam}>
-            <div className="kaartje__kop">
-              <h2>
-                {c.icoon && <span aria-hidden="true">{c.icoon} </span>}
-                {c.naam}
+        // Met de nieuwe koppen: een klare categorie krijgt een groene rand en klapt in tot één regel
+        const isKlaar = nieuweKop && klareCategorieen.has(c.naam)
+        const ingeklapt = isKlaar && !opengetikt.has(c.naam) && !netKlaar.has(c.naam)
+        const kopTekst = (
+          <>
+            {c.icoon && <span aria-hidden="true">{c.icoon} </span>}
+            {c.naam}
+          </>
+        )
+        if (ingeklapt) {
+          return (
+            <section className="kaartje categorie categorie--klaar is-ingeklapt" key={c.naam}>
+              <h2 className="categorie__regel">
+                <button type="button" aria-expanded={false} onClick={() => klapOpen(c.naam, true)}>
+                  <span>{kopTekst}</span>
+                  <span className="teller teller--klaar">Klaar ✓</span>
+                </button>
               </h2>
-              <span className={`teller${inCategorie === c.items.length ? ' teller--klaar' : ''}`}>
-                {inCategorie}/{c.items.length}
-              </span>
+            </section>
+          )
+        }
+        return (
+          <section className={`kaartje categorie${isKlaar ? ' categorie--klaar' : ''}`} key={c.naam}>
+            <div className="kaartje__kop">
+              <h2>{kopTekst}</h2>
+              {isKlaar ? (
+                <button
+                  type="button"
+                  className="teller teller--klaar categorie__inklappen"
+                  aria-expanded={true}
+                  aria-label={`${c.naam} is klaar, inklappen`}
+                  onClick={() => klapOpen(c.naam, false)}
+                >
+                  Klaar ✓
+                </button>
+              ) : (
+                <span className={`teller${inCategorie === c.items.length ? ' teller--klaar' : ''}`}>
+                  {inCategorie}/{c.items.length}
+                </span>
+              )}
             </div>
             <ul className="vinklijst">
               {c.items.map((item) => {
                 const s = sleutel(c.naam, item)
                 return (
                   <li key={s}>
-                    <VinkRegel tekst={item} aan={aangevinkt.has(s)} onWissel={() => wissel(s)} />
+                    <VinkRegel tekst={item} aan={aangevinkt.has(s)} onWissel={() => wissel(s)} animeer={nieuweKop} />
                   </li>
                 )
               })}
@@ -196,15 +281,40 @@ export default function Paklijst() {
           setResetVragen(false)
         }}
       />
+
+      {nieuweKop && confetti && (
+        <div className="paklijst__confetti">
+          <Confetti />
+        </div>
+      )}
     </div>
   )
 }
 
-function VinkRegel({ tekst, aan, onWissel }: { tekst: string; aan: boolean; onWissel: () => void }) {
+function VinkRegel({
+  tekst,
+  aan,
+  onWissel,
+  animeer = false,
+}: {
+  tekst: string
+  aan: boolean
+  onWissel: () => void
+  /** Korte vinkanimatie bij het aanvinken (alleen met de nieuwe koppen) */
+  animeer?: boolean
+}) {
+  const [net, setNet] = useState(false)
   return (
-    <label className={`vinkregel${aan ? ' is-aan' : ''}`}>
-      <input type="checkbox" checked={aan} onChange={onWissel} />
-      <span className="vinkregel__vak" aria-hidden="true">
+    <label className={`vinkregel${aan ? ' is-aan' : ''}${net ? ' is-net' : ''}`}>
+      <input
+        type="checkbox"
+        checked={aan}
+        onChange={() => {
+          setNet(animeer && !aan)
+          onWissel()
+        }}
+      />
+      <span className="vinkregel__vak" aria-hidden="true" onAnimationEnd={() => setNet(false)}>
         {aan && <Icoon naam="vink" grootte={22} />}
       </span>
       <span className="vinkregel__tekst">{tekst}</span>

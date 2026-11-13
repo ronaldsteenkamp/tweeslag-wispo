@@ -4275,3 +4275,82 @@ button {
     0 0 0 8px var(--accent);
   margin: 8px 0;
 }
+/* ---- Paklijst: vinkanimatie, klare categorie met groene rand die inklapt, confetti bij 100% ---- */
+
+.categorie--klaar {
+  border: 2px solid var(--succes);
+}
+
+.categorie.is-ingeklapt {
+  padding: 0;
+}
+
+.categorie__regel button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  font: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.categorie__regel {
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.categorie__inklappen {
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  font-size: 1rem;
+  touch-action: manipulation;
+}
+
+.paklijst__confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+@keyframes vink-plop {
+  0% {
+    transform: scale(0.8);
+  }
+  55% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes vink-teken {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .vinkregel.is-net .vinkregel__vak {
+    animation: vink-plop 0.35s ease-out;
+  }
+  .vinkregel.is-net .vinkregel__vak path {
+    stroke-dasharray: 22;
+    stroke-dashoffset: 22;
+    animation: vink-teken 0.3s 0.05s ease-out forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paklijst__confetti {
+    display: none;
+  }
+}
