@@ -131,8 +131,8 @@ export function useTabSwipe({ aan, kan, onWissel }: Opties) {
       }
       // Horizontaal: de pagina niet ook laten scrollen
       if (e.cancelable) e.preventDefault()
-      // Geen tab in die richting: elastisch, je komt maar een klein stukje
-      dx = opties.current.kan(ruw < 0 ? 1 : -1) ? ruw : ruw * 0.25
+      // Geen tab in die richting (Home naar rechts, Spel naar links): het scherm blijft staan
+      dx = opties.current.kan(ruw < 0 ? 1 : -1) ? ruw : 0
       zetPositie(dx)
       spoor.push({ x: clientX, t: e.timeStamp })
       if (spoor.length > 5) spoor.shift()

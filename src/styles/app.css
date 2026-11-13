@@ -1969,6 +1969,28 @@ button {
 .foto-groot img.is-ingezoomd {
   cursor: grab;
 }
+/* De huidige foto met links en rechts de buren (bladeren als een carrousel) */
+.foto-groot__baan {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  min-height: 0;
+}
+.foto-groot__baan img {
+  max-width: calc(100vw - 16px);
+}
+.foto-groot__rail {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100vw;
+  height: 100dvh;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
 
 .foto-groot__teller {
   position: absolute;

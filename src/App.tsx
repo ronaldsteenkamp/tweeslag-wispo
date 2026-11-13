@@ -23,6 +23,14 @@ import Fotomuur from './screens/Fotomuur'
 /** Schermen die niet in de tabbalk staan */
 type Scherm = Tab | 'verdelen' | 'weer' | 'beheer' | 'fotos'
 
+/** De tab in de tabbalk waar een scherm onder valt */
+function hoofdTab(s: Scherm): Tab {
+  if (s === 'verdelen' || s === 'beheer') return 'kamers'
+  if (s === 'weer') return 'home'
+  if (s === 'fotos') return 'spel'
+  return s
+}
+
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
   // Vanuit een melding over de uitslag: meteen naar Spel → Stemmen
@@ -73,9 +81,9 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
-      const van = TABS.findIndex((x) => x.id === tab)
-      const naar = TABS.findIndex((x) => x.id === t)
-      inschuiven.current = van >= 0 && naar >= 0 ? (naar > van ? 1 : -1) : null
+      const van = TABS.findIndex((x) => x.id === hoofdTab(tab))
+      const naar = TABS.findIndex((x) => x.id === hoofdTab(t))
+      inschuiven.current = naar !== van ? (naar > van ? 1 : -1) : null
       const { pathname, search } = window.location
       window.history.replaceState(null, '', `${pathname}${search}#${t}`)
       setTab(t)
@@ -84,10 +92,11 @@ export default function App() {
     [tab],
   )
 
-  // Vegen tussen de tabs van de tabbalk (niet in subschermen en niet tijdens het welkomstscherm)
-  const tabIndex = TABS.findIndex((t) => t.id === tab)
+  // Vegen tussen de tabs van de tabbalk (niet tijdens het welkomstscherm). Vanuit een
+  // subscherm (bijv. de fotomuur) ga je naar de buren van de tab waar het onder valt.
+  const tabIndex = TABS.findIndex((t) => t.id === hoofdTab(tab))
   useTabSwipe({
-    aan: welkomGehad && tabIndex >= 0,
+    aan: welkomGehad,
     kan: (richting) => !!TABS[tabIndex + richting],
     onWissel: (richting) => {
       const volgende = TABS[tabIndex + richting]
@@ -119,7 +128,7 @@ export default function App() {
       <ProfielVenster />
       <UpdateMelding />
       <TabBalk
-        actief={tab === 'verdelen' || tab === 'beheer' ? 'kamers' : tab === 'weer' ? 'home' : tab === 'fotos' ? 'spel' : tab}
+        actief={hoofdTab(tab)}
         onKies={kies}
       />
     </>

@@ -114,6 +114,8 @@ interface Zoom {
 const GEEN_ZOOM: Zoom = { s: 1, x: 0, y: 0 }
 const MAX_ZOOM = 4
 const DUBBELTIK_ZOOM = 2.5
+/** Hoe lang het doorschuiven naar de volgende foto duurt (ms) */
+const BLADERTIJD = 200
 
 /** Grote versies (tijdelijke links) die al zijn opgehaald, zodat terugswipen meteen werkt */
 const grootGeheugen = new Map<string, string>()
@@ -232,9 +234,27 @@ export function FotoGroot({
     return () => el.removeEventListener('wheel', wiel)
   })
 
+  // Een lopende bladeranimatie: bij een nieuwe veeg of klik meteen afronden, zodat je snel
+  // achter elkaar kunt bladeren
+  const lopend = useRef<{ doel: number; timer: number } | null>(null)
+  const iNu = useRef(i)
+  iNu.current = i
+  const rondAf = useCallback(() => {
+    const l = lopend.current
+    if (!l) return
+    window.clearTimeout(l.timer)
+    lopend.current = null
+    setGlijden(false)
+    setIndex(l.doel)
+    setDx(0)
+    iNu.current = l.doel
+  }, [])
+  useEffect(() => () => window.clearTimeout(lopend.current?.timer), [])
+
   const ga = useCallback(
     (richting: 1 | -1) => {
-      const doel = i + richting
+      rondAf()
+      const doel = iNu.current + richting
       if (doel < 0 || doel >= fotos.length) {
         // Geen foto meer die kant op: terugveren
         setGlijden(true)
@@ -247,22 +267,13 @@ export function FotoGroot({
         setDx(0)
         return
       }
-      const breedte = window.innerWidth
+      // De buurfoto ligt precies één schermbreedte opzij: de hele baan schuift één plek op,
+      // en dan wordt de buurfoto zonder sprong de huidige
       setGlijden(true)
-      setDx(-richting * breedte)
-      window.setTimeout(() => {
-        setGlijden(false)
-        setIndex(doel)
-        setDx(richting * breedte)
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            setGlijden(true)
-            setDx(0)
-          }),
-        )
-      }, 180)
+      setDx(-richting * window.innerWidth)
+      lopend.current = { doel, timer: window.setTimeout(rondAf, BLADERTIJD) }
     },
-    [i, fotos.length],
+    [fotos.length, rondAf],
   )
 
   const sluit = useRef(onSluit)
@@ -284,6 +295,8 @@ export function FotoGroot({
   const neer = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('button, .foto-groot__onder')) return
     vingers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    // Nog aan het doorschuiven: meteen afronden, dan vanaf de nieuwe foto verder vegen
+    rondAf()
     setGlijden(false)
     if (vingers.current.size === 2) {
       // Tweede vinger: knijpen (geen swipe meer)
@@ -431,9 +444,31 @@ export function FotoGroot({
           ›
         </button>
       )}
+      <div className="foto-groot__baan">
+      {/* Vorige en volgende foto liggen één schermbreedte opzij en schuiven mee met je vinger */}
+      {([-1, 1] as const).map((kant) => {
+        const buur = fotos[i + kant]
+        if (!buur) return null
+        return (
+          // Een schermgroot vak, gecentreerd op de huidige foto, met de buur in het midden
+          <div key={buur.id} className="foto-groot__rail" aria-hidden="true">
+            <img
+              src={grootGeheugen.get(buur.id) ?? buur.klein}
+              alt=""
+              draggable={false}
+              style={{
+                aspectRatio: buur.breedte && buur.hoogte ? `${buur.breedte} / ${buur.hoogte}` : undefined,
+                transform: `translate(${dx + kant * window.innerWidth}px, ${dy}px)`,
+                transition: glijden ? `transform ${BLADERTIJD}ms cubic-bezier(0.2, 0, 0, 1)` : 'none',
+              }}
+            />
+          </div>
+        )
+      })}
+      {/* Geen key per foto: hetzelfde element blijft staan, anders verliest een veeg die net
+          begint (terwijl de vorige nog afrondt) zijn vinger */}
       <img
         ref={beeld}
-        key={foto.id}
         src={grootGeheugen.get(foto.id) ?? foto.klein}
         alt={`${foto.challenge_titel} door ${toon(foto.naam)}`}
         draggable={false}
@@ -441,7 +476,7 @@ export function FotoGroot({
         style={{
           aspectRatio: foto.breedte && foto.hoogte ? `${foto.breedte} / ${foto.hoogte}` : undefined,
           transform: `translate(${dx + zoom.x}px, ${dy + zoom.y}px) scale(${zoom.s})`,
-          transition: glijden ? 'transform 0.18s ease-out' : 'none',
+          transition: glijden ? `transform ${BLADERTIJD}ms cubic-bezier(0.2, 0, 0, 1)` : 'none',
         }}
         onClick={(e) => {
           e.stopPropagation()
@@ -457,6 +492,7 @@ export function FotoGroot({
           } else laatsteTik.current = { t: nu, x: e.clientX, y: e.clientY }
         }}
       />
+      </div>
       <div className="foto-groot__onder" onClick={(e) => e.stopPropagation()}>
         <p>
           <strong>{toon(foto.naam)}</strong>
