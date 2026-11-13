@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { SchermKop } from '../components/SchermKop'
+import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { Icoon } from '../components/Icoon'
 import { Verbinding } from '../components/Verbinding'
 import { useBackend } from '../lib/backend'
@@ -27,6 +29,7 @@ export function useKamerLabel() {
 
 export default function Fotomuur({ terug }: { terug: () => void }) {
   const backend = useBackend()
+  const nieuweKop = useNieuweKoppen()
   const { fotos, mislukt, meer, laadMeer } = useFotos(30, backend.status !== 'uit')
   const kamerLabel = useKamerLabel()
   const toon = useToonNaam()
@@ -35,10 +38,12 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
 
   return (
     <div className="scherm fotomuur">
-      <button type="button" className="tekstknop" onClick={terug}>
-        ← Terug naar Spel
-      </button>
-      <h1>Fotomuur</h1>
+      {!nieuweKop && (
+        <button type="button" className="tekstknop" onClick={terug}>
+          ← Terug naar Spel
+        </button>
+      )}
+      {nieuweKop ? <SchermKop titel="Fotomuur" ondertitel="Bewijsfoto's van de challenges" terug={{ label: 'Spel', onClick: terug }} /> : <h1>Fotomuur</h1>}
 
       {backend.status === 'uit' ? (
         <p>Er is geen backend ingesteld, dus er is geen fotomuur.</p>
