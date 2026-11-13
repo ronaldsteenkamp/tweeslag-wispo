@@ -116,20 +116,27 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   return (
     <div className="scherm">
       {nieuweKop ? (
+        // Met de nieuwe kop staat de score in de kop (geen tweede donkerblauw blok eronder)
         <SchermKop
           titel="Spel"
-          ondertitel={mijnPlek ? `${mijnPlek.punten} punten in het klassement` : undefined}
+          boven={naam ? `Score van ${toon(naam)}` : 'Jouw score'}
+          ondertitel={`Challenges ${challengePunten} · Busbingo ${bingo.totaal}`}
           rechts={
-            mijnPlek && (
-              <span>
-                <span className="schermkop__groot">{mijnPlek.plek}e</span>
-                <br />
-                <span className="schermkop__klein">van {mijnPlek.van}</span>
-                <span className="verborgen"> in het klassement</span>
-              </span>
-            )
+            <span aria-live="polite">
+              <span className="schermkop__groot">{challengePunten + bingo.totaal}</span>
+              <br />
+              <span className="schermkop__klein">punten</span>
+            </span>
           }
-        />
+        >
+          <p className="schermkop__notitie">
+            {mijnPlek
+              ? `${mijnPlek.plek}e plek van ${mijnPlek.van} in het klassement`
+              : backendIngesteld
+                ? 'Je score telt mee in het klassement.'
+                : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
+          </p>
+        </SchermKop>
       ) : (
         <h1>Spel</h1>
       )}
@@ -147,7 +154,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         </button>
       )}
 
-      <section className="kaartje score golf" aria-live="polite">
+      {!nieuweKop && <section className="kaartje score golf" aria-live="polite">
         <Sneeuw aantal={14} />
         <p className="score__label">{naam ? `Score van ${toon(naam)}` : 'Jouw score'}</p>
         <p className="score__totaal">
@@ -161,7 +168,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             ? 'Je score telt mee in het klassement.'
             : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
         </p>
-      </section>
+      </section>}
 
       <div
         className="segment segment--vier"

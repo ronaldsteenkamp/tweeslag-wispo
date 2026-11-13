@@ -4354,3 +4354,9 @@ button {
     display: none;
   }
 }
+/* Spel: de score staat in de kop; een korte regel eronder */
+.schermkop__notitie {
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
