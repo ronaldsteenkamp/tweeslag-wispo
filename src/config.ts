@@ -28,7 +28,7 @@ export const config = {
    * 'test': alleen wie de app één keer opent met #nieuwekop achter het adres (met #oudekop weer terug).
    * 'aan': iedereen ziet de nieuwe koppen.
    */
-  nieuweKoppen: 'test' as 'uit' | 'test' | 'aan',
+  nieuweKoppen: 'aan' as 'uit' | 'test' | 'aan',
   /** Standaardtijd waarop de challenges van een dag opengaan (als 'openOm' ontbreekt in spel.json) */
   challengesOpenOm: '07:00',
 
