@@ -51,6 +51,8 @@ body {
    en die doet dat zelf (zie ZoomKaart) */
 html {
   touch-action: pan-x pan-y;
+  /* Geen herlaad-cirkel bij omlaag trekken (Chrome kijkt hiervoor naar html, niet naar body) */
+  overscroll-behavior-y: none;
 }
 
 body {
