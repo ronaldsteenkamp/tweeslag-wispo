@@ -239,7 +239,13 @@ export default function Paklijst() {
                 >
                   <span className="categorie__naam">{kopTekst}</span>
                   <span className="teller teller--klaar">
-                    Klaar ✓<span className="categorie__pijl" aria-hidden="true" />
+                    {/* Geen tekst "Klaar" in beeld, alleen een vinkje (een schermlezer leest wel "klaar") */}
+                    <span className="verborgen">klaar</span>
+                    <svg className="categorie__vinkje" viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="12" cy="12" r="12" />
+                      <path d="M6.5 12.5l3.6 3.6 7.4-8" />
+                    </svg>
+                    <span className="categorie__pijl" aria-hidden="true" />
                   </span>
                 </button>
               </h2>
