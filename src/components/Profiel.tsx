@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useBackend } from '../lib/backend'
-import { BadgeRij } from './Badges'
+import { BadgeOverzicht, BadgeRij, OpenBadgeOverzicht } from './Badges'
 import {
   bijnaamFout,
   MAX_BIJNAAM,
@@ -457,13 +457,30 @@ export function ProfielVenster() {
   const venster = useDialoogFocus<HTMLDivElement>(v !== null)
   // Terugknop (Android, of terugvegen) sluit het profielvenster, niet de app
   useTerugSluit(v !== null, sluit)
+  // Alle badges van iemand, in hetzelfde venster (na een tik op +N). Het profiel blijft eronder
+  // staan (verborgen), zodat een half ingevuld formulier in Jouw profiel niet kwijtraakt.
+  const [overzicht, setOverzicht] = useState<string | null>(null)
+  useEffect(() => setOverzicht(null), [v])
+  const terugUitOverzicht = () => {
+    setOverzicht(null)
+    // Weer naar het rondje +N (of de tekstknop) waar je vandaan kwam
+    window.requestAnimationFrame(() =>
+      venster.current?.querySelector<HTMLElement>('.badgerij__meer, .badgerij__alles')?.focus(),
+    )
+  }
 
   useEffect(() => {
     if (!v) return
-    const opToets = (e: KeyboardEvent) => e.key === 'Escape' && zetVenster(null)
+    // Escape in het overzicht: terug naar het profiel; anders het venster dicht
+    const opToets = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (overzicht) terugUitOverzicht()
+      else zetVenster(null)
+    }
     window.addEventListener('keydown', opToets)
     return () => window.removeEventListener('keydown', opToets)
-  }, [v])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [v, overzicht])
 
   if (!v) return null
   return (
@@ -477,11 +494,17 @@ export function ProfielVenster() {
         aria-labelledby="venster-titel"
         onClick={(e) => e.stopPropagation()}
       >
-        {v.soort === 'bekijk' ? (
-          <Bekijk naam={v.naam} onSluit={sluit} />
-        ) : (
-          <MijnProfiel naamKiezen={v.naamKiezen} onSluit={sluit} />
-        )}
+        <OpenBadgeOverzicht.Provider value={setOverzicht}>
+          {/* display: contents, zodat de opmaak van het venster (gap) gewoon blijft gelden */}
+          <div style={{ display: overzicht ? 'none' : 'contents' }}>
+            {v.soort === 'bekijk' ? (
+              <Bekijk naam={v.naam} onSluit={sluit} />
+            ) : (
+              <MijnProfiel naamKiezen={v.naamKiezen} onSluit={sluit} />
+            )}
+          </div>
+          {overzicht && <BadgeOverzicht naam={overzicht} onTerug={terugUitOverzicht} />}
+        </OpenBadgeOverzicht.Provider>
       </div>
     </div>
   )
@@ -613,7 +636,7 @@ function MijnProfiel({ naamKiezen, onSluit }: { naamKiezen: boolean; onSluit: ()
           Andere naam kiezen
         </button>
       </p>
-      <BadgeRij naam={naam} leegTekst="Nog geen badges. In Spel zie je hoe je ze verdient." />
+      <BadgeRij naam={naam} />
       <BijnaamVeld namen={namen} />
       {/* Opnieuw beginnen zodra het profiel van de server binnen is (na het kiezen van een naam) */}
       <ProfielFormulier

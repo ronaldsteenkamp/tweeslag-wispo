@@ -4533,6 +4533,47 @@ button.badge {
   color: var(--tekst-zacht);
 }
 
+/* Rondje +N: er zijn meer badges dan er op één regel passen */
+.badge.badge--meer {
+  border: 2px dashed var(--rand);
+  background: var(--oppervlak);
+  box-shadow: none;
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primair);
+}
+
+/* Naar het overzicht (je eigen profiel, als alles op één regel past) */
+.badgerij__alles {
+  min-height: 32px;
+  font-size: 0.88rem;
+}
+
+.badgerij__leeg .badgerij__alles {
+  min-height: 0;
+}
+
+/* Alle badges, in het profielvenster */
+.badgeoverzicht {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.badgeoverzicht .badgekaart__titel {
+  margin: 0;
+}
+
+.badgeoverzicht__terug {
+  align-self: flex-start;
+  min-height: 32px;
+}
+
+.badgeoverzicht .badgekaart__nog {
+  margin-top: 0;
+}
+
 /*
  * Uitleg van een badge: een tekstballon over de inhoud heen, zodat er niets verschuift.
  * Het pijltje wijst naar de gekozen badge (--pijl-x, gemeten in BadgeRij).
