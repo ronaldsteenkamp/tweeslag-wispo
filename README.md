@@ -303,13 +303,40 @@ Migratie: `supabase/migrations/0008_kamerverdeling.sql` (uitvoeren na 0007). Ope
 Migratie: `supabase/migrations/0010_bijnamen.sql` (uitvoeren na 0009, mag vaker). Iedereen kan bij *Jouw profiel* (en in het welkomstscherm) een bijnaam invullen; de app toont die overal in plaats van de gewone naam: kamers, klassement, stemmen, rad, casino, fotomuur, kaart. De gewone naam uit `kamers.json` blijft de sleutel voor scores en stemmen. Bij het kiezen van je naam en in beheerlijsten staat de echte naam erbij. Een bijnaam mag niet de naam van een ander zijn en twee mensen kunnen niet dezelfde hebben. Een beheerder kan een ongepaste bijnaam wissen via het profielkaartje (*Bijnaam wissen (beheer)*). De uitslagmelding van de stemmingen gebruikt ook de bijnaam (Edge Function `meldingen`).
 
 ### Badges
-Kleine badges op het profielkaartje (onder de naam; tik erop voor de uitleg) die je vanzelf krijgt. De app rekent ze zelf uit (`src/lib/badges.ts`) uit gegevens die er al zijn; nieuwe badges toevoegen of drempels veranderen kan dus zonder de database.
-- **Verdiend, blijft:** ✍️ Open boek (profiel helemaal ingevuld, met foto), 🎒 Ingepakt (paklijst ooit helemaal afgevinkt), 🎯 Challenge-jager (10 challenges), 🚌 Bingo! (een rij), 🏆 Volle kaart, 👑 Stem van de dag (dagelijkse stemming gewonnen, met ×2 enz.).
-- **Wisselt:** 📸 Fotograaf (meeste foto's op de fotomuur, minstens 3) en 🥇 Koploper (nummer 1 van het klassement). Bij gelijke stand krijgen ze het allebei.
-- In *Spel* (onder Challenges en Busbingo) staat de kaart *Jouw badges*, met de badges die je nog kunt halen. Haal je een nieuwe, dan komt er een melding met confetti; tik erop voor je profiel.
-- Je eigen badges komen van je telefoon (meteen, ook zonder bereik); die van anderen van de server. Zonder backend zijn alleen de eerste vijf te halen.
-- Migratie `supabase/migrations/0011_badges.sql` (na 0010, mag vaker) voegt de kolom `ingepakt` toe aan `voortgang`. Zonder die migratie werkt alles, alleen zien anderen jouw 🎒 niet.
+Kleine badges op het profielkaartje en in *Jouw profiel* (onder de naam; tik erop voor de uitleg) die je vanzelf krijgt. De regels en alle drempels staan bovenaan `src/lib/badgeregels.ts` (getest met `npm test`); het ophalen staat in `src/lib/badges.ts` en wat alleen de telefoon ziet in `src/lib/badgesTelefoon.ts`. De volgorde hieronder is de volgorde op het profiel.
 
+| Badge | Hoe je hem haalt | Soort |
+|---|---|---|
+| ✍️ Open boek | Profiel helemaal ingevuld, met foto | blijft |
+| 🏷️ Bijnaam | Een bijnaam gekozen | blijft |
+| 📲 Vaste gast | De app geopend vanaf het beginscherm (geïnstalleerd) | blijft |
+| 🔔 Wekker | Meldingen aangezet | blijft, server |
+| 🎒 Ingepakt | De hele paklijst ooit afgevinkt | blijft |
+| 🐦 Vroege vogel | Als eerste van de groep de hele paklijst afgevinkt | blijft, server |
+| 🎯 Challenge-jager | 10 challenges (`CHALLENGES_NODIG`) | blijft |
+| 🚌 Bingo! | Een rij op de busbingo | blijft |
+| 🏆 Volle kaart | De hele busbingokaart vol | blijft |
+| 👑 Stem van de dag | Een dagelijkse stemming gewonnen (×2 enz.) | blijft, server |
+| 🗳️ Stemvee | Op elke (echte, gesloten) stemming gestemd; mis je er één, dan is hij weg | server |
+| 🔮 Waarzegger | Minstens 3 keer (`WAARZEGGER_NODIG`) gestemd op wie won (×N) | blijft, server |
+| 📸 Fotograaf | De meeste foto's op de fotomuur, minstens 3 (`FOTOS_NODIG`) | wisselt, server |
+| 🎰 High roller | 5.000 fiches (`CASINO_FICHES_NODIG`) in het casino | blijft (spel) |
+| 🎡 Lot uit de loterij | 3 keer (`RAD_NODIG`) door het klos-rad gekozen | blijft, server |
+| ⛰️ Bergbeklimmer | Op de gletsjer (cirkel `config.badges.gletsjer`) met je plek aan op de pistekaart | reis |
+| 🌅 Eerste lift | De app open tussen 05:00 en 09:00 op een skidag | reis |
+| 🥶 IJskonijn | De app open terwijl het volgens het weerbericht op de gletsjer -10° of kouder is | reis |
+| 🥇 Koploper | Nummer 1 van het klassement | wisselt, server |
+| 🛌 Kamerkampioen | Je kamer (volgens `kamers.json`) heeft samen de meeste punten | wisselt, server |
+| 💸 Blut | Een bak getrokken voor nieuwe fiches in het casino | blijft (spel) |
+| 🦉 Nachtuil | De app open tussen 02:00 en 05:00 | reis |
+
+- **blijft**: eenmaal gehaald blijft hij. **wisselt**: gaat naar wie voorop staat; bij gelijke stand krijgen ze hem allebei. **server**: alleen te halen met de backend (zonder backend staan ze niet in de lijst). **reis**: alleen tussen vertrek en thuiskomst (`config.vertrek`/`config.thuiskomst`), nooit in de testperiode; vóór vertrek staat er *Te halen tijdens de reis*. **spel**: wordt net als de fiches gewist als het echte spel begint.
+- Voor Bergbeklimmer wordt niet om je locatie gevraagd: alleen als je zelf op de pistekaart *Waar ben ik?* tikt of je locatie deelt. GPS-hoogte wordt niet gebruikt (te onbetrouwbaar), alleen of je binnen de cirkel bent.
+- In *Spel* (onder Challenges en Busbingo) staat de kaart *Jouw badges*: eerst wat je hebt, daaronder *Nog te halen*, ingeklapt. Haal je een nieuwe, dan komt er een melding met confetti; tik erop voor je profiel. Na een update met nieuwe soorten badges worden de badges die je al zou hebben één keer stil onthouden (`badges.gezien` met een versie), zodat er geen stapel meldingen komt.
+- Je eigen badges komen van je telefoon (meteen, ook zonder bereik); die van anderen van de server. Wat alleen de telefoon kan zien (beginscherm, meldingen, casino, je eigen stemmen, de reisbadges) stuurt hij mee in `voortgang.badges`.
+- Migraties (SQL Editor → New query → plak het bestand → Run; mogen vaker):
+  - `0011_badges.sql` (na 0010): kolom `ingepakt` in `voortgang`.
+  - **`0012_meer_badges.sql` (na 0011): kolommen `badges` en `ingepakt_op` in `voortgang` en de tabel `rad_uitslagen`.** Zonder deze migratie werkt de app gewoon, maar zien anderen de badges van je telefoon niet en zijn 🐦 Vroege vogel en 🎡 Lot uit de loterij niet te halen.
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 
