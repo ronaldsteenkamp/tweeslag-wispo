@@ -1,138 +1,48 @@
 import { useEffect, useMemo } from 'react'
+import { config } from '../config'
 import { abonneerBackend, backendIngesteld, backendStand, supabase } from './backend'
+import {
+  BADGES,
+  badgesUit,
+  eigenStemmen,
+  feitenUitTelefoon,
+  radTelling,
+  vroegsteVogels,
+  type Feiten,
+  type TelefoonBadges,
+} from './badgeregels'
+import { useVerdiend } from './badgesTelefoon'
+import { useEigenBijnaam, useToonNaam } from './bijnamen'
 import { bingoScore, maakKaart } from './bingo'
 import { useData, type Spel } from './data'
 import { schrijfEnMeld, useOpgeslagen } from './opslag'
 import { isAf, sleutel, useMijnProfiel, useProfielen } from './profiel'
 import { useStemmingen, winnaars } from './stemming'
+import { spelBegint } from './testperiode'
+
+export { badgeDef, badgesUit, BADGES, type Badge, type BadgeDef, type BadgeId, type Feiten } from './badgeregels'
 
 /*
  * Badges: kleine plaatjes op je profiel die je vanzelf krijgt door wat je in de app doet.
- * Er hoeft niemand iets voor in te vullen en de server rekent niets uit: alles volgt uit
- * gegevens die er al zijn (spelvoortgang, fotomuur, stemmingen, klassement, profielen).
+ * De regels (welke badges, drempels) staan in badgeregels.ts. Hier komen de gegevens vandaan.
  *
  * Twee soorten:
  *  - verdiend: eenmaal gehaald blijft hij (zolang de gegevens er zijn);
  *  - wisselt: gaat naar wie op dat moment voorop staat (bij gelijke stand allebei).
  *
  * Je eigen badges komen zoveel mogelijk van deze telefoon, zodat ze meteen verschijnen (ook
- * zonder bereik). Die van anderen komen van de server en worden lokaal bewaard.
+ * zonder bereik). Die van anderen komen van de server en worden lokaal bewaard. Wat alleen de
+ * telefoon kan zien (beginscherm, meldingen, casino, je eigen stemmen) stuurt hij zelf mee naar
+ * de server, in voortgang.badges (zie badgesTelefoon.ts en scorebord.ts).
  */
-
-export type BadgeId =
-  | 'open-boek'
-  | 'ingepakt'
-  | 'challenge-jager'
-  | 'bingo'
-  | 'volle-kaart'
-  | 'stem-van-de-dag'
-  | 'fotograaf'
-  | 'koploper'
-
-export const CHALLENGES_NODIG = 10
-export const FOTOS_NODIG = 3
-
-export interface Feiten {
-  profielVol: boolean
-  ingepakt: boolean
-  challenges: number
-  bingoLijnen: number
-  volleKaart: boolean
-  stemWinst: number
-  fotos: number
-  totaal: number
-}
-
-export interface BadgeDef {
-  id: BadgeId
-  emoji: string
-  naam: string
-  /** Waarvoor je hem krijgt */
-  uitleg: string
-  /** Wat je nog moet doen (met je eigen voortgang erbij) */
-  nogTeDoen: (f: Feiten) => string
-  /** Gaat naar wie voorop staat */
-  wisselt?: boolean
-  /** Kan alleen met de server (fotomuur, stemmingen, klassement) */
-  server?: boolean
-}
-
-export const BADGES: BadgeDef[] = [
-  {
-    id: 'open-boek',
-    emoji: '✍️',
-    naam: 'Open boek',
-    uitleg: 'Profiel helemaal ingevuld, met foto',
-    nogTeDoen: () => 'Vul je profiel helemaal in, met een foto',
-  },
-  {
-    id: 'ingepakt',
-    emoji: '🎒',
-    naam: 'Ingepakt',
-    uitleg: 'De hele paklijst afgevinkt',
-    nogTeDoen: () => 'Vink je hele paklijst af',
-  },
-  {
-    id: 'challenge-jager',
-    emoji: '🎯',
-    naam: 'Challenge-jager',
-    uitleg: `${CHALLENGES_NODIG} challenges gedaan`,
-    nogTeDoen: (f) => `Doe ${CHALLENGES_NODIG} challenges (nu ${f.challenges})`,
-  },
-  {
-    id: 'bingo',
-    emoji: '🚌',
-    naam: 'Bingo!',
-    uitleg: 'Een rij op de busbingo',
-    nogTeDoen: () => 'Haal een rij op de busbingo',
-  },
-  {
-    id: 'volle-kaart',
-    emoji: '🏆',
-    naam: 'Volle kaart',
-    uitleg: 'De hele busbingokaart vol',
-    nogTeDoen: () => 'Maak je busbingokaart helemaal vol',
-  },
-  {
-    id: 'stem-van-de-dag',
-    emoji: '👑',
-    naam: 'Stem van de dag',
-    uitleg: 'Een dagelijkse stemming gewonnen',
-    nogTeDoen: () => 'Win een dagelijkse stemming',
-    server: true,
-  },
-  {
-    id: 'fotograaf',
-    emoji: '📸',
-    naam: 'Fotograaf',
-    uitleg: "De meeste foto's op de fotomuur",
-    nogTeDoen: (f) => `Zet de meeste foto's op de fotomuur, minstens ${FOTOS_NODIG} (nu ${f.fotos})`,
-    wisselt: true,
-    server: true,
-  },
-  {
-    id: 'koploper',
-    emoji: '🥇',
-    naam: 'Koploper',
-    uitleg: 'Nu de nummer 1 van het klassement',
-    nogTeDoen: () => 'Sta bovenaan in het klassement',
-    wisselt: true,
-    server: true,
-  },
-]
-
-export const badgeDef = (id: BadgeId) => BADGES.find((b) => b.id === id)!
 
 /** Badges die in deze versie van de app te halen zijn (zonder server alleen de eigen) */
 export const TE_HALEN = BADGES.filter((b) => backendIngesteld || !b.server)
 
-export interface Badge {
-  id: BadgeId
-  /** Aantal keer (alleen bij Stem van de dag) */
-  aantal?: number
-}
-
 // ---------- Van de server ----------
+
+/** Ophoger als er iets nieuws in de stand komt: BadgeMelding wacht daarop bij het bijwerken van de app */
+export const STAND_VERSIE = 2
 
 interface ServerPersoon {
   naam: string
@@ -140,13 +50,20 @@ interface ServerPersoon {
   bingoVakjes: number
   bingoPunten: number
   ingepakt: boolean
+  /** Wanneer helemaal ingepakt (ms), of null */
+  ingepaktOp: number | null
+  /** Badges die alleen de telefoon van die persoon kent */
+  telefoon: TelefoonBadges
   totaal: number
 }
 
 interface ServerStand {
+  versie?: number
   personen: ServerPersoon[]
   /** Aantal foto's per naam (kleine letters) */
   fotos: Record<string, number>
+  /** Hoe vaak door het klos-rad gekozen, per naam (kleine letters) */
+  rad: Record<string, number>
   opgehaald: number
 }
 
@@ -161,16 +78,29 @@ export function haalBadgeStand(): Promise<void> {
   return lopend
 }
 
+const leegPersoon = (naam: string, totaal = 0): ServerPersoon => ({
+  naam,
+  challenges: 0,
+  bingoVakjes: 0,
+  bingoPunten: 0,
+  ingepakt: false,
+  ingepaktOp: null,
+  telefoon: {},
+  totaal,
+})
+
 async function haal() {
   const cb = supabase()
   if (!cb || backendStand().status !== 'verbonden') return
   try {
     const c = await cb
-    const [v, k, f] = await Promise.all([
-      // * en niet de kolomnamen: dan werkt het ook als 'ingepakt' (migratie 0011) er nog niet is
+    const [v, k, f, r] = await Promise.all([
+      // * en niet de kolomnamen: dan werkt het ook als de kolommen van 0011/0012 er nog niet zijn
       c.from('voortgang').select('*, deelnemers(naam)'),
       c.from('klassement_personen').select('naam, totaal'),
       c.from('fotos').select('naam'),
+      // Mag mislukken (tabel uit migratie 0012 nog niet gedraaid)
+      c.from('rad_uitslagen').select('naam, gedraaid'),
     ])
     const fout = v.error ?? k.error ?? f.error
     if (fout) throw fout
@@ -179,25 +109,34 @@ async function haal() {
       bingo?: string[]
       bingo_punten?: number
       ingepakt?: boolean
+      ingepakt_op?: string | null
+      badges?: unknown
       deelnemers?: { naam: string } | { naam: string }[] | null
     }
     const perNaam = new Map<string, ServerPersoon>()
-    for (const r of (k.data ?? []) as { naam: string; totaal: number }[]) {
-      perNaam.set(sleutel(r.naam), { naam: r.naam, challenges: 0, bingoVakjes: 0, bingoPunten: 0, ingepakt: false, totaal: r.totaal ?? 0 })
+    for (const rij of (k.data ?? []) as { naam: string; totaal: number }[]) {
+      perNaam.set(sleutel(rij.naam), leegPersoon(rij.naam, rij.totaal ?? 0))
     }
-    for (const r of (v.data ?? []) as VRij[]) {
-      const d = Array.isArray(r.deelnemers) ? r.deelnemers[0] : r.deelnemers
+    for (const rij of (v.data ?? []) as VRij[]) {
+      const d = Array.isArray(rij.deelnemers) ? rij.deelnemers[0] : rij.deelnemers
       if (!d?.naam) continue
-      const p = perNaam.get(sleutel(d.naam)) ?? { naam: d.naam, challenges: 0, bingoVakjes: 0, bingoPunten: 0, ingepakt: false, totaal: 0 }
-      p.challenges = r.challenges?.length ?? 0
-      p.bingoVakjes = r.bingo?.length ?? 0
-      p.bingoPunten = r.bingo_punten ?? 0
-      p.ingepakt = r.ingepakt === true
+      const p = perNaam.get(sleutel(d.naam)) ?? leegPersoon(d.naam)
+      p.challenges = rij.challenges?.length ?? 0
+      p.bingoVakjes = rij.bingo?.length ?? 0
+      p.bingoPunten = rij.bingo_punten ?? 0
+      p.ingepakt = rij.ingepakt === true
+      const op = rij.ingepakt_op ? Date.parse(rij.ingepakt_op) : NaN
+      p.ingepaktOp = Number.isFinite(op) ? op : null
+      p.telefoon = rij.badges && typeof rij.badges === 'object' && !Array.isArray(rij.badges) ? (rij.badges as TelefoonBadges) : {}
       perNaam.set(sleutel(d.naam), p)
     }
     const fotos: Record<string, number> = {}
-    for (const r of (f.data ?? []) as { naam: string }[]) fotos[sleutel(r.naam)] = (fotos[sleutel(r.naam)] ?? 0) + 1
-    schrijfEnMeld<ServerStand>(CACHE, { personen: [...perNaam.values()], fotos, opgehaald: Date.now() })
+    for (const rij of (f.data ?? []) as { naam: string }[]) fotos[sleutel(rij.naam)] = (fotos[sleutel(rij.naam)] ?? 0) + 1
+    // Uitslagen uit de testperiode tellen niet
+    const vanaf = config.spelTestperiode ? spelBegint.getTime() : 0
+    const uitslagen = r.error ? [] : ((r.data ?? []) as { naam: string; gedraaid: string }[])
+    const rad = Object.fromEntries(radTelling(uitslagen.map((u) => ({ naam: u.naam, gedraaid: Date.parse(u.gedraaid) })), vanaf))
+    schrijfEnMeld<ServerStand>(CACHE, { versie: STAND_VERSIE, personen: [...perNaam.values()], fotos, rad, opgehaald: Date.now() })
   } catch {
     // Dan blijft de bewaarde stand staan
   }
@@ -213,20 +152,6 @@ function lijnenUitPunten(vakjes: number, punten: number, p: Spel['punten'] | und
 
 // ---------- Uitrekenen ----------
 
-/** Feiten → badges. leiders: de hoogste stand van iedereen (voor de badges die wisselen). */
-export function badgesUit(f: Feiten, leiders: { fotos: number; totaal: number }): Badge[] {
-  const uit: Badge[] = []
-  if (f.profielVol) uit.push({ id: 'open-boek' })
-  if (f.ingepakt) uit.push({ id: 'ingepakt' })
-  if (f.challenges >= CHALLENGES_NODIG) uit.push({ id: 'challenge-jager' })
-  if (f.bingoLijnen > 0) uit.push({ id: 'bingo' })
-  if (f.volleKaart) uit.push({ id: 'volle-kaart' })
-  if (f.stemWinst > 0) uit.push({ id: 'stem-van-de-dag', aantal: f.stemWinst })
-  if (f.fotos >= FOTOS_NODIG && f.fotos === leiders.fotos) uit.push({ id: 'fotograaf' })
-  if (f.totaal > 0 && f.totaal === leiders.totaal) uit.push({ id: 'koploper' })
-  return uit
-}
-
 /**
  * Badges van iedereen. actief: de stand van de server ophalen (bij openen, elke minuut en
  * als de verbinding terugkomt). Niet actief: alleen de bewaarde stand gebruiken.
@@ -239,6 +164,11 @@ export function useBadges(actief = false) {
   const [vinkjes] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [kaart] = useOpgeslagen<unknown>('spel.bingo.kaart', null)
   const [ingepakt] = useOpgeslagen<boolean>('paklijst.ingepakt', false)
+  const [ingepaktOp] = useOpgeslagen<number | null>('paklijst.ingepaktOp', null)
+  const [fiches] = useOpgeslagen<number>('casino.fiches', 1000)
+  const verdiend = useVerdiend()
+  const eigenBijnaam = useEigenBijnaam()
+  const toon = useToonNaam()
   const mijnProfiel = useMijnProfiel()
   const { perNaam: profielen } = useProfielen()
   const { stemmingen, stand: stemstand } = useStemmingen(actief)
@@ -269,8 +199,22 @@ export function useBadges(actief = false) {
         for (const w of winnaars(uitslag)) gewonnen.set(sleutel(w.kandidaat), (gewonnen.get(sleutel(w.kandidaat)) ?? 0) + 1)
       }
     }
+    // Je eigen stemmen (die van anderen zijn geheim; die sturen ze zelf mee)
+    const mijnStemmen = backendIngesteld
+      ? eigenStemmen(stemmingen, stemstand?.mijn ?? {}, stemstand?.uitslagen ?? {}, Date.now())
+      : { geweest: 0, gemist: 0, stemvee: false, waarzegger: 0 }
+
     const server = backendIngesteld ? stand : null
     const serverPer = new Map((server?.personen ?? []).map((p) => [sleutel(p.naam), p]))
+    const ikSleutel = naam ? sleutel(naam) : null
+
+    // 🐦 Vroege vogel: je eigen moment van deze telefoon (kan nog niet verstuurd zijn)
+    const vogels = vroegsteVogels([
+      ...(server?.personen ?? []).filter((p) => sleutel(p.naam) !== ikSleutel).map((p) => ({ naam: p.naam, op: p.ingepaktOp })),
+      ...(naam
+        ? [{ naam, op: [ingepaktOp, serverPer.get(ikSleutel!)?.ingepaktOp].filter((x): x is number => typeof x === 'number').sort((a, b) => a - b)[0] }]
+        : []),
+    ])
 
     // Eigen spelvoortgang van deze telefoon (dezelfde berekening als het scherm Spel)
     const mijnSpel = (() => {
@@ -284,20 +228,36 @@ export function useBadges(actief = false) {
     const feitenVan = (n: string): Feiten => {
       const s = sleutel(n)
       const sp = serverPer.get(s)
-      const eigen = !!naam && sleutel(naam) === s
+      const eigen = s === ikSleutel
       const rij = profielen.get(s)
       const profielVol = eigen
         ? !!mijnProfiel && isAf(mijnProfiel) && !!(mijnProfiel.foto || mijnProfiel.fotoLokaal)
         : !!rij && isAf(rij) && !!rij.foto_pad
       const vakjes = sp?.bingoVakjes ?? 0
+      const telefoon = eigen
+        ? {
+            vasteGast: !!verdiend['vaste-gast'],
+            wekker: !!verdiend.wekker,
+            highRoller: !!verdiend['high-roller'],
+            blut: !!verdiend.blut,
+            stemvee: mijnStemmen.stemvee,
+            waarzegger: mijnStemmen.waarzegger,
+          }
+        : feitenUitTelefoon(sp?.telefoon)
       return {
+        ...telefoon,
         profielVol,
+        bijnaam: eigen ? !!eigenBijnaam.bijnaam : toon(n) !== n,
         ingepakt: eigen ? ingepakt || !!sp?.ingepakt : !!sp?.ingepakt,
+        vroegeVogel: vogels.has(s),
         challenges: eigen && mijnSpel ? mijnSpel.challenges : (sp?.challenges ?? 0),
         bingoLijnen: eigen && mijnSpel ? mijnSpel.lijnen : lijnenUitPunten(vakjes, sp?.bingoPunten ?? 0, spel?.punten),
         volleKaart: eigen && mijnSpel ? mijnSpel.vol : vakjes >= 24,
         stemWinst: gewonnen.get(s) ?? 0,
+        stemmingenGemist: eigen ? mijnStemmen.gemist : 0,
         fotos: server?.fotos[s] ?? 0,
+        casinoFiches: eigen ? fiches : 0,
+        radGekozen: server?.rad?.[s] ?? 0,
         totaal: sp?.totaal ?? 0,
       }
     }
@@ -313,7 +273,26 @@ export function useBadges(actief = false) {
       mijnNaam: naam,
       /** Is er (ooit) een stand van de server binnengekomen? */
       serverBekend: !!server,
+      /** Is de stand van de server van deze versie van de app (met alle nieuwe gegevens)? */
+      serverActueel: !!server && server.versie === STAND_VERSIE,
       spelGeladen: !!spel,
     }
-  }, [stand, spel, naam, gedaan, vinkjes, kaart, ingepakt, mijnProfiel, profielen, stemmingen, stemstand])
+  }, [
+    stand,
+    spel,
+    naam,
+    gedaan,
+    vinkjes,
+    kaart,
+    ingepakt,
+    ingepaktOp,
+    fiches,
+    verdiend,
+    eigenBijnaam.bijnaam,
+    toon,
+    mijnProfiel,
+    profielen,
+    stemmingen,
+    stemstand,
+  ])
 }

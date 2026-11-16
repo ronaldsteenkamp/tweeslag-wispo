@@ -6,6 +6,7 @@ import { tabToetsen } from '../lib/tabbladen'
 import { BevestigDialoog } from './BevestigDialoog'
 import { deelnemers, fractie, initialen, kies, useDeelnemersKeuze, willekeurig } from '../lib/rad'
 import { doelHoek, vakTekst, verspreid } from '../lib/radwiskunde'
+import { meldKlos } from '../lib/radUitslagen'
 import { DataStatus } from './DataStatus'
 import { Confetti } from './Confetti'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
@@ -218,6 +219,8 @@ function Rad({
     }
     setUitslag(nieuw)
     setVast((oud) => (oud ? { ...oud, winnaar: i } : oud))
+    // Voor de badge 🎡 Lot uit de loterij (het grapje telt niet mee)
+    if (soort === 'klos' && grap < 0) meldKlos(o.waarde)
     if (geluidAan) tril([80, 60, 180])
     setBezig(false)
     // Eerst even het winnende vak laten oplichten, dan pas de popup

@@ -1,6 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { badgeDef, TE_HALEN, useBadges, type Badge } from '../lib/badges'
-import { lees, schrijf } from '../lib/opslag'
+import { telefoonUitFeiten } from '../lib/badgeregels'
+import { lees, schrijf, schrijfEnMeld } from '../lib/opslag'
 import { Feestregen } from './Feestregen'
 import { toonProfiel } from './Profiel'
 
@@ -155,8 +156,14 @@ const GEZIEN = 'badges.gezien'
  * al had stil onthouden, zodat er niet ineens een rij meldingen komt.
  */
 export function BadgeMelding() {
-  const { van, mijnNaam, serverBekend, spelGeladen } = useBadges(false)
+  const { van, feitenVan, mijnNaam, serverBekend, spelGeladen } = useBadges(false)
   const mijn = mijnNaam ? van(mijnNaam) : null
+
+  // De badges die alleen deze telefoon kent klaarzetten voor de server (scorebord.ts stuurt ze mee)
+  const telefoon = mijnNaam ? JSON.stringify(telefoonUitFeiten(feitenVan(mijnNaam))) : null
+  useEffect(() => {
+    if (telefoon !== null && JSON.stringify(lees('badges.telefoon', {})) !== telefoon) schrijfEnMeld('badges.telefoon', JSON.parse(telefoon))
+  }, [telefoon])
   const ids = mijn ? mijn.map((b) => b.id).join(',') : null
   const [melding, setMelding] = useState<Badge | null>(null)
   const [feest, setFeest] = useState(0)

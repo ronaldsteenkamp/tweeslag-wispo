@@ -97,9 +97,13 @@ export default function Paklijst() {
     scrollTimer.current = window.setTimeout(() => window.scrollTo({ top: 0, behavior: zacht ? 'smooth' : 'auto' }), wacht)
   }, [data, procent, nieuweKop])
 
-  // Voor de badge 🎒 Ingepakt: eenmaal alles ingepakt blijft dat zo (ook als je later iets uitvinkt)
+  // Voor de badge 🎒 Ingepakt: eenmaal alles ingepakt blijft dat zo (ook als je later iets uitvinkt).
+  // Het moment van de eerste keer is voor 🐦 Vroege vogel.
   useEffect(() => {
-    if (data && totaal > 0 && klaar === totaal && !lees('paklijst.ingepakt', false)) schrijfEnMeld('paklijst.ingepakt', true)
+    if (data && totaal > 0 && klaar === totaal && !lees('paklijst.ingepakt', false)) {
+      schrijfEnMeld('paklijst.ingepaktOp', Date.now())
+      schrijfEnMeld('paklijst.ingepakt', true)
+    }
   }, [data, klaar, totaal])
 
   const wissel = (s: string) => {
