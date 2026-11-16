@@ -613,6 +613,7 @@ function MijnProfiel({ naamKiezen, onSluit }: { naamKiezen: boolean; onSluit: ()
           Andere naam kiezen
         </button>
       </p>
+      <BadgeRij naam={naam} leegTekst="Nog geen badges. In Spel zie je hoe je ze verdient." />
       <BijnaamVeld namen={namen} />
       {/* Opnieuw beginnen zodra het profiel van de server binnen is (na het kiezen van een naam) */}
       <ProfielFormulier
