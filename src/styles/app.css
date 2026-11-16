@@ -4522,12 +4522,80 @@ button.badge {
   list-style: none;
 }
 
-.badgerij__uitleg {
-  margin: 8px 0 0;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: var(--accent-zacht);
+/* De rij is het ankerpunt van de tekstballon */
+.badgerij {
+  position: relative;
+}
+
+.badgerij__leeg {
+  margin: 0;
   font-size: 0.9rem;
+  color: var(--tekst-zacht);
+}
+
+/*
+ * Uitleg van een badge: een tekstballon over de inhoud heen, zodat er niets verschuift.
+ * Het pijltje wijst naar de gekozen badge (--pijl-x, gemeten in BadgeRij).
+ */
+.badgeballon {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--rand);
+  border-radius: 14px;
+  background: var(--oppervlak);
+  box-shadow: var(--schaduw), 0 6px 18px rgba(13, 0, 88, 0.14);
+  font-size: 0.9rem;
+  animation: badgeballon-in 0.15s ease-out;
+}
+
+.badgeballon strong {
+  font-family: var(--font-kop);
+}
+
+/* Pijltje: een gedraaid vierkantje met de rand aan twee kanten */
+.badgeballon::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: calc(var(--pijl-x, 20px) - 6px);
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--rand);
+  border-right: 0;
+  border-bottom: 0;
+  background: var(--oppervlak);
+  transform: rotate(45deg);
+}
+
+/* Onder de rij te weinig ruimte: boven de rij, pijltje naar beneden */
+.badgeballon--boven {
+  top: auto;
+  bottom: calc(100% + 10px);
+}
+
+.badgeballon--boven::before {
+  top: auto;
+  bottom: -7px;
+  transform: rotate(225deg);
+}
+
+@keyframes badgeballon-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badgeballon {
+    animation: none;
+  }
 }
 
 /* "Jouw badges" in Spel */
