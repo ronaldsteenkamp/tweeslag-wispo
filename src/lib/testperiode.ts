@@ -65,6 +65,9 @@ function wisAlsBegonnen() {
   schrijfEnMeld('casino.fiches', 1000)
   schrijfEnMeld('casino.geleend', 0)
   schrijfEnMeld('casino.inzet', {})
+  // Badges uit het casino (High roller, Blut) horen bij het spel; die van beginscherm, meldingen
+  // en bijnaam blijven gewoon staan
+  schrijfEnMeld('badges.spel', {})
   schrijf(TESTMOMENT, null)
 }
 

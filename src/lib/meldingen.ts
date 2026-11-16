@@ -57,6 +57,14 @@ export function meldingStatus(): MeldingStatus {
 const luisteraars = new Set<() => void>()
 const meld = () => luisteraars.forEach((f) => f())
 
+/** Buiten React horen als de status van de meldingen verandert (voor de badge 🔔 Wekker) */
+export function abonneerMeldingen(f: () => void): () => void {
+  luisteraars.add(f)
+  return () => {
+    luisteraars.delete(f)
+  }
+}
+
 export function useMeldingen() {
   const [, ververs] = useState(0)
   useEffect(() => {
