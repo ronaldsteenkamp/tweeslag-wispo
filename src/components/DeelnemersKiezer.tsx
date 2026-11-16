@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useToonNaam } from '../lib/bijnamen'
+import { useKamerNaam } from '../lib/kamernamen'
 import { alleDeelnemers, type Kamers } from '../lib/data'
 import { deelnemers, useDeelnemersKeuze, type DeelnemersSoort } from '../lib/rad'
 
@@ -14,6 +15,7 @@ const KEUZE_LABELS: { waarde: DeelnemersSoort; label: string }[] = [
 export function DeelnemersKiezer({ kamers, naam }: { kamers?: Kamers; naam: string | null }) {
   const [keuze, setKeuze] = useDeelnemersKeuze()
   const toon = useToonNaam()
+  const naamVanKamer = useKamerNaam()
   const alle = useMemo(() => alleDeelnemers(kamers), [kamers])
   const mee = deelnemers(keuze, kamers, naam)
   const wissel = <T,>(lijst: T[], x: T) => (lijst.includes(x) ? lijst.filter((y) => y !== x) : [...lijst, x])
@@ -48,7 +50,7 @@ export function DeelnemersKiezer({ kamers, naam }: { kamers?: Kamers; naam: stri
               onClick={() => setKeuze((oud) => ({ ...oud, kamers: wissel(oud.kamers, k.nummer) }))}
             >
               {k.nummer}
-              {k.naam ? ` ${k.naam}` : ''}
+              {naamVanKamer(k) ? ` ${naamVanKamer(k)}` : ''}
             </button>
           ))}
         </div>
