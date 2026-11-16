@@ -96,15 +96,21 @@ export default function Planning() {
   const dagRefs = useRef(new Map<string, HTMLElement>())
   const chipRefs = useRef(new Map<string, HTMLButtonElement>())
   const balk = useRef<HTMLDivElement>(null)
-  const gescrold = useRef(false)
+  /** Voor welke datum we al naar "vandaag" gesprongen zijn */
+  const gescrold = useRef<string | null>(null)
   const negeerScrollTot = useRef(0)
   const [actief, setActief] = useState<string | null>(null)
 
-  // Bij openen: naar vandaag (of de eerste dag)
+  // Bij openen: naar vandaag (of de eerste dag). Wordt het een nieuwe dag terwijl Planning open
+  // staat (bijv. de app 's ochtends weer uit de achtergrond gehaald), dan ook naar die nieuwe dag.
   useEffect(() => {
-    if (!data || gescrold.current) return
-    gescrold.current = true
-    const start = data.dagen.some((d) => d.datum === vandaag) ? vandaag : data.dagen[0]?.datum
+    if (!data || gescrold.current === vandaag) return
+    const eersteKeer = gescrold.current === null
+    gescrold.current = vandaag
+    const inPlanning = data.dagen.some((d) => d.datum === vandaag)
+    // Nieuwe dag die niet in de planning staat (na de reis): blijven waar je was
+    if (!eersteKeer && !inPlanning) return
+    const start = inPlanning ? vandaag : data.dagen[0]?.datum
     if (!start) return
     setActief(start)
     if (start === vandaag) dagRefs.current.get(vandaag)?.scrollIntoView({ block: 'start' })
