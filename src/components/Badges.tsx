@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { badgeDef, TE_HALEN, useBadges, type Badge } from '../lib/badges'
 import { lees, schrijf } from '../lib/opslag'
 import { Feestregen } from './Feestregen'
@@ -9,42 +9,104 @@ const label = (b: Badge) => {
   return b.aantal && b.aantal > 1 ? `${d.naam} ×${b.aantal}` : d.naam
 }
 
-/** Rij badges onder de naam in het profielvenster. Tik op een badge voor de uitleg. */
-export function BadgeRij({ naam }: { naam: string }) {
+/**
+ * Rij badges onder de naam in het profielvenster. Tik op een badge voor de uitleg: die komt als
+ * tekstballon over de inhoud heen, zodat de foto en de naam niet verschuiven. Sluiten: dezelfde
+ * badge nog eens, ergens anders tikken of Escape. Met leegTekst staat er een regel als er nog geen
+ * badges zijn (Jouw profiel); zonder leegTekst blijft de rij dan weg (profiel van een ander).
+ */
+export function BadgeRij({ naam, leegTekst }: { naam: string; leegTekst?: string }) {
   const { van } = useBadges(true)
   const badges = van(naam)
   const [gekozen, setGekozen] = useState<Badge['id'] | null>(null)
+  // Plek van het pijltje (midden van de gekozen badge) en of de ballon boven de rij moet
+  const [pijlX, setPijlX] = useState(0)
+  const [boven, setBoven] = useState(false)
+  const rij = useRef<HTMLDivElement>(null)
+  const ballon = useRef<HTMLDivElement>(null)
+  const knoppen = useRef(new Map<Badge['id'], HTMLButtonElement>())
+  const ballonId = useId()
   const uitleg = badges.find((b) => b.id === gekozen)
-  if (!badges.length) return null
+
+  // Sluiten door ernaast te tikken of met Escape (alleen de ballon, niet het hele venster)
+  useEffect(() => {
+    if (!gekozen) return
+    const buiten = (e: PointerEvent) => {
+      if (!rij.current?.contains(e.target as Node)) setGekozen(null)
+    }
+    const opToets = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      // Vangfase op window: zo komt de Escape niet meer bij het profielvenster
+      e.stopImmediatePropagation()
+      setGekozen(null)
+    }
+    document.addEventListener('pointerdown', buiten)
+    window.addEventListener('keydown', opToets, true)
+    return () => {
+      document.removeEventListener('pointerdown', buiten)
+      window.removeEventListener('keydown', opToets, true)
+    }
+  }, [gekozen])
+
+  // Voor het tekenen meten: pijltje onder de badge, en boven de rij als er onder te weinig plek is
+  useLayoutEffect(() => {
+    const knop = gekozen ? knoppen.current.get(gekozen) : null
+    if (!knop || !rij.current || !ballon.current) return
+    setPijlX(knop.offsetLeft + knop.offsetWidth / 2)
+    const r = rij.current.getBoundingClientRect()
+    const scroller = rij.current.closest('.dialoog--hoog')
+    const vak = scroller ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight }
+    const nodig = ballon.current.offsetHeight + 12
+    const erboven = vak.bottom - r.bottom < nodig && r.top - vak.top >= nodig
+    setBoven(erboven)
+    // Past hij nergens helemaal, dan het venster een stukje meeschuiven
+    if (!erboven && vak.bottom - r.bottom < nodig) ballon.current.scrollIntoView({ block: 'nearest' })
+  }, [gekozen])
+
+  if (!badges.length) return leegTekst ? <p className="badgerij__leeg">{leegTekst}</p> : null
+  const d = uitleg ? badgeDef(uitleg.id) : null
   return (
-    <div className="badgerij">
+    <div className="badgerij" ref={rij}>
       <ul className="badgerij__lijst" aria-label="Badges">
         {badges.map((b) => {
-          const d = badgeDef(b.id)
+          const def = badgeDef(b.id)
           return (
             <li key={b.id}>
               <button
+                ref={(el) => {
+                  if (el) knoppen.current.set(b.id, el)
+                  else knoppen.current.delete(b.id)
+                }}
                 type="button"
                 className={`badge${gekozen === b.id ? ' is-gekozen' : ''}`}
-                aria-label={`${label(b)}: ${d.uitleg}`}
+                aria-label={`${label(b)}: ${def.uitleg}`}
                 aria-expanded={gekozen === b.id}
+                aria-controls={ballonId}
                 onClick={() => setGekozen(gekozen === b.id ? null : b.id)}
               >
-                <span aria-hidden="true">{d.emoji}</span>
+                <span aria-hidden="true">{def.emoji}</span>
                 {b.aantal && b.aantal > 1 && <span className="badge__aantal">×{b.aantal}</span>}
               </button>
             </li>
           )
         })}
       </ul>
-      {uitleg && (
-        <p className="badgerij__uitleg" role="status">
+      {uitleg && d && (
+        <div
+          ref={ballon}
+          id={ballonId}
+          className={`badgeballon${boven ? ' badgeballon--boven' : ''}`}
+          role="status"
+          style={{ '--pijl-x': `${pijlX}px` } as CSSProperties}
+        >
           <strong>
-            {badgeDef(uitleg.id).emoji} {label(uitleg)}
+            {d.emoji} {label(uitleg)}
           </strong>
-          : {badgeDef(uitleg.id).uitleg}
-          {badgeDef(uitleg.id).wisselt && ' (gaat naar wie voorop staat)'}
-        </p>
+          <span>
+            {d.uitleg}
+            {d.wisselt && ' (gaat naar wie voorop staat)'}
+          </span>
+        </div>
       )}
     </div>
   )
