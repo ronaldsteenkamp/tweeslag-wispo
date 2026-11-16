@@ -4647,6 +4647,30 @@ button.badge {
   font-size: 0.8rem !important;
 }
 
+.badgekaart__leeg {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--tekst-zacht);
+}
+
+/* "Nog te halen": standaard ingeklapt onder de verdiende badges */
+.badgekaart__nog {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rand);
+}
+
+.badgekaart__nog summary {
+  cursor: pointer;
+  font-family: var(--font-kop);
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.badgekaart__nog[open] summary {
+  margin-bottom: 12px;
+}
+
 /* Nog niet verdiend: grijs en een stippelrand */
 .badgekaart__item:not(.is-verdiend) .badge {
   border-style: dashed;
