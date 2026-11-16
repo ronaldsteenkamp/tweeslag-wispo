@@ -24,7 +24,6 @@ import {
   useMijnProfiel,
   useProfielen,
   useProfielFoto,
-  wisProfiel,
   type Profiel,
   type ProfielRij,
 } from '../lib/profiel'
@@ -515,7 +514,6 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
   const mijn = useMijnProfiel()
   const { perNaam } = useProfielen()
   const backend = useBackend()
-  const [wissen, setWissen] = useState(false)
   const [bijnaamWissen, setBijnaamWissen] = useState(false)
   const [fout, setFout] = useState<string | null>(null)
   const bijnaam = useBijnaamVan(naam)
@@ -549,11 +547,6 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
           {p ? 'Aanpassen' : 'Profiel invullen'}
         </button>
       )}
-      {!eigen && rij && backend.beheerder && (
-        <button type="button" className="knop knop--gevaar knop--breed" onClick={() => setWissen(true)}>
-          Profiel wissen (beheer)
-        </button>
-      )}
       {!eigen && bijnaam && backend.beheerder && (
         <button type="button" className="knop knop--gevaar knop--breed" onClick={() => setBijnaamWissen(true)}>
           Bijnaam wissen (beheer)
@@ -575,20 +568,6 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
       <button type="button" className="knop knop--secundair knop--breed" onClick={onSluit}>
         Sluiten
       </button>
-      {rij && (
-        <BevestigDialoog
-          open={wissen}
-          titel={`Profiel van ${toon(naam)} wissen?`}
-          tekst="Het hele profiel en de profielfoto verdwijnen. Diegene kan daarna een nieuw profiel invullen."
-          bevestigLabel="Wissen"
-          gevaarlijk
-          onAnnuleer={() => setWissen(false)}
-          onBevestig={() => {
-            setWissen(false)
-            void wisProfiel(rij).then((f) => (f ? setFout(f) : onSluit()))
-          }}
-        />
-      )}
     </>
   )
 }

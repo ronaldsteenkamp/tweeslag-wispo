@@ -267,22 +267,6 @@ export function useProfielen() {
   return { perNaam, opgehaald: cache?.opgehaald ?? null }
 }
 
-/** Een beheerder wist een ongepast profiel (en de foto, als die er is) */
-export async function wisProfiel(rij: ProfielRij): Promise<string | null> {
-  const cb = supabase()
-  if (!cb || backendStand().status !== 'verbonden') return 'Geen verbinding'
-  const c = await cb
-  const { error } = await c.from('profielen').delete().eq('naam', rij.naam)
-  if (error) return `Wissen lukte niet: ${error.message}`
-  if (rij.foto_pad)
-    await c.storage
-      .from(BUCKET)
-      .remove([rij.foto_pad])
-      .catch(() => {})
-  await haalProfielen()
-  return null
-}
-
 // ---------- Foto's (ook offline) ----------
 
 const fotoSleutel = (pad: string) => `${location.origin}/__profielfoto/${pad}`
