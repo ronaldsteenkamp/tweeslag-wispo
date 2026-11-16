@@ -30,7 +30,7 @@ export default defineConfig({
       },
       workbox: {
         // Cache-first voor de app zelf, de pistekaart en de iconen (precache)
-        globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp,ico}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp,ico,woff2}'],
         // Splashscreens haalt iOS zelf op bij het installeren; data gaat via network-first hieronder
         globIgnores: ['**/apple-splash-*', 'data/**'],
         // Ruim genoeg voor een grote, officiële pistekaart
