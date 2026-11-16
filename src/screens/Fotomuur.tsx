@@ -7,6 +7,7 @@ import { useBackend } from '../lib/backend'
 import { useToonNaam } from '../lib/bijnamen'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData } from '../lib/data'
+import { useKamerNaam } from '../lib/kamernamen'
 import { grooteLink, useFotos, type Foto } from '../lib/fotos'
 import { useFotoWachtrij } from '../lib/fotowachtrij'
 import { lees, schrijfEnMeld } from '../lib/opslag'
@@ -21,10 +22,11 @@ export function wanneerGemaakt(iso: string) {
 /** Kamerlabel zoals elders in de app: '101 · Gletsjer' */
 export function useKamerLabel() {
   const { data } = useData('kamers')
+  const naamVanKamer = useKamerNaam()
   return useMemo(() => {
-    const m = new Map((data?.kamers ?? []).map((k) => [k.nummer, k.naam]))
+    const m = new Map((data?.kamers ?? []).map((k) => [k.nummer, naamVanKamer(k)]))
     return (nr: string | null) => (nr ? `${nr}${m.get(nr) ? ` · ${m.get(nr)}` : ''}` : '')
-  }, [data])
+  }, [data, naamVanKamer])
 }
 
 export default function Fotomuur({ terug }: { terug: () => void }) {

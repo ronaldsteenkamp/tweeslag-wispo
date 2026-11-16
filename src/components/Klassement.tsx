@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { useBackend } from '../lib/backend'
 import { metEchteNaam, useToonNaam } from '../lib/bijnamen'
 import { useData } from '../lib/data'
+import { useKamerNaam } from '../lib/kamernamen'
 import { useOpgeslagen } from '../lib/opslag'
 import { tabToetsen } from '../lib/tabbladen'
 import { useKlassement, useSyncStatus, verwijderCorrectie, voegCorrectieToe } from '../lib/scorebord'
@@ -33,11 +34,15 @@ export function Klassement() {
   const [naam] = useOpgeslagen<string | null>('naam', null)
   const toon = useToonNaam()
 
+  const naamVanKamer = useKamerNaam()
   const kamerNaam = useMemo(() => {
     const m = new Map<string, string>()
-    for (const k of kamersData?.kamers ?? []) if (k.naam) m.set(k.nummer, k.naam)
+    for (const k of kamersData?.kamers ?? []) {
+      const n = naamVanKamer(k)
+      if (n) m.set(k.nummer, n)
+    }
     return m
-  }, [kamersData])
+  }, [kamersData, naamVanKamer])
   const eigenKamer = kamersData?.kamers.find((k) => naam && k.bewoners.includes(naam))?.nummer ?? null
   const kamerLabel = (nr: string | null) => (nr ? `${nr}${kamerNaam.get(nr) ? ` · ${kamerNaam.get(nr)}` : ''}` : '–')
 

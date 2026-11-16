@@ -4742,3 +4742,57 @@ button.badge {
   font-size: 0.82rem;
   font-weight: 400;
 }
+/* ---------- Kamernaam aanpassen (Kamers → Jouw kamer) ---------- */
+
+.kamernaam__knop {
+  align-self: flex-start;
+  min-height: 36px;
+}
+
+.kamernaam {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0;
+  padding: 12px;
+  border: 1px solid var(--rand);
+  border-radius: 14px;
+  background: var(--oppervlak);
+}
+
+.kamernaam label {
+  font-family: var(--font-kop);
+  font-weight: 700;
+}
+
+.kamernaam__rij {
+  position: relative;
+}
+
+.kamernaam__rij input {
+  width: 100%;
+  padding-right: 56px;
+}
+
+.kamernaam__teller {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: var(--tekst-zacht);
+}
+
+.kamernaam__uitleg {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--tekst-zacht);
+}
+
+.kamernaam .melding {
+  margin: 0;
+}
+
+.kamernaam .dialoog__knoppen {
+  margin-top: 0;
+}

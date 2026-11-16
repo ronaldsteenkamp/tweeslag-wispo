@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { NaamKiezer, useAlleNamen } from '../components/NaamKiezer'
 import { openMijnProfiel, toonProfiel } from '../components/Profiel'
@@ -7,6 +7,8 @@ import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { config } from '../config'
 import { useData, type Kamer } from '../lib/data'
 import { useToonNaam } from '../lib/bijnamen'
+import { kamernaamFout, MAX_KAMERNAAM } from '../lib/kamernaamregels'
+import { slaKamernaamOp, useEigenKamernamen, useKamerNaam } from '../lib/kamernamen'
 import { useOpgeslagen } from '../lib/opslag'
 import { profielAfVoor } from '../lib/profiel'
 
@@ -83,6 +85,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
         <section className="kaartje kamer kamer--eigen" aria-label="Jouw kamer">
           <p className="kamer__label">Jouw kamer</p>
           <KamerInhoud kamer={eigenKamer} jij={naam} />
+          <KamernaamVeld kamer={eigenKamer} kamers={data.kamers} />
           <button type="button" className="tekstknop" onClick={() => setWijzigen(true)}>
             Ben je niet {toon(naam)}? Kies een andere naam
           </button>
@@ -136,11 +139,12 @@ function opsomming(namen: string[]): string {
 }
 
 function KamerInhoud({ kamer, jij }: { kamer: Kamer; jij: string }) {
+  const kamerNaam = useKamerNaam()(kamer)
   return (
     <>
       <div className="kamer__kop">
         <span className="kamer__nummer">{kamer.nummer}</span>
-        {kamer.naam && <h2>{kamer.naam}</h2>}
+        {kamerNaam && <h2>{kamerNaam}</h2>}
         {kamer.bedden !== undefined && (
           <span className="kamer__bedden">
             {kamer.bedden} bedden
@@ -150,6 +154,88 @@ function KamerInhoud({ kamer, jij }: { kamer: Kamer; jij: string }) {
       </div>
       <Bewoners namen={kamer.bewoners} jij={jij} />
     </>
+  )
+}
+
+/**
+ * De bewoners passen zelf de naam van hun kamer aan. Leeg laten = weer de naam van de reisleiding.
+ * Opslaan kan alleen met internet; de server controleert of je echt in deze kamer slaapt.
+ */
+function KamernaamVeld({ kamer, kamers }: { kamer: Kamer; kamers: Kamer[] }) {
+  const eigen = useEigenKamernamen()
+  const huidig = useKamerNaam()(kamer) ?? ''
+  const [open, setOpen] = useState(false)
+  const [tekst, setTekst] = useState('')
+  const [bezig, setBezig] = useState(false)
+  const [fout, setFout] = useState<string | null>(null)
+  const controle = kamernaamFout(tekst, kamer.nummer, kamers, eigen)
+
+  const openen = () => {
+    setTekst(huidig)
+    setFout(null)
+    setOpen(true)
+  }
+
+  const bewaar = async (e: FormEvent) => {
+    e.preventDefault()
+    if (controle || bezig) return
+    // Niets veranderd: gewoon dicht
+    if (tekst.trim() === huidig) return setOpen(false)
+    setBezig(true)
+    const f = await slaKamernaamOp(kamer.nummer, tekst)
+    setBezig(false)
+    setFout(f)
+    if (!f) setOpen(false)
+  }
+
+  if (!open) {
+    return (
+      <button type="button" className="tekstknop kamernaam__knop" onClick={openen}>
+        ✏️ {huidig ? 'Naam van de kamer aanpassen' : 'Geef je kamer een naam'}
+      </button>
+    )
+  }
+  return (
+    <form className="kamernaam" onSubmit={(e) => void bewaar(e)}>
+      <label htmlFor="kamernaam-veld">Naam van kamer {kamer.nummer}</label>
+      <div className="kamernaam__rij">
+        <input
+          id="kamernaam-veld"
+          type="text"
+          value={tekst}
+          maxLength={MAX_KAMERNAAM}
+          placeholder={kamer.naam ?? 'Bijv. De Gletsjerspleet'}
+          autoComplete="off"
+          autoFocus
+          onChange={(e) => {
+            setTekst(e.target.value)
+            setFout(null)
+          }}
+          aria-describedby="kamernaam-uitleg"
+          aria-invalid={!!(controle || fout)}
+        />
+        <span className="kamernaam__teller" aria-hidden="true">
+          {tekst.trim().length}/{MAX_KAMERNAAM}
+        </span>
+      </div>
+      <p id="kamernaam-uitleg" className="kamernaam__uitleg">
+        Iedereen ziet deze naam in de app.
+        {kamer.naam ? ` Leeg laten = weer "${kamer.naam}".` : ''}
+      </p>
+      {(controle || fout) && (
+        <p className="melding melding--fout" role="alert">
+          {controle ?? fout}
+        </p>
+      )}
+      <div className="dialoog__knoppen">
+        <button type="button" className="knop knop--secundair" onClick={() => setOpen(false)} disabled={bezig}>
+          Annuleren
+        </button>
+        <button type="submit" className="knop knop--primair" disabled={bezig || !!controle}>
+          {bezig ? 'Bewaren…' : 'Bewaar'}
+        </button>
+      </div>
+    </form>
   )
 }
 
