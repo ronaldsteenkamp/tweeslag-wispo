@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Aftelklok } from '../components/Aftelklok'
-import { JouwBadges } from '../components/Badges'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { FotoUpload } from '../components/FotoUpload'
@@ -216,7 +215,6 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
       )}
 
       {/* Onder de challenges en de busbingo, zodat die zelf bovenaan blijven */}
-      {(onderdeel === 'challenges' || onderdeel === 'bingo') && <JouwBadges />}
 
       {fotoVoor && (
         <FotoUpload

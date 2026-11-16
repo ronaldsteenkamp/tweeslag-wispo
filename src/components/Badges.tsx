@@ -1,9 +1,11 @@
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { backendIngesteld } from '../lib/backend'
 import { badgeDef, TE_HALEN, useActueleStand, useBadges, type Badge, type BadgeDef } from '../lib/badges'
 import { telefoonUitFeiten } from '../lib/badgeregels'
 import { voorVertrek } from '../lib/badgesTelefoon'
+import { useToonNaam } from '../lib/bijnamen'
 import { lees, schrijf, schrijfEnMeld } from '../lib/opslag'
+import { sleutel } from '../lib/profiel'
 import { Feestregen } from './Feestregen'
 import { toonProfiel } from './Profiel'
 
@@ -12,15 +14,36 @@ const label = (b: Badge) => {
   return b.aantal && b.aantal > 1 ? `${d.naam} ×${b.aantal}` : d.naam
 }
 
+/** Zoveel rondjes passen op één regel (ook op een smalle telefoon) */
+const IN_RIJ = 6
+
+/** Badges die wisselen eerst (je laat zien dat je nu voorop staat), verder in de volgorde van BADGES */
+const opVolgorde = (badges: Badge[]) =>
+  [...badges].sort((a, b) => Number(!!badgeDef(b.id).wisselt) - Number(!!badgeDef(a.id).wisselt))
+
 /**
- * Rij badges onder de naam in het profielvenster. Tik op een badge voor de uitleg: die komt als
- * tekstballon over de inhoud heen, zodat de foto en de naam niet verschuiven. Sluiten: dezelfde
- * badge nog eens, ergens anders tikken of Escape. Met leegTekst staat er een regel als er nog geen
- * badges zijn (Jouw profiel); zonder leegTekst blijft de rij dan weg (profiel van een ander).
+ * Het profielvenster geeft hiermee door hoe het badge-overzicht open gaat (in hetzelfde venster).
+ * Buiten het venster is er geen overzicht.
  */
-export function BadgeRij({ naam, leegTekst }: { naam: string; leegTekst?: string }) {
-  const { van } = useBadges(true)
-  const badges = van(naam)
+export const OpenBadgeOverzicht = createContext<((naam: string) => void) | null>(null)
+
+/**
+ * Rij badges onder de naam in het profielvenster. Altijd één regel: passen ze er niet op, dan
+ * staan er vijf en een rondje +N dat het overzicht met alle badges opent. Tik op een badge voor
+ * de uitleg: die komt als tekstballon over de inhoud heen, zodat de foto en de naam niet
+ * verschuiven. Sluiten: dezelfde badge nog eens, ergens anders tikken of Escape.
+ * Bij je eigen profiel staat er altijd een weg naar het overzicht (ook zonder badges), want
+ * daar staat wat je nog kunt halen. Bij een ander zonder badges blijft de rij weg.
+ * alles: alle badges tonen, zonder +N (in het overzicht zelf).
+ */
+export function BadgeRij({ naam, alles = false }: { naam: string; alles?: boolean }) {
+  const { van, mijnNaam } = useBadges(true)
+  const openOverzicht = useContext(OpenBadgeOverzicht)
+  const alle = opVolgorde(van(naam))
+  const eigen = !!mijnNaam && sleutel(mijnNaam) === sleutel(naam)
+  const kanOpenen = !alles && !!openOverzicht
+  const teVeel = kanOpenen && alle.length > IN_RIJ
+  const badges = teVeel ? alle.slice(0, IN_RIJ - 1) : alle
   const [gekozen, setGekozen] = useState<Badge['id'] | null>(null)
   // Plek van het pijltje (midden van de gekozen badge) en of de ballon boven de rij moet
   const [pijlX, setPijlX] = useState(0)
@@ -66,7 +89,17 @@ export function BadgeRij({ naam, leegTekst }: { naam: string; leegTekst?: string
     if (!erboven && vak.bottom - r.bottom < nodig) ballon.current.scrollIntoView({ block: 'nearest' })
   }, [gekozen])
 
-  if (!badges.length) return leegTekst ? <p className="badgerij__leeg">{leegTekst}</p> : null
+  const naarOverzicht = (tekst: string) => (
+    <button type="button" className="tekstknop badgerij__alles" onClick={() => openOverzicht?.(naam)}>
+      {tekst}
+    </button>
+  )
+
+  if (!alle.length) {
+    return eigen && kanOpenen ? (
+      <p className="badgerij__leeg">Nog geen badges. {naarOverzicht('Bekijk hoe je ze haalt')}</p>
+    ) : null
+  }
   const d = uitleg ? badgeDef(uitleg.id) : null
   return (
     <div className="badgerij" ref={rij}>
@@ -93,7 +126,21 @@ export function BadgeRij({ naam, leegTekst }: { naam: string; leegTekst?: string
             </li>
           )
         })}
+        {teVeel && (
+          <li>
+            <button
+              type="button"
+              className="badge badge--meer badgerij__meer"
+              aria-label={`Alle ${alle.length} badges bekijken`}
+              onClick={() => openOverzicht?.(naam)}
+            >
+              +{alle.length - badges.length}
+            </button>
+          </li>
+        )}
       </ul>
+      {/* Je eigen badges passen op één regel: dan een tekstknop naar wat je nog kunt halen */}
+      {eigen && kanOpenen && !teVeel && naarOverzicht('Alle badges en wat je nog kunt halen')}
       {uitleg && d && (
         <div
           ref={ballon}
@@ -115,17 +162,27 @@ export function BadgeRij({ naam, leegTekst }: { naam: string; leegTekst?: string
   )
 }
 
-/** Kaart in Spel met al jouw badges, ook die je nog kunt halen */
-export function JouwBadges() {
+/**
+ * Alle badges van iemand, in het profielvenster (na een tik op +N). Bij een ander: wat die heeft,
+ * met de uitleg. Bij jezelf: je badges als rondjes (tik voor de uitleg) en daaronder wat je nog
+ * kunt halen, met je voortgang.
+ */
+export function BadgeOverzicht({ naam, onTerug }: { naam: string; onTerug: () => void }) {
   const { van, feitenVan, mijnNaam } = useBadges(true)
-  if (!mijnNaam) return null
-  const mijn = van(mijnNaam)
-  const feiten = feitenVan(mijnNaam)
-  const heb = new Map(mijn.map((b) => [b.id, b]))
-  // Eerst wat je al hebt; de rest (ruim twintig badges) ingeklapt eronder
-  const verdiend = TE_HALEN.filter((d) => heb.has(d.id))
+  const toon = useToonNaam()
+  const terug = useRef<HTMLButtonElement>(null)
+  const eigen = !!mijnNaam && sleutel(mijnNaam) === sleutel(naam)
+  const badges = opVolgorde(van(naam))
+  const feiten = feitenVan(naam)
+  const heb = new Set(badges.map((b) => b.id))
   const nogTeHalen = TE_HALEN.filter((d) => !heb.has(d.id))
   const vooraf = voorVertrek()
+
+  // Bovenaan beginnen, met de focus op Terug
+  useEffect(() => {
+    terug.current?.closest('.dialoog--hoog')?.scrollTo({ top: 0 })
+    terug.current?.focus()
+  }, [])
 
   const regel = (d: BadgeDef, b?: Badge) => (
     <li key={d.id} className={`badgekaart__item${b ? ' is-verdiend' : ''}`}>
@@ -142,21 +199,38 @@ export function JouwBadges() {
     </li>
   )
   return (
-    <section className="kaartje badgekaart" aria-labelledby="badgekaart-titel">
-      <h2 id="badgekaart-titel" className="badgekaart__titel">
-        Jouw badges <span>{verdiend.length} van {TE_HALEN.length}</span>
+    <section className="badgeoverzicht" aria-labelledby="badgeoverzicht-titel">
+      <button ref={terug} type="button" className="tekstknop badgeoverzicht__terug" onClick={onTerug}>
+        ← Terug
+      </button>
+      <h2 id="badgeoverzicht-titel" className="badgekaart__titel">
+        {eigen ? 'Jouw badges' : `Badges van ${toon(naam)}`}
+        <span>
+          {badges.length} van {TE_HALEN.length}
+        </span>
       </h2>
-      {verdiend.length ? (
-        <ul className="badgekaart__lijst">{verdiend.map((d) => regel(d, heb.get(d.id)))}</ul>
+      {eigen ? (
+        <>
+          {badges.length ? (
+            <BadgeRij naam={naam} alles />
+          ) : (
+            <p className="badgekaart__leeg">Nog geen badges. Hieronder zie je hoe je ze haalt.</p>
+          )}
+          {nogTeHalen.length > 0 && (
+            <details className="badgekaart__nog" open>
+              <summary>Nog te halen ({nogTeHalen.length})</summary>
+              <ul className="badgekaart__lijst">{nogTeHalen.map((d) => regel(d))}</ul>
+            </details>
+          )}
+        </>
+      ) : badges.length ? (
+        <ul className="badgekaart__lijst">{badges.map((b) => regel(badgeDef(b.id), b))}</ul>
       ) : (
-        <p className="badgekaart__leeg">Nog geen badges. Hieronder zie je hoe je ze haalt.</p>
+        <p className="badgekaart__leeg">{toon(naam)} heeft nog geen badges.</p>
       )}
-      {nogTeHalen.length > 0 && (
-        <details className="badgekaart__nog">
-          <summary>Nog te halen ({nogTeHalen.length})</summary>
-          <ul className="badgekaart__lijst">{nogTeHalen.map((d) => regel(d))}</ul>
-        </details>
-      )}
+      <button type="button" className="knop knop--secundair knop--breed" onClick={onTerug}>
+        Terug naar het profiel
+      </button>
     </section>
   )
 }
