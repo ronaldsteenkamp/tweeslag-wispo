@@ -16,6 +16,16 @@ export const CASINO_FICHES_NODIG = 5000
 export const WAARZEGGER_NODIG = 3
 /** 🎡 Lot uit de loterij: zo vaak door het klos-rad gekozen */
 export const RAD_NODIG = 3
+/** 🌅 Eerste lift: de app open tussen deze tijden (lokale tijd) op een skidag */
+export const EERSTE_LIFT_VAN = '05:00'
+export const EERSTE_LIFT_TOT = '09:00'
+/** 🦉 Nachtuil: de app open tussen deze tijden (tijdens de reis) */
+export const NACHTUIL_VAN = '02:00'
+export const NACHTUIL_TOT = '05:00'
+/** 🥶 IJskonijn: zo koud (of kouder) op de berg volgens het weerbericht */
+export const IJSKONIJN_GRADEN = -10
+/** ⛰️ Bergbeklimmer: een GPS-positie die onnauwkeuriger is dan dit telt niet */
+export const BERG_NAUWKEURIGHEID_M = 500
 
 export type BadgeId =
   | 'open-boek'
@@ -33,8 +43,13 @@ export type BadgeId =
   | 'fotograaf'
   | 'high-roller'
   | 'lot'
+  | 'bergbeklimmer'
+  | 'eerste-lift'
+  | 'ijskonijn'
   | 'koploper'
+  | 'kamerkampioen'
   | 'blut'
+  | 'nachtuil'
 
 /** Alles wat er over iemand bekend is, om de badges uit te rekenen */
 export interface Feiten {
@@ -60,8 +75,14 @@ export interface Feiten {
   /** Fiches in het casino nu (alleen van jezelf bekend) */
   casinoFiches: number
   radGekozen: number
+  bergbeklimmer: boolean
+  eersteLift: boolean
+  ijskonijn: boolean
   totaal: number
+  /** Je kamer heeft samen de meeste punten (zie kamerKampioenen) */
+  kamerkampioen: boolean
   blut: boolean
+  nachtuil: boolean
 }
 
 export const geenFeiten: Feiten = {
@@ -82,8 +103,13 @@ export const geenFeiten: Feiten = {
   highRoller: false,
   casinoFiches: 0,
   radGekozen: 0,
+  bergbeklimmer: false,
+  eersteLift: false,
+  ijskonijn: false,
   totaal: 0,
+  kamerkampioen: false,
   blut: false,
+  nachtuil: false,
 }
 
 export interface BadgeDef {
@@ -98,6 +124,8 @@ export interface BadgeDef {
   wisselt?: boolean
   /** Kan alleen met de server (fotomuur, stemmingen, klassement, meldingen) */
   server?: boolean
+  /** Alleen te halen tijdens de reis (tussen vertrek en thuiskomst) */
+  reis?: boolean
 }
 
 const meervoud = (n: number, een: string, meer: string) => `${n} ${n === 1 ? een : meer}`
@@ -222,6 +250,30 @@ export const BADGES: BadgeDef[] = [
     server: true,
   },
   {
+    id: 'bergbeklimmer',
+    emoji: '⛰️',
+    naam: 'Bergbeklimmer',
+    uitleg: 'Op de gletsjer geweest (boven 3000 m), met je plek op de pistekaart',
+    nogTeDoen: () => 'Zet op de gletsjer je plek aan op de pistekaart',
+    reis: true,
+  },
+  {
+    id: 'eerste-lift',
+    emoji: '🌅',
+    naam: 'Eerste lift',
+    uitleg: `De app geopend vóór ${EERSTE_LIFT_TOT} op een skidag`,
+    nogTeDoen: () => `Open de app op een skidag vóór ${EERSTE_LIFT_TOT}`,
+    reis: true,
+  },
+  {
+    id: 'ijskonijn',
+    emoji: '🥶',
+    naam: 'IJskonijn',
+    uitleg: `De app geopend toen het op de berg ${IJSKONIJN_GRADEN}° of kouder was`,
+    nogTeDoen: () => `Open de app als het op de berg ${IJSKONIJN_GRADEN}° of kouder is`,
+    reis: true,
+  },
+  {
     id: 'koploper',
     emoji: '🥇',
     naam: 'Koploper',
@@ -231,11 +283,28 @@ export const BADGES: BadgeDef[] = [
     server: true,
   },
   {
+    id: 'kamerkampioen',
+    emoji: '🛌',
+    naam: 'Kamerkampioen',
+    uitleg: 'Je kamer heeft samen de meeste punten',
+    nogTeDoen: () => 'Zorg dat je kamer samen de meeste punten heeft',
+    wisselt: true,
+    server: true,
+  },
+  {
     id: 'blut',
     emoji: '💸',
     naam: 'Blut',
     uitleg: 'Fiches moeten lenen bij de bank van het casino',
     nogTeDoen: () => 'Speel in het casino al je fiches kwijt (of liever niet)',
+  },
+  {
+    id: 'nachtuil',
+    emoji: '🦉',
+    naam: 'Nachtuil',
+    uitleg: `De app geopend tussen ${NACHTUIL_VAN} en ${NACHTUIL_TOT} 's nachts`,
+    nogTeDoen: () => `Open de app tussen ${NACHTUIL_VAN} en ${NACHTUIL_TOT} 's nachts (en ga daarna slapen)`,
+    reis: true,
   },
 ]
 
@@ -266,8 +335,13 @@ export function badgesUit(f: Feiten, leiders: { fotos: number; totaal: number })
   if (f.fotos >= FOTOS_NODIG && f.fotos === leiders.fotos) geef('fotograaf')
   if (f.highRoller) geef('high-roller')
   if (f.radGekozen >= RAD_NODIG) geef('lot')
+  if (f.bergbeklimmer) geef('bergbeklimmer')
+  if (f.eersteLift) geef('eerste-lift')
+  if (f.ijskonijn) geef('ijskonijn')
   if (f.totaal > 0 && f.totaal === leiders.totaal) geef('koploper')
+  if (f.kamerkampioen) geef('kamerkampioen')
   if (f.blut) geef('blut')
+  if (f.nachtuil) geef('nachtuil')
   return BADGES.flatMap((d) => (heeft[d.id] ? [heeft[d.id]!] : []))
 }
 
@@ -285,14 +359,20 @@ export function telefoonUitFeiten(f: Feiten): TelefoonBadges {
   if (f.blut) uit.blut = 1
   if (f.stemvee) uit.stemvee = 1
   if (f.waarzegger > 0) uit.waarzegger = f.waarzegger
+  if (f.bergbeklimmer) uit.bergbeklimmer = 1
+  if (f.eersteLift) uit['eerste-lift'] = 1
+  if (f.ijskonijn) uit.ijskonijn = 1
+  if (f.nachtuil) uit.nachtuil = 1
   return uit
 }
 
-/** Wat de server van een ander weet → de feiten die daarbij horen */
-export function feitenUitTelefoon(t: TelefoonBadges | null | undefined): Pick<
+export type TelefoonFeiten = Pick<
   Feiten,
-  'vasteGast' | 'wekker' | 'highRoller' | 'blut' | 'stemvee' | 'waarzegger'
-> {
+  'vasteGast' | 'wekker' | 'highRoller' | 'blut' | 'stemvee' | 'waarzegger' | 'bergbeklimmer' | 'eersteLift' | 'ijskonijn' | 'nachtuil'
+>
+
+/** Wat de server van een ander weet → de feiten die daarbij horen */
+export function feitenUitTelefoon(t: TelefoonBadges | null | undefined): TelefoonFeiten {
   const getal = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) && x > 0 ? Math.floor(x) : 0)
   return {
     vasteGast: getal(t?.['vaste-gast']) > 0,
@@ -301,7 +381,112 @@ export function feitenUitTelefoon(t: TelefoonBadges | null | undefined): Pick<
     blut: getal(t?.blut) > 0,
     stemvee: getal(t?.stemvee) > 0,
     waarzegger: getal(t?.waarzegger),
+    bergbeklimmer: getal(t?.bergbeklimmer) > 0,
+    eersteLift: getal(t?.['eerste-lift']) > 0,
+    ijskonijn: getal(t?.ijskonijn) > 0,
+    nachtuil: getal(t?.nachtuil) > 0,
   }
+}
+
+// ---------- Tijdens de reis ----------
+
+/** Momenten van de reis in ms (uit config, omgerekend in badgesTelefoon.ts) */
+export interface Reis {
+  vertrek: number
+  thuiskomst: number
+  /** Begin van het echte spel; daarvoor is het testperiode (als die aan staat) */
+  spelBegint: number
+  testperiode: boolean
+  tijdzone: string
+}
+
+const formaten = new Map<string, Intl.DateTimeFormat>()
+
+/** Datum ('JJJJ-MM-DD') en minuten na middernacht in een tijdzone */
+export function klok(moment: number, tijdzone: string): { datum: string; minuten: number } {
+  let f = formaten.get(tijdzone)
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tijdzone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    formaten.set(tijdzone, f)
+  }
+  const p: Record<string, string> = {}
+  for (const x of f.formatToParts(new Date(moment))) p[x.type] = x.value
+  const uur = Number(p.hour) % 24
+  return { datum: `${p.year}-${p.month}-${p.day}`, minuten: uur * 60 + Number(p.minute) }
+}
+
+const minutenVan = (uumm: string) => {
+  const [u, m] = uumm.split(':').map(Number)
+  return u * 60 + m
+}
+
+/** Tussen vertrek en thuiskomst, en niet in de testperiode */
+export const opReis = (moment: number, r: Reis) =>
+  moment >= r.vertrek && moment < r.thuiskomst && !(r.testperiode && moment < r.spelBegint)
+
+/** Een skidag: na de dag van vertrek (nachtbus) en vóór de dag van thuiskomst */
+export function isSkidag(datum: string, r: Reis) {
+  return datum > klok(r.vertrek, r.tijdzone).datum && datum < klok(r.thuiskomst, r.tijdzone).datum
+}
+
+export function isEersteLift(moment: number, r: Reis) {
+  if (!opReis(moment, r)) return false
+  const { datum, minuten } = klok(moment, r.tijdzone)
+  return isSkidag(datum, r) && minuten >= minutenVan(EERSTE_LIFT_VAN) && minuten < minutenVan(EERSTE_LIFT_TOT)
+}
+
+export function isNachtuil(moment: number, r: Reis) {
+  if (!opReis(moment, r)) return false
+  const { minuten } = klok(moment, r.tijdzone)
+  return minuten >= minutenVan(NACHTUIL_VAN) && minuten < minutenVan(NACHTUIL_TOT)
+}
+
+/**
+ * 🥶 IJskonijn: de temperatuur van dit uur in het weerbericht van de berg. uren: zoals in
+ * weer.ts ('JJJJ-MM-DDTUU:MM' in de tijdzone van het weerbericht).
+ */
+export function kouAanBerg(uren: { tijd: string; temp: number }[], moment: number, tijdzone: string, grens = IJSKONIJN_GRADEN) {
+  const { datum, minuten } = klok(moment, tijdzone)
+  const uur = `${datum}T${String(Math.floor(minuten / 60)).padStart(2, '0')}:00`
+  const nu = uren.find((u) => u.tijd === uur)
+  return !!nu && typeof nu.temp === 'number' && nu.temp <= grens
+}
+
+/** Een cirkel op de kaart */
+export interface Gebied {
+  lat: number
+  lon: number
+  straalMeter: number
+}
+
+/** Ligt dit punt in het gebied? (Vlakke benadering; prima voor een paar kilometer) */
+export function inGebied(lat: number, lon: number, g: Gebied) {
+  const m = 111_320
+  const dy = (lat - g.lat) * m
+  const dx = (lon - g.lon) * m * Math.cos((g.lat * Math.PI) / 180)
+  return Math.hypot(dx, dy) <= g.straalMeter
+}
+
+// ---------- Kamers ----------
+
+/**
+ * 🛌 Kamerkampioen: de kamer(s) met samen de meeste punten (bij gelijke stand allemaal).
+ * totaalVan: de punten van iemand in het klassement (gewone naam).
+ */
+export function kamerKampioenen(kamers: { nummer: string; bewoners: string[] }[], totaalVan: (naam: string) => number): Set<string> {
+  const stand = kamers
+    .filter((k) => k.bewoners.some(Boolean))
+    .map((k) => ({ nummer: k.nummer, punten: k.bewoners.filter(Boolean).reduce((s, n) => s + totaalVan(n), 0) }))
+  const max = Math.max(0, ...stand.map((k) => k.punten))
+  return new Set(max > 0 ? stand.filter((k) => k.punten === max).map((k) => k.nummer) : [])
 }
 
 // ---------- Stemmingen ----------
