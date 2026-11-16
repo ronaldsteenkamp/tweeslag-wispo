@@ -183,7 +183,6 @@ export function useBadges(actief = false) {
   const [vinkjes] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [kaart] = useOpgeslagen<unknown>('spel.bingo.kaart', null)
   const [ingepakt] = useOpgeslagen<boolean>('paklijst.ingepakt', false)
-  const [ingepaktOp] = useOpgeslagen<number | null>('paklijst.ingepaktOp', null)
   const [fiches] = useOpgeslagen<number>('casino.fiches', 1000)
   const verdiend = useVerdiend()
   const eigenBijnaam = useEigenBijnaam()
@@ -227,13 +226,9 @@ export function useBadges(actief = false) {
     const serverPer = new Map((server?.personen ?? []).map((p) => [sleutel(p.naam), p]))
     const ikSleutel = naam ? sleutel(naam) : null
 
-    // 🐦 Vroege vogel: je eigen moment van deze telefoon (kan nog niet verstuurd zijn)
-    const vogels = vroegsteVogels([
-      ...(server?.personen ?? []).filter((p) => sleutel(p.naam) !== ikSleutel).map((p) => ({ naam: p.naam, op: p.ingepaktOp })),
-      ...(naam
-        ? [{ naam, op: [ingepaktOp, serverPer.get(ikSleutel!)?.ingepaktOp].filter((x): x is number => typeof x === 'number').sort((a, b) => a - b)[0] }]
-        : []),
-    ])
+    // 🐦 Vroege vogel: alleen de momenten die op de server staan, ook je eigen. Met alleen je eigen
+    // moment van de telefoon (geen server, of migratie 0012 nog niet gedraaid) ben je altijd de eerste.
+    const vogels = vroegsteVogels((server?.personen ?? []).map((p) => ({ naam: p.naam, op: p.ingepaktOp })))
 
     // Eigen spelvoortgang van deze telefoon (dezelfde berekening als het scherm Spel)
     const mijnSpel = (() => {
@@ -316,7 +311,6 @@ export function useBadges(actief = false) {
     vinkjes,
     kaart,
     ingepakt,
-    ingepaktOp,
     fiches,
     verdiend,
     eigenBijnaam.bijnaam,
