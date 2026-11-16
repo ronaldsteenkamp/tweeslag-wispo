@@ -53,6 +53,15 @@ export const config = {
     verversMinuten: 60,
   },
 
+  /** Badges (de drempels staan in src/lib/badgeregels.ts) */
+  badges: {
+    /**
+     * ⛰️ Bergbeklimmer: de gletsjer van Les 2 Alpes, boven ca. 3000 m, als cirkel op de kaart
+     * (GPS-hoogte is te onbetrouwbaar). Het midden ligt tussen Jandri 3200 en Puy Salié 3400.
+     */
+    gletsjer: { lat: 44.9975, lon: 6.215, straalMeter: 1300 },
+  },
+
   /** Alleen deze namen zien de knop 'Kamerverdeling maken'. Let op: geen echte beveiliging, iedereen kan in de app elke naam kiezen. */
   reisleiding: ['Ronald', 'Sten'] as readonly string[],
 

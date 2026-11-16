@@ -6,6 +6,7 @@ import {
   badgesUit,
   eigenStemmen,
   feitenUitTelefoon,
+  kamerKampioenen,
   radTelling,
   vroegsteVogels,
   type Feiten,
@@ -32,7 +33,7 @@ export { badgeDef, badgesUit, BADGES, type Badge, type BadgeDef, type BadgeId, t
  *
  * Je eigen badges komen zoveel mogelijk van deze telefoon, zodat ze meteen verschijnen (ook
  * zonder bereik). Die van anderen komen van de server en worden lokaal bewaard. Wat alleen de
- * telefoon kan zien (beginscherm, meldingen, casino, je eigen stemmen) stuurt hij zelf mee naar
+ * telefoon kan zien (beginscherm, meldingen, casino, de reis, je eigen stemmen) stuurt hij zelf mee naar
  * de server, in voortgang.badges (zie badgesTelefoon.ts en scorebord.ts).
  */
 
@@ -159,6 +160,7 @@ function lijnenUitPunten(vakjes: number, punten: number, p: Spel['punten'] | und
 export function useBadges(actief = false) {
   const [stand] = useOpgeslagen<ServerStand | null>(CACHE, null)
   const { data: spel } = useData('spel')
+  const { data: kamers } = useData('kamers')
   const [naam] = useOpgeslagen<string | null>('naam', null)
   const [gedaan] = useOpgeslagen<string[]>('spel.challenges', [])
   const [vinkjes] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
@@ -225,6 +227,12 @@ export function useBadges(actief = false) {
       return { challenges: gedaan.filter((id) => ids.has(id)).length, lijnen: b?.lijnen ?? 0, vol: b?.vol ?? false }
     })()
 
+    // 🛌 Kamerkampioen: de punten per kamer volgens de kamerverdeling (kamers.json) en het klassement
+    const kampioenen = server ? kamerKampioenen(kamers?.kamers ?? [], (n) => serverPer.get(sleutel(n))?.totaal ?? 0) : new Set<string>()
+    const kampioenNamen = new Set(
+      (kamers?.kamers ?? []).filter((k) => kampioenen.has(k.nummer)).flatMap((k) => k.bewoners.filter(Boolean).map(sleutel)),
+    )
+
     const feitenVan = (n: string): Feiten => {
       const s = sleutel(n)
       const sp = serverPer.get(s)
@@ -242,6 +250,10 @@ export function useBadges(actief = false) {
             blut: !!verdiend.blut,
             stemvee: mijnStemmen.stemvee,
             waarzegger: mijnStemmen.waarzegger,
+            bergbeklimmer: !!verdiend.bergbeklimmer,
+            eersteLift: !!verdiend['eerste-lift'],
+            ijskonijn: !!verdiend.ijskonijn,
+            nachtuil: !!verdiend.nachtuil,
           }
         : feitenUitTelefoon(sp?.telefoon)
       return {
@@ -259,6 +271,7 @@ export function useBadges(actief = false) {
         casinoFiches: eigen ? fiches : 0,
         radGekozen: server?.rad?.[s] ?? 0,
         totaal: sp?.totaal ?? 0,
+        kamerkampioen: kampioenNamen.has(s),
       }
     }
 
@@ -280,6 +293,7 @@ export function useBadges(actief = false) {
   }, [
     stand,
     spel,
+    kamers,
     naam,
     gedaan,
     vinkjes,

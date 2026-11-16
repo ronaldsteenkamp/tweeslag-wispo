@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { kijkNaarPlek } from '../lib/badgesTelefoon'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Icoon } from '../components/Icoon'
 import { ZoomKaart, type KaartMarker } from '../components/ZoomKaart'
@@ -41,7 +42,7 @@ export default function Kaart() {
   const [gekozen, setGekozen] = useState<string | null>(null)
   const [vragen, setVragen] = useState(false)
   // "Waar ben ik?": je eigen plek, alleen op deze telefoon (wordt niet gedeeld)
-  const [eigenPlek, setEigenPlek] = useState<{ lat: number; lon: number; tijd: number } | null>(null)
+  const [eigenPlek, setEigenPlek] = useState<{ lat: number; lon: number; tijd: number; nauwkeurigheid: number } | null>(null)
   const [zoekPlek, setZoekPlek] = useState<'bezig' | 'buiten' | 'fout' | null>(null)
 
   const deelAan = delen.status === 'aan' || delen.status === 'zoeken'
@@ -50,7 +51,7 @@ export default function Kaart() {
     setZoekPlek('bezig')
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const p = { lat: pos.coords.latitude, lon: pos.coords.longitude, tijd: pos.timestamp }
+        const p = { lat: pos.coords.latitude, lon: pos.coords.longitude, tijd: pos.timestamp, nauwkeurigheid: pos.coords.accuracy }
         setEigenPlek(p)
         setZoekPlek(opKaart(p) ? null : 'buiten')
       },
@@ -59,6 +60,14 @@ export default function Kaart() {
     )
   }
   const eigenStip = !deelAan && eigenPlek ? opKaart(eigenPlek) : null
+
+  // ⛰️ Bergbeklimmer: alleen met de plek die je hier zelf hebt opgevraagd of deelt
+  useEffect(() => {
+    if (eigenPlek) kijkNaarPlek(eigenPlek)
+  }, [eigenPlek])
+  useEffect(() => {
+    if (delen.positie) kijkNaarPlek(delen.positie)
+  }, [delen.positie])
 
   // Iedereen die deelt; de eigen positie direct van de telefoon (sneller dan via de server)
   const personen = useMemo(() => {
