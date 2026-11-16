@@ -299,6 +299,11 @@ Migratie: `supabase/migrations/0007_profielen.sql` (uitvoeren na 0006). Gebruikt
 ### Kamerverdeling opslaan
 Migratie: `supabase/migrations/0008_kamerverdeling.sql` (uitvoeren na 0007). Open *SQL Editor → New query*, plak het bestand en klik op *Run*; het mag vaker. Daarna werkt **Opslaan in de app** bij *Kamerverdeling maken*. Iedereen in de app kan de verdeling lezen; alleen ingelogde beheerders (tabel `beheerders`) kunnen hem opslaan. Zolang de migratie niet gedraaid is, zegt de app dat bij het opslaan en blijft `kamers.json` gelden.
 
+### Kamernamen
+Migratie: `supabase/migrations/0013_kamernamen.sql` (uitvoeren na 0012, mag vaker). De bewoners van een kamer kunnen bij *Kamers → Jouw kamer → Naam van de kamer aanpassen* zelf de naam kiezen (hooguit 30 tekens). Die naam staat dan overal in de app (Kamers, klassement, fotomuur, rad) in plaats van de naam uit de kamerverdeling; leeg laten zet de naam van de reisleiding terug. Het kamernummer blijft de sleutel.
+- Alleen een apparaat waarvan de naam op de server in die kamer zit mag de naam aanpassen (`is_eigen_kamer`); twee kamers kunnen niet dezelfde naam hebben. Aanpassen kan alleen met internet; de namen worden bewaard voor gebruik zonder bereik en verversen live.
+- Een ongepaste naam wissen (beheerder) kan in *SQL Editor*: `delete from public.kamernamen where nummer = '103';`
+
 ### Bijnamen
 Migratie: `supabase/migrations/0010_bijnamen.sql` (uitvoeren na 0009, mag vaker). Iedereen kan bij *Jouw profiel* (en in het welkomstscherm) een bijnaam invullen; de app toont die overal in plaats van de gewone naam: kamers, klassement, stemmen, rad, casino, fotomuur, kaart. De gewone naam uit `kamers.json` blijft de sleutel voor scores en stemmen. Bij het kiezen van je naam en in beheerlijsten staat de echte naam erbij. Een bijnaam mag niet de naam van een ander zijn en twee mensen kunnen niet dezelfde hebben. Een beheerder kan een ongepaste bijnaam wissen via het profielkaartje (*Bijnaam wissen (beheer)*). De uitslagmelding van de stemmingen gebruikt ook de bijnaam (Edge Function `meldingen`).
 
