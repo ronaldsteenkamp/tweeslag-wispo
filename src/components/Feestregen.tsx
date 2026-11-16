@@ -50,7 +50,9 @@ interface Pijl {
 
 const kies = <T,>(lijst: T[]) => lijst[Math.floor(Math.random() * lijst.length)]
 
-export function Feestregen({ duur = 5200, onKlaar }: { duur?: number; onKlaar?: () => void }) {
+/** klein: een korter, kleiner feestje (bijvoorbeeld bij een nieuwe badge) */
+export function Feestregen({ duur: eigenDuur, klein = false, onKlaar }: { duur?: number; klein?: boolean; onKlaar?: () => void }) {
+  const duur = eigenDuur ?? (klein ? 3000 : 5200)
   const canvas = useRef<HTMLCanvasElement>(null)
   const klaar = useRef(onKlaar)
   klaar.current = onKlaar
@@ -93,12 +95,16 @@ export function Feestregen({ duur = 5200, onKlaar }: { duur?: number; onKlaar?: 
         })
       }
     }
-    golf(140, H * 0.3)
-    golf(110, H * 1.1)
-    golf(90, H * 1.6)
+    if (klein) {
+      golf(80, H * 0.4)
+    } else {
+      golf(140, H * 0.3)
+      golf(110, H * 1.1)
+      golf(90, H * 1.6)
+    }
 
     // Vuurwerk: een stijgende pijl die bovenin ontploft, kort na elkaar op verschillende plekken
-    const pijlen: Pijl[] = Array.from({ length: 9 }, (_, i) => ({
+    const pijlen: Pijl[] = Array.from({ length: klein ? 3 : 9 }, (_, i) => ({
       start: 100 + i * 420 + Math.random() * 200,
       x: B * (0.12 + Math.random() * 0.76),
       y: H * (0.12 + Math.random() * 0.38),
@@ -203,7 +209,7 @@ export function Feestregen({ duur = 5200, onKlaar }: { duur?: number; onKlaar?: 
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', maat)
     }
-  }, [duur])
+  }, [duur, klein])
 
   return <canvas ref={canvas} className="feestregen" aria-hidden="true" />
 }

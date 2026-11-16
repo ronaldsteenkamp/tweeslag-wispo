@@ -78,6 +78,14 @@ export async function verstuurVoortgang() {
     schrijf(TE_VERSTUREN, false)
     const { error } = await c.from('voortgang').upsert({ user_id: b.userId, ...voortgang }, { onConflict: 'user_id' })
     if (error) throw error
+    // Badge 🎒 Ingepakt: los erachteraan, zodat de score ook verstuurd wordt als de kolom
+    // (migratie 0011) er nog niet is. Mislukt dit, dan gaat het de volgende keer mee.
+    if (lees('paklijst.ingepakt', false)) {
+      await c.from('voortgang').update({ ingepakt: true }).eq('user_id', b.userId).then(
+        () => undefined,
+        () => undefined,
+      )
+    }
     schrijf(LAATST_VERSTUURD, Date.now())
     zetSync(lees(TE_VERSTUREN, false) ? 'wacht' : 'verstuurd')
   } catch {
@@ -106,6 +114,7 @@ export function startScorebord() {
   schrijf(TE_VERSTUREN, true)
   abonneer('spel.challenges', markeer)
   abonneer('spel.bingo.vinkjes', markeer)
+  abonneer('paklijst.ingepakt', markeer)
   abonneerBackend(() => {
     const b = backendStand()
     if (b.status === 'verbonden' && b.gekoppeld) void verstuurVoortgang()

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useBackend } from '../lib/backend'
+import { BadgeRij } from './Badges'
 import {
   bijnaamFout,
   MAX_BIJNAAM,
@@ -127,6 +128,7 @@ function ProfielInhoud({ p }: { p: Bekeken }) {
         <Avatar naam={p.naam} pad={p.foto_pad} lokaal={p.fotoLokaal} groot />
         <NaamKop naam={p.naam} />
       </div>
+      <BadgeRij naam={p.naam} />
       <dl className="profielkaart__lijst">
         <div>
           <dt>⛷️ Ski of board</dt>
@@ -515,6 +517,7 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
             <Avatar naam={naam} pad={null} groot />
             <NaamKop naam={naam} />
           </div>
+          <BadgeRij naam={naam} />
           <p>{eigen ? 'Je hebt je profiel nog niet ingevuld.' : `${toon(naam)} heeft nog geen profiel ingevuld.`}</p>
         </>
       )}

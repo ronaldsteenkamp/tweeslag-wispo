@@ -5,7 +5,7 @@ import { Icoon } from '../components/Icoon'
 import { SchermKop } from '../components/SchermKop'
 import { useData } from '../lib/data'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
-import { useOpgeslagen } from '../lib/opslag'
+import { lees, schrijfEnMeld, useOpgeslagen } from '../lib/opslag'
 
 interface EigenItem {
   id: string
@@ -96,6 +96,11 @@ export default function Paklijst() {
     window.clearTimeout(scrollTimer.current)
     scrollTimer.current = window.setTimeout(() => window.scrollTo({ top: 0, behavior: zacht ? 'smooth' : 'auto' }), wacht)
   }, [data, procent, nieuweKop])
+
+  // Voor de badge 🎒 Ingepakt: eenmaal alles ingepakt blijft dat zo (ook als je later iets uitvinkt)
+  useEffect(() => {
+    if (data && totaal > 0 && klaar === totaal && !lees('paklijst.ingepakt', false)) schrijfEnMeld('paklijst.ingepakt', true)
+  }, [data, klaar, totaal])
 
   const wissel = (s: string) => {
     const wordtAan = !aangevinkt.has(s)

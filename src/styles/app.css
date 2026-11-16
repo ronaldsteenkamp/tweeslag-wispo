@@ -4458,3 +4458,154 @@ button {
 .schermkop__keuze .segment__knop.is-actief:disabled {
   opacity: 1;
 }
+
+/* ---------- Badges ---------- */
+
+/* Een badge: rond plaatje met een gouden rand, zoals een medaille */
+.badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  padding: 0;
+  border: 2px solid var(--goud, #f3d36b);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, var(--accent-zacht));
+  box-shadow: var(--schaduw);
+  font-size: 1.25rem;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+}
+
+button.badge {
+  min-height: 0;
+  font: inherit;
+  font-size: 1.25rem;
+}
+
+.badge.is-gekozen {
+  border-color: var(--tweeslag-lichtblauw);
+  box-shadow: 0 0 0 3px var(--accent-zacht);
+}
+
+.badge__aantal {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--primair);
+  color: var(--primair-tekst);
+  font-family: var(--font-kop);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.badge--groot {
+  width: 46px;
+  height: 46px;
+  font-size: 1.45rem;
+  cursor: default;
+}
+
+/* In het profielvenster, onder de naam */
+.badgerij__lijst {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badgerij__uitleg {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--accent-zacht);
+  font-size: 0.9rem;
+}
+
+/* "Jouw badges" in Spel */
+.badgekaart__titel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+}
+
+.badgekaart__titel span {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--tekst-zacht);
+}
+
+.badgekaart__lijst {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badgekaart__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badgekaart__tekst {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.badgekaart__tekst span {
+  font-family: var(--font-tekst);
+  font-size: 0.88rem;
+  color: var(--tekst-zacht);
+}
+
+.badgekaart__wisselt {
+  font-family: var(--font-kop) !important;
+  font-weight: 400;
+  font-size: 0.8rem !important;
+}
+
+/* Nog niet verdiend: grijs en een stippelrand */
+.badgekaart__item:not(.is-verdiend) .badge {
+  border-style: dashed;
+  border-color: var(--rand);
+  background: var(--achtergrond);
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+.badgekaart__item:not(.is-verdiend) strong {
+  color: var(--tekst-zacht);
+}
+
+/* Melding bij een nieuwe badge (een knop: tik om je profiel te openen) */
+.feest.feest--klein.badgemelding {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 0;
+  font-family: var(--font-kop);
+  color: var(--opvallend-tekst);
+  cursor: pointer;
+  z-index: 75;
+}
+
+.badgemelding small {
+  font-family: var(--font-tekst);
+  font-size: 0.82rem;
+  font-weight: 400;
+}

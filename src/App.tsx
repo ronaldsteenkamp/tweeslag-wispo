@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { BadgeMelding } from './components/Badges'
 import { ProfielVenster } from './components/Profiel'
 import { TabBalk, TABS, type Tab } from './components/TabBalk'
 import { UpdateMelding } from './components/UpdateMelding'
@@ -161,6 +162,7 @@ export default function App() {
       </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <ProfielVenster />
+      <BadgeMelding />
       <UpdateMelding />
       <TabBalk
         actief={hoofdTab(tab)}

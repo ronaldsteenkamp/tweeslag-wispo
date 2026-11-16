@@ -302,6 +302,14 @@ Migratie: `supabase/migrations/0008_kamerverdeling.sql` (uitvoeren na 0007). Ope
 ### Bijnamen
 Migratie: `supabase/migrations/0010_bijnamen.sql` (uitvoeren na 0009, mag vaker). Iedereen kan bij *Jouw profiel* (en in het welkomstscherm) een bijnaam invullen; de app toont die overal in plaats van de gewone naam: kamers, klassement, stemmen, rad, casino, fotomuur, kaart. De gewone naam uit `kamers.json` blijft de sleutel voor scores en stemmen. Bij het kiezen van je naam en in beheerlijsten staat de echte naam erbij. Een bijnaam mag niet de naam van een ander zijn en twee mensen kunnen niet dezelfde hebben. Een beheerder kan een ongepaste bijnaam wissen via het profielkaartje (*Bijnaam wissen (beheer)*). De uitslagmelding van de stemmingen gebruikt ook de bijnaam (Edge Function `meldingen`).
 
+### Badges
+Kleine badges op het profielkaartje (onder de naam; tik erop voor de uitleg) die je vanzelf krijgt. De app rekent ze zelf uit (`src/lib/badges.ts`) uit gegevens die er al zijn; nieuwe badges toevoegen of drempels veranderen kan dus zonder de database.
+- **Verdiend, blijft:** ✍️ Open boek (profiel helemaal ingevuld, met foto), 🎒 Ingepakt (paklijst ooit helemaal afgevinkt), 🎯 Challenge-jager (10 challenges), 🚌 Bingo! (een rij), 🏆 Volle kaart, 👑 Stem van de dag (dagelijkse stemming gewonnen, met ×2 enz.).
+- **Wisselt:** 📸 Fotograaf (meeste foto's op de fotomuur, minstens 3) en 🥇 Koploper (nummer 1 van het klassement). Bij gelijke stand krijgen ze het allebei.
+- In *Spel* (onder Challenges en Busbingo) staat de kaart *Jouw badges*, met de badges die je nog kunt halen. Haal je een nieuwe, dan komt er een melding met confetti; tik erop voor je profiel.
+- Je eigen badges komen van je telefoon (meteen, ook zonder bereik); die van anderen van de server. Zonder backend zijn alleen de eerste vijf te halen.
+- Migratie `supabase/migrations/0011_badges.sql` (na 0010, mag vaker) voegt de kolom `ingepakt` toe aan `voortgang`. Zonder die migratie werkt alles, alleen zien anderen jouw 🎒 niet.
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 
