@@ -1,0 +1,647 @@
+/*
+ * Paklijst — "Afdaling": pistekaart en pisteborden (zie screens/Paklijst.tsx).
+ * Eigen palet en Barlow (lokaal, styles/barlow.css); de rest van de app blijft in de huisstijl.
+ * Contrast: tekst ≥ 7:1, afgevinkte tekst ≥ 7:1, vakjes en lijnen ≥ 3:1 op het papier.
+ */
+
+.inhoud--paklijst {
+  --pak-papier: #f5f2ea;
+  --pak-inkt: #0d0058;
+  --pak-zacht: #4b4e6b;
+  --pak-lijn: #d9d3c4;
+  --pak-gletsjer: #dfeaf0;
+  --pak-gletsjer-2: #c8dbe5;
+  --pak-zwart: #17171c;
+  --pak-rood: #c4212f;
+  --pak-blauw: #1d5fc4;
+  --pak-groen: #1e7a4c;
+  --pak-stempel: #0a7d9c;
+  --pak-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  --pak-tekst: Barlow, 'Trebuchet MS', sans-serif;
+  /* Rond stempel met een iets versleten buitenrand, een binnenring en een vinkje */
+  --pak-stempel-vorm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='20' cy='20' r='17.5' stroke-width='2.4' stroke-dasharray='26 1.6 17 1.2 30 2 34'/%3E%3Ccircle cx='20' cy='20' r='13.6' stroke-width='1.1'/%3E%3Cpath d='M13.2 20.6l4.6 4.6 9-9.6' stroke-width='3.2'/%3E%3C/svg%3E");
+  min-height: 100dvh;
+  background: var(--pak-papier);
+  color: var(--pak-inkt);
+}
+
+.paklijst {
+  font-family: var(--pak-tekst);
+  font-size: 17px;
+}
+
+.pak--zwart { --kleur: var(--pak-zwart); }
+.pak--rood { --kleur: var(--pak-rood); }
+.pak--blauw { --kleur: var(--pak-blauw); }
+.pak--groen { --kleur: var(--pak-groen); }
+
+/* ---------- Kop ---------- */
+
+/* De balkplek erboven trekt de kop helemaal naar boven (zoals bij SchermKop); hier de ruimte terug */
+.pakkop {
+  padding-top: calc(var(--boven) + 18px);
+}
+
+.pakkop__rij {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pakkop__boven,
+.pakkop__label {
+  font: 600 13px/1 var(--pak-smal);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pak-zacht);
+}
+
+.pakkop__titel {
+  margin-top: 6px;
+  font: 700 46px/0.9 var(--pak-smal);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.pakkop__hoogte {
+  font: 600 44px/0.9 var(--pak-smal);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pakkop__hoogte small {
+  margin-left: 2px;
+  font-size: 20px;
+  color: var(--pak-zacht);
+}
+
+.pakkop__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.pakkop__status {
+  margin-top: 6px;
+  min-height: 2.8em;
+  font: 400 16px/1.4 var(--pak-tekst);
+}
+
+.pakkop__status strong {
+  font-weight: 600;
+}
+
+/* ---------- Hoogteprofiel ---------- */
+
+.pakprofiel {
+  position: relative;
+  margin: 10px -16px 0;
+}
+
+.pakprofiel svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pakprofiel__berg { fill: var(--pak-gletsjer); }
+.pakprofiel__dal { fill: var(--pak-gletsjer-2); }
+.pakprofiel__dorp { fill: var(--pak-zacht); }
+
+.pakprofiel__route {
+  fill: none;
+  stroke: var(--pak-zacht);
+  stroke-width: 2;
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+
+.pakprofiel__stuk {
+  fill: none;
+  stroke: var(--kleur);
+  stroke-width: 5;
+  transition: stroke-dasharray 0.25s ease-out;
+}
+
+.pakprofiel__bord rect {
+  fill: var(--kleur);
+  stroke: var(--pak-papier);
+  stroke-width: 1.5;
+}
+
+.pakprofiel__bord text {
+  font: 700 10px var(--pak-smal);
+  fill: var(--pak-papier);
+  text-anchor: middle;
+}
+
+.pakprofiel__stempeltje {
+  fill: var(--pak-papier);
+  stroke: var(--kleur);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pakprofiel__stempeltje path {
+  fill: none;
+}
+
+.pakprofiel__label {
+  font: 600 11px var(--pak-smal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--pak-zacht);
+}
+
+.pakprofiel__skier {
+  transition: transform 0.25s ease-out;
+}
+.pakprofiel__skier .bol { fill: var(--pak-inkt); }
+.pakprofiel__skier .hoofd { fill: var(--pak-papier); }
+.pakprofiel__skier .figuur {
+  fill: none;
+  stroke: var(--pak-papier);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.paklijst.is-vol .pakprofiel__skier { display: none; }
+
+/* Alles ingepakt: een groot stempel op de kaart */
+.pakprofiel__stempel {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  padding: 7px 12px 6px;
+  border: 3px solid var(--pak-stempel);
+  border-radius: 4px;
+  outline: 1.2px solid var(--pak-stempel);
+  outline-offset: 2.5px;
+  color: var(--pak-stempel);
+  background: rgba(245, 242, 234, 0.7);
+  text-align: center;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-7deg);
+}
+.pakprofiel__stempel[hidden] { display: none; }
+.pakprofiel__stempel b { display: block; font: 700 26px/1 var(--pak-smal); letter-spacing: 0.06em; }
+.pakprofiel__stempel small { display: block; margin-top: 3px; font: 600 11px/1 var(--pak-smal); letter-spacing: 0.16em; }
+.pakprofiel__stempel.is-net { animation: pak-groot-stempel 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.25) 0.25s both; }
+
+@keyframes pak-groot-stempel {
+  from {
+    transform: translate(-50%, -50%) rotate(-7deg) scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* ---------- Smalle balk bovenaan als de kop uit beeld is ---------- */
+
+.pakkop__balkplek {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  height: 0;
+  margin-top: calc(-16px - var(--boven));
+  margin-bottom: -16px; /* de tussenruimte van .scherm opheffen */
+}
+
+.pakbalk {
+  position: absolute;
+  top: 0;
+  left: -16px;
+  right: -16px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  height: calc(var(--boven) + 52px);
+  padding: var(--boven) 16px 0;
+  background: var(--pak-papier);
+  border-bottom: 2px solid var(--pak-inkt);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%);
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    visibility 0s 0.2s;
+}
+
+.pakbalk.is-zichtbaar {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.pakbalk b {
+  font: 700 20px/1 var(--pak-smal);
+  text-transform: uppercase;
+}
+
+.pakbalk__hoogte {
+  font: 600 20px/1 var(--pak-smal);
+  font-variant-numeric: tabular-nums;
+}
+
+.pakbalk__hoogte small {
+  margin-left: 1px;
+  font-size: 13px;
+  color: var(--pak-zacht);
+}
+
+.pakbalk__spoor {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  min-width: 0;
+}
+
+.pakbalk__spoor span {
+  position: relative;
+  flex-basis: 0;
+  overflow: hidden;
+  background: var(--pak-lijn);
+}
+
+.pakbalk__spoor span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: calc(var(--v) * 100%);
+  background: var(--kleur);
+  transition: width 0.25s ease-out;
+}
+
+/* ---------- Onderwerpen: pisteborden, geen kaarten ---------- */
+
+.pak-cat {
+  border-top: 2px solid var(--pak-inkt);
+}
+
+.pak-cat__kop {
+  margin: 0;
+  font-size: inherit;
+}
+
+.pak-cat__knop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.pak-cat__nr {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  background: var(--kleur);
+  color: var(--pak-papier);
+  font: 700 19px/1 var(--pak-smal);
+}
+
+/* Klaar: het bordje wordt een rond, scheef stempel in de pistekleur */
+.pak-cat.is-klaar .pak-cat__nr {
+  background: none;
+  color: transparent;
+}
+
+.pak-cat.is-klaar .pak-cat__nr::after {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 42px;
+  height: 42px;
+  background: var(--kleur);
+  -webkit-mask: var(--pak-stempel-vorm) center / contain no-repeat;
+  mask: var(--pak-stempel-vorm) center / contain no-repeat;
+  transform: rotate(-14deg);
+}
+
+.pak-cat.net-gestempeld .pak-cat__nr::after {
+  animation: pak-stempel 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.25);
+}
+
+@keyframes pak-stempel {
+  from {
+    transform: rotate(-14deg) scale(1.9);
+    opacity: 0;
+  }
+}
+
+.pak-cat__naam {
+  flex: 1;
+  min-width: 0;
+  font: 700 22px/1.05 var(--pak-smal);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.pak-cat__teller {
+  font: 600 18px/1 var(--pak-smal);
+  font-variant-numeric: tabular-nums;
+  color: var(--pak-zacht);
+  white-space: nowrap;
+}
+
+.pak-cat.is-klaar .pak-cat__teller {
+  color: var(--kleur);
+}
+
+.pak-cat__pijl {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin: 0 4px 0 2px;
+  border-right: 2px solid var(--pak-zacht);
+  border-bottom: 2px solid var(--pak-zacht);
+  transform: translateY(2px) rotate(-135deg);
+  transition: transform 0.2s ease;
+}
+
+.pak-cat.is-dicht .pak-cat__pijl {
+  transform: translateY(-2px) rotate(45deg);
+}
+
+/* Inklappen: de lijst schuift dicht (grid-rij van 1fr naar 0fr) */
+.pak-cat__inhoud {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 0.22s ease,
+    visibility 0s;
+}
+
+.pak-cat__inhoud > .pak-items {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pak-cat.is-dicht .pak-cat__inhoud {
+  grid-template-rows: 0fr;
+  visibility: hidden; /* niet meer aan te tikken of voor te lezen */
+  transition:
+    grid-template-rows 0.22s ease,
+    visibility 0s 0.22s;
+}
+
+.pak-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pak-item + .pak-item {
+  border-top: 1px solid var(--pak-lijn);
+}
+
+.pak-item--eigen {
+  display: flex;
+  align-items: center;
+}
+
+.pak-item--eigen .pak-vink {
+  flex: 1;
+  min-width: 0;
+}
+
+.pak-item__weg {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  border: 0;
+  background: none;
+  color: var(--pak-zacht);
+}
+
+/* ---------- Afvinken ---------- */
+
+.pak-vink {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 10px 0 10px 4px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pak-vink input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.pak-vink__vak {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid var(--kleur);
+  border-radius: 50%;
+  color: var(--pak-papier);
+  transition: background-color 0.15s ease;
+}
+
+.pak-vink__vak svg {
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pak-vink__vak path {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  transition: stroke-dashoffset 0.2s ease-out 0.03s;
+}
+
+.pak-vink.is-aan .pak-vink__vak {
+  background: var(--kleur);
+}
+
+.pak-vink.is-aan .pak-vink__vak path {
+  stroke-dashoffset: 0;
+}
+
+.pak-vink.is-net .pak-vink__vak {
+  animation: pak-plop 0.2s ease-out;
+}
+
+@keyframes pak-plop {
+  0% { transform: scale(0.82); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.pak-vink__tekst {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Afgevinkt: doorgestreept in de kleur van de piste; de tekst zelf blijft goed leesbaar */
+.pak-vink.is-aan .pak-vink__tekst {
+  color: var(--pak-zacht);
+  text-decoration: line-through 2px var(--kleur);
+}
+
+.pak-vink input:focus-visible + .pak-vink__vak {
+  outline: 3px solid var(--tweeslag-lichtblauw);
+  outline-offset: 3px;
+}
+
+.pak-leeg {
+  padding: 24px 0 4px;
+  border-top: 2px solid var(--pak-inkt);
+  font: 600 20px/1.3 var(--pak-smal);
+  text-transform: uppercase;
+}
+
+.pak-leeg span {
+  display: block;
+  margin-top: 6px;
+  font: 400 16px/1.4 var(--pak-tekst);
+  text-transform: none;
+  color: var(--pak-zacht);
+}
+
+/* ---------- Eigen item en alles uitvinken ---------- */
+
+.pak-onder {
+  padding-top: 8px;
+}
+
+.pak-toevoegen {
+  display: flex;
+  gap: 8px;
+}
+
+.pak-toevoegen input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 2px solid var(--pak-inkt);
+  border-radius: 0;
+  background: transparent;
+  color: var(--pak-inkt);
+  font: 400 17px var(--pak-tekst);
+}
+
+.pak-toevoegen input::placeholder {
+  color: var(--pak-zacht);
+  opacity: 1;
+}
+
+.pak-toevoegen button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--pak-inkt);
+  color: #fff;
+}
+
+.pak-toevoegen button:disabled {
+  background: var(--pak-lijn);
+  color: var(--pak-zacht);
+}
+
+.pak-reset {
+  min-height: 44px;
+  margin-top: 18px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--pak-zacht);
+  font: 600 15px var(--pak-smal);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pak-melding {
+  flex-wrap: nowrap;
+  padding: 6px 6px 6px 16px;
+  border-radius: 6px;
+  background: var(--pak-inkt);
+  color: #fff;
+  font-family: var(--pak-tekst);
+}
+
+.pak-melding span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pak-melding__knop {
+  flex: none;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: #7fd3ea;
+  font-weight: 600;
+}
+
+.pak-cat__knop:focus-visible,
+.pak-item__weg:focus-visible,
+.pak-reset:focus-visible,
+.pak-toevoegen :focus-visible,
+.pak-melding__knop:focus-visible {
+  outline: 3px solid var(--tweeslag-lichtblauw);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pakprofiel__stuk,
+  .pakprofiel__skier,
+  .pakbalk,
+  .pakbalk__spoor span::after,
+  .pak-cat__inhoud,
+  .pak-cat__pijl,
+  .pak-vink__vak,
+  .pak-vink__vak path {
+    transition: none;
+  }
+  .pakprofiel__stempel.is-net,
+  .pak-cat.net-gestempeld .pak-cat__nr::after,
+  .pak-vink.is-net .pak-vink__vak {
+    animation: none;
+  }
+}
