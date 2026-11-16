@@ -15,7 +15,6 @@ import { profielAfVoor } from '../lib/profiel'
 export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () => void; naarBeheer: () => void }) {
   const { data, fout } = useData('kamers')
   const [naam, setNaam] = useOpgeslagen<string | null>('naam', null)
-  const [wijzigen, setWijzigen] = useState(false)
   const nieuweKop = useNieuweKoppen()
 
   const alleNamen = useAlleNamen(data)
@@ -31,8 +30,10 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
     )
   }
 
+  // Alleen als je nog geen naam hebt (of hij niet meer in de kamerlijst staat). Een andere naam
+  // kiezen kan hier niet: dat gaat via je naam op Home (Jouw profiel → Andere naam kiezen).
   const naamBekend = naam !== null && alleNamen.includes(naam)
-  if (!naamBekend || wijzigen) {
+  if (!naamBekend) {
     return (
       <div className="scherm">
         {nieuweKop ? <SchermKop titel="Wie ben jij?" boven="Kamers" /> : <h1>Wie ben jij?</h1>}
@@ -46,16 +47,10 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
           namen={alleNamen}
           onKies={(n) => {
             setNaam(n)
-            setWijzigen(false)
             window.scrollTo(0, 0)
             if (!profielAfVoor(n)) openMijnProfiel()
           }}
         />
-        {naamBekend && (
-          <button type="button" className="knop knop--secundair knop--breed" onClick={() => setWijzigen(false)}>
-            Annuleren
-          </button>
-        )}
       </div>
     )
   }
@@ -86,9 +81,6 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
           <p className="kamer__label">Jouw kamer</p>
           <KamerInhoud kamer={eigenKamer} jij={naam} />
           <KamernaamVeld kamer={eigenKamer} kamers={data.kamers} />
-          <button type="button" className="tekstknop" onClick={() => setWijzigen(true)}>
-            Ben je niet {toon(naam)}? Kies een andere naam
-          </button>
         </section>
       )}
 
@@ -96,9 +88,6 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
         <section className="kaartje kamer kamer--eigen" aria-label="Jouw kamer">
           <p className="kamer__label">Jouw kamer</p>
           <p>Je hebt nog geen kamer. De reisleiding maakt de kamerverdeling; daarna staat je kamer hier.</p>
-          <button type="button" className="tekstknop" onClick={() => setWijzigen(true)}>
-            Ben je niet {toon(naam)}? Kies een andere naam
-          </button>
         </section>
       )}
 
