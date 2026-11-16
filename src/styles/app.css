@@ -4192,6 +4192,27 @@ button {
   background: linear-gradient(90deg, #7fd3ea, var(--tweeslag-lichtblauw));
 }
 
+/* Alles ingepakt: groene balk met het vinkje van de klare categorieën aan het eind */
+.voortgang__houder {
+  position: relative;
+}
+
+.voortgang__houder.is-klaar .voortgang__balk > div,
+.schermkop__extra .voortgang__houder.is-klaar .voortgang__balk > div {
+  background: var(--succes);
+}
+
+.voortgang__vinkje {
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  margin-top: -12px;
+  /* Een wit randje, zodat het rondje ook op de donkerblauwe kop goed te zien is */
+  filter: drop-shadow(0 0 0 #fff) drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.9));
+}
+
 /* Tijdens het wegscrollen wordt de inhoud kleiner en lichter; de balk komt er zacht in.
    Alleen zonder 'minder beweging': anders scrolt de kop gewoon weg en staat de balk er ineens. */
 @media (prefers-reduced-motion: no-preference) {

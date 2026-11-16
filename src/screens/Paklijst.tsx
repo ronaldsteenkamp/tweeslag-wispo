@@ -149,16 +149,27 @@ export default function Paklijst() {
   }
 
   const allesKlaar = klaar === totaal && totaal > 0
+
+  // Alles ingepakt: de balk wordt groen en krijgt aan het eind hetzelfde vinkje als een klare
+  // categorie (over de balk heen, zodat er niets verschuift)
   const balk = (
-    <div
-      className="voortgang__balk"
-      role="progressbar"
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={procent}
-      aria-label="Voortgang paklijst"
-    >
-      <div style={{ width: `${procent}%` }} />
+    <div className={`voortgang__houder${allesKlaar ? ' is-klaar' : ''}`}>
+      <div
+        className="voortgang__balk"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={procent}
+        aria-label="Voortgang paklijst"
+      >
+        <div style={{ width: `${procent}%` }} />
+      </div>
+      {allesKlaar && (
+        <svg className="categorie__vinkje voortgang__vinkje" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="12" />
+          <path d="M6.5 12.5l3.6 3.6 7.4-8" />
+        </svg>
+      )}
     </div>
   )
 
