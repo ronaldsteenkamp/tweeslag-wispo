@@ -1,6 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { badgeDef, TE_HALEN, useBadges, type Badge } from '../lib/badges'
+import { backendIngesteld } from '../lib/backend'
+import { badgeDef, TE_HALEN, useActueleStand, useBadges, type Badge, type BadgeDef } from '../lib/badges'
 import { telefoonUitFeiten } from '../lib/badgeregels'
+import { voorVertrek } from '../lib/badgesTelefoon'
 import { lees, schrijf, schrijfEnMeld } from '../lib/opslag'
 import { Feestregen } from './Feestregen'
 import { toonProfiel } from './Profiel'
@@ -120,43 +122,68 @@ export function JouwBadges() {
   const mijn = van(mijnNaam)
   const feiten = feitenVan(mijnNaam)
   const heb = new Map(mijn.map((b) => [b.id, b]))
+  // Eerst wat je al hebt; de rest (ruim twintig badges) ingeklapt eronder
+  const verdiend = TE_HALEN.filter((d) => heb.has(d.id))
+  const nogTeHalen = TE_HALEN.filter((d) => !heb.has(d.id))
+  const vooraf = voorVertrek()
+
+  const regel = (d: BadgeDef, b?: Badge) => (
+    <li key={d.id} className={`badgekaart__item${b ? ' is-verdiend' : ''}`}>
+      <span className="badge badge--groot" aria-hidden="true">
+        {d.emoji}
+      </span>
+      <span className="badgekaart__tekst">
+        <strong>
+          {b ? label(b) : d.naam}
+          {d.wisselt && <span className="badgekaart__wisselt"> · wisselt</span>}
+        </strong>
+        <span>{b ? d.uitleg : d.reis && vooraf ? 'Te halen tijdens de reis' : d.nogTeDoen(feiten)}</span>
+      </span>
+    </li>
+  )
   return (
     <section className="kaartje badgekaart" aria-labelledby="badgekaart-titel">
       <h2 id="badgekaart-titel" className="badgekaart__titel">
-        Jouw badges <span>{mijn.length} van {TE_HALEN.length}</span>
+        Jouw badges <span>{verdiend.length} van {TE_HALEN.length}</span>
       </h2>
-      <ul className="badgekaart__lijst">
-        {TE_HALEN.map((d) => {
-          const b = heb.get(d.id)
-          return (
-            <li key={d.id} className={`badgekaart__item${b ? ' is-verdiend' : ''}`}>
-              <span className="badge badge--groot" aria-hidden="true">
-                {d.emoji}
-              </span>
-              <span className="badgekaart__tekst">
-                <strong>
-                  {b ? label(b) : d.naam}
-                  {d.wisselt && <span className="badgekaart__wisselt"> · wisselt</span>}
-                </strong>
-                <span>{b ? d.uitleg : `Nog te verdienen: ${d.nogTeDoen(feiten)}`}</span>
-              </span>
-            </li>
-          )
-        })}
-      </ul>
+      {verdiend.length ? (
+        <ul className="badgekaart__lijst">{verdiend.map((d) => regel(d, heb.get(d.id)))}</ul>
+      ) : (
+        <p className="badgekaart__leeg">Nog geen badges. Hieronder zie je hoe je ze haalt.</p>
+      )}
+      {nogTeHalen.length > 0 && (
+        <details className="badgekaart__nog">
+          <summary>Nog te halen ({nogTeHalen.length})</summary>
+          <ul className="badgekaart__lijst">{nogTeHalen.map((d) => regel(d))}</ul>
+        </details>
+      )}
     </section>
   )
 }
 
 const GEZIEN = 'badges.gezien'
+/**
+ * Ophogen als er nieuwe soorten badges bijkomen. Na het bijwerken van de app worden de nieuwe
+ * badges die je al zou hebben dan één keer stil onthouden, zodat er geen stapel meldingen komt.
+ * 1: de eerste acht badges; 2: de badges van badgeregels.ts erbij.
+ */
+const GEZIEN_VERSIE = 2
+
+interface Gezien {
+  naam: string
+  ids: string[]
+  versie?: number
+}
 
 /**
  * Eén keer in App: haal je een nieuwe badge, dan even een melding met wat confetti. Tik erop
- * om je profiel te openen. De eerste keer (na het bijwerken van de app) worden de badges die je
- * al had stil onthouden, zodat er niet ineens een rij meldingen komt.
+ * om je profiel te openen. De eerste keer (en na een update met nieuwe soorten badges) worden
+ * de badges die je al had stil onthouden, zodat er niet ineens een rij meldingen komt.
  */
 export function BadgeMelding() {
-  const { van, feitenVan, mijnNaam, serverBekend, spelGeladen } = useBadges(false)
+  const { van, feitenVan, mijnNaam, serverBekend, serverActueel, spelGeladen } = useBadges(false)
+  // Eén keer de stand van de server ophalen als die nog van een oudere versie is
+  useActueleStand()
   const mijn = mijnNaam ? van(mijnNaam) : null
 
   // De badges die alleen deze telefoon kent klaarzetten voor de server (scorebord.ts stuurt ze mee)
@@ -172,9 +199,16 @@ export function BadgeMelding() {
   useEffect(() => {
     // Pas kijken als spel.json er is: anders lijken de spelbadges even weg
     if (!mijn || !mijnNaam || !spelGeladen) return
-    const gezien = lees<{ naam: string; ids: string[] } | null>(GEZIEN, null)
+    const gezien = lees<Gezien | null>(GEZIEN, null)
     if (!gezien || gezien.naam !== mijnNaam) {
-      schrijf(GEZIEN, { naam: mijnNaam, ids: mijn.map((b) => b.id) })
+      schrijf<Gezien>(GEZIEN, { naam: mijnNaam, ids: mijn.map((b) => b.id), versie: GEZIEN_VERSIE })
+      return
+    }
+    if ((gezien.versie ?? 1) < GEZIEN_VERSIE) {
+      // Net bijgewerkt: wat je van de nieuwe badges al hebt stil onthouden. Met een server eerst
+      // wachten op een stand van deze versie, anders komen die badges er straks alsnog als melding bij.
+      if (backendIngesteld && !serverActueel) return
+      schrijf<Gezien>(GEZIEN, { naam: mijnNaam, ids: [...new Set([...gezien.ids, ...mijn.map((b) => b.id)])], versie: GEZIEN_VERSIE })
       return
     }
     const nieuw = mijn.filter((b) => !gezien.ids.includes(b.id))
@@ -183,14 +217,14 @@ export function BadgeMelding() {
     const behouden = gezien.ids.filter(
       (id) => mijn.some((b) => b.id === id) || (!serverBekend && badgeDef(id as Badge['id'])?.server),
     )
-    schrijf(GEZIEN, { naam: mijnNaam, ids: [...behouden, ...nieuw.map((b) => b.id)] })
+    schrijf<Gezien>(GEZIEN, { naam: mijnNaam, ids: [...behouden, ...nieuw.map((b) => b.id)], versie: GEZIEN_VERSIE })
     if (nieuw.length) {
       wachtrij.current.push(...nieuw)
       setMelding((m) => m ?? wachtrij.current.shift() ?? null)
     }
     // ids: alleen opnieuw kijken als de set badges verandert
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ids, mijnNaam, serverBekend, spelGeladen])
+  }, [ids, mijnNaam, serverBekend, serverActueel, spelGeladen])
 
   useEffect(() => {
     if (!melding) return

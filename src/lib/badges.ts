@@ -16,7 +16,7 @@ import { useVerdiend } from './badgesTelefoon'
 import { useEigenBijnaam, useToonNaam } from './bijnamen'
 import { bingoScore, maakKaart } from './bingo'
 import { useData, type Spel } from './data'
-import { schrijfEnMeld, useOpgeslagen } from './opslag'
+import { lees, schrijfEnMeld, useOpgeslagen } from './opslag'
 import { isAf, sleutel, useMijnProfiel, useProfielen } from './profiel'
 import { useStemmingen, winnaars } from './stemming'
 import { spelBegint } from './testperiode'
@@ -141,6 +141,23 @@ async function haal() {
   } catch {
     // Dan blijft de bewaarde stand staan
   }
+}
+
+/**
+ * Haalt de stand één keer op als de bewaarde stand van een oudere versie is (of er nog geen is),
+ * zodra er verbinding is. Voor BadgeMelding, die verder niets ophaalt.
+ */
+export function useActueleStand() {
+  useEffect(() => {
+    if (!backendIngesteld) return
+    const probeer = () => {
+      if (backendStand().status !== 'verbonden') return
+      if (lees<ServerStand | null>(CACHE, null)?.versie === STAND_VERSIE) return
+      void haalBadgeStand()
+    }
+    probeer()
+    return abonneerBackend(probeer)
+  }, [])
 }
 
 /** Het aantal bingorijen terugrekenen uit de punten (de server kent de kaart niet) */
