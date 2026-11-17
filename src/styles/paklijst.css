@@ -52,21 +52,6 @@
   color: var(--hero-tekst);
 }
 
-/* Een paar sterren in de lucht */
-.pakkop::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 40% 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(1.4px 1.4px at 18% 22%, rgba(255, 255, 255, 0.55), transparent),
-    radial-gradient(1.2px 1.2px at 64% 14%, rgba(255, 255, 255, 0.45), transparent),
-    radial-gradient(1.6px 1.6px at 82% 38%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1.1px 1.1px at 40% 34%, rgba(255, 255, 255, 0.35), transparent),
-    radial-gradient(1.3px 1.3px at 92% 10%, rgba(255, 255, 255, 0.45), transparent);
-}
-
 .pakkop__rij {
   display: flex;
   align-items: center;
