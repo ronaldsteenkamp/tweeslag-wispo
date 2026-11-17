@@ -1,0 +1,505 @@
+/*
+ * Planning — "Programmaboekje" (zie screens/Planning.tsx). Elke dag een bladzijde, de hele reis als
+ * inhoudsopgave. Georgia (huisstijltekst) voor wat je leest; Barlow Condensed voor tijden, omdat de
+ * cijfers van Georgia niet onder elkaar uitlijnen. Lichtblauw alleen als streep, nooit als tekst.
+ * Contrast op het papier: inkt 17:1, zacht 6,5:1, rood 6,2:1, lichtblauwe streep 4:1.
+ */
+
+.inhoud--planning {
+  --boek-papier: #fbf8f1;
+  --boek-inkt: #0d0058;
+  --boek-zacht: #555872;
+  --boek-lijn: #ddd6c6;
+  --boek-streep: #0a80a0;
+  --boek-rood: #b3261e;
+  --boek-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  --boek-tekst: Georgia, Cambria, 'Times New Roman', serif;
+  min-height: 100dvh;
+  background: var(--boek-papier);
+  color: var(--boek-inkt);
+}
+
+.boekje {
+  gap: 0;
+}
+
+/* Kleine hoofdletters in Barlow Condensed, voor kantlijn en kickers */
+.blad__kicker,
+.vast__kop,
+.punt__kantlijn,
+.blader__richting,
+.toc__datum,
+.vast__hierna {
+  font-family: var(--boek-smal);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.boekje time,
+.punt__tijd,
+.toc__nr {
+  font-family: var(--boek-smal);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Keuze Vandaag / Hele reis in de kop */
+.boekje .schermkop__keuze {
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* ---------- Bladzijde ---------- */
+
+.blad {
+  padding-top: 18px;
+}
+
+.blad__kicker {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--boek-zacht);
+}
+
+.blad__titel {
+  margin: 6px 0 0;
+  font: 400 2.1rem/1.08 var(--boek-tekst);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.blad__intro {
+  margin: 10px 0 0;
+  font-style: italic;
+  color: var(--boek-zacht);
+}
+
+.blad__weer {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  color: var(--boek-zacht);
+}
+
+/* Vaste tijden: ontbijt, lunch, diner in één alinea */
+.vast {
+  margin-top: 18px;
+  padding: 10px 0 12px;
+  border-top: 2px solid var(--boek-inkt);
+  border-bottom: 1px solid var(--boek-lijn);
+}
+
+.vast__kop {
+  margin: 0 0 4px;
+  color: var(--boek-zacht);
+}
+
+.vast ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  font-family: var(--boek-tekst);
+}
+
+.vast__item time {
+  font-size: 1.1rem;
+  margin-right: 2px;
+}
+
+.vast__extra {
+  color: var(--boek-zacht);
+}
+
+.vast__item--voorbij {
+  color: var(--boek-zacht);
+  text-decoration: line-through;
+  text-decoration-color: var(--boek-lijn);
+  text-decoration-thickness: 2px;
+}
+
+.vast__item--bezig {
+  box-shadow: inset 0 -3px 0 var(--boek-streep);
+}
+
+.vast__item--straks {
+  box-shadow: inset 0 -2px 0 var(--boek-inkt);
+}
+
+.vast__hierna {
+  color: var(--boek-zacht);
+  font-size: 0.75rem;
+}
+
+/* ---------- Programma ---------- */
+
+.programma {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.punt {
+  position: relative;
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 0 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--boek-lijn);
+}
+
+.punt__tijd {
+  margin: 0;
+  padding-top: 3px;
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.punt__tijd small {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--boek-zacht);
+}
+
+.punt__was {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--boek-zacht);
+}
+
+.punt__inhoud {
+  min-width: 0;
+}
+
+.punt h3 {
+  margin: 0;
+  font: 400 1.25rem/1.25 var(--boek-tekst);
+  overflow-wrap: anywhere;
+}
+
+.punt__tekst,
+.punt__plek,
+.punt__noot {
+  margin: 4px 0 0;
+  font-family: var(--boek-tekst);
+  font-size: 1rem;
+  color: var(--boek-zacht);
+}
+
+.punt__plek {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.punt__noot {
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--boek-inkt);
+}
+
+.noot--rood {
+  color: var(--boek-rood);
+}
+
+/* Kantlijn: nu en hierna */
+.punt__kantlijn {
+  margin: 0 0 4px;
+  color: var(--boek-zacht);
+}
+
+.punt__kantlijn--nu {
+  color: var(--boek-inkt);
+}
+
+.punt__kantlijn--nu b {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 6px;
+  background: var(--boek-inkt);
+  color: var(--boek-papier);
+  font-weight: 600;
+}
+
+.punt--bezig::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 12px;
+  bottom: 12px;
+  width: 5px;
+  background: var(--boek-streep);
+}
+
+/* Hoogtepunt: groter, met een lijn erboven en een rond beeldmerk */
+.punt--hoog {
+  margin-top: -1px;
+  padding: 22px 0 18px;
+  border-top: 2px solid var(--boek-inkt);
+}
+
+.punt--hoog h3 {
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+/* Iets bredere tijdkolom, zodat de grote tijd niet tegen de kantlijntekst aan komt */
+.punt--hoog {
+  grid-template-columns: 64px 1fr;
+}
+
+.punt--hoog .punt__tijd {
+  font-size: 1.55rem;
+}
+
+.punt__beeld {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--boek-inkt);
+  border-radius: 50%;
+}
+
+/* Voor wie wil: ingesprongen en cursief */
+.punt--optioneel {
+  margin-left: 58px;
+  padding-left: 12px;
+  grid-template-columns: 50px 1fr;
+  border-left: 1px solid var(--boek-lijn);
+}
+
+.punt--optioneel h3 {
+  font-style: italic;
+  font-size: 1.15rem;
+}
+
+.punt--optioneel .punt__tijd {
+  font-size: 1.1rem;
+}
+
+/* Voorbij: afgevinkt in de kantlijn; de tekst blijft leesbaar, de uitleg gaat weg */
+.punt--voorbij h3,
+.punt--voorbij .punt__tijd {
+  color: var(--boek-zacht);
+}
+
+.punt--voorbij.punt--hoog {
+  padding: 16px 0;
+  border-top: 1px solid var(--boek-lijn);
+}
+
+.punt--voorbij.punt--hoog h3,
+.punt--voorbij.punt--hoog .punt__tijd {
+  font-size: 1.25rem;
+}
+
+.punt--voorbij .punt__tekst,
+.punt--voorbij .punt__plek,
+.punt--voorbij .punt__noot {
+  display: none;
+}
+
+.punt__vinkje {
+  position: absolute;
+  left: -2px;
+  top: 42px;
+  color: var(--boek-zacht);
+}
+
+/* Gaat niet door */
+.punt--vervallen h3 {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  color: var(--boek-zacht);
+}
+
+.punt--vervallen .punt__tijd {
+  color: var(--boek-zacht);
+  text-decoration: line-through;
+}
+
+/* Vrije tijd: een rustpunt */
+.rust {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--boek-lijn);
+  text-align: center;
+  font-family: var(--boek-tekst);
+  color: var(--boek-zacht);
+}
+
+.rust svg {
+  display: block;
+  width: 64px;
+  height: 18px;
+  margin: 0 auto 8px;
+  color: var(--boek-streep);
+}
+
+.rust em {
+  display: block;
+  font-size: 1.25rem;
+  color: var(--boek-inkt);
+}
+
+.blad__leeg {
+  padding: 40px 8px;
+  border-bottom: 1px solid var(--boek-lijn);
+  text-align: center;
+  font-family: var(--boek-tekst);
+  color: var(--boek-zacht);
+}
+
+.blad__leeg em {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1.3rem;
+  color: var(--boek-inkt);
+}
+
+/* Bladeren */
+.blader {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 22px 0 8px;
+}
+
+.blader button {
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 1px solid var(--boek-lijn);
+  border-radius: 6px;
+  background: none;
+  color: var(--boek-inkt);
+  font: 400 1rem/1.25 var(--boek-tekst);
+  text-align: left;
+  cursor: pointer;
+}
+
+.blader .blader__volgende {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.blader__richting {
+  font-size: 0.75rem;
+  color: var(--boek-zacht);
+}
+
+/* ---------- Inhoudsopgave (hele reis) ---------- */
+
+.inhoudsopgave h2 {
+  margin: 20px 0 4px;
+  font: italic 400 1.9rem/1.1 var(--boek-tekst);
+}
+
+.inhoudsopgave__intro {
+  margin: 0 0 12px;
+  color: var(--boek-zacht);
+}
+
+.inhoudsopgave ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--boek-inkt);
+}
+
+.inhoudsopgave li {
+  border-bottom: 1px solid var(--boek-lijn);
+}
+
+.toc {
+  position: relative;
+  width: 100%;
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: baseline;
+  gap: 0 10px;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: var(--boek-inkt);
+  font-family: var(--boek-tekst);
+  text-align: left;
+  cursor: pointer;
+}
+
+.toc__nr {
+  font-size: 1.3rem;
+  color: var(--boek-zacht);
+}
+
+.toc__titel {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  font-size: 1.15rem;
+}
+
+/* Puntjeslijn naar de datum, zoals in een inhoudsopgave */
+.toc__titel::after {
+  content: '';
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 2px dotted var(--boek-lijn);
+  transform: translateY(-5px);
+}
+
+.toc__datum {
+  color: var(--boek-zacht);
+}
+
+.toc__kern {
+  grid-column: 2 / -1;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--boek-zacht);
+}
+
+.toc.is-vandaag::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 10px;
+  bottom: 10px;
+  width: 5px;
+  background: var(--boek-streep);
+}
+
+.toc.is-vandaag .toc__nr {
+  color: var(--boek-inkt);
+}
+
+.toc.is-voorbij .toc__titel,
+.toc.is-voorbij .toc__nr {
+  color: var(--boek-zacht);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .blad {
+    animation: blad-in 0.25s ease-out;
+  }
+  @keyframes blad-in {
+    from {
+      opacity: 0;
+      transform: translateX(12px);
+    }
+  }
+}

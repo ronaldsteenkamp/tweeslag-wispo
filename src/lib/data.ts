@@ -8,10 +8,22 @@ export interface PlanningItem {
   locatie?: string
   /** Iedereen met meldingen aan krijgt 30 minuten van tevoren een seintje */
   melding?: boolean
+  /** Eindtijd 'UU:MM'. Zonder eindtijd loopt een item tot het volgende begint. */
+  eind?: string
+  /** 'hoog' = hoogtepunt (groot), 'routine' = ontbijt, diner e.d. (in de regel "Vaste tijden") */
+  gewicht?: 'hoog' | 'routine'
+  /** Doet niet iedereen mee, bijv. 'wie wil'. Staat ingesprongen en telt niet mee voor de eindtijd van het vorige. */
+  optioneel?: string
+  /** Tijd verschoven: de oude tijd, bijv. '21:00' */
+  was?: string
+  /** Gaat niet door: de reden (of leeg) */
+  vervallen?: string
 }
 export interface Dag {
   datum: string
   titel: string
+  /** Eén zin bovenaan de dag, op de toon van het clubblad (mag leeg) */
+  intro?: string
   items: PlanningItem[]
 }
 export interface Planning {
@@ -119,7 +131,24 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
     dagen: lijst<Ruw>(r?.dagen).map((d) => ({
       datum: String(d?.datum ?? ''),
       titel: String(d?.titel ?? ''),
-      items: lijst<PlanningItem>(d?.items),
+      intro: typeof d?.intro === 'string' && d.intro.trim() ? d.intro.trim() : undefined,
+      items: lijst<Ruw>(d?.items)
+        .map((i) => {
+          const tekst = (x: unknown) => (typeof x === 'string' && x.trim() ? x.trim() : undefined)
+          const tijdVeld = (x: unknown) => (typeof x === 'string' && /^\d\d:\d\d$/.test(x.trim()) ? x.trim() : undefined)
+          return {
+            ...(i as PlanningItem),
+            tijd: String(i?.tijd ?? '').trim(),
+            titel: String(i?.titel ?? ''),
+            eind: tijdVeld(i?.eind),
+            gewicht: i?.gewicht === 'hoog' || i?.gewicht === 'routine' ? i.gewicht : undefined,
+            optioneel: tekst(i?.optioneel),
+            was: tekst(i?.was),
+            // "vervallen": true mag ook (zonder reden)
+            vervallen: i?.vervallen === true ? '' : tekst(i?.vervallen),
+          } as PlanningItem
+        })
+        .sort((a, b) => a.tijd.localeCompare(b.tijd)),
     })),
   }),
   paklijst: (r) => ({
