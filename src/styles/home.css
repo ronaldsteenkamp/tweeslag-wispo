@@ -1,0 +1,789 @@
+/*
+ * Home — "Afdaling" (zie screens/Home.tsx). Zelfde palet en letters als de Paklijst: donkerblauwe kop
+ * met een besneeuwde berg, papier eronder, pisteborden. Ná de reis is de kop een affiche.
+ * Alleen licht (zoals de rest van de app). Contrast op het papier: inkt 15:1, zacht 7:1,
+ * pistekleuren met wit icoon ≥ 4,5:1; op donkerblauw: wit 16:1, lichtblauwe tekst 10:1.
+ */
+
+.inhoud--home {
+  --h-papier: #f5f2ea;
+  --h-kaart: #fffdf8;
+  --h-inkt: #0d0058;
+  --h-zacht: #4b4e6b;
+  --h-lijn: #d9d3c4;
+  --h-sneeuw: #e9f1f5;
+  --h-schaduw: #cfdee8;
+  --h-zwart: #17171c;
+  --h-rood: #c4212f;
+  --h-blauw: #1d5fc4;
+  --h-groen: #1e7a4c;
+  --h-licht: #099fc4;
+  --h-kop-zacht: #9fe3f4;
+  --h-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  --h-tekst: Barlow, 'Trebuchet MS', sans-serif;
+  min-height: 100dvh;
+  background: var(--h-papier);
+  color: var(--h-inkt);
+}
+
+.scherm.home {
+  gap: 0;
+  font-family: var(--h-tekst);
+}
+
+.home p {
+  font-family: inherit;
+}
+
+/* ---------- Kop ---------- */
+
+.homekop,
+.affiche {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin: 0 -16px;
+  padding: calc(var(--boven) + 12px) 20px 0;
+  background: var(--hero);
+  color: #fff;
+}
+
+.homekop__rij {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.homekop__boven {
+  font-family: var(--font-kop);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--h-kop-zacht);
+}
+
+/* Jouw naam: de knop naar je profiel */
+.ik {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 5px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: 600 16px var(--h-tekst);
+  touch-action: manipulation;
+}
+
+.ik i {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--h-licht);
+  color: var(--h-inkt);
+  font: 700 15px var(--h-smal);
+  font-style: normal;
+}
+
+.ik span:only-child {
+  padding-right: 8px;
+}
+
+.homekop__titel {
+  margin-top: 14px;
+  font: 700 clamp(48px, 16vw, 64px) / 0.92 var(--h-smal);
+  letter-spacing: -0.01em;
+}
+
+.homekop__titel small {
+  display: block;
+  margin-top: 8px;
+  font: 600 21px/1.2 var(--h-smal);
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.homekop__zin {
+  margin-top: 10px;
+  max-width: 32ch;
+  font: 16px/1.45 var(--font-tekst) !important;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.homekop__berg {
+  display: block;
+  width: calc(100% + 40px);
+  height: 96px;
+  margin: 6px -20px -1px;
+}
+
+.homekop__berg--laag {
+  height: 44px;
+}
+
+.homekop__berg .berg {
+  fill: var(--h-sneeuw);
+}
+
+.homekop__berg .schaduw {
+  fill: var(--h-schaduw);
+}
+
+.homekop__berg .dal,
+.affiche .dal {
+  fill: var(--h-papier);
+}
+
+.homekop__berg .vlag {
+  fill: var(--h-rood);
+}
+
+/* Tijdens: dag links, weer rechts */
+.homekop__dagrij {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.homekop--dag .homekop__titel {
+  margin-top: 0;
+  font-size: clamp(38px, 12vw, 48px);
+}
+
+.homekop__weer {
+  flex: none;
+  display: grid;
+  gap: 2px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-align: right;
+  touch-action: manipulation;
+}
+
+.homekop__weer b {
+  font: 700 26px/1 var(--h-smal);
+}
+
+.homekop__weer span {
+  font: 600 13px/1.2 var(--h-smal);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--h-kop-zacht);
+}
+
+/* Vertrekdag: de route van vandaag */
+.route {
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 0 6px;
+  padding: 0;
+  list-style: none;
+  position: relative;
+}
+
+.route::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  top: 6px;
+  border-top: 3px dashed rgba(255, 255, 255, 0.45);
+}
+
+.route li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 22%;
+  text-align: center;
+}
+
+.route li:first-child {
+  align-items: flex-start;
+}
+
+.route li:last-child {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.route li::before {
+  content: '';
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--hero);
+  border: 3px solid #fff;
+}
+
+.route li.is-nu::before {
+  background: var(--h-licht);
+}
+
+.route li.is-voorbij::before {
+  background: #fff;
+}
+
+.route__tijd {
+  font: 700 15px/1 var(--h-smal);
+}
+
+.route__wat {
+  font: 600 12px/1.15 var(--h-smal);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--h-kop-zacht);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Ná de reis: affiche ---------- */
+
+.affiche {
+  min-height: 470px;
+  height: min(540px, 64dvh);
+  background: linear-gradient(#04022a, #1b1470 80%);
+}
+
+.affiche__beeld {
+  position: absolute;
+  inset: auto 0 -1px 0;
+  width: 100%;
+  height: 70%;
+  z-index: -1;
+}
+
+.affiche__sterren {
+  position: absolute;
+  inset: 0 0 40% 0;
+  z-index: -1;
+  background-image: radial-gradient(#fff 1.2px, transparent 1.5px), radial-gradient(#fff 0.8px, transparent 1px),
+    radial-gradient(#fff 0.7px, transparent 0.9px);
+  background-size: 97px 71px, 53px 89px, 131px 47px;
+  background-position: 11px 23px, 37px 5px, 70px 31px;
+  opacity: 0.65;
+}
+
+.affiche__titel {
+  margin-top: 16px;
+  font: 700 clamp(66px, 22vw, 96px) / 0.84 var(--h-smal);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.affiche__titel em {
+  display: block;
+  margin-bottom: 6px;
+  font: italic 400 22px/1.3 var(--font-tekst);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--h-kop-zacht);
+}
+
+.affiche__onder {
+  margin-top: 12px;
+  font: 600 18px/1.25 var(--h-smal) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Postzegel */
+.zegel {
+  position: absolute;
+  right: 22px;
+  top: calc(var(--boven) + 84px);
+  width: 70px;
+  height: 84px;
+  padding: 5px;
+  background: #fbf8f1;
+  transform: rotate(5deg);
+  outline: 4px dotted #fbf8f1;
+  outline-offset: 1px;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.55);
+}
+
+.zegel::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  background: linear-gradient(#099fc4, #cfeaf3 60%, #e8d5a8 60%);
+}
+
+.zegel svg {
+  position: absolute;
+  left: 12px;
+  top: 14px;
+  width: 46px;
+}
+
+.zegel span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 9px;
+  text-align: center;
+  font: 700 11px var(--h-smal);
+  letter-spacing: 0.08em;
+  color: var(--h-inkt);
+}
+
+/* ---------- Papier ---------- */
+
+.home__papier {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 6px;
+}
+
+.home__kopje {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 6px 0 2px;
+  font: 700 15px/1 var(--h-smal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--h-zacht);
+}
+
+.home__kopje h2 {
+  font: inherit;
+}
+
+.home__kopje button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 0 0 12px;
+  border: 0;
+  background: none;
+  color: var(--h-inkt);
+  font: 700 15px var(--h-smal);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  touch-action: manipulation;
+}
+
+.home__datum {
+  margin-bottom: 4px;
+  font: 600 15px var(--h-smal) !important;
+  letter-spacing: 0.04em;
+  color: var(--h-zacht);
+}
+
+.home__intro,
+.home__zin {
+  font: italic 17px/1.5 var(--font-tekst) !important;
+  color: var(--h-inkt);
+}
+
+.home__intro {
+  margin: 2px 0 8px;
+}
+
+/* Rij met een bord, tekst en een pijltje */
+.homerij {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--h-lijn);
+  background: none;
+  color: var(--h-inkt);
+  text-align: left;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.homerij__tekst {
+  flex: 1;
+  min-width: 0;
+}
+
+.homerij b {
+  display: block;
+  font: 600 18px/1.2 var(--h-tekst);
+}
+
+.homerij small {
+  display: block;
+  margin-top: 2px;
+  font: 15px/1.35 var(--h-tekst);
+  color: var(--h-zacht);
+}
+
+.homerij__pijl {
+  flex: none;
+  color: var(--h-zacht);
+}
+
+.homerij__profiel {
+  display: block;
+  width: 100%;
+  height: 16px;
+  margin-top: 6px;
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.homerij__profiel-rest {
+  stroke: var(--h-lijn);
+}
+
+.homerij__profiel-klaar {
+  stroke: var(--h-groen);
+}
+
+.homerij__vakje {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 2.5px solid var(--h-inkt);
+  border-radius: 6px;
+}
+
+/* Pisteborden */
+.bord {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--kleur);
+  color: #fff;
+}
+
+.bord--vierkant {
+  border-radius: 6px;
+}
+
+.bord--groen { --kleur: var(--h-groen); }
+.bord--blauw { --kleur: var(--h-blauw); }
+.bord--rood { --kleur: var(--h-rood); }
+.bord--zwart { --kleur: var(--h-zwart); }
+.bord--licht { --kleur: var(--h-licht); color: var(--h-inkt); }
+
+/* ---------- De dag als afdaling ---------- */
+
+.afdaling {
+  position: relative;
+  padding-left: 46px;
+}
+
+.afdaling__piste {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 100%;
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.afdaling__sneeuw {
+  stroke: var(--h-lijn);
+}
+
+.afdaling__gereden {
+  stroke: var(--h-blauw);
+}
+
+.afdaling ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.afdaling__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 6px;
+  padding: 10px 0 12px;
+}
+
+.afdaling__item .bord {
+  position: absolute;
+  left: -43px;
+  top: 7px;
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--h-papier);
+  box-sizing: content-box;
+}
+
+.afdaling__item .bord svg {
+  width: 17px;
+  height: 17px;
+}
+
+.afdaling time {
+  font: 700 19px/1.3 var(--h-smal);
+  font-variant-numeric: tabular-nums;
+}
+
+.afdaling h3 {
+  font: 600 18px/1.3 var(--h-tekst);
+}
+
+.afdaling__item p {
+  margin-top: 2px;
+  font: 15px/1.4 var(--h-tekst);
+  color: var(--h-zacht);
+}
+
+.afdaling__waar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.afdaling__wanneer {
+  font-weight: 600 !important;
+  color: var(--h-inkt) !important;
+}
+
+.afdaling__label {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+  font: 600 12px/1.5 var(--h-smal);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+  color: var(--h-zacht);
+}
+
+.afdaling__item.is-voorbij {
+  opacity: 0.55;
+}
+
+.afdaling__item.is-nu {
+  margin: 4px 0 8px;
+  padding: 14px 14px 14px 0;
+  border-radius: 12px;
+  background: var(--h-kaart);
+  box-shadow: 0 0 0 2px var(--h-inkt);
+}
+
+.afdaling__item.is-nu time {
+  padding-left: 10px;
+}
+
+.afdaling__item.is-nu h3 {
+  font: 700 28px/1.05 var(--h-smal);
+}
+
+.afdaling__item.is-nu .bord {
+  top: 16px;
+}
+
+.afdaling__nu {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: var(--h-rood);
+  color: #fff;
+  font: 700 12px/1.5 var(--h-smal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ---------- Drie borden (tijdens) ---------- */
+
+.borden {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.borden button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--h-lijn);
+  border-radius: 10px;
+  background: var(--h-kaart);
+  color: var(--h-inkt);
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.borden b {
+  font: 700 16px/1.1 var(--h-smal);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.borden small {
+  font: 14px/1.3 var(--h-tekst);
+  color: var(--h-zacht);
+}
+
+/* ---------- Ná: ansichtkaarten en eindstand ---------- */
+
+.ansichten {
+  display: flex;
+  gap: 12px;
+  margin: 0 -16px;
+  padding: 6px 16px 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.ansicht {
+  flex: none;
+  position: relative;
+  width: 64%;
+  max-width: 300px;
+  padding: 8px 8px 34px;
+  border: 0;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 8px 18px -10px rgba(0, 0, 0, 0.3);
+  scroll-snap-align: start;
+  touch-action: manipulation;
+}
+
+.ansicht:nth-child(odd) {
+  transform: rotate(-1deg);
+}
+
+.ansicht:nth-child(even) {
+  transform: rotate(1.4deg);
+}
+
+.ansicht img,
+.ansicht__leeg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--h-sneeuw);
+}
+
+.ansicht__tekst {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  font: italic 15px var(--font-tekst);
+  color: #333;
+}
+
+.home__knop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  border: 2px solid var(--h-inkt);
+  border-radius: 10px;
+  background: none;
+  color: var(--h-inkt);
+  font: 700 17px var(--h-smal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  touch-action: manipulation;
+}
+
+.uitslag {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 3px solid var(--h-inkt);
+}
+
+.uitslag li {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--h-lijn);
+}
+
+.uitslag li.is-wij {
+  background: rgba(9, 159, 196, 0.14);
+}
+
+.uitslag__plek,
+.uitslag__punten {
+  font: 700 22px/1 var(--h-smal);
+  font-variant-numeric: tabular-nums;
+}
+
+.uitslag__wie {
+  font: 600 17px/1.3 var(--h-tekst);
+}
+
+.uitslag__wij {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--h-licht);
+  color: var(--h-inkt);
+  font: 700 12px/1.6 var(--h-smal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+
+/* ---------- Bestaande kaartjes (stemming, foto's, installeren, meldingen) op het papier ---------- */
+
+.inhoud--home .kaartje {
+  background: var(--h-kaart);
+  border-color: var(--h-lijn);
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.inhoud--home .kaartje h2 {
+  font-family: var(--h-smal);
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 370px) {
+  .homekop__titel small {
+    font-size: 19px;
+  }
+
+  .borden small {
+    font-size: 13px;
+  }
+}
