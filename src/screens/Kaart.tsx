@@ -190,7 +190,21 @@ export default function Kaart() {
     return () => document.removeEventListener('keydown', esc)
   }, [sluit])
 
+  // Bij het openen van een blad: de stip boven het blad zetten (zodra we weten hoe hoog het is)
+  const doelBijOpenen = useRef<{ x: number; y: number; zoom: number } | null>(null)
+  useEffect(() => {
+    const d = doelBijOpenen.current
+    if (!bladHoogte || !d) return
+    doelBijOpenen.current = null
+    gaNaar(d, d.zoom)
+  }, [bladHoogte, gaNaar])
+
   const kiesMarker = (id: string) => {
+    const m = markers.find((x) => x.id === id)
+    if (m) doelBijOpenen.current = { x: m.x, y: m.y, zoom: 1 }
+    // Naar iemand anders kijken: niet meer met jezelf meeschuiven
+    if (id !== 'jij') setVolgen(false)
+    setBladHoogte(0)
     if (id === 'jij') setOpen({ soort: 'jij' })
     else setOpen({ soort: 'persoon', id })
   }
@@ -246,14 +260,12 @@ export default function Kaart() {
                 anderen={anderen}
                 nu={nu}
                 onKies={(id) => {
-                  if (id === 'jij') {
-                    setOpen({ soort: 'jij' })
-                    if (mijnStip) gaNaar(mijnStip)
-                    return
-                  }
-                  setOpen({ soort: 'persoon', id })
-                  const p = anderen.find((a) => a.user_id === id)
-                  if (p?.plek) gaNaar(p.plek)
+                  const plek = id === 'jij' ? mijnStip : anderen.find((a) => a.user_id === id)?.plek
+                  if (plek) doelBijOpenen.current = { ...plek, zoom: DICHTBIJ }
+                  if (id !== 'jij') setVolgen(false)
+                  // Het blad wisselt van inhoud (en hoogte): opnieuw meten
+                  setBladHoogte(0)
+                  setOpen(id === 'jij' ? { soort: 'jij' } : { soort: 'persoon', id })
                 }}
                 onSluit={sluit}
                 schakelaar={kanDelen ? <DeelSchakelaar aan={deelAan} naam={naam} onZet={zetDelen} /> : null}
@@ -303,7 +315,7 @@ export default function Kaart() {
           <>
             <button type="button" className={`kaartbalk__knop${deelAan ? ' is-aan' : ''}`} aria-pressed={deelAan} onClick={() => zetDelen(!deelAan)}>
               <Icoon naam="uitzenden" grootte={22} />
-              <span>{deelAan ? 'Je deelt · stop' : 'Delen'}</span>
+              <span>{deelAan ? 'Stop delen' : 'Delen'}</span>
             </button>
             <button
               type="button"
@@ -370,7 +382,10 @@ function GoogleMapsKnop({ plek }: { plek: { lat: number; lon: number } }) {
   return (
     <a className="kaartblad__extern" href={googleMaps(plek)} target="_blank" rel="noopener">
       <Icoon naam="extern" grootte={20} />
-      Precies op Google Maps <small>alleen met bereik</small>
+      <span>
+        Precies op Google Maps
+        <small>alleen met bereik</small>
+      </span>
     </a>
   )
 }
