@@ -16,8 +16,6 @@ const omzetter = maakOmzetter()
 const MAX_AFSTAND_M = 2500
 /** Ouder dan dit (ms): grijs */
 const OUD_MS = 5 * 60_000
-/** Beginbeeld: ingezoomd op het skigebied, zonder de legenda's aan de zijkant van de pistekaart */
-const START = { x: 52, y: 55, zoom: 1.5 }
 /** Zoom bij "Waar ben ik?" en bij iemand uit de lijst */
 const DICHTBIJ = 2.4
 
@@ -236,7 +234,6 @@ export default function Kaart() {
           onMarker={kiesMarker}
           onLeegTik={sluit}
           hint={hint ? 'Knijp of dubbeltik om te zoomen' : null}
-          start={START}
           focus={focus}
           onderMarge={open ? bladHoogte : 0}
           onHandmatig={() => setVolgen(false)}
