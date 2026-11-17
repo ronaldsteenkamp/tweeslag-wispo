@@ -53,6 +53,37 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            // Foto's van de fotomuur (privé-bucket, tijdelijke links). Een foto verandert nooit (elk
+            // pad is uniek), dus cache-first op het pad zonder de token: ook met een nieuwe of
+            // verlopen link staat de foto er meteen, ook bij het openen van de app en zonder bereik.
+            urlPattern: /\/storage\/v1\/object\/sign\/fotos\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tweeslag-fotos',
+              expiration: { maxEntries: 150, maxAgeSeconds: 60 * 24 * 3600, purgeOnQuotaError: true },
+              plugins: [
+                {
+                  // Een <img> vraagt 'no-cors' en krijgt dan een ondoorzichtig antwoord (status 0, ook
+                  // bij een fout). Supabase staat CORS toe, dus zo zien we de echte status.
+                  requestWillFetch: async ({ request }) =>
+                    new Request(request.url, { mode: 'cors', credentials: 'omit' }),
+                  // Alleen echte foto's bewaren, nooit een foutmelding (bijv. een verlopen link)
+                  cacheWillUpdate: async ({ response }) =>
+                    response.status === 200 && (response.headers.get('content-type') ?? '').startsWith('image/')
+                      ? response
+                      : null,
+                },
+                {
+                  cacheKeyWillBeUsed: async ({ request }) => {
+                    const u = new URL(request.url)
+                    u.search = ''
+                    return u.href
+                  },
+                },
+              ],
+            },
+          },
         ],
       },
     }),
