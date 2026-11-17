@@ -1,6 +1,7 @@
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { abonneerBackend, backendIngesteld, backendStand, supabase } from './backend'
+import { lees, schrijf } from './opslag'
 
 /*
  * Fotomuur. Foto's worden in de browser verkleind (max. 1600 px, ~300 kB) plus een kleine
@@ -196,16 +197,35 @@ const wijzigingLuisteraars = new Set<() => void>()
 const meldWijziging = () => wijzigingLuisteraars.forEach((f) => f())
 
 /*
- * Onthouden zolang de app open is, zodat foto's er direct staan als je terugkomt op een scherm
- * (Home wordt bij elke tabwissel opnieuw opgebouwd):
+ * Onthouden, zodat foto's er direct staan als je terugkomt op een scherm (Home wordt bij elke
+ * tabwissel opnieuw opgebouwd) en bij het openen van de app:
  * - de laatst opgehaalde lijst per aantal;
  * - de tijdelijke links per foto. Een nieuwe link is voor de browser een nieuwe afbeelding (die
  *   dan opnieuw laadt), dus een link wordt pas vervangen als hij bijna verloopt.
  */
-const lijstCache = new Map<number, { fotos: Foto[]; meer: boolean }>()
-const linkCache = new Map<string, { url: string; tot: number }>()
+type Lijst = { fotos: Foto[]; meer: boolean }
+type Link = { url: string; tot: number }
+
+/*
+ * Ook bewaard op het apparaat, zodat de foto's er bij het openen van de app meteen staan. De
+ * afbeeldingen zelf bewaart de service worker (op pad, los van de link; zie vite.config.ts), dus
+ * ook een verlopen link toont de foto nog uit de cache tot de nieuwe lijst binnen is.
+ */
+const BEWAAR_SLEUTEL = 'fotocache'
+const BEWAAR_MAX = 60
+
+const bewaard = lees<{ lijsten?: [number, Lijst][]; links?: [string, Link][] }>(BEWAAR_SLEUTEL, {})
+const lijstCache = new Map<number, Lijst>(Array.isArray(bewaard?.lijsten) ? bewaard.lijsten : [])
+const linkCache = new Map<string, Link>(Array.isArray(bewaard?.links) ? bewaard.links : [])
 /** Een link die korter dan dit nog geldig is, wordt vernieuwd (ruim binnen het verversen elke 45 min) */
 const LINK_MARGE = 20 * 60_000
+
+function bewaarCache() {
+  const lijsten = [...lijstCache].filter(([n]) => n <= BEWAAR_MAX)
+  const nodig = new Set(lijsten.flatMap(([, l]) => l.fotos.map((f) => kleinPad(f.pad))))
+  for (const p of linkCache.keys()) if (!nodig.has(p)) linkCache.delete(p)
+  schrijf(BEWAAR_SLEUTEL, { lijsten, links: [...linkCache] })
+}
 
 /** De nieuwste foto's, met tijdelijke links naar de kleine versies. Ververst live. */
 export function useFotos(aantal: number, actief = true) {
@@ -244,6 +264,7 @@ export function useFotos(aantal: number, actief = true) {
       for (const f of zichtbaar) f.klein = linkCache.get(kleinPad(f.pad))?.url
       const heeftMeer = rijen.length > limiet
       lijstCache.set(limiet, { fotos: zichtbaar, meer: heeftMeer })
+      bewaarCache()
       if (weg.current) return
       setFotos(zichtbaar)
       setMeer(heeftMeer)
