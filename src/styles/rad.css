@@ -1,0 +1,936 @@
+/*
+ * De vier raderen (components/rad/): Klos = après-rad, Drankje = pisteboord, Piste = liftbord,
+ * Eigen = kompas. Het casino houdt zijn eigen opmaak (app.css, .casino).
+ * Kleuren uit de huisstijl plus de pistekleuren; contrast tekst/vlak minstens 4,5 : 1.
+ * Alleen `transform` beweegt tijdens het draaien.
+ */
+
+.radm {
+  --navy: #0d0058;
+  --licht: #099fc4;
+  --creme: #fffdf8;
+  --papier: #f5f2ea;
+  --rood: #c4212f;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Barlow, 'Trebuchet MS', sans-serif;
+}
+
+.radm__geluid {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.radm__start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: min(100%, 352px);
+  min-height: 64px;
+  margin-top: 16px;
+  padding: 8px 16px;
+  border: 0;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.radm__start:active {
+  transform: translateY(2px);
+}
+
+.radm__start:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.radm__start b {
+  font: 700 25px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.radm__start span {
+  font: 15px/1.2 Georgia, serif;
+}
+
+.radm__start:focus-visible,
+.radm__geluid:focus-visible {
+  outline: 3px solid var(--licht);
+  outline-offset: 2px;
+}
+
+.radm__tekort {
+  margin: 14px 0 0;
+  font: 700 19px/1.2 'Barlow Condensed', sans-serif;
+  text-align: center;
+}
+
+/* ---------- Rond rad (Klos en Drankje) ---------- */
+
+.radm__wiel {
+  position: relative;
+  width: min(100%, 352px);
+  aspect-ratio: 1;
+  margin-top: 26px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.radm__wiel svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.radm__draai {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.radm__naaf {
+  pointer-events: none;
+}
+
+.radm__vaktekst {
+  font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  font-weight: 700;
+}
+
+.radm__sluier path {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.is-uitslag .radm__sluier path:not(.is-winnaar) {
+  opacity: var(--sluier, 0.8);
+}
+
+.radm__winnaarrand {
+  fill: none;
+  stroke-width: 3.2;
+  stroke-linejoin: round;
+}
+
+/* De wijzer draait om het scharnier bovenaan en buigt mee met de pinnen */
+.radm__wijzer {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: -6.5%;
+  width: 9%;
+  height: 15%;
+  margin-left: -4.5%;
+  transform-origin: 50% 12%;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.radm__wijzer svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* De uitslag hangt voor de onderkant van het rad */
+.radm__uitslag {
+  position: absolute;
+  z-index: 4;
+  left: 6%;
+  right: 6%;
+  bottom: 2%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.radm__uitslag b {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Klos: het après-rad ---- */
+.radm--apres {
+  --sluier: 0.62;
+  margin: 0;
+  padding: 14px 12px 18px;
+  border-radius: 16px;
+  color: #f3ead7;
+  background:
+    radial-gradient(60% 45% at 50% 42%, rgba(255, 236, 190, 0.16), rgba(255, 236, 190, 0) 70%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, rgba(0, 0, 0, 0) 1px 46px),
+    #170e48;
+}
+
+.radm--apres .radm__geluid {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+}
+
+.radm__vraag {
+  align-self: flex-start;
+  margin: 0;
+  font: italic 700 17px/1.2 Georgia, serif;
+  color: #fff1c4;
+}
+
+.radm__vraag small {
+  display: block;
+  font: 700 12px/1.3 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #b7b0e8;
+}
+
+.radm--apres .radm__wiel {
+  width: min(100%, 336px);
+  margin-top: 20px;
+}
+
+.radm--apres .radm__vaktekst {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+}
+
+.radm--apres .radm__sluier path {
+  fill: #1a1240;
+}
+
+.radm--apres .radm__winnaarrand {
+  stroke: #fff1c4;
+  stroke-width: 3;
+}
+
+.radm--apres .radm__wijzer {
+  top: -9%;
+  width: 10%;
+  height: 18%;
+  margin-left: -5%;
+  transform-origin: 50% 14%;
+}
+
+/* Lampjes: staan stil op de lijst; tijdens het draaien loopt het licht rond */
+.radm__lampjes .gloed {
+  fill: url(#radm-gloed);
+  opacity: 0.35;
+}
+
+.radm__lampjes .peer {
+  fill: #8f826a;
+}
+
+.radm__lampjes:not([data-f]) .peer,
+.radm__lampjes[data-f='0'] g:nth-child(3n + 1) .peer,
+.radm__lampjes[data-f='1'] g:nth-child(3n + 2) .peer,
+.radm__lampjes[data-f='2'] g:nth-child(3n + 3) .peer {
+  fill: #fff1c4;
+}
+
+.radm__lampjes:not([data-f]) .gloed,
+.radm__lampjes[data-f='0'] g:nth-child(3n + 1) .gloed,
+.radm__lampjes[data-f='1'] g:nth-child(3n + 2) .gloed,
+.radm__lampjes[data-f='2'] g:nth-child(3n + 3) .gloed {
+  opacity: 1;
+}
+
+.is-uitslag .radm__lampjes {
+  animation: radm-knipper 0.26s steps(2, jump-none) 6;
+}
+
+@keyframes radm-knipper {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Affiche met de uitslag */
+.radm--apres .radm__uitslag {
+  left: 4%;
+  right: 4%;
+  bottom: -2%;
+  padding: 0 0 14px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f3ead7;
+  color: var(--navy);
+  box-shadow: 0 16px 26px -10px rgba(0, 0, 0, 0.6);
+  transform-origin: 50% 0;
+  animation: radm-affiche 0.6s 0.65s cubic-bezier(0.25, 1.55, 0.45, 1) both;
+}
+
+@keyframes radm-affiche {
+  from {
+    opacity: 0;
+    transform: rotate(-1.5deg) scaleY(0.2);
+  }
+  to {
+    transform: rotate(-1.5deg);
+  }
+}
+
+.radm--apres .radm__uitslag small {
+  align-self: stretch;
+  padding: 7px 10px 6px;
+  background: #b3202c;
+  color: #f3ead7;
+  font: 700 13px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.radm--apres .radm__uitslag b {
+  margin: 8px 12px 0;
+  font: italic 700 42px/1.02 Georgia, serif;
+}
+
+.radm--apres .radm__uitslag b.is-lang {
+  font-size: 25px;
+  line-height: 1.15;
+}
+
+.radm--apres .radm__uitslag p {
+  margin: 6px 14px 0;
+  font: 16px/1.35 Georgia, serif;
+}
+
+/* Starter: een rood bierviltje */
+.radm--apres .radm__start {
+  position: relative;
+  z-index: 5;
+  width: min(100%, 336px);
+  margin-top: 18px;
+  border-radius: 999px;
+  background: #b3202c;
+  color: #f3ead7;
+  box-shadow:
+    inset 0 0 0 3px #b3202c,
+    inset 0 0 0 4.5px rgba(243, 234, 215, 0.7),
+    0 4px 0 #6e121a;
+}
+
+.radm--apres .radm__start b {
+  font: italic 700 24px/1.05 Georgia, serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.radm--apres .radm__start span {
+  font: 700 13px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.radm--apres .radm__start:focus-visible {
+  outline-color: #fff1c4;
+}
+
+/* ---- Drankje: het pisteboord (emaille) ---- */
+.radm--pisteboord {
+  color: var(--navy);
+}
+
+.radm--pisteboord .radm__geluid {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  background: var(--creme);
+  border-color: #c9c2b1;
+}
+
+.radm--pisteboord .radm__wiel::before {
+  content: '';
+  position: absolute;
+  inset: 3%;
+  border-radius: 50%;
+  box-shadow:
+    0 16px 26px -10px rgba(13, 0, 88, 0.55),
+    0 3px 0 rgba(13, 0, 88, 0.25);
+}
+
+.radm--pisteboord .radm__vaktekst {
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.radm--pisteboord .radm__sluier path {
+  fill: #b9bccb;
+}
+
+.radm--pisteboord .radm__winnaarrand {
+  stroke: var(--creme);
+}
+
+/* Een pistebord dat voor het rad komt hangen, in de kleur van het winnende vak */
+.radm--pisteboord .radm__uitslag {
+  left: 7%;
+  right: 7%;
+  bottom: 3%;
+  gap: 2px;
+  padding: 12px 14px 14px;
+  border-radius: 12px;
+  background: var(--kleur, var(--navy));
+  color: var(--tekst, #fff);
+  box-shadow:
+    inset 0 0 0 3px var(--kleur, var(--navy)),
+    inset 0 0 0 5px var(--rand, #fffdf8),
+    0 14px 24px -10px rgba(13, 0, 88, 0.6);
+  transform-origin: 50% -40px;
+  animation: radm-bord 0.55s 0.38s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes radm-bord {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(-2.5deg);
+  }
+}
+
+.radm--pisteboord .radm__uitslag small {
+  font: 700 14px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.radm--pisteboord .radm__uitslag b {
+  font: 700 40px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.radm--pisteboord .radm__uitslag b.is-lang {
+  font-size: 26px;
+  line-height: 1.08;
+}
+
+.radm--pisteboord .radm__uitslag p {
+  margin-top: 4px;
+  font: 16px/1.35 Georgia, serif;
+}
+
+/* Starter: een geëmailleerd bordje */
+.radm--pisteboord .radm__start {
+  border-radius: 10px;
+  background: var(--navy);
+  color: #fff;
+  box-shadow:
+    inset 0 0 0 3px var(--navy),
+    inset 0 0 0 5px rgba(255, 253, 248, 0.85),
+    0 3px 0 #05002e;
+}
+
+.radm--pisteboord .radm__start span {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---------- Piste: het liftbord ---------- */
+.liftbord {
+  --vak: 54px;
+  width: min(100%, 380px);
+  padding: 10px 12px 14px;
+  border-radius: 14px;
+  background: var(--navy);
+  color: var(--creme);
+  box-shadow:
+    inset 0 0 0 2px #2a2490,
+    0 14px 24px -12px rgba(13, 0, 88, 0.6);
+}
+
+.liftbord__kop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 2px 6px;
+  font: 700 15px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.liftbord__naam::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--licht);
+  box-shadow: 0 0 8px var(--licht);
+  vertical-align: 1px;
+}
+
+.liftbord__rij {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a9a6e6;
+}
+
+.liftbord .radm__geluid {
+  color: var(--creme);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.liftbord__venster {
+  position: relative;
+  height: calc(var(--vak) * 5);
+  overflow: hidden;
+  border-radius: 8px;
+  background: #05002e;
+  perspective: 1100px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.liftbord__trommel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--vak);
+  margin-top: calc(var(--vak) / -2);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.liftbord__bordje {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 44px 0 40px;
+  background: var(--navy);
+  border-top: 1px solid #2a2490;
+  border-bottom: 1px solid #05002e;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.liftbord__bordje:nth-child(even) {
+  background: #17117a;
+}
+
+.liftbord__bordje i {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  border-radius: 4px;
+  background: var(--chip);
+  color: var(--chiptekst);
+  font: 700 17px/1 'Barlow Condensed', sans-serif;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.liftbord__bordje b {
+  min-width: 0;
+  font: 700 27px/1.05 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liftbord__bordje b.is-lang {
+  display: -webkit-box;
+  font-size: 19px;
+  line-height: 1.08;
+  white-space: normal;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.liftbord__bordje.is-winnaar {
+  background: var(--creme);
+}
+
+.liftbord__bordje.is-winnaar b {
+  color: var(--navy);
+}
+
+/* Schaduw boven en onder: de trommel buigt weg (staat stil) */
+.liftbord__venster::before,
+.liftbord__venster::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  height: 40%;
+  pointer-events: none;
+}
+
+.liftbord__venster::before {
+  top: 0;
+  background: linear-gradient(#05002e, rgba(5, 0, 46, 0.55) 45%, rgba(5, 0, 46, 0));
+}
+
+.liftbord__venster::after {
+  bottom: 0;
+  background: linear-gradient(rgba(5, 0, 46, 0), rgba(5, 0, 46, 0.55) 55%, #05002e);
+}
+
+.liftbord__kader {
+  position: absolute;
+  z-index: 3;
+  left: 6px;
+  right: 6px;
+  top: 50%;
+  height: calc(var(--vak) + 6px);
+  margin-top: calc(var(--vak) / -2 - 3px);
+  border: 2px solid var(--licht);
+  border-radius: 6px;
+  pointer-events: none;
+  box-shadow: 0 0 0 999px rgba(5, 0, 46, 0);
+  transition:
+    box-shadow 0.35s,
+    border-color 0.35s;
+}
+
+.is-uitslag .liftbord__kader {
+  border-color: var(--creme);
+  box-shadow: 0 0 0 999px rgba(5, 0, 46, 0.55);
+}
+
+.liftbord__tong {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  width: 22px;
+  height: 16px;
+  margin-top: -8px;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.liftbord__tong--l {
+  left: -2px;
+  transform-origin: 0 50%;
+}
+
+.liftbord__tong--r {
+  right: -2px;
+  transform-origin: 100% 50%;
+}
+
+.liftbord__tong svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.liftbord__omroep {
+  min-height: 104px;
+  padding: 10px 4px 0;
+  text-align: center;
+  perspective: 600px;
+}
+
+.liftbord__omroep small {
+  display: block;
+  font: 700 13px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a9a6e6;
+}
+
+.liftbord__omroep b {
+  display: block;
+  margin-top: 4px;
+  font: 700 40px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  transform-origin: 50% 0;
+}
+
+.liftbord__omroep b.is-lang {
+  font-size: 25px;
+  line-height: 1.1;
+}
+
+.liftbord__omroep p {
+  margin: 6px 0 0;
+  font: 16px/1.35 Georgia, serif;
+  color: rgba(255, 253, 248, 0.92);
+}
+
+.liftbord__omroep.is-nieuw b {
+  animation: radm-klep 0.5s 0.25s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.liftbord__omroep.is-nieuw p {
+  animation: radm-in 0.4s 0.5s ease-out both;
+}
+
+@keyframes radm-klep {
+  from {
+    transform: rotateX(-95deg);
+    opacity: 0.2;
+  }
+}
+
+@keyframes radm-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.radm--liftbord .radm__start {
+  width: min(100%, 380px);
+  margin-top: 14px;
+  border-radius: 10px;
+  background: var(--licht);
+  color: var(--navy);
+  box-shadow: 0 3px 0 #06708b;
+}
+
+/* ---------- Eigen: het kompas ---------- */
+.kompasplaat {
+  position: relative;
+  width: min(100%, 372px);
+  padding: 34px 14px 16px;
+  border-radius: 18px;
+  color: var(--navy);
+  background: linear-gradient(180deg, rgba(9, 159, 196, 0.16), rgba(9, 159, 196, 0.08));
+  box-shadow:
+    inset 0 0 0 1.5px rgba(9, 159, 196, 0.55),
+    0 10px 22px -14px rgba(13, 0, 88, 0.5);
+}
+
+/* Liniaal op de grondplaat */
+.kompasplaat::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 10px;
+  height: 12px;
+  background:
+    repeating-linear-gradient(90deg, rgba(13, 0, 88, 0.55) 0 1px, transparent 1px 8px) 0 0 / 100% 6px no-repeat,
+    repeating-linear-gradient(90deg, rgba(13, 0, 88, 0.7) 0 1.5px, transparent 1.5px 40px) 0 0 / 100% 12px no-repeat;
+}
+
+.kompasplaat__pijl {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 0;
+  height: 0;
+  margin-left: -9px;
+  border: 9px solid transparent;
+  border-top: 0;
+  border-bottom: 14px solid var(--rood);
+}
+
+.kompasplaat__kop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font: 700 13px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #4b4e6b;
+}
+
+.kompasplaat .radm__geluid {
+  color: var(--navy);
+  background: var(--creme);
+  border-color: rgba(13, 0, 88, 0.3);
+}
+
+.kompas {
+  position: relative;
+  width: min(100%, 300px);
+  margin: 0 auto;
+  aspect-ratio: 1;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.kompas > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.kompas__windroos {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+}
+
+.kompas__optie {
+  position: absolute;
+  display: -webkit-box;
+  padding: 3px 6px;
+  border-radius: 8px;
+  overflow: hidden;
+  color: var(--creme);
+  font: 600 var(--maat, 16px) / 1.12 Barlow, sans-serif;
+  text-align: center;
+  overflow-wrap: anywhere;
+  transform: translate(-50%, -50%);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  transition:
+    background 0.3s,
+    color 0.3s,
+    opacity 0.3s;
+  pointer-events: none;
+}
+
+.kompas.is-uitslag .kompas__optie {
+  opacity: 0.38;
+}
+
+.kompas.is-uitslag .kompas__optie.is-winnaar {
+  z-index: 2;
+  opacity: 1;
+  background: var(--creme);
+  color: var(--navy);
+  box-shadow: 0 0 0 2px var(--rood);
+}
+
+.kompas__naald {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+}
+
+.kompas__naald svg {
+  width: 100%;
+  height: 100%;
+}
+
+.kompas__koers {
+  min-height: 84px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--navy);
+  color: #fff;
+  text-align: center;
+}
+
+.kompas__koers small {
+  display: block;
+  font: 700 13px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9fe3f4;
+}
+
+.kompas__koers b {
+  display: block;
+  margin-top: 4px;
+  font: 700 34px/1.05 'Barlow Condensed', sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.kompas__koers b.is-lang {
+  font-size: 24px;
+}
+
+.kompas__koers p {
+  margin: 4px 0 0;
+  font: 15px/1.35 Georgia, serif;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.kompas__koers.is-nieuw b {
+  animation: radm-koers 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+@keyframes radm-koers {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+}
+
+.radm--kompas .radm__start {
+  width: min(100%, 372px);
+  margin-top: 14px;
+  border: 2px solid var(--navy);
+  border-radius: 999px;
+  background: var(--creme);
+  color: var(--navy);
+  box-shadow: 0 3px 0 var(--navy);
+}
+
+.radm--kompas .radm__start span {
+  color: #4b4e6b;
+}
+
+/* Pistekleur in de instellingen (in plaats van een emoji-bolletje) */
+.pistebol {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1.5px #fff,
+    0 0 0 2.5px rgba(0, 0, 0, 0.15);
+}
+
+.pistebol--groen {
+  background: #1e7a4c;
+}
+
+.pistebol--blauw {
+  background: #1d5fc4;
+}
+
+.pistebol--rood {
+  background: #c4212f;
+}
+
+.pistebol--zwart {
+  background: #17171c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radm *,
+  .radm *::before,
+  .radm *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
