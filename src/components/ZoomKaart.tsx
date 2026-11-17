@@ -9,8 +9,10 @@ interface Stand {
 
 /** Hoe ver (px) je mag bewegen voordat een aanraking slepen wordt in plaats van tikken */
 const SLEEPDREMPEL = 8
+/** Mensen die op het scherm dichter bij elkaar staan dan dit (px) worden één bolletje */
+const SAMEN_PX = 40
 
-/** Een stip op de kaart (bijv. iemand die zijn locatie deelt). x en y in procenten. */
+/** Een stip op de kaart (iemand die zijn locatie deelt, of jij). x en y in procenten. */
 export interface KaartMarker {
   id: string
   x: number
@@ -19,13 +21,20 @@ export interface KaartMarker {
   label: string
   /** Letters in de stip */
   kort: string
-  kleur: string
-  /** Eigen stip: met witte ring */
+  /** Jouw eigen stip: navy met lichtblauwe ring en een cirkel "ongeveer hier"; doet niet mee in bolletjes */
   eigen?: boolean
-  /** Oude positie: vager */
+  /** Oude positie: grijs met stippelrand */
   oud?: boolean
   /** Uitleg voor schermlezers */
   beschrijving: string
+}
+
+/** Ga naar een plek (procenten); zoom = minimaal zoveel keer "passend". Nieuwe sleutel = opnieuw gaan. */
+export interface KaartFocus {
+  x: number
+  y: number
+  zoom: number
+  sleutel: number
 }
 
 interface Props {
@@ -34,28 +43,69 @@ interface Props {
   bron: string
   /** Tekst als de afbeelding (nog) niet te laden is */
   ontbreekt: string
+  /** Volgorde = voorrang voor de naam als het druk wordt (eerst = belangrijkst) */
   markers: KaartMarker[]
   gekozen: string | null
   onMarker: (id: string) => void
   /** Tik op een lege plek van de kaart */
   onLeegTik: () => void
-  hint: string
+  /** Eenmalige uitleg over zoomen (null = niet tonen) */
+  hint: string | null
+  /** Beginbeeld: midden in procenten en zoom t.o.v. passend */
+  start?: { x: number; y: number; zoom: number }
+  focus?: KaartFocus | null
+  /** Ruimte (px) die onderaan bedekt is (onderblad): daar niet naartoe centreren */
+  onderMarge?: number
+  /** Je schuift of zoomt zelf (bijvoorbeeld: stop met volgen) */
+  onHandmatig?: () => void
+  /** Halve breedte (in pixels van de afbeelding) van de cirkel "ongeveer hier" rond je eigen stip */
+  onzekerheidPx?: number
+}
+
+interface Groep {
+  id: string
+  x: number
+  y: number
+  leden: KaartMarker[]
 }
 
 /** Kaart met knijpen om te zoomen, slepen, dubbeltikken (of scrollen) en stippen die meebewegen */
-export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarker, onLeegTik, hint: hintTekst }: Props) {
+export function ZoomKaart({
+  src,
+  alt,
+  bron,
+  ontbreekt,
+  markers,
+  gekozen,
+  onMarker,
+  onLeegTik,
+  hint: hintTekst,
+  start,
+  focus,
+  onderMarge = 0,
+  onHandmatig,
+  onzekerheidPx = 50,
+}: Props) {
   const vak = useRef<HTMLDivElement>(null)
   const beeld = useRef<HTMLImageElement>(null)
   const laag = useRef<HTMLDivElement>(null)
   const stand = useRef<Stand>({ s: 1, x: 0, y: 0 })
-  const pas = useRef({ b: 0, h: 0, max: 4 }) // afmeting bij zoom 1
+  const pas = useRef({ b: 0, h: 0, max: 4, schaal: 1 }) // afmeting bij zoom 1
   const vingers = useRef(new Map<number, { x: number; y: number }>())
   const gebaar = useRef<{ start: Stand; afstand: number; midden: { x: number; y: number } } | null>(null)
   const laatsteTik = useRef({ t: 0, x: 0, y: 0 })
-  // De aanraking die (misschien) een tik is: waar en wanneer hij begon, en op welke pin
-  const tik = useRef<{ x: number; y: number; t: number; marker: string | null; gesleept: boolean } | null>(null)
+  // De aanraking die (misschien) een tik is: waar en wanneer hij begon, en op welke stip
+  const tik = useRef<{ x: number; y: number; t: number; marker: string | null; groep: string | null; gesleept: boolean } | null>(null)
   const [geladen, setGeladen] = useState<'bezig' | 'ok' | 'fout'>('bezig')
   const [hint, setHint] = useState(true)
+  // Zoom in stapjes: bepaalt welke mensen samen een bolletje worden (niet bij elke pixel opnieuw)
+  const [zoomTrap, setZoomTrap] = useState(0)
+  const trap = useRef(0)
+  const begonnen = useRef(false)
+  const onderRef = useRef(onderMarge)
+  onderRef.current = onderMarge
+  const handmatig = useRef(onHandmatig)
+  handmatig.current = onHandmatig
 
   const teken = useCallback(() => {
     const { s, x, y } = stand.current
@@ -65,8 +115,14 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
     if (beeld.current) beeld.current.style.transform = t
     if (laag.current) {
       laag.current.style.transform = t
-      // Pins tegengeschaald, zodat ze op elk zoomniveau even groot blijven
+      // Stippen tegengeschaald, zodat ze op elk zoomniveau even groot blijven
       laag.current.style.setProperty('--tegen', String(1 / s))
+      laag.current.style.setProperty('--s', String(s))
+    }
+    const nieuw = Math.round(Math.log2(s) * 4)
+    if (nieuw !== trap.current) {
+      trap.current = nieuw
+      setZoomTrap(nieuw)
     }
   }, [])
 
@@ -75,11 +131,13 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
     const v = vak.current
     if (!v) return n
     const { clientWidth: vb, clientHeight: vh } = v
+    const onder = Math.min(onderRef.current, vh * 0.6)
     const s = Math.min(Math.max(n.s, 1), pas.current.max)
     const b = pas.current.b * s
     const h = pas.current.h * s
     const x = b <= vb ? (vb - b) / 2 : Math.min(0, Math.max(vb - b, n.x))
-    const y = h <= vh ? (vh - h) / 2 : Math.min(0, Math.max(vh - h, n.y))
+    // Met een onderblad open mag de kaart verder omhoog, zodat ook de onderkant erboven kan komen
+    const y = h <= vh - onder ? (vh - onder - h) / 2 : Math.min(0, Math.max(vh - onder - h, n.y))
     return { s, x, y }
   }, [])
 
@@ -105,6 +163,18 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
     [zet],
   )
 
+  /** Zet punt (procenten) in het midden van het zichtbare deel, bij zoom s */
+  const centreer = useCallback(
+    (px: number, py: number, s: number, zacht = false) => {
+      const v = vak.current
+      if (!v) return
+      const z = Math.min(Math.max(s, 1), pas.current.max)
+      const zichtbaar = v.clientHeight - Math.min(onderRef.current, v.clientHeight * 0.6)
+      zet({ s: z, x: v.clientWidth / 2 - (px / 100) * pas.current.b * z, y: zichtbaar / 2 - (py / 100) * pas.current.h * z }, zacht)
+    },
+    [zet],
+  )
+
   const passen = useCallback(() => {
     const v = vak.current
     const el = beeld.current
@@ -113,16 +183,21 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
     pas.current = {
       b: el.naturalWidth * schaal,
       h: el.naturalHeight * schaal,
-      // Inzoomen tot twee keer de echte resolutie van de afbeelding, minstens 4x
-      max: Math.max(4, 2 / schaal),
+      // Niet verder inzoomen dan de echte resolutie van de afbeelding: daarna wordt hij korrelig
+      max: Math.max(2, 1 / schaal),
+      schaal,
     }
     for (const d of [el, laag.current]) {
       if (!d) continue
       d.style.width = `${pas.current.b}px`
       d.style.height = `${pas.current.h}px`
     }
-    zet(stand.current)
-  }, [zet])
+    laag.current?.style.setProperty('--pxschaal', String(schaal))
+    if (!begonnen.current && start) {
+      begonnen.current = true
+      centreer(start.x, start.y, start.zoom)
+    } else zet(stand.current)
+  }, [zet, centreer, start])
 
   useEffect(() => {
     // Opnieuw passen als het kaartvak van formaat verandert (ook als het bij het laden van de
@@ -148,6 +223,7 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
       e.preventDefault()
       const r = v.getBoundingClientRect()
       zoomOm(stand.current.s * Math.exp(-e.deltaY * 0.0025), e.clientX - r.left, e.clientY - r.top)
+      handmatig.current?.()
     }
     v.addEventListener('wheel', wiel, { passive: false })
     return () => {
@@ -157,10 +233,24 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
     }
   }, [zoomOm])
 
-  /** Zoomknoppen (met handschoenen gaat knijpen lastig): rond het midden van het beeld */
+  // Naar een plek (Waar ben ik, iemand in de lijst)
+  useEffect(() => {
+    if (!focus || geladen !== 'ok') return
+    centreer(focus.x, focus.y, Math.max(stand.current.s, focus.zoom), true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus?.sleutel, geladen])
+
+  // Onderblad open of dicht: opnieuw begrenzen
+  useEffect(() => {
+    if (geladen === 'ok') zet(stand.current)
+  }, [onderMarge, geladen, zet])
+
+  /** Zoomknoppen (met handschoenen gaat knijpen lastig): rond het midden van het zichtbare deel */
   const zoomMidden = (factor: number) => {
     const v = vak.current
-    if (v) zoomOm(stand.current.s * factor, v.clientWidth / 2, v.clientHeight / 2, true)
+    if (!v) return
+    zoomOm(stand.current.s * factor, v.clientWidth / 2, (v.clientHeight - Math.min(onderMarge, v.clientHeight * 0.6)) / 2, true)
+    onHandmatig?.()
   }
 
   const punt = (e: AanwijsEvent) => {
@@ -187,8 +277,10 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
     vingers.current.set(e.pointerId, p)
     setHint(false)
     // Eén vinger: misschien een tik. Een tweede vinger maakt er een knijpgebaar van.
-    const marker = (e.target as HTMLElement).closest?.('[data-marker]')?.getAttribute('data-marker') ?? null
-    tik.current = vingers.current.size === 1 ? { ...p, t: performance.now(), marker, gesleept: false } : null
+    const doel = e.target as HTMLElement
+    const marker = doel.closest?.('[data-marker]')?.getAttribute('data-marker') ?? null
+    const groep = doel.closest?.('[data-groep]')?.getAttribute('data-groep') ?? null
+    tik.current = vingers.current.size === 1 ? { ...p, t: performance.now(), marker, groep, gesleept: false } : null
     startGebaar()
   }
 
@@ -206,6 +298,7 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
       const cx = (g.midden.x - g.start.x) / g.start.s
       const cy = (g.midden.y - g.start.y) / g.start.s
       zet({ s, x: m.x - cx * s, y: m.y - cy * s })
+      onHandmatig?.()
       return
     }
     const t = tik.current
@@ -214,6 +307,7 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
       if (Math.hypot(nu.x - t.x, nu.y - t.y) < SLEEPDREMPEL) return
       // Vanaf hier slepen; de kaart haalt je vinger in, zodat het punt eronder blijft
       t.gesleept = true
+      onHandmatig?.()
     }
     zet({ s: g.start.s, x: g.start.x + p[0].x - g.midden.x, y: g.start.y + p[0].y - g.midden.y })
   }
@@ -234,77 +328,148 @@ export function ZoomKaart({ src, alt, bron, ontbreekt, markers, gekozen, onMarke
       onMarker(t.marker)
       return
     }
+    if (t.groep) {
+      laatsteTik.current = { t: 0, x: 0, y: 0 }
+      openGroep(t.groep)
+      return
+    }
     onLeegTik()
     // Dubbeltik: inzoomen op die plek, of terug naar het hele overzicht
     const nu = performance.now()
     const vorige = laatsteTik.current
     if (nu - vorige.t < 300 && Math.hypot(p.x - vorige.x, p.y - vorige.y) < 30) {
-      if (stand.current.s > 1.05) zet({ s: 1, x: 0, y: 0 }, true)
-      else zoomOm(2.5, p.x, p.y, true)
+      if (stand.current.s > 2.6) zet({ s: 1, x: 0, y: 0 }, true)
+      else zoomOm(stand.current.s * 2.2, p.x, p.y, true)
       laatsteTik.current = { t: 0, x: 0, y: 0 }
+      onHandmatig?.()
     } else {
       laatsteTik.current = { t: nu, x: p.x, y: p.y }
     }
   }
 
+  /* ---------- Bolletjes en namen ---------- */
+  // Op het scherm: 1% van de kaart is zoveel pixels (bij de huidige zoomtrap)
+  const s = 2 ** (zoomTrap / 4)
+  const pxX = (pas.current.b * s) / 100
+  const pxY = (pas.current.h * s) / 100
+  const groepen: Groep[] = []
+  for (const m of markers) {
+    if (m.eigen) continue
+    const g = groepen.find((g) => Math.hypot((g.x - m.x) * pxX, (g.y - m.y) * pxY) < SAMEN_PX)
+    if (g) {
+      g.leden.push(m)
+      g.x += (m.x - g.x) / g.leden.length
+      g.y += (m.y - g.y) / g.leden.length
+    } else groepen.push({ id: `groep:${m.id}`, x: m.x, y: m.y, leden: [m] })
+  }
+  // Wie de gekozen stip bevat, blijft los te zien
+  const losseGroepen = groepen.flatMap((g) => (g.leden.some((l) => l.id === gekozen) ? g.leden.map((l) => ({ ...g, id: `groep:${l.id}`, x: l.x, y: l.y, leden: [l] })) : [g]))
+  const eigen = markers.find((m) => m.eigen)
+  // Namen die over een andere stip of naam heen zouden vallen, laten we weg (voorrang: jij, gekozen, de rest op volgorde)
+  const vakken: { x0: number; x1: number; y0: number; y1: number }[] = []
+  const metNaam = new Set<string>()
+  const volgorde = [...(eigen ? [{ id: eigen.id, x: eigen.x, y: eigen.y, naam: eigen.label }] : [])]
+  for (const g of [...losseGroepen].sort((a, b) => Number(b.leden.some((l) => l.id === gekozen)) - Number(a.leden.some((l) => l.id === gekozen))))
+    volgorde.push({ id: g.id, x: g.x, y: g.y, naam: g.leden.map((l) => l.label).join(', ') })
+  for (const v of volgorde) vakken.push({ x0: v.x * pxX - 18, x1: v.x * pxX + 18, y0: v.y * pxY - 18, y1: v.y * pxY + 18 })
+  for (const v of volgorde) {
+    const b = v.naam.length * 7 + 14
+    const n = { x0: v.x * pxX - b / 2, x1: v.x * pxX + b / 2, y0: v.y * pxY + 16, y1: v.y * pxY + 36 }
+    const eigenVak = { x0: v.x * pxX - 18, y0: v.y * pxY - 18 }
+    const botst = vakken.some((o) => !(o.x0 === eigenVak.x0 && o.y0 === eigenVak.y0) && n.x0 < o.x1 && n.x1 > o.x0 && n.y0 < o.y1 && n.y1 > o.y0)
+    if (!botst) {
+      metNaam.add(v.id)
+      vakken.push(n)
+    }
+  }
+
+  function openGroep(id: string) {
+    const g = losseGroepen.find((x) => x.id === id)
+    if (!g) return
+    if (g.leden.length === 1) return onMarker(g.leden[0].id)
+    // Bolletje: inzoomen tot ze uit elkaar gaan
+    centreer(g.x, g.y, stand.current.s * 2.5, true)
+    onHandmatig?.()
+  }
+
   return (
-    <>
-      <div
-        ref={vak}
-        className="kaartvak"
-        data-uitgezoomd=""
-        onPointerDown={onDown}
-        onPointerMove={onMove}
-        onPointerUp={onUp}
-        onPointerCancel={onUp}
-      >
-        <img
-          ref={beeld}
-          src={src}
-          alt={alt}
-          draggable={false}
-          className="kaartvak__beeld"
-          onLoad={() => {
-            setGeladen('ok')
-            passen()
-          }}
-          onError={() => setGeladen('fout')}
-        />
-        <div ref={laag} className="kaartvak__laag" hidden={geladen !== 'ok'}>
-          {markers.map((m) => (
+    <div
+      ref={vak}
+      className="kaartvak"
+      data-uitgezoomd=""
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+    >
+      <img
+        ref={beeld}
+        src={src}
+        alt={alt}
+        draggable={false}
+        className="kaartvak__beeld"
+        onLoad={() => {
+          setGeladen('ok')
+          passen()
+        }}
+        onError={() => setGeladen('fout')}
+      />
+      <div ref={laag} className="kaartvak__laag" hidden={geladen !== 'ok'} style={{ ['--onzeker' as string]: `${onzekerheidPx * 2}px` }}>
+        {losseGroepen.map((g) => {
+          const m = g.leden[0]
+          const samen = g.leden.length > 1
+          return (
             <button
-              key={m.id}
+              key={g.id}
               type="button"
-              data-marker={m.id}
-              className={`stip${m.id === gekozen ? ' is-gekozen' : ''}${m.eigen ? ' is-eigen' : ''}${m.oud ? ' is-oud' : ''}`}
-              style={{ left: `${m.x}%`, top: `${m.y}%`, ['--kleur' as string]: m.kleur }}
-              aria-label={m.beschrijving}
+              data-groep={g.id}
+              className={`stip${samen ? ' stip--samen' : ''}${!samen && m.id === gekozen ? ' is-gekozen' : ''}${!samen && m.oud ? ' is-oud' : ''}`}
+              style={{ left: `${g.x}%`, top: `${g.y}%` }}
+              aria-label={samen ? `${g.leden.length} mensen: ${g.leden.map((l) => l.label).join(', ')}. Inzoomen.` : m.beschrijving}
               // Alleen voor het toetsenbord; tikken handelt het kaartvak af (zie onUp)
-              onClick={(e) => e.detail === 0 && onMarker(m.id)}
+              onClick={(e) => e.detail === 0 && openGroep(g.id)}
             >
               <span className="stip__rondje" aria-hidden="true">
-                {m.kort}
+                {samen ? g.leden.length : m.kort}
               </span>
-              <span className="stip__naam" aria-hidden="true">
-                {m.label}
-              </span>
+              {metNaam.has(g.id) && (
+                <span className="stip__naam" aria-hidden="true">
+                  {samen ? g.leden.map((l) => l.label).join(', ') : m.label}
+                </span>
+              )}
             </button>
-          ))}
-        </div>
-        {geladen === 'fout' && <p className="kaartvak__melding">{ontbreekt}</p>}
-        {geladen === 'ok' && hint && <p className="kaartvak__hint">{hintTekst}</p>}
-        {geladen === 'ok' && <p className="kaartvak__bron">{bron}</p>}
-        {geladen === 'ok' && (
-          <div className="kaartvak__zoom">
-            <button type="button" className="kaartvak__zoomknop" aria-label="Inzoomen" onClick={() => zoomMidden(1.6)}>
-              <Icoon naam="plus" />
-            </button>
-            <button type="button" className="kaartvak__zoomknop" aria-label="Uitzoomen" onClick={() => zoomMidden(1 / 1.6)}>
-              <Icoon naam="min" />
-            </button>
-          </div>
+          )
+        })}
+        {eigen && (
+          <button
+            type="button"
+            data-marker={eigen.id}
+            className={`stip stip--jij${eigen.id === gekozen ? ' is-gekozen' : ''}${eigen.oud ? ' is-oud' : ''}`}
+            style={{ left: `${eigen.x}%`, top: `${eigen.y}%` }}
+            aria-label={eigen.beschrijving}
+            onClick={(e) => e.detail === 0 && onMarker(eigen.id)}
+          >
+            <span className="stip__onzeker" aria-hidden="true" />
+            <span className="stip__rondje" aria-hidden="true" />
+            <span className="stip__naam" aria-hidden="true">
+              {eigen.label}
+            </span>
+          </button>
         )}
       </div>
-    </>
+      {geladen === 'fout' && <p className="kaartvak__melding">{ontbreekt}</p>}
+      {geladen === 'ok' && hint && hintTekst && <p className="kaartvak__hint">{hintTekst}</p>}
+      {geladen === 'ok' && <p className="kaartvak__bron">{bron}</p>}
+      {geladen === 'ok' && (
+        <div className="kaartvak__zoom" style={{ bottom: Math.min(onderMarge, 9999) + 12 }}>
+          <button type="button" className="kaartvak__zoomknop" aria-label="Inzoomen" onClick={() => zoomMidden(1.6)}>
+            <Icoon naam="plus" />
+          </button>
+          <button type="button" className="kaartvak__zoomknop" aria-label="Uitzoomen" onClick={() => zoomMidden(1 / 1.6)}>
+            <Icoon naam="min" />
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
