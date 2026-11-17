@@ -37,67 +37,111 @@
 
 /* ---------- Kop ---------- */
 
-/* De balkplek erboven trekt de kop helemaal naar boven (zoals bij SchermKop); hier de ruimte terug */
+/* Donkerblauw zoals de SchermKop van de andere schermen (zelfde lettertypes en maten), met het
+   hoogteprofiel als besneeuwde berg; het dal onderaan loopt over in het papier van de lijst.
+   De balkplek erboven trekt de kop helemaal naar boven (zoals bij SchermKop); hier de ruimte terug. */
 .pakkop {
-  padding-top: calc(var(--boven) + 18px);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin: 0 -16px;
+  padding: calc(var(--boven) + 16px) 20px 0;
+  background: var(--hero);
+  color: var(--hero-tekst);
+}
+
+/* Een paar sterren in de lucht */
+.pakkop::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 40% 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1.4px 1.4px at 18% 22%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.2px 1.2px at 64% 14%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1.6px 1.6px at 82% 38%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1.1px 1.1px at 40% 34%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1.3px 1.3px at 92% 10%, rgba(255, 255, 255, 0.45), transparent);
 }
 
 .pakkop__rij {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.pakkop__boven,
-.pakkop__label {
-  font: 600 13px/1 var(--pak-smal);
-  letter-spacing: 0.14em;
+.pakkop__boven {
+  font-family: var(--font-kop);
+  font-size: 0.8rem;
+  font-weight: 700;
   text-transform: uppercase;
-  color: var(--pak-zacht);
+  letter-spacing: 0.06em;
+  color: #9fe3f4; /* zoals .schermkop__boven */
 }
 
 .pakkop__titel {
-  margin-top: 6px;
-  font: 700 46px/0.9 var(--pak-smal);
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
+  margin-top: 4px;
+  font-family: var(--font-kop);
+  font-size: 1.85rem;
+  line-height: 1.1;
 }
 
+/* Hoogte in het glazen vakje rechts, zoals .schermkop__rechts */
 .pakkop__hoogte {
-  font: 600 44px/0.9 var(--pak-smal);
+  flex: none;
+  min-width: 76px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font: 600 1.6rem/1 var(--pak-smal);
   font-variant-numeric: tabular-nums;
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
 }
 
 .pakkop__hoogte small {
-  margin-left: 2px;
-  font-size: 20px;
-  color: var(--pak-zacht);
+  margin-left: 1px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .pakkop__label {
   display: block;
   margin-bottom: 4px;
-  font-size: 12px;
+  font-family: var(--font-kop);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
 }
 
+/* Status nog op het blauw, boven de berg (staat in de html erna, voor de schermlezer) */
 .pakkop__status {
-  margin-top: 6px;
+  order: 1;
+  margin-top: 10px;
   min-height: 2.8em;
-  font: 400 16px/1.4 var(--pak-tekst);
+  font-family: var(--font-tekst);
+  font-size: 1rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .pakkop__status strong {
-  font-weight: 600;
+  color: #fff;
 }
 
 /* ---------- Hoogteprofiel ---------- */
 
 .pakprofiel {
+  order: 2;
   position: relative;
-  margin: 10px -16px 0;
+  margin: 6px -20px 0;
 }
 
 .pakprofiel svg {
@@ -106,8 +150,8 @@
   height: auto;
 }
 
-.pakprofiel__berg { fill: var(--pak-gletsjer); }
-.pakprofiel__dal { fill: var(--pak-gletsjer-2); }
+.pakprofiel__berg { fill: #e9f1f5; }
+.pakprofiel__dal { fill: var(--pak-papier); }
 .pakprofiel__dorp { fill: var(--pak-zacht); }
 
 .pakprofiel__route {
@@ -156,10 +200,19 @@
   fill: var(--pak-zacht);
 }
 
+/* "3600 · Glacier" staat deels in de lucht en deels op de sneeuw: licht met een blauwe rand */
+.pakprofiel__label:not([text-anchor='end']) {
+  fill: #9fe3f4;
+  paint-order: stroke;
+  stroke: var(--hero);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
 .pakprofiel__skier {
   transition: transform 0.25s ease-out;
 }
-.pakprofiel__skier .bol { fill: var(--pak-inkt); }
+.pakprofiel__skier .bol { fill: var(--pak-inkt); stroke: #fff; stroke-width: 1.5; }
 .pakprofiel__skier .hoofd { fill: var(--pak-papier); }
 .pakprofiel__skier .figuur {
   fill: none;
@@ -181,7 +234,7 @@
   outline: 1.2px solid var(--pak-stempel);
   outline-offset: 2.5px;
   color: var(--pak-stempel);
-  background: rgba(245, 242, 234, 0.7);
+  background: rgba(245, 242, 234, 0.9); /* ook leesbaar waar het stempel over de lucht valt */
   text-align: center;
   text-transform: uppercase;
   transform: translate(-50%, -50%) rotate(-7deg);
@@ -220,8 +273,10 @@
   gap: 12px;
   height: calc(var(--boven) + 52px);
   padding: var(--boven) 16px 0;
-  background: var(--pak-papier);
-  border-bottom: 2px solid var(--pak-inkt);
+  background: var(--hero);
+  color: var(--hero-tekst);
+  border-bottom: 3px solid var(--tweeslag-lichtblauw);
+  box-shadow: 0 2px 10px rgba(13, 0, 88, 0.18);
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
@@ -242,8 +297,10 @@
 }
 
 .pakbalk b {
-  font: 700 20px/1 var(--pak-smal);
-  text-transform: uppercase;
+  font-family: var(--font-kop);
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1.2;
 }
 
 .pakbalk__hoogte {
@@ -254,14 +311,18 @@
 .pakbalk__hoogte small {
   margin-left: 1px;
   font-size: 13px;
-  color: var(--pak-zacht);
+  color: rgba(255, 255, 255, 0.85);
 }
 
+/* Op een strookje papier, zodat de zwarte piste ook op het donkerblauw te zien is */
 .pakbalk__spoor {
   display: flex;
   gap: 2px;
-  height: 6px;
+  height: 10px;
   min-width: 0;
+  padding: 2px;
+  border-radius: 3px;
+  background: var(--pak-papier);
 }
 
 .pakbalk__spoor span {
