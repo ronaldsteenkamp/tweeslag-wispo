@@ -1,7 +1,7 @@
 // Tests voor het rekenwerk van het rad: `npm test` (Node 22.18 of nieuwer, leest TypeScript zelf)
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { doelHoek, gelijkeBuren, vakOnderPijl, vakTekst, verspreid } from '../src/lib/radwiskunde.ts'
+import { doelHoek, flapper, gelijkeBuren, marge, vakOnderPijl, vakTekst, verspreid } from '../src/lib/radwiskunde.ts'
 
 test('het gekozen vak stopt onder de pijl, voor elk aantal vakken en elke beginhoek', () => {
   for (const n of [2, 3, 7, 12, 28, 40, 100]) {
@@ -32,6 +32,28 @@ test('de pijl stopt nooit vlak bij een vakgrens', () => {
     const plek = (((-doelHoek(5, n, 0, speling)) % 360) + 360) % 360 / vak - 5
     assert.ok(plek > 0.14 && plek < 0.86, `plek in vak ${plek}`)
   }
+})
+
+test('tegen de klok in (na een veeg die kant op) landt het rad ook op het gekozen vak, niet bij een grens', () => {
+  for (const n of [2, 5, 12, 36]) {
+    for (const nu of [0, 33.3, 359.9, -720.25, 98765.4]) {
+      for (let i = 0; i < n; i++) {
+        for (const speling of [0, 0.5, 0.999]) {
+          const doel = doelHoek(i, n, nu, speling, 4, -1)
+          assert.equal(vakOnderPijl(doel, n), i, `n=${n} nu=${nu} i=${i}`)
+          assert.ok(nu - doel >= 1440 && nu - doel < 1800, `achteruit ${nu - doel}`)
+          assert.ok(marge(doel, n) > 0.14, `marge ${marge(doel, n)}`)
+        }
+      }
+    }
+  }
+})
+
+test('de flapper buigt alleen als er een pin aankomt, en springt terug als die erlangs is', () => {
+  assert.equal(flapper(0, 30, 9), 0)
+  assert.ok(flapper(25, 30, 9) > 0.4)
+  assert.equal(flapper(31, 30, 9), 0)
+  assert.ok(flapper(5, 30, 9, -1) < -0.4)
 })
 
 test('vakOnderPijl klopt ook bij negatieve en hele grote hoeken', () => {
