@@ -5,6 +5,64 @@
  * Alleen `transform` beweegt tijdens het draaien.
  */
 
+/* ---------- Het tabblad: papier, zoals Paklijst en Planning ---------- */
+
+/* Geen sneeuwpatroon meer achter de raderen; de sneeuwrand onder de kop loopt over in het papier */
+.inhoud--rad {
+  --rad-papier: #f5f2ea;
+  min-height: 100dvh;
+  background: var(--rad-papier);
+  color: #0d0058;
+}
+
+.inhoud--rad .schermkop {
+  --sneeuwbank: var(--rad-papier);
+}
+
+/* Instellingen onder het rad (wie doen mee, kleuren, drankjes, eigen lijsten) in dezelfde stijl:
+   crème vakjes met een papieren rand, gekozen = donkerblauw. Contrast tekst minstens 7 : 1. */
+.inhoud--rad .radinstellingen {
+  --oppervlak: #fffdf8;
+  --rand: #c9c1ae;
+  --tekst: #0d0058;
+  --tekst-zacht: #4b4e6b;
+  font-family: Barlow, 'Trebuchet MS', sans-serif;
+}
+
+.inhoud--rad .radinstellingen .veld legend {
+  font: 700 15px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4b4e6b;
+}
+
+.inhoud--rad .radinstellingen .keuze,
+.inhoud--rad .radinstellingen .drankkeuze button {
+  font-family: Barlow, 'Trebuchet MS', sans-serif;
+  font-weight: 600;
+}
+
+.inhoud--rad .radinstellingen .keuze.is-actief,
+.inhoud--rad .radinstellingen .drankkeuze.is-actief {
+  border-color: #0d0058;
+  background: #0d0058;
+  color: #fff;
+}
+
+.inhoud--rad .radinstellingen .drankkeuze.is-actief button {
+  color: #fff;
+}
+
+.inhoud--rad .radinstellingen .drankkeuze.is-actief .drankkeuze__weg {
+  color: #c9c6e8 !important;
+}
+
+.inhoud--rad .radinstellingen .keuze:focus-visible,
+.inhoud--rad .radinstellingen .drankkeuze button:focus-visible {
+  outline: 3px solid #099fc4;
+  outline-offset: 2px;
+}
+
 .radm {
   --navy: #0d0058;
   --licht: #099fc4;
