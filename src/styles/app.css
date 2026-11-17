@@ -2603,9 +2603,14 @@ button {
 /* Kaartbalk: Waar ben ik, Delen, Wie is waar */
 .kaartbalk {
   display: grid;
-  grid-template-columns: 1.15fr 0.95fr 1.2fr;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 1.2fr);
   background: #0d0058;
   color: #fff;
+}
+
+/* Meldingen (toast) op het kaartscherm boven de kaartbalk, niet eroverheen */
+body:has(.huidig .kaartbalk) .toast {
+  bottom: calc(var(--tabbalk-hoogte) + var(--onder) + 54px + 12px);
 }
 
 .kaartbalk--alleen {
@@ -2616,17 +2621,21 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   min-height: 54px;
-  padding: 0 6px;
+  padding: 0 4px;
   border: 0;
   background: none;
   color: inherit;
   font-family: var(--font-kop);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   white-space: nowrap;
   touch-action: manipulation;
+}
+
+.kaartbalk__knop svg {
+  flex: none;
 }
 
 .kaartbalk__knop + .kaartbalk__knop {
@@ -2765,7 +2774,14 @@ button {
   text-decoration: none;
 }
 
+.kaartblad__extern span {
+  text-align: center;
+  line-height: 1.2;
+}
+
 .kaartblad__extern small {
+  display: block;
+  font-size: 0.75rem;
   font-weight: 400;
   color: var(--tekst-zacht);
 }
