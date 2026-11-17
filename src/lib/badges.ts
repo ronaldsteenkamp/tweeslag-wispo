@@ -300,7 +300,8 @@ export function useBadges(actief = false) {
       serverBekend: !!server,
       /** Is de stand van de server van deze versie van de app (met alle nieuwe gegevens)? */
       serverActueel: !!server && server.versie === STAND_VERSIE,
-      spelGeladen: !!spel,
+      /** Zijn spel.json en de kamers er? Zonder die lijken spelbadges en Kamerkampioen even weg */
+      geladen: !!spel && !!kamers,
     }
   }, [
     stand,

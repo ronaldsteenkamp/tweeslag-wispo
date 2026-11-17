@@ -255,7 +255,7 @@ interface Gezien {
  * de badges die je al had stil onthouden, zodat er niet ineens een rij meldingen komt.
  */
 export function BadgeMelding() {
-  const { van, feitenVan, mijnNaam, serverBekend, serverActueel, spelGeladen } = useBadges(false)
+  const { van, feitenVan, mijnNaam, serverBekend, serverActueel, geladen } = useBadges(false)
   // Eén keer de stand van de server ophalen als die nog van een oudere versie is
   useActueleStand()
   const mijn = mijnNaam ? van(mijnNaam) : null
@@ -271,8 +271,9 @@ export function BadgeMelding() {
   const wachtrij = useRef<Badge[]>([])
 
   useEffect(() => {
-    // Pas kijken als spel.json er is: anders lijken de spelbadges even weg
-    if (!mijn || !mijnNaam || !spelGeladen) return
+    // Pas kijken als spel.json en de kamers er zijn: anders lijken de spelbadges en Kamerkampioen
+    // even weg, worden ze vergeten en komen ze bij elke start opnieuw als melding
+    if (!mijn || !mijnNaam || !geladen) return
     const gezien = lees<Gezien | null>(GEZIEN, null)
     if (!gezien || gezien.naam !== mijnNaam) {
       schrijf<Gezien>(GEZIEN, { naam: mijnNaam, ids: mijn.map((b) => b.id), versie: GEZIEN_VERSIE })
@@ -298,7 +299,7 @@ export function BadgeMelding() {
     }
     // ids: alleen opnieuw kijken als de set badges verandert
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ids, mijnNaam, serverBekend, serverActueel, spelGeladen])
+  }, [ids, mijnNaam, serverBekend, serverActueel, geladen])
 
   useEffect(() => {
     if (!melding) return
