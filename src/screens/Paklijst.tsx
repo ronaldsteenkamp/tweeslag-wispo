@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
+import { Sneeuw } from '../components/Sneeuw'
 import { config } from '../config'
 import { useData } from '../lib/data'
 import { nu } from '../lib/nu'
@@ -199,6 +200,7 @@ export default function Paklijst() {
     return (
       <div className="scherm paklijst">
         <header className="pakkop">
+          <Sneeuw aantal={8} />
           <p className="pakkop__boven">Wispo 2027 · Les Deux Alpes</p>
           <h1 className="pakkop__titel">Paklijst</h1>
         </header>
@@ -236,6 +238,8 @@ export default function Paklijst() {
       </div>
 
       <header className="pakkop" ref={setKopEl}>
+        {/* Sterren en sneeuw zoals in de andere koppen; de berg ligt ervoor */}
+        <Sneeuw aantal={8} />
         <div className="pakkop__rij">
           <div>
             <p className="pakkop__boven">Wispo 2027 · Les Deux Alpes</p>
