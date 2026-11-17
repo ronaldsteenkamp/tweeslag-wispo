@@ -9,12 +9,32 @@ const rond = (g: number) => ((g % 360) + 360) % 360
 /**
  * Eindhoek voor een draai vanaf `nu` waarbij vak `i` (van `n`) onder de pijl stopt.
  * `speling` (0 tot 1) kiest de plek binnen het vak; het middelste 70% zodat het nooit op een grens is.
- * Draait altijd vooruit, minstens `rondjes` hele rondes.
+ * Draait altijd in de gekozen richting (1 = met de klok mee, -1 = tegen de klok in), minstens
+ * `rondjes` hele rondes.
  */
-export function doelHoek(i: number, n: number, nu: number, speling: number, rondjes = 4): number {
+export function doelHoek(i: number, n: number, nu: number, speling: number, rondjes = 4, richting: 1 | -1 = 1): number {
   const vak = 360 / n
   const doelRest = rond(360 - (i + 0.5) * vak + (speling - 0.5) * vak * 0.7)
+  if (richting === -1) return nu - 360 * rondjes - rond(rond(nu) - doelRest)
   return nu + 360 * rondjes + rond(doelRest - rond(nu))
+}
+
+/** Afstand van hoek `h` tot de dichtstbijzijnde vakgrens, als deel van een vak (0 = grens, 0,5 = midden) */
+export function marge(h: number, n: number): number {
+  const vak = 360 / n
+  const x = rond(-h) % vak
+  return Math.min(x, vak - x) / vak
+}
+
+/**
+ * Hoe ver de flapper door de naderende pin opzij is geduwd (0..1, negatief bij draaien tegen de
+ * klok in); springt terug zodra de pin erlangs is. Pinnen staan op de vakgrenzen.
+ */
+export function flapper(h: number, vak: number, breedte: number, richting: 1 | -1 = 1): number {
+  const x = ((h % vak) + vak) % vak
+  if (richting === -1) return x < breedte ? -(1 - x / breedte) : 0
+  const e = vak - x
+  return e < breedte ? 1 - e / breedte : 0
 }
 
 /** Welk vak staat onder de pijl als het rad op `hoek` graden gedraaid is */
