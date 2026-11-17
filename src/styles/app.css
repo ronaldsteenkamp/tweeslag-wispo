@@ -2318,10 +2318,19 @@ button {
   max-width: none;
 }
 
+/* Kaartscherm: de kaart, en daaronder de kaartbalk (boven de tabbalk) */
 .kaartscherm {
   position: fixed;
   inset: 0 0 calc(var(--tabbalk-hoogte) + var(--onder)) 0;
+  display: flex;
+  flex-direction: column;
   background: var(--kaart-achtergrond);
+}
+
+.kaartscherm__kaart {
+  position: relative;
+  flex: 1;
+  min-height: 0;
 }
 
 .kaartvak {
@@ -2357,15 +2366,16 @@ button {
   top: 40%;
 }
 
+/* Alleen de allereerste keer */
 .kaartvak__hint {
-  top: calc(var(--boven) + 112px);
+  top: calc(var(--boven) + 16px);
   margin: 0 auto;
   width: fit-content;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(10, 15, 51, 0.8);
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: var(--tweeslag-donkerblauw);
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   pointer-events: none;
   animation: vervaag 0.4s 4s forwards;
 }
@@ -2380,51 +2390,50 @@ button {
   position: absolute;
   left: 8px;
   bottom: 8px;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.8);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.85);
   color: #0d0058;
   font-family: var(--font-kop);
   font-size: 0.7rem;
   pointer-events: none;
 }
 
-/* Laag met stippen: beweegt mee met de kaart (zelfde transform) */
-/* Zoomknoppen rechtsonder: groot genoeg voor handschoenen */
+/* Zoomknoppen: één strak blok rechtsonder, groot genoeg voor handschoenen */
 .kaartvak__zoom {
   position: absolute;
   right: 12px;
   bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .kaartvak__zoomknop {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border: 0;
-  border-radius: 16px;
-  background: #0d0058;
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1.5px solid var(--tweeslag-donkerblauw);
+  background: #fff;
+  color: var(--tweeslag-donkerblauw);
   touch-action: manipulation;
 }
 
+.kaartvak__zoomknop:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.kaartvak__zoomknop + .kaartvak__zoomknop {
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+}
+
 .kaartvak__zoomknop:active {
-  transform: scale(0.95);
+  background: var(--accent-zacht);
 }
 
-/* Knoppen in de locatiebalk naast elkaar */
-.locatiebalk__knoppen {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-}
-
+/* Laag met stippen: beweegt mee met de kaart (zelfde transform) */
 .kaartvak__laag {
   position: absolute;
   top: 0;
@@ -2438,201 +2447,479 @@ button {
   display: none;
 }
 
-/* Stip van iemand die zijn locatie deelt; tegengeschaald (--tegen = 1 / zoom) */
+/* Stip: rond = mens. Tikvlak 44×44, tegengeschaald (--tegen = 1 / zoom) */
 .stip {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   margin: 0;
   padding: 0;
   border: 0;
   background: none;
   pointer-events: auto;
   touch-action: none;
-  transform-origin: 50% 18px;
-  transform: translate(-50%, -18px) scale(var(--tegen, 1));
+  transform: translate(-50%, -50%) scale(var(--tegen, 1));
+}
+
+.stip:focus-visible {
+  outline: 3px solid var(--tweeslag-lichtblauw);
+  border-radius: 50%;
 }
 
 .stip__rondje {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 3px solid #fff;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #fff;
   border-radius: 50%;
-  background: var(--kleur, #0d0058);
+  /* lichtblauw, donker genoeg voor witte letters */
+  background: #087f9d;
   color: #fff;
+  box-shadow: 0 0 0 1px rgba(13, 0, 88, 0.55);
   font-family: var(--font-kop);
-  font-size: 0.85rem;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .stip__naam {
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.95);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  translate: -50% -6px;
+  padding: 0 6px;
+  border: 1px solid rgba(13, 0, 88, 0.25);
+  border-radius: 4px;
+  background: #fff;
   color: #0d0058;
   font-family: var(--font-kop);
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
+  line-height: 18px;
   white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
-.stip.is-eigen .stip__rondje {
-  border-color: #ffd400;
-  animation: puls 2s ease-out infinite;
+/* Ouder dan 5 minuten: grijs met stippelrand */
+.stip.is-oud .stip__rondje {
+  border: 2px dashed #5b5a6e;
+  background: #fff;
+  color: #5b5a6e;
+  box-shadow: none;
 }
 
-@keyframes puls {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 212, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.45);
-  }
-  100% {
-    box-shadow: 0 0 0 14px rgba(255, 212, 0, 0), 0 2px 8px rgba(0, 0, 0, 0.45);
-  }
-}
-
-.stip.is-oud {
-  opacity: 0.55;
+.stip.is-oud .stip__naam {
+  color: #5b5a6e;
 }
 
 .stip.is-gekozen {
-  z-index: 2;
-  transform: translate(-50%, -18px) scale(calc(var(--tegen, 1) * 1.25));
+  z-index: 3;
 }
 
-/* Knop "Deel mijn locatie" bovenin */
-.locatiebalk {
+.stip.is-gekozen .stip__rondje {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 5px #0d0058;
+}
+
+/* Meerdere mensen dicht bij elkaar: één bolletje met het aantal */
+.stip--samen .stip__rondje {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: #0d0058;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #087f9d;
+  font-size: 0.9rem;
+}
+
+/* Jij: navy met lichtblauwe ring, en een cirkel "ongeveer hier" (± 50 m) */
+.stip--jij {
+  z-index: 2;
+}
+
+.stip--jij .stip__rondje {
+  width: 22px;
+  height: 22px;
+  border: 4px solid #fff;
+  background: #0d0058;
+  box-shadow: 0 0 0 2px var(--tweeslag-lichtblauw);
+}
+
+.stip--jij .stip__naam {
+  border-color: #0d0058;
+  background: #0d0058;
+  color: #fff;
+}
+
+.stip__onzeker {
   position: absolute;
-  top: calc(var(--boven) + 10px);
-  left: 12px;
-  right: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  left: 50%;
+  top: 50%;
+  width: max(28px, calc(var(--onzeker, 100px) * var(--pxschaal, 0.2) * var(--s, 1)));
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 1.5px dashed rgba(8, 127, 157, 0.9);
+  border-radius: 50%;
+  background: rgba(9, 159, 196, 0.16);
   pointer-events: none;
 }
 
-.locatieknop {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 46px;
-  padding: 0 18px;
+.stip--jij.is-oud .stip__rondje {
+  background: #5b5a6e;
+}
+
+/* Melding bovenin (geen GPS, buiten de kaart, naam kiezen) */
+.kaartmelding {
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--boven) + 12px);
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 6px 10px 12px;
+  border: 1px solid rgba(13, 0, 88, 0.2);
+  border-left: 4px solid #0d0058;
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-kop);
+  font-size: 0.9rem;
+}
+
+.kaartmelding__sluit {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -10px -6px -10px auto;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
+  background: none;
+  color: var(--tekst);
+}
+
+/* Kaartbalk: Waar ben ik, Delen, Wie is waar */
+.kaartbalk {
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr 1.2fr;
   background: #0d0058;
   color: #fff;
+}
+
+.kaartbalk--alleen {
+  grid-template-columns: 1fr;
+}
+
+.kaartbalk__knop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 54px;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  color: inherit;
   font-family: var(--font-kop);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  pointer-events: auto;
+  white-space: nowrap;
   touch-action: manipulation;
 }
 
-.locatieknop:disabled {
-  opacity: 0.6;
+.kaartbalk__knop + .kaartbalk__knop {
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.locatieknop.is-aan {
-  background: #1b8a5a;
+.kaartbalk__knop.is-aan {
+  background: #087f9d;
 }
 
-.locatieknop__stip {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #b9ffd9;
-  animation: knipper 1.6s ease-in-out infinite;
-}
-
-@keyframes knipper {
-  50% {
-    opacity: 0.3;
-  }
-}
-
-.locatiebalk__tekst {
-  margin: 0;
-  padding: 6px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.95);
-  font-family: var(--font-kop);
-  font-size: 0.85rem;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.locatiebalk__buiten {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-}
-
-.buitenchip {
-  min-height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.95);
+.kaartbalk__knop[aria-expanded='true'] {
+  background: #fff;
   color: #0d0058;
-  font-family: var(--font-kop);
-  font-size: 0.8rem;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  pointer-events: auto;
 }
-/* Onderblad met de gegevens van een persoon */
-.onderblad {
+
+.kaartbalk__knop:disabled {
+  opacity: 0.7;
+}
+
+.kaartbalk__knop:focus-visible {
+  outline: 3px solid var(--tweeslag-lichtblauw);
+  outline-offset: -3px;
+}
+
+.kaartbalk__aantal {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--tweeslag-lichtblauw);
+  color: #0d0058;
+  font-size: 0.75rem;
+}
+
+/* Onderblad: vlak, met een harde navy lijn */
+.kaartblad {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 5;
-  max-height: 60%;
+  max-height: 64%;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   padding: 14px 18px 18px;
-  border-top: 6px solid var(--kleur);
-  border-radius: 22px 22px 0 0;
-  background: var(--oppervlak);
-  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.25);
+  border-top: 3px solid #0d0058;
+  border-radius: 14px 14px 0 0;
+  background: #fff;
+  box-shadow: 0 -1px 0 rgba(13, 0, 88, 0.12);
   animation: omhoog 0.2s ease-out;
 }
 
-.onderblad h2,
-.onderblad p {
+.kaartblad p {
   margin: 0;
 }
 
-.onderblad__kop {
+.kaartblad__kop {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+  margin-bottom: 8px;
 }
 
-.onderblad__knoppen {
+.kaartblad__kop > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.kaartblad__kop h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.kaartblad__kop p {
+  font-family: var(--font-kop);
+  font-size: 0.82rem;
+  color: var(--tekst-zacht);
+}
+
+.kaartblad__sluit {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  margin-top: 4px;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -6px -10px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tekst);
 }
 
-.onderblad .knop {
-  display: inline-flex;
+.kaartblad__rond {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #087f9d;
+  color: #fff;
+  font-family: var(--font-kop);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.kaartblad__rond.is-oud {
+  border: 2px dashed #5b5a6e;
+  background: #fff;
+  color: #5b5a6e;
+}
+
+.kaartblad__rond--jij {
+  width: 30px;
+  height: 30px;
+  margin: 5px;
+  border: 6px solid #fff;
+  background: #0d0058;
+  box-shadow: 0 0 0 2px var(--tweeslag-lichtblauw);
+}
+
+.kaartblad__extern {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 0 16px;
+  border: 2px solid #0d0058;
+  border-radius: 999px;
+  color: #0d0058;
+  font-family: var(--font-kop);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.kaartblad__extern small {
+  font-weight: 400;
+  color: var(--tekst-zacht);
+}
+
+.kaartblad__leeg {
+  padding: 8px 0;
+  color: var(--tekst-zacht);
+}
+
+.kaartblad .klein {
+  margin-top: 10px;
+}
+
+/* Schakelaar: deel mijn plek */
+.deelschakelaar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--oppervlak-2);
+  font-family: var(--font-kop);
+  cursor: pointer;
+}
+
+.deelschakelaar > span {
+  flex: 1;
+}
+
+.deelschakelaar strong {
+  display: block;
+}
+
+.deelschakelaar small {
+  font-size: 0.82rem;
+  color: var(--tekst-zacht);
+}
+
+.deelschakelaar input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.deelschakelaar i {
+  position: relative;
+  flex: none;
+  width: 50px;
+  height: 30px;
+  border-radius: 999px;
+  background: #8e8da3;
+  transition: background 0.15s;
+}
+
+.deelschakelaar i::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+
+.deelschakelaar input:checked + i {
+  background: #087f9d;
+}
+
+.deelschakelaar input:checked + i::after {
+  transform: translateX(20px);
+}
+
+.deelschakelaar input:focus-visible + i {
+  outline: 3px solid var(--tweeslag-lichtblauw);
+  outline-offset: 2px;
+}
+
+.deelschakelaar input:disabled + i {
+  opacity: 0.5;
+}
+
+/* Wie is waar */
+.wieiswaar {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wieiswaar li + li {
+  border-top: 1px solid rgba(13, 0, 88, 0.1);
+}
+
+.wieiswaar__rij {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--tekst);
+  font-family: var(--font-kop);
+  text-align: left;
+}
+
+.wieiswaar__rij > span:nth-child(2) {
+  flex: 1;
+}
+
+.wieiswaar__rij strong {
+  display: block;
+}
+
+.wieiswaar__rij small {
+  font-size: 0.82rem;
+  color: var(--tekst-zacht);
+}
+
+.wieiswaar__rij svg {
+  color: var(--tekst-zacht);
+}
+
+.wieiswaar__rij.is-oud strong {
+  color: #5b5a6e;
+}
+
+.wieiswaar .kaartblad__rond {
+  width: 34px;
+  height: 34px;
+}
+
+.wieiswaar .kaartblad__rond--jij {
+  width: 22px;
+  height: 22px;
+  margin: 6px;
+  border-width: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kaartblad,
+  .kaartvak__hint {
+    animation: none;
+  }
+
+  .deelschakelaar i,
+  .deelschakelaar i::after {
+    transition: none;
+  }
 }
 
 /* ---------- Spel ---------- */
