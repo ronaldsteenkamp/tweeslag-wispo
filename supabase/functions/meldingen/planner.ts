@@ -17,6 +17,8 @@ interface PlanningItem {
   omschrijving?: string
   locatie?: string
   melding?: boolean
+  /** Gaat niet door: dan ook geen melding (reden als tekst, of true) */
+  vervallen?: string | boolean
 }
 interface Planning {
   dagen?: { datum?: string; items?: PlanningItem[] }[]
@@ -76,6 +78,7 @@ export function planningMeldingen(nu: number, planning: Planning): Melding[] {
     if (!dag.datum) continue
     for (const item of dag.items ?? []) {
       if (item.melding !== true || !item.tijd || !item.titel) continue
+      if (item.vervallen !== undefined && item.vervallen !== false) continue
       const start = lokaal(`${dag.datum}T${item.tijd}`)
       if (!geldig(start) || nu < start - 30 * MINUUT || nu >= start) continue
       const nog = Math.max(1, Math.round((start - nu) / MINUUT))

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { SchermKop } from '../components/SchermKop'
@@ -6,8 +6,11 @@ import { config } from '../config'
 import { useData, type Dag } from '../lib/data'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { useNu } from '../lib/nu'
+import { dagStatus, duur, isVervallen, type ItemMetStatus, type VrijeTijd } from '../lib/programma'
 import { datumISO, datumLabel, lokaalNaarDate, tijdUUMM } from '../lib/tijd'
 import { graden, useWeer, weerIcoon, weerTekst } from '../lib/weer'
+import '../styles/barlow.css'
+import '../styles/planning.css'
 
 /** Soort activiteit aan de hand van trefwoorden in de titel (voor het icoontje bij de nieuwe koppen) */
 export function soortActiviteit(titel: string): IcoonNaam {
@@ -24,14 +27,30 @@ export function soortActiviteit(titel: string): IcoonNaam {
 /** De items van één dag als tijdlijn. Met nuTijd worden voorbije items gedimd en is 'straks' gemarkeerd. */
 export function Programma({ dag, nuTijd, metIconen = false }: { dag: Dag; nuTijd?: string; metIconen?: boolean }) {
   if (dag.items.length === 0) return <p className="klein">Nog geen programma.</p>
-  const volgende = nuTijd ? dag.items.findIndex((i) => i.tijd > nuTijd) : -1
+  // Vervallen items tellen niet mee voor 'nu' en 'straks'
+  const telt = (i: number) => !isVervallen(dag.items[i])
+  const volgende = nuTijd ? dag.items.findIndex((i, k) => telt(k) && i.tijd > nuTijd) : -1
   // Het item dat het laatst begonnen is (geen als we geen tijd weten of er nog niets begonnen is)
-  const huidig = nuTijd === undefined ? -1 : volgende === -1 ? dag.items.length - 1 : volgende - 1
+  let huidig = nuTijd === undefined ? -1 : volgende === -1 ? dag.items.length - 1 : volgende - 1
+  while (huidig >= 0 && !telt(huidig)) huidig--
   return (
     <ol className={`tijdlijn${metIconen ? ' tijdlijn--iconen' : ''}`}>
       {dag.items.map((item, i) => {
         const voorbij = i < huidig
         const bezig = i === huidig
+        if (isVervallen(item)) {
+          return (
+            <li key={`${item.tijd}-${item.titel}-${i}`} className="tijdlijn__item is-voorbij">
+              <span className="tijdlijn__tijd">{item.tijd}</span>
+              <div className="tijdlijn__inhoud">
+                <h3>
+                  <s>{item.titel}</s> <span className="label">Gaat niet door</span>
+                </h3>
+                {item.vervallen && <p>{item.vervallen}</p>}
+              </div>
+            </li>
+          )
+        }
         return (
           <li
             key={`${item.tijd}-${item.titel}-${i}`}
@@ -68,21 +87,250 @@ export function Programma({ dag, nuTijd, metIconen = false }: { dag: Dag; nuTijd
   )
 }
 
-/**
- * Schuift de dagenbalk zelf met een korte animatie. Een tweede 'smooth' scroll tegelijk
- * met die van de pagina breekt in Chrome één van beide af.
- */
-function schuifNaar(el: HTMLElement, doel: number) {
-  const start = el.scrollLeft
-  const max = el.scrollWidth - el.clientWidth
-  const eind = Math.max(0, Math.min(max, doel))
-  const t0 = performance.now()
-  const stap = (t: number) => {
-    const p = Math.min(1, (t - t0) / 300)
-    el.scrollLeft = start + (eind - start) * (1 - Math.pow(1 - p, 3))
-    if (p < 1) requestAnimationFrame(stap)
-  }
-  requestAnimationFrame(stap)
+/* ---------------------------------------------------------------------------------------------
+ * Planning als programmaboekje: elke dag is een bladzijde (vaste tijden apart, hoogtepunten groot,
+ * nu/hierna in de kantlijn), en "Hele reis" is de inhoudsopgave. Opmaak in styles/planning.css.
+ * ------------------------------------------------------------------------------------------- */
+
+/** Beeldmerk bij een hoogtepunt; geen icoon als er niets past (liever niets dan een nietszeggend icoon) */
+export function beeldVoor(titel: string): IcoonNaam | null {
+  const t = titel.toLowerCase()
+  if (/volleybal/.test(t)) return 'bal'
+  if (/prijs/.test(t)) return 'spel'
+  if (/bus|vertrek/.test(t)) return 'bus'
+  if (/aankomst|thuiskomst/.test(t)) return 'vlag'
+  if (/diner|fondue|ontbijt|lunch/.test(t)) return 'eten'
+  if (/feest|karaoke|quiz|spelletjes/.test(t)) return 'muziek'
+  if (/apr[eè]s/.test(t)) return 'glas'
+  if (/foto/.test(t)) return 'camera'
+  if (/gletsjer|gondel|lift/.test(t)) return 'lift'
+  if (/ski|piste|afdaling/.test(t)) return 'ski'
+  return null
+}
+
+const hoofdletter = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/** De kop van een bladzijde: het hoogtepunt van die dag, anders het eerste wat iedereen doet */
+function bladTitel(dag: Dag) {
+  const doorgaand = dag.items.filter((i) => !isVervallen(i))
+  return (doorgaand.find((i) => i.gewicht === 'hoog') ?? doorgaand.find((i) => i.gewicht !== 'routine' && !i.optioneel))?.titel ?? dag.titel
+}
+
+/** Korte samenvatting voor de inhoudsopgave */
+function kern(dag: Dag) {
+  // Hoogstens drie, hoogtepunten eerst gekozen, daarna op tijd gezet
+  const doorgaand = dag.items.filter((i) => !isVervallen(i) && i.gewicht !== 'routine')
+  const gekozen = [...doorgaand.filter((i) => i.gewicht === 'hoog'), ...doorgaand.filter((i) => i.gewicht !== 'hoog')].slice(0, 3)
+  return doorgaand.filter((i) => gekozen.includes(i)).map((i) => i.titel).join(', ')
+}
+
+function Punt({ item }: { item: ItemMetStatus }) {
+  const { status } = item
+  const hoog = item.gewicht === 'hoog' && status !== 'voorbij'
+  const beeld = hoog ? beeldVoor(item.titel) : null
+  const noten: ReactNode[] = []
+  if (item.optioneel) noten.push(`${hoofdletter(item.optioneel)}${item.eind ? `, tot ${item.eind}` : ''}.`)
+  if (item.was) noten.push(<span className="noot--rood">Let op: verschoven, eerst gepland om {item.was}.</span>)
+  if (isVervallen(item)) noten.push(<span className="noot--rood">Gaat niet door.{item.vervallen ? ` ${item.vervallen}` : ''}</span>)
+  if (item.melding && (status === 'straks' || status === 'later')) noten.push('Je krijgt een halfuur van tevoren een seintje.')
+  return (
+    <li
+      className={`punt punt--${status}${item.gewicht === 'hoog' ? ' punt--hoog' : ''}${item.optioneel ? ' punt--optioneel' : ''}`}
+      aria-current={status === 'bezig' ? 'time' : undefined}
+    >
+      {status === 'voorbij' && (
+        <span className="punt__vinkje" aria-hidden="true">
+          <Icoon naam="vink" grootte={18} />
+        </span>
+      )}
+      <p className="punt__tijd">
+        {item.was && (
+          <s className="punt__was">
+            <span className="verborgen">was </span>
+            {item.was}
+          </s>
+        )}
+        {item.was && <span className="verborgen">nu </span>}
+        <time>{item.tijd}</time>
+        {status === 'bezig' && !item.optioneel && <small>tot {tijdUUMM(item.einde)}</small>}
+      </p>
+      <div className="punt__inhoud">
+        {status === 'bezig' && (
+          <p className="punt__kantlijn punt__kantlijn--nu">
+            <b>Nu</b> nog {duur(item.totEinde)}
+          </p>
+        )}
+        {status === 'straks' && <p className="punt__kantlijn">Hierna · over {duur(item.totBegin)}</p>}
+        {beeld && (
+          <span className="punt__beeld" aria-hidden="true">
+            <Icoon naam={beeld} grootte={20} />
+          </span>
+        )}
+        <h3>
+          {status === 'voorbij' && <span className="verborgen">Geweest: </span>}
+          {isVervallen(item) && <span className="verborgen">Vervallen: </span>}
+          {item.titel}
+        </h3>
+        {item.omschrijving && !isVervallen(item) && <p className="punt__tekst">{item.omschrijving}</p>}
+        {item.locatie && (
+          <p className="punt__plek">
+            <Icoon naam="pin" grootte={16} /> {item.locatie}
+          </p>
+        )}
+        {noten.map((n, k) => (
+          <p key={k} className="punt__noot">
+            {n}
+          </p>
+        ))}
+      </div>
+    </li>
+  )
+}
+
+function Rust({ vrij }: { vrij: VrijeTijd }) {
+  const middag = vrij.van >= '12:00' && vrij.van < '17:00'
+  return (
+    <li className={`rust${vrij.status === 'bezig' ? ' rust--bezig' : ''}`}>
+      <svg viewBox="0 0 64 18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+        <path d="M2 12l10-8 8 6 8-6 8 6 8-6 8 6 10-8" />
+      </svg>
+      <em>
+        {vrij.status === 'bezig' ? 'Nu: ' : ''}
+        {middag ? 'Vrije middag' : 'Vrije tijd'}
+      </em>
+      {vrij.van} tot {vrij.tot}. Niets moet, alles mag.
+    </li>
+  )
+}
+
+function Blad({
+  dag,
+  nummer,
+  aantal,
+  nu,
+  isVandaag,
+  weerTekstje,
+  vorige,
+  volgende,
+  naar,
+}: {
+  dag: Dag
+  nummer: number
+  aantal: number
+  nu: Date
+  isVandaag: boolean
+  weerTekstje?: string
+  vorige?: Dag
+  volgende?: Dag
+  naar: (datum: string) => void
+}) {
+  const { items, vrij } = dagStatus(dag, nu)
+  const routine = items.filter((i) => i.gewicht === 'routine' && !isVervallen(i))
+  const rest = items.filter((i) => !routine.includes(i))
+  const rijen = [
+    ...rest.map((i) => ({ t: i.start.getTime(), el: <Punt key={`p-${i.tijd}-${i.titel}`} item={i} /> })),
+    ...vrij.map((v) => ({ t: v.start.getTime(), el: <Rust key={`v-${v.van}`} vrij={v} /> })),
+  ].sort((a, b) => a.t - b.t)
+
+  return (
+    <article className="blad" aria-labelledby="bladkop">
+      <p className="blad__kicker" aria-hidden="true">
+        <span>
+          {isVandaag ? 'Vandaag · ' : ''}
+          {dag.titel} · {datumLabel(dag.datum)}
+        </span>
+        <span>
+          Dag {nummer}/{aantal}
+        </span>
+      </p>
+      <h2 id="bladkop" className="blad__titel">
+        <span className="verborgen">
+          {dag.titel}, {datumLabel(dag.datum)}{isVandaag ? ', vandaag' : ''}:{' '}
+        </span>
+        {dag.items.length ? bladTitel(dag) : dag.titel}
+      </h2>
+      {dag.intro && <p className="blad__intro">{dag.intro}</p>}
+      {weerTekstje && <p className="blad__weer">{weerTekstje}</p>}
+
+      {routine.length > 0 && (
+        <div className="vast">
+          <h3 className="vast__kop">Vaste tijden</h3>
+          <ul>
+            {routine.map((r) => (
+              <li key={`${r.tijd}-${r.titel}`} className={`vast__item vast__item--${r.status}`}>
+                {r.status === 'voorbij' && <span className="verborgen">Geweest: </span>}
+                {r.status === 'bezig' && <span className="verborgen">Nu: </span>}
+                <time>{r.tijd}</time> {r.titel}
+                {r.omschrijving && /^kookploeg/i.test(r.omschrijving) && (
+                  <span className="vast__extra"> ({r.omschrijving.replace(/\.$/, '').replace(/^Kookploeg:/i, 'kookploeg')})</span>
+                )}
+                {r.status === 'straks' && <span className="vast__hierna"> · hierna</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {dag.items.length ? (
+        <ol className="programma" aria-label="Programma">
+          {rijen.map((r) => r.el)}
+        </ol>
+      ) : (
+        <div className="blad__leeg">
+          <em>Deze bladzijde is nog leeg.</em>
+          De reisleiding vult hem later in.
+        </div>
+      )}
+
+      <nav className="blader" aria-label="Bladeren">
+        {vorige ? (
+          <button type="button" onClick={() => naar(vorige.datum)}>
+            <span className="blader__richting">‹ Vorige dag</span>
+            {vorige.titel}
+          </button>
+        ) : (
+          <span />
+        )}
+        {volgende ? (
+          <button type="button" className="blader__volgende" onClick={() => naar(volgende.datum)}>
+            <span className="blader__richting">Volgende dag ›</span>
+            {volgende.titel}
+          </button>
+        ) : (
+          <span />
+        )}
+      </nav>
+    </article>
+  )
+}
+
+function Inhoud({ dagen, vandaag, naar }: { dagen: Dag[]; vandaag: string; naar: (datum: string) => void }) {
+  return (
+    <section className="inhoudsopgave" aria-labelledby="inhoudkop">
+      <h2 id="inhoudkop">Inhoud</h2>
+      <p className="inhoudsopgave__intro">
+        {dagen.length} dagen Les Deux Alpes, van de parkeerplaats tot de parkeerplaats.
+      </p>
+      <ol>
+        {dagen.map((d, i) => {
+          const soort = d.datum === vandaag ? ' is-vandaag' : d.datum < vandaag ? ' is-voorbij' : ''
+          return (
+            <li key={d.datum}>
+              <button type="button" className={`toc${soort}`} onClick={() => naar(d.datum)} aria-current={d.datum === vandaag ? 'date' : undefined}>
+                <span className="toc__nr">{i + 1}</span>
+                <span className="toc__titel">{d.titel}</span>
+                <span className="toc__datum">{datumLabel(d.datum, 'kort')}</span>
+                <span className="toc__kern">
+                  {d.datum === vandaag ? 'Vandaag · ' : ''}
+                  {d.items.length ? kern(d) : 'Nog niets ingevuld'}
+                </span>
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+    </section>
+  )
 }
 
 export default function Planning() {
@@ -93,62 +341,21 @@ export default function Planning() {
   const nieuw = useNieuweKoppen()
   // Weer in het dorp, per datum (alleen voor dagen binnen de verwachting)
   const weerPerDag = new Map((weer?.locaties[0]?.dagen ?? []).map((d) => [d.datum, d]))
-  const dagRefs = useRef(new Map<string, HTMLElement>())
-  const chipRefs = useRef(new Map<string, HTMLButtonElement>())
-  const balk = useRef<HTMLDivElement>(null)
+  const [weergave, setWeergave] = useState<'dag' | 'reis'>('reis')
+  const [gekozen, setGekozen] = useState<string | null>(null)
   /** Voor welke datum we al naar "vandaag" gesprongen zijn */
-  const gescrold = useRef<string | null>(null)
-  const negeerScrollTot = useRef(0)
-  const [actief, setActief] = useState<string | null>(null)
+  const gezet = useRef<string | null>(null)
 
-  // Bij openen: naar vandaag (of de eerste dag). Wordt het een nieuwe dag terwijl Planning open
-  // staat (bijv. de app 's ochtends weer uit de achtergrond gehaald), dan ook naar die nieuwe dag.
+  // Tijdens de reis opent Planning op vandaag; ervoor en erna op de hele reis. Wordt het een nieuwe
+  // dag terwijl Planning open staat (de app 's ochtends uit de achtergrond), dan naar die nieuwe dag.
   useEffect(() => {
-    if (!data || gescrold.current === vandaag) return
-    const eersteKeer = gescrold.current === null
-    gescrold.current = vandaag
-    const inPlanning = data.dagen.some((d) => d.datum === vandaag)
-    // Nieuwe dag die niet in de planning staat (na de reis): blijven waar je was
-    if (!eersteKeer && !inPlanning) return
-    const start = inPlanning ? vandaag : data.dagen[0]?.datum
-    if (!start) return
-    setActief(start)
-    if (start === vandaag) dagRefs.current.get(vandaag)?.scrollIntoView({ block: 'start' })
+    if (!data || gezet.current === vandaag) return
+    gezet.current = vandaag
+    if (data.dagen.some((d) => d.datum === vandaag)) {
+      setGekozen(vandaag)
+      setWeergave('dag')
+    }
   }, [data, vandaag])
-
-  // De actieve dag schuift naar links in de dagenbalk, de rest schuift mee
-  useEffect(() => {
-    const chip = actief ? chipRefs.current.get(actief) : undefined
-    if (chip && balk.current) schuifNaar(balk.current, chip.offsetLeft - 16)
-  }, [actief])
-
-  // Tijdens het scrollen door de planning loopt de dagenbalk mee
-  useEffect(() => {
-    if (!data) return
-    let wacht = 0
-    const bijScroll = () => {
-      if (wacht) return
-      wacht = requestAnimationFrame(() => {
-        wacht = 0
-        if (Date.now() < negeerScrollTot.current) return
-        const grens = (balk.current?.getBoundingClientRect().bottom ?? 0) + 24
-        let huidig = data.dagen[0]?.datum
-        for (const d of data.dagen) {
-          const el = dagRefs.current.get(d.datum)
-          if (el && el.getBoundingClientRect().top <= grens) huidig = d.datum
-        }
-        // Helemaal onderaan: de laatste dag, ook als die niet tot bovenaan kan scrollen
-        const onderaan = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4
-        if (onderaan) huidig = data.dagen[data.dagen.length - 1]?.datum ?? huidig
-        if (huidig) setActief(huidig)
-      })
-    }
-    window.addEventListener('scroll', bijScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', bijScroll)
-      cancelAnimationFrame(wacht)
-    }
-  }, [data])
 
   if (!data) {
     return (
@@ -159,28 +366,80 @@ export default function Planning() {
     )
   }
 
-  // Voor de nieuwe kop: welke dag het is, wat er straks is en het weer van vandaag
   const dagIndex = data.dagen.findIndex((d) => d.datum === vandaag)
-  const straks = dagIndex >= 0 ? data.dagen[dagIndex].items.find((i) => i.tijd > tijdUUMM(nu)) : undefined
   const dagenTotVertrek = Math.ceil((lokaalNaarDate(`${config.vertrek.slice(0, 10)}T00:00`).getTime() - nu.getTime()) / 86_400_000)
   const weerVandaag = weerPerDag.get(vandaag)
+
+  // Eén zin onder de titel: wat er nu is en wat daarna komt
+  let regel: ReactNode = undefined
+  if (dagIndex >= 0) {
+    const { items, vrij } = dagStatus(data.dagen[dagIndex], nu)
+    const bezig = items.find((i) => i.status === 'bezig' && !i.optioneel)
+    const straks = items.find((i) => i.status === 'straks')
+    const nuVrij = vrij.find((v) => v.status === 'bezig')
+    const daarna = straks ? ` Om ${straks.tijd}: ${straks.titel}.` : ''
+    regel = bezig
+      ? `Nu: ${bezig.titel}.${daarna}`
+      : nuVrij
+        ? `Nu vrij tot ${nuVrij.tot}.${daarna}`
+        : straks
+          ? `Om ${straks.tijd}: ${straks.titel}.`
+          : 'Niets meer vandaag. Welterusten.'
+  } else if (dagenTotVertrek > 0) {
+    regel = `Vertrek ${datumLabel(config.vertrek.slice(0, 10))} om ${config.vertrek.slice(11)}`
+  } else if (data.dagen.length && vandaag > data.dagen[data.dagen.length - 1].datum) {
+    regel = 'Het boekje is uit. Tot volgend jaar.'
+  }
+
+  const naar = (datum: string) => {
+    setGekozen(datum)
+    setWeergave('dag')
+    window.scrollTo({ top: 0 })
+  }
+  const kiesWeergave = (w: 'dag' | 'reis') => {
+    setWeergave(w)
+    // Terug naar een dag: vandaag als we op reis zijn, anders de dag die je het laatst bekeek
+    if (w === 'dag' && dagIndex >= 0) setGekozen(vandaag)
+  }
+
+  const dagNr = Math.max(0, data.dagen.findIndex((d) => d.datum === (gekozen ?? data.dagen[0]?.datum)))
+  const dag = data.dagen[dagNr]
+  const w = dag ? weerPerDag.get(dag.datum) : undefined
+
+  const keuze = (
+    <div className="schermkop__keuze">
+      <div className="segment" role="group" aria-label="Weergave">
+        {(
+          [
+            ['dag', dagIndex >= 0 ? 'Vandaag' : 'Per dag'],
+            ['reis', 'Hele reis'],
+          ] as const
+        ).map(([waarde, label]) => (
+          <button
+            key={waarde}
+            type="button"
+            className={`segment__knop${weergave === waarde ? ' is-actief' : ''}`}
+            aria-pressed={weergave === waarde}
+            onClick={() => kiesWeergave(waarde)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
   const kop = (
     <SchermKop
       titel="Planning"
       boven={
         dagIndex >= 0
-          ? `Dag ${dagIndex + 1} van ${data.dagen.length}`
+          ? `Dag ${dagIndex + 1} van ${data.dagen.length} · ${tijdUUMM(nu)}`
           : dagenTotVertrek > 0
             ? `Nog ${dagenTotVertrek} ${dagenTotVertrek === 1 ? 'dag' : 'dagen'}`
             : undefined
       }
-      ondertitel={
-        straks
-          ? `Straks: ${straks.titel} om ${straks.tijd}`
-          : dagenTotVertrek > 0
-            ? `Vertrek ${datumLabel(config.vertrek.slice(0, 10))} om ${config.vertrek.slice(11)}`
-            : undefined
-      }
+      ondertitel={regel && <span role="status">{regel}</span>}
       rechts={
         weerVandaag && (
           <span title={`${weerTekst(weerVandaag.code)} in het dorp`}>
@@ -193,66 +452,31 @@ export default function Planning() {
           </span>
         )
       }
-    />
+    >
+      {keuze}
+    </SchermKop>
   )
 
-  const naarDag = (datum: string) => {
-    // Even niet laten meelopen, anders springt de balk langs alle tussenliggende dagen
-    negeerScrollTot.current = Date.now() + 1200
-    setActief(datum)
-    dagRefs.current.get(datum)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   return (
-    <div className="scherm">
+    <div className="scherm boekje">
       {nieuw ? kop : <h1>Planning</h1>}
-      <div ref={balk} className="dagkiezer" role="navigation" aria-label="Spring naar dag">
-        {data.dagen.map((d) => (
-          <button
-            key={d.datum}
-            ref={(el) => {
-              if (el) chipRefs.current.set(d.datum, el)
-              else chipRefs.current.delete(d.datum)
-            }}
-            type="button"
-            className={`dagkiezer__dag${d.datum === vandaag ? ' is-vandaag' : ''}${d.datum === actief ? ' is-actief' : ''}`}
-            aria-current={d.datum === actief ? 'true' : undefined}
-            onClick={() => naarDag(d.datum)}
-          >
-            {datumLabel(d.datum, 'kort')}
-          </button>
-        ))}
-      </div>
-
-      {data.dagen.map((dag, i) => {
-        const isVandaag = dag.datum === vandaag
-        return (
-          <section
-            key={dag.datum}
-            ref={(el) => {
-              if (el) dagRefs.current.set(dag.datum, el)
-              else dagRefs.current.delete(dag.datum)
-            }}
-            className={`kaartje dag${isVandaag ? ' dag--vandaag' : ''}${dag.datum < vandaag ? ' dag--voorbij' : ''}`}
-            aria-current={isVandaag ? 'date' : undefined}
-          >
-            <div className="dag__kop">
-              <p className="dag__nummer">
-                Dag {i + 1} · {datumLabel(dag.datum)}
-              </p>
-              {weerPerDag.has(dag.datum) && (
-                <span className="dag__weer" title={`${weerTekst(weerPerDag.get(dag.datum)!.code)} in het dorp`}>
-                  <span aria-hidden="true">{weerIcoon(weerPerDag.get(dag.datum)!.code)}</span>{' '}
-                  {graden(weerPerDag.get(dag.datum)!.tMax)}
-                </span>
-              )}
-              {isVandaag && <span className="label label--accent">Vandaag</span>}
-            </div>
-            <h2>{dag.titel}</h2>
-            <Programma dag={dag} nuTijd={isVandaag ? tijdUUMM(nu) : undefined} metIconen={nieuw} />
-          </section>
-        )
-      })}
+      {!nieuw && keuze}
+      {weergave === 'reis' || !dag ? (
+        <Inhoud dagen={data.dagen} vandaag={vandaag} naar={naar} />
+      ) : (
+        <Blad
+          key={dag.datum}
+          dag={dag}
+          nummer={dagNr + 1}
+          aantal={data.dagen.length}
+          nu={nu}
+          isVandaag={dag.datum === vandaag}
+          weerTekstje={w && `In het dorp: ${graden(w.tMax)}, ${weerTekst(w.code).toLowerCase()}`}
+          vorige={data.dagen[dagNr - 1]}
+          volgende={data.dagen[dagNr + 1]}
+          naar={naar}
+        />
+      )}
     </div>
   )
 }
