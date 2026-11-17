@@ -3687,76 +3687,7 @@ body:has(.huidig .kaartbalk) .toast {
   min-height: 44px;
 }
 
-.radkaart {
-  align-items: center;
-  gap: 12px;
-  padding: 14px 6px 62px;
-  --bergen-hoogte: 58px;
-  --sneeuwbank: var(--achtergrond);
-  background: var(--hero);
-  color: var(--hero-tekst);
-  border: 0;
-}
-
-.radkaart__wiel {
-  width: 100%;
-  max-width: 420px;
-  height: auto;
-  /* Liggend (of een laag scherm): rad, pijl en draaiknop samen in beeld */
-  max-height: calc(100dvh - 190px);
-  min-height: 200px;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
-}
-
-.radkaart__vaktekst {
-  font-family: var(--font-kop);
-  font-weight: 700;
-}
-
-.radkaart__draai {
-  min-width: 180px;
-  font-size: 1.3rem;
-}
-
-.radkaart__tekort {
-  font-family: var(--font-kop);
-  font-weight: 700;
-  text-align: center;
-}
-
-/* Klein knopje linksboven om het tikgeluid aan of uit te zetten */
-.radkaart__geluid {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  font-size: 1.2rem;
-}
-
-/* Het winnende vak licht een paar keer op */
-.radkaart__winnaar {
-  fill: #f3d36b;
-  fill-opacity: 0;
-  stroke: #f3d36b;
-  stroke-width: 3.5;
-  stroke-linejoin: round;
-  animation: radwinnaar 0.7s ease-in-out 4 alternate;
-}
-
-@keyframes radwinnaar {
-  to {
-    fill-opacity: 0.35;
-  }
-}
-
-/* Confetti over het rad na een uitslag */
+/* Confetti over de speltafel na een uitslag (de raderen zelf: styles/rad.css) */
 .confetti {
   position: absolute;
   inset: 0;
@@ -3806,19 +3737,6 @@ body:has(.huidig .kaartbalk) .toast {
   opacity: 0.55;
 }
 
-.raduitslag {
-  align-items: center;
-  text-align: center;
-  border: 3px solid var(--accent);
-  animation: omhoog 0.25s ease-out;
-}
-
-.raduitslag__soort {
-  font-family: var(--font-kop);
-  font-weight: 700;
-  color: var(--tekst-zacht);
-}
-
 /* Uitslag als popup midden in beeld */
 .dialoog-achtergrond--midden {
   place-items: center;
@@ -3827,33 +3745,6 @@ body:has(.huidig .kaartbalk) .toast {
 /* Rad: popup onderin en minder donker, zodat de pijl en het winnende vak zichtbaar blijven */
 .dialoog-achtergrond--licht {
   background: rgba(3, 6, 24, 0.25);
-}
-
-.raduitslag__inhoud {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.raduitslag--popup {
-  border: 3px solid var(--accent);
-  padding: 26px 20px 20px;
-}
-
-.raduitslag--popup .raduitslag__groot {
-  font-size: 1.9rem;
-}
-
-.raduitslag--popup .dialoog__knoppen {
-  width: 100%;
-}
-
-.raduitslag__groot {
-  font-family: var(--font-kop);
-  font-size: 1.6rem;
-  font-weight: 800;
-  line-height: 1.2;
 }
 
 .eigenopties {

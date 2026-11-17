@@ -22,9 +22,9 @@ const FLICK = 0.3
 /** Afloop: snel begin, zacht einde (zoals iOS-paginering) */
 const AFLOOP = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
-/** Elementen met een eigen veeggebaar of vensters. De kaart alleen als je ingezoomd bent. */
+/** Elementen met een eigen veeggebaar of vensters (ook de raderen). De kaart alleen als je ingezoomd bent. */
 const EIGEN_GEBAAR =
-  '.kaartvak:not([data-uitgezoomd]), .foto-groot, .bijsnijder__kader, [role="dialog"], input, textarea, select'
+  '.kaartvak:not([data-uitgezoomd]), .foto-groot, .bijsnijder__kader, [role="dialog"], [data-eigen-gebaar], input, textarea, select'
 
 function minderBeweging() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
