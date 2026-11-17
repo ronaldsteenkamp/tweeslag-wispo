@@ -195,12 +195,24 @@ export async function grooteLink(f: Foto): Promise<string | null> {
 const wijzigingLuisteraars = new Set<() => void>()
 const meldWijziging = () => wijzigingLuisteraars.forEach((f) => f())
 
+/*
+ * Onthouden zolang de app open is, zodat foto's er direct staan als je terugkomt op een scherm
+ * (Home wordt bij elke tabwissel opnieuw opgebouwd):
+ * - de laatst opgehaalde lijst per aantal;
+ * - de tijdelijke links per foto. Een nieuwe link is voor de browser een nieuwe afbeelding (die
+ *   dan opnieuw laadt), dus een link wordt pas vervangen als hij bijna verloopt.
+ */
+const lijstCache = new Map<number, { fotos: Foto[]; meer: boolean }>()
+const linkCache = new Map<string, { url: string; tot: number }>()
+/** Een link die korter dan dit nog geldig is, wordt vernieuwd (ruim binnen het verversen elke 45 min) */
+const LINK_MARGE = 20 * 60_000
+
 /** De nieuwste foto's, met tijdelijke links naar de kleine versies. Ververst live. */
 export function useFotos(aantal: number, actief = true) {
-  const [fotos, setFotos] = useState<Foto[] | null>(null)
+  const [fotos, setFotos] = useState<Foto[] | null>(() => lijstCache.get(aantal)?.fotos ?? null)
   const [mislukt, setMislukt] = useState(false)
   const [limiet, setLimiet] = useState(aantal)
-  const [meer, setMeer] = useState(false)
+  const [meer, setMeer] = useState(() => lijstCache.get(aantal)?.meer ?? false)
   const weg = useRef(false)
 
   const ververs = useCallback(async () => {
@@ -219,18 +231,22 @@ export function useFotos(aantal: number, actief = true) {
       if (error) throw error
       const rijen = (data ?? []) as Foto[]
       const zichtbaar = rijen.slice(0, limiet)
-      if (zichtbaar.length) {
-        const { data: links, error: e2 } = await c.storage.from(BUCKET).createSignedUrls(
-          zichtbaar.map((f) => kleinPad(f.pad)),
-          LINK_GELDIG,
-        )
+      // Alleen nieuwe links vragen voor foto's zonder (nog lang genoeg) geldige link
+      const t = Date.now()
+      const nodig = zichtbaar.map((f) => kleinPad(f.pad)).filter((p) => (linkCache.get(p)?.tot ?? 0) - t < LINK_MARGE)
+      if (nodig.length) {
+        const { data: links, error: e2 } = await c.storage.from(BUCKET).createSignedUrls(nodig, LINK_GELDIG)
         if (e2) throw e2
-        const perPad = new Map((links ?? []).map((l) => [l.path, l.signedUrl]))
-        for (const f of zichtbaar) f.klein = perPad.get(kleinPad(f.pad)) ?? undefined
+        for (const l of links ?? []) {
+          if (l.path && l.signedUrl) linkCache.set(l.path, { url: l.signedUrl, tot: t + LINK_GELDIG * 1000 })
+        }
       }
+      for (const f of zichtbaar) f.klein = linkCache.get(kleinPad(f.pad))?.url
+      const heeftMeer = rijen.length > limiet
+      lijstCache.set(limiet, { fotos: zichtbaar, meer: heeftMeer })
       if (weg.current) return
       setFotos(zichtbaar)
-      setMeer(rijen.length > limiet)
+      setMeer(heeftMeer)
       setMislukt(false)
     } catch {
       if (!weg.current) setMislukt(true)
