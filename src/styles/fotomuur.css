@@ -1,0 +1,426 @@
+/*
+ * Fotomuur in de stijl "clubblad" (gekozen uit mockups/fotomuur-c.html): de Wispo-editie van het
+ * clubblad, in hetzelfde drukwerk als het Spel. Papier, navy inkt, lichtblauw en stempelrood;
+ * Barlow Condensed voor koppen en bijschriften, Georgia voor lopende tekst. Contrast tekst/vlak
+ * minstens 4,5 : 1. Foto's houden een vaste maat (breedte/hoogte), zodat niets verspringt.
+ */
+
+.inhoud--fotos {
+  --papier: #f5f2ea;
+  --papier-2: #ebe5d6;
+  --inkt: #0d0058;
+  --inkt-zacht: #4b4e6b;
+  --lijn: #cfc6b2;
+  --blauw: #099fc4;
+  --blauw-tekst: #05607a;
+  --rood: #b3202c;
+  min-height: 100dvh;
+  background: var(--papier);
+  color: var(--inkt);
+}
+
+.inhoud--fotos .schermkop {
+  --sneeuwbank: var(--papier);
+}
+
+.fotomuur {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.fotomuur p,
+.fotomuur h2,
+.fotomuur h3,
+.fotomuur figure {
+  margin: 0;
+}
+
+.fotomuur__caps {
+  font: 700 14px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+.fotomuur__tekst {
+  padding: 8px 0;
+}
+
+.fotomuur__klein {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--inkt-zacht);
+}
+
+.fotomuur__melding {
+  padding: 10px 12px;
+  border: 2px solid var(--rood);
+  color: var(--rood);
+  font: 700 17px/1.25 'Barlow Condensed', sans-serif;
+}
+
+/* Naamregel van het blad, onder de kop */
+.fotomuur__naam {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0 10px;
+  border-bottom: 3px double var(--inkt);
+}
+
+/* Knop: inkt-blok met een harde lichtblauwe schaduw, zoals in het Spel */
+.fotomuur__knop {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 2px solid var(--inkt);
+  border-radius: 4px;
+  background: var(--inkt);
+  color: var(--papier);
+  font: 700 19px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 0 var(--blauw);
+  transition: transform 0.06s, box-shadow 0.06s;
+  touch-action: manipulation;
+}
+
+.fotomuur__knop:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--blauw);
+}
+
+.fotomuur__knop--licht {
+  background: transparent;
+  color: var(--inkt);
+}
+
+/* ---------- Ter perse: wat nog op deze telefoon wacht ---------- */
+
+.fotomuur__pers {
+  margin-top: 14px;
+  padding: 10px 12px 12px;
+  border: 2px solid var(--inkt);
+}
+
+.fotomuur__pers h2 {
+  font: 700 19px/1.1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fotomuur__pers ul {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fotomuur__pers li {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.fotomuur__pers img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  background: var(--papier-2);
+}
+
+.fotomuur__pers li p {
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+.fotomuur__pers .fotomuur__klein {
+  margin-top: 8px;
+}
+
+.fotomuur__stempel {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 7px;
+  border: 2px solid var(--rood);
+  border-radius: 3px;
+  color: var(--rood);
+  font: 700 13px/1.3 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.fotomuur__stempel--blauw {
+  border-color: var(--blauw-tekst);
+  color: var(--blauw-tekst);
+}
+
+/* ---------- Een pagina (= een dag) ---------- */
+
+.fotomuur__pagina {
+  padding-top: 26px;
+  scroll-margin-top: 60px;
+}
+
+.fotomuur__paginakop {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--inkt);
+}
+
+.fotomuur__paginakop h2 {
+  font: 700 30px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.fotomuur__paginakop small {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.fotomuur__paginakop > span {
+  flex: none;
+  padding-bottom: 3px;
+}
+
+/* De foto als knop: geen eigen opmaak, de foto is het vlak */
+.fotomuur__foto {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: var(--papier-2);
+  touch-action: manipulation;
+}
+
+.fotomuur__foto img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.fotomuur__leegvlak {
+  display: block;
+  aspect-ratio: 4 / 3;
+}
+
+/* Openingsfoto met de challenge als kop */
+.fotomuur__opening {
+  margin-top: 12px;
+}
+
+.fotomuur__opening img {
+  max-height: 470px;
+  min-height: 200px;
+}
+
+.fotomuur__opening h3 {
+  margin-top: 10px;
+  font: 700 34px/0.98 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.fotomuur__byline {
+  margin-top: 4px;
+  font: 600 15px/1.3 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+/* Zetwerk: wisselende blokken. Foto's worden hier bijgesneden; groot zie je de hele foto. */
+.fotomuur__zet {
+  display: grid;
+  gap: 14px 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--lijn);
+}
+
+.fotomuur__zet--a {
+  grid-template-columns: 2fr 1fr;
+}
+
+.fotomuur__zet--a > :first-child {
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+}
+
+/* De grote foto voegt zich naar de twee kleine ernaast (hij bepaalt de hoogte niet zelf) */
+.fotomuur__zet--a > :first-child .fotomuur__foto {
+  position: relative;
+  flex: 1;
+  min-height: 200px;
+}
+
+.fotomuur__zet--a > :first-child img {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+.fotomuur__zet--a > :not(:first-child) img {
+  aspect-ratio: 1;
+}
+
+.fotomuur__zet--b {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.fotomuur__zet--b img {
+  aspect-ratio: 3 / 4;
+}
+
+.fotomuur__zet--c {
+  grid-template-columns: 1fr 1fr;
+}
+
+.fotomuur__zet--c img {
+  aspect-ratio: 4 / 5;
+}
+
+.fotomuur__zet--enkel img {
+  max-height: 420px;
+}
+
+.fotomuur__stuk {
+  min-width: 0;
+}
+
+.fotomuur__stuk figcaption {
+  padding-top: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 600 14px/1.25 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+.fotomuur__stuk b {
+  color: var(--inkt);
+}
+
+.fotomuur__panorama {
+  margin-top: 16px !important;
+  padding-top: 14px;
+  border-top: 1px solid var(--lijn);
+}
+
+.fotomuur__meer {
+  display: flex;
+  width: 100%;
+  margin-top: 26px;
+}
+
+.fotomuur__einde {
+  padding: 34px 0 20px;
+  text-align: center;
+}
+
+/* ---------- Leeg en jaarboek ---------- */
+
+.fotomuur__leeg {
+  padding-top: 22px;
+}
+
+.fotomuur__leeg h2 {
+  font: 700 38px/0.98 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.fotomuur__leeg > p {
+  margin-top: 10px;
+}
+
+.fotomuur__leeg .fotomuur__knop {
+  margin-top: 18px;
+}
+
+.fotomuur__colofon {
+  margin-top: 26px;
+  padding: 12px;
+  border: 1px solid var(--lijn);
+  font-size: 0.92rem;
+}
+
+.fotomuur__colofon .fotomuur__caps {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.fotomuur__jaarboek {
+  padding-top: 18px;
+}
+
+.fotomuur__omslag {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.fotomuur__omslag img {
+  aspect-ratio: 1;
+}
+
+.fotomuur__jaarboek h2 {
+  margin-top: 14px;
+  font: 700 40px/0.95 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.fotomuur__jaarboek > p {
+  margin-top: 8px;
+}
+
+.fotomuur__inhoud {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 3px double var(--inkt);
+}
+
+.fotomuur__inhoud a,
+.fotomuur__inhoud-leeg {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--lijn);
+  color: inherit;
+  text-decoration: none;
+}
+
+.fotomuur__inhoud-leeg {
+  color: var(--inkt-zacht);
+}
+
+.fotomuur__inhoud span[aria-hidden] {
+  flex: 1;
+  border-bottom: 1px dotted var(--inkt-zacht);
+}
+
+.fotomuur__inhoud b {
+  font: 700 19px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fotomuur__knop {
+    transition: none;
+  }
+}

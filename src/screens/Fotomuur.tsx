@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SchermKop } from '../components/SchermKop'
-import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { Icoon } from '../components/Icoon'
-import { Verbinding } from '../components/Verbinding'
 import { useBackend } from '../lib/backend'
 import { useToonNaam } from '../lib/bijnamen'
 import { useDialoogFocus } from '../lib/dialoogFocus'
-import { useData } from '../lib/data'
+import { useData, type Dag } from '../lib/data'
 import { useKamerNaam } from '../lib/kamernamen'
 import { grooteLink, useFotos, type Foto } from '../lib/fotos'
-import { useFotoWachtrij } from '../lib/fotowachtrij'
+import { useFotoWachtrijLijst, type WachtendeFoto } from '../lib/fotowachtrij'
+import { useNu } from '../lib/nu'
 import { lees, schrijfEnMeld } from '../lib/opslag'
 import { useTerugSluit } from '../lib/terugknop'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
+import '../styles/barlow.css'
+import '../styles/fotomuur.css'
 
 export function wanneerGemaakt(iso: string) {
   const d = new Date(iso)
@@ -29,86 +30,379 @@ export function useKamerLabel() {
   }, [data, naamVanKamer])
 }
 
+/*
+ * De Fotomuur als de Wispo-editie van het clubblad (gekozen uit mockups/fotomuur-c.html), in
+ * hetzelfde drukwerk als het Spel: papier, navy inkt, lichtblauw en stempelrood. Elke reisdag is
+ * een pagina met een openingsfoto en de challenge als kop, daaronder wisselend zetwerk (foto's
+ * mogen daar bijgesneden worden; groot zie je altijd de hele foto). Na de reis: het jaarboek.
+ * Opmaak in styles/fotomuur.css.
+ */
+
+/** Breder dan dit = panorama: altijd over de hele breedte */
+const PANORAMA = 2.2
+const verhouding = (f: Foto) => (f.breedte && f.hoogte ? f.breedte / f.hoogte : 4 / 3)
+
+interface Pagina {
+  datum: string
+  /** Reisdag (1-10) als de datum in de planning staat */
+  nr: number | null
+  titel: string
+  opening: Foto
+  rest: Foto[]
+}
+
+/** Foto's per dag (nieuwste dag eerst); de openingsfoto is de nieuwste liggende foto */
+function maakPaginas(fotos: Foto[], dagen: Dag[]): Pagina[] {
+  const perDag = new Map<string, Foto[]>()
+  for (const f of fotos) {
+    const d = datumISO(new Date(f.gemaakt))
+    if (!perDag.has(d)) perDag.set(d, [])
+    perDag.get(d)!.push(f)
+  }
+  return [...perDag].map(([datum, lijst]) => {
+    const i = dagen.findIndex((d) => d.datum === datum)
+    const opening = lijst.find((f) => verhouding(f) >= 1 && verhouding(f) < PANORAMA) ?? lijst[0]
+    return {
+      datum,
+      nr: i < 0 ? null : i + 1,
+      titel: i < 0 ? datumLabel(datum) : dagen[i].titel,
+      opening,
+      rest: lijst.filter((f) => f !== opening),
+    }
+  })
+}
+
+/** Zetwerk: panorama's breed, de rest in blokken (groot + twee klein, drie naast elkaar, twee naast elkaar) */
+function zetwerk(fotos: Foto[]): { soort: 'a' | 'b' | 'c' | 'enkel' | 'panorama'; fotos: Foto[] }[] {
+  const uit: ReturnType<typeof zetwerk> = []
+  let patroon = 0
+  let gewoon: Foto[] = []
+  const blokken = () => {
+    while (gewoon.length) {
+      const soort = (['a', 'b', 'c'] as const)[patroon++ % 3]
+      const deel = gewoon.splice(0, soort === 'c' ? 2 : 3)
+      uit.push({ soort: deel.length === 1 ? 'enkel' : deel.length === 2 ? 'c' : soort, fotos: deel })
+    }
+  }
+  for (const f of fotos) {
+    if (verhouding(f) >= PANORAMA) {
+      blokken()
+      uit.push({ soort: 'panorama', fotos: [f] })
+    } else gewoon.push(f)
+  }
+  blokken()
+  gewoon = []
+  return uit
+}
+
 export default function Fotomuur({ terug }: { terug: () => void }) {
   const backend = useBackend()
-  const nieuweKop = useNieuweKoppen()
   const { fotos, mislukt, meer, laadMeer } = useFotos(30, backend.status !== 'uit')
+  const { data: planning } = useData('planning')
+  const nu = useNu(60_000)
   const kamerLabel = useKamerLabel()
   const toon = useToonNaam()
-  const [open, setOpen] = useState<number | null>(null)
-  const wachtend = useFotoWachtrij()
+  const wachtend = useFotoWachtrijLijst()
+  const [open, setOpen] = useState<{ lijst: Foto[]; i: number } | null>(null)
+
+  const dagen = useMemo(() => planning?.dagen ?? [], [planning])
+  const vandaagISO = datumISO(nu)
+  const vandaagNr = dagen.findIndex((d) => d.datum === vandaagISO) + 1
+  const laatsteDag = dagen[dagen.length - 1]?.datum
+  const naDeReis = !!laatsteDag && vandaagISO > laatsteDag
+
+  const paginas = useMemo(() => maakPaginas(fotos ?? [], dagen), [fotos, dagen])
+  // Doorbladeren gaat op leesvolgorde: per pagina de opening en dan het zetwerk
+  const leesvolgorde = useMemo(() => paginas.flatMap((p) => [p.opening, ...zetwerk(p.rest).flatMap((b) => b.fotos)]), [paginas])
+  const openFoto = (f: Foto, lijst = leesvolgorde) => setOpen({ lijst, i: Math.max(0, lijst.indexOf(f)) })
+
+  // Oudere pagina's laden zodra je onderaan komt (geen knop nodig, wel als terugval)
+  const onderkant = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = onderkant.current
+    if (!el || !meer || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver((e) => e[0]?.isIntersecting && laadMeer(), { rootMargin: '800px 0px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [meer, laadMeer, fotos?.length])
+
+  // Inzenden gaat altijd bij een challenge: naar de challenges in het Spel
+  const naarChallenges = () => {
+    schrijfEnMeld('spel.onderdeel', 'challenges')
+    terug()
+  }
+
+  const verbonden = backend.status === 'verbonden' && !!backend.gekoppeld
+  const fotoDag = (f: Foto) => {
+    const d = datumISO(new Date(f.gemaakt))
+    const i = dagen.findIndex((x) => x.datum === d)
+    return i < 0 ? datumLabel(d, 'kort') : `Pag. ${i + 1} · ${dagen[i].titel}`
+  }
 
   return (
     <div className="scherm fotomuur">
-      {!nieuweKop && (
-        <button type="button" className="tekstknop" onClick={terug}>
-          ← Terug naar Spel
-        </button>
-      )}
-      {nieuweKop ? <SchermKop titel="Fotomuur" ondertitel="Bewijsfoto's van de challenges" terug={{ label: 'Spel', onClick: terug }} /> : <h1>Fotomuur</h1>}
+      <SchermKop
+        titel="Fotomuur"
+        boven="G.S.B.V. Tweeslag"
+        ondertitel={naDeReis ? 'Jaarboek Wispo 2027' : `Wispo-editie${vandaagNr ? ` nr. ${vandaagNr}` : ''} · ${datumLabel(vandaagISO)}`}
+        terug={{ label: 'Spel', onClick: terug }}
+      />
 
       {backend.status === 'uit' ? (
-        <p>Er is geen backend ingesteld, dus er is geen fotomuur.</p>
+        <p className="fotomuur__tekst">Er is geen backend ingesteld, dus er is geen fotomuur.</p>
       ) : (
         <>
-          <div className="kaartje klassement__status">
-            <Verbinding />
-            <p className="klein">Upload een foto als bewijs via het 📷-knopje bij een challenge.</p>
-            {wachtend > 0 && (
-              <p className="klein">
-                📤 {wachtend} {wachtend === 1 ? 'foto wacht' : "foto's wachten"} op bereik en {wachtend === 1 ? 'komt' : 'komen'}{' '}
-                vanzelf op de muur.
-              </p>
+          <div className="fotomuur__naam">
+            <p className="fotomuur__caps">
+              {naDeReis
+                ? 'Les Deux Alpes · 5 – 14 maart 2027'
+                : fotos?.length
+                  ? `${fotos.length}${meer ? '+' : ''} foto's in het blad`
+                  : 'Bewijs van de challenges'}
+            </p>
+            {!naDeReis && fotos?.length !== 0 && (
+              <button type="button" className="fotomuur__knop" onClick={naarChallenges} aria-label="Foto inzenden bij een challenge">
+                <Icoon naam="camera" grootte={20} /> Inzenden
+              </button>
             )}
           </div>
 
+          <TerPerse wachtend={wachtend} verbonden={verbonden} />
+
+          {mislukt && fotos && <p className="fotomuur__melding">Geen verbinding. Nieuwe foto&apos;s verschijnen zodra er internet is.</p>}
+
           {!fotos ? (
-            <p className="laadtekst">
-              {mislukt || backend.status !== 'verbonden'
-                ? 'Geen verbinding. De fotomuur laadt zodra er internet is.'
-                : "Foto's laden…"}
+            <p className="fotomuur__tekst">
+              {mislukt || backend.status !== 'verbonden' ? 'Geen verbinding. Het blad laadt zodra er internet is.' : 'Het blad wordt gedrukt…'}
             </p>
           ) : fotos.length === 0 ? (
-            <p className="laadtekst">Nog geen foto&apos;s. Wie is de eerste?</p>
+            <section className="fotomuur__leeg">
+              <h2>
+                Deze editie
+                <br />
+                is nog leeg.
+              </h2>
+              <p>
+                De redactie, dat zijn jullie, zit klaar. Alles wat je instuurt voor een challenge komt in het blad, per dag een
+                pagina.
+              </p>
+              <button type="button" className="fotomuur__knop" onClick={naarChallenges}>
+                <Icoon naam="camera" grootte={20} /> Eerste foto inzenden
+              </button>
+              <Colofon />
+            </section>
           ) : (
             <>
-              {mislukt && <p className="melding">Geen verbinding. Nieuwe foto&apos;s verschijnen zodra er internet is.</p>}
-              <ul className="fotomuur__raster">
-                {fotos.map((f, i) => (
-                  <li key={f.id}>
-                    <button type="button" className="fotomuur__foto" onClick={() => setOpen(i)}>
-                      {f.klein ? <img src={f.klein} alt={`${f.challenge_titel} door ${toon(f.naam)}`} loading="lazy" /> : <span>📷</span>}
-                    </button>
-                    <p className="fotomuur__onderschrift">
-                      <strong>{toon(f.naam)}</strong>
-                      {f.kamer && <span> · kamer {kamerLabel(f.kamer)}</span>}
-                      <br />
-                      {f.challenge_titel}
-                      <small>{wanneerGemaakt(f.gemaakt)}</small>
-                    </p>
-                  </li>
-                ))}
-              </ul>
-              {meer && (
-                <button type="button" className="knop knop--secundair knop--breed" onClick={laadMeer}>
-                  Meer foto&apos;s
+              {naDeReis && <Jaarboek paginas={paginas} dagen={dagen} onOpen={openFoto} />}
+              {paginas.map((p) => (
+                <article key={p.datum} id={`pagina-${p.datum}`} className="fotomuur__pagina" aria-labelledby={`kop-${p.datum}`}>
+                  <header className="fotomuur__paginakop">
+                    <h2 id={`kop-${p.datum}`}>
+                      <small className="fotomuur__caps">
+                        {p.nr ? `Pag. ${p.nr} · ` : ''}
+                        {datumLabel(p.datum)}
+                      </small>
+                      {p.titel}
+                    </h2>
+                    <span className="fotomuur__caps">
+                      {p.rest.length + 1} {p.rest.length ? "foto's" : 'foto'}
+                    </span>
+                  </header>
+                  <Opening foto={p.opening} kamerLabel={kamerLabel} onOpen={() => openFoto(p.opening)} />
+                  {zetwerk(p.rest).map((b) =>
+                    b.soort === 'panorama' ? (
+                      <figure key={b.fotos[0].id} className="fotomuur__panorama">
+                        <FotoKnop foto={b.fotos[0]} onOpen={() => openFoto(b.fotos[0])} />
+                        <figcaption className="fotomuur__byline">
+                          {b.fotos[0].challenge_titel} · {toon(b.fotos[0].naam)} · {tijdUUMM(new Date(b.fotos[0].gemaakt))}
+                        </figcaption>
+                      </figure>
+                    ) : (
+                      <div key={b.fotos[0].id} className={`fotomuur__zet fotomuur__zet--${b.soort}`}>
+                        {b.fotos.map((f) => (
+                          <figure key={f.id} className="fotomuur__stuk">
+                            <FotoKnop foto={f} onOpen={() => openFoto(f)} />
+                            <figcaption>
+                              <b>{toon(f.naam)}</b> · {tijdUUMM(new Date(f.gemaakt))}
+                            </figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    ),
+                  )}
+                </article>
+              ))}
+              <div ref={onderkant} />
+              {meer ? (
+                <button type="button" className="fotomuur__knop fotomuur__knop--licht fotomuur__meer" onClick={laadMeer}>
+                  Oudere pagina&apos;s
                 </button>
+              ) : (
+                <p className="fotomuur__caps fotomuur__einde">{naDeReis ? 'Einde van het jaarboek' : '— einde van deze editie —'}</p>
               )}
             </>
           )}
         </>
       )}
 
-      {open !== null && fotos && (
+      {open && (
         <FotoGroot
-          fotos={fotos}
-          start={open}
+          fotos={open.lijst}
+          start={open.i}
           kamerLabel={kamerLabel}
+          kop={fotoDag}
           onSluit={() => setOpen(null)}
-          onBijnaAanHetEind={meer ? laadMeer : undefined}
+          onBijnaAanHetEind={meer && open.lijst === leesvolgorde ? laadMeer : undefined}
         />
       )}
     </div>
+  )
+}
+
+/** Een foto op de muur als knop; de alt-tekst noemt wie, wanneer en welke challenge */
+function FotoKnop({ foto: f, onOpen, groot }: { foto: Foto; onOpen: () => void; groot?: string | null }) {
+  const toon = useToonNaam()
+  const d = new Date(f.gemaakt)
+  return (
+    <button type="button" className="fotomuur__foto" onClick={onOpen}>
+      {f.klein ? (
+        <img
+          src={groot ?? f.klein}
+          alt={`Foto van ${toon(f.naam)}, ${datumLabel(datumISO(d))} ${tijdUUMM(d)}, challenge ${f.challenge_titel}`}
+          width={f.breedte ?? undefined}
+          height={f.hoogte ?? undefined}
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <span className="fotomuur__leegvlak" role="img" aria-label={`Foto van ${toon(f.naam)} (nog niet geladen)`} />
+      )}
+    </button>
+  )
+}
+
+/** De openingsfoto van een pagina: groot (scherpe versie), met de challenge als kop */
+function Opening({ foto: f, kamerLabel, onOpen }: { foto: Foto; kamerLabel: (nr: string | null) => string; onOpen: () => void }) {
+  const toon = useToonNaam()
+  const [groot, setGroot] = useState<string | null>(() => grootGeheugen.get(f.id) ?? null)
+  useEffect(() => {
+    let actief = true
+    if (grootGeheugen.has(f.id)) setGroot(grootGeheugen.get(f.id)!)
+    else
+      void grooteLink(f).then((u) => {
+        if (!u) return
+        grootGeheugen.set(f.id, u)
+        // Pas wisselen als hij binnen is, zodat de kleine versie niet even verdwijnt
+        const img = new Image()
+        img.src = u
+        img.decode().then(
+          () => actief && setGroot(u),
+          () => {},
+        )
+      })
+    return () => {
+      actief = false
+    }
+  }, [f])
+  return (
+    <figure className="fotomuur__opening">
+      <FotoKnop foto={f} onOpen={onOpen} groot={groot} />
+      <h3>{f.challenge_titel}</h3>
+      <p className="fotomuur__byline">
+        Foto: {toon(f.naam)}
+        {f.kamer ? ` · kamer ${kamerLabel(f.kamer)}` : ''} · {tijdUUMM(new Date(f.gemaakt))}
+      </p>
+    </figure>
+  )
+}
+
+/** Foto's die nog op deze telefoon staan en op bereik wachten */
+function TerPerse({ wachtend, verbonden }: { wachtend: WachtendeFoto[]; verbonden: boolean }) {
+  if (!wachtend.length) return null
+  return (
+    <section className="fotomuur__pers" aria-live="polite" aria-labelledby="ter-perse">
+      <h2 id="ter-perse">Ter perse · {wachtend.length}</h2>
+      <ul>
+        {wachtend.map((w) => (
+          <li key={w.id}>
+            <img src={w.klein} alt="" />
+            <div>
+              <p>{w.titel}</p>
+              <span className={`fotomuur__stempel${w.bezig ? ' fotomuur__stempel--blauw' : ''}`}>
+                {w.bezig ? 'Wordt gedrukt…' : !verbonden ? 'Wacht op bereik' : w.pogingen ? 'Opnieuw in de rij' : 'Bijna aan de beurt'}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {!verbonden && (
+        <p className="fotomuur__klein">Je foto&apos;s liggen veilig op je telefoon en gaan vanzelf naar de drukker zodra er bereik is.</p>
+      )}
+    </section>
+  )
+}
+
+function Colofon() {
+  return (
+    <div className="fotomuur__colofon">
+      <span className="fotomuur__caps">Colofon</span>
+      <p>
+        Alleen te zien in deze app. Foto van jezelf liever niet in het blad? Zeg het tegen de organisatie, dan halen we hem
+        eraf.
+      </p>
+    </div>
+  )
+}
+
+/** Na de reis: omslag met vier foto's (elk van een andere dag) en de inhoudsopgave */
+function Jaarboek({ paginas, dagen, onOpen }: { paginas: Pagina[]; dagen: Dag[]; onOpen: (f: Foto, lijst: Foto[]) => void }) {
+  const omslag = paginas
+    .filter((p) => p.nr)
+    .map((p) => p.opening)
+    .filter((_, i, l) => i % Math.max(1, Math.floor(l.length / 4)) === 0)
+    .slice(0, 4)
+  const aantal = paginas.reduce((n, p) => n + p.rest.length + 1, 0)
+  const metFotos = new Set(paginas.map((p) => p.datum))
+  return (
+    <section className="fotomuur__jaarboek">
+      {omslag.length === 4 && (
+        <div className="fotomuur__omslag">
+          {omslag.map((f) => (
+            <FotoKnop key={f.id} foto={f} onOpen={() => onOpen(f, omslag)} />
+          ))}
+        </div>
+      )}
+      <h2>
+        Jaarboek
+        <br />
+        Wispo 2027
+      </h2>
+      <p>
+        {aantal} foto&apos;s op {metFotos.size} pagina&apos;s.
+      </p>
+      <ol className="fotomuur__inhoud">
+        {dagen.map((d, i) => (
+          <li key={d.datum}>
+            {metFotos.has(d.datum) ? (
+              <a href={`#pagina-${d.datum}`} onClick={(e) => {
+                e.preventDefault()
+                document.getElementById(`pagina-${d.datum}`)?.scrollIntoView()
+              }}>
+                <b>{d.titel}</b>
+                <span aria-hidden="true" />
+                <span className="fotomuur__caps">pag. {i + 1}</span>
+              </a>
+            ) : (
+              <span className="fotomuur__inhoud-leeg">
+                <b>{d.titel}</b>
+                <span aria-hidden="true" />
+                <span className="fotomuur__caps">geen foto&apos;s</span>
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
   )
 }
 
@@ -140,12 +434,15 @@ export function FotoGroot({
   fotos,
   start,
   kamerLabel,
+  kop,
   onSluit,
   onBijnaAanHetEind,
 }: {
   fotos: Foto[]
   start: number
   kamerLabel: (nr: string | null) => string
+  /** Tekst linksboven (anders 'foto 3 van 12') */
+  kop?: (f: Foto) => string
   onSluit: () => void
   /** Bijna bij de laatste foto: meer laden (als dat kan) */
   onBijnaAanHetEind?: () => void
@@ -425,7 +722,7 @@ export function FotoGroot({
       style={{ opacity: dy ? Math.max(0.4, 1 - dy / 400) : undefined }}
     >
       <p className="foto-groot__teller" aria-hidden="true">
-        {i + 1} / {fotos.length}
+        {kop ? kop(foto) : `Foto ${i + 1} van ${fotos.length}`}
       </p>
       <button type="button" className="foto-groot__sluit" aria-label="Sluiten" onClick={onSluit} data-autofocus>
         <Icoon naam="kruis" />
@@ -440,7 +737,7 @@ export function FotoGroot({
             ga(-1)
           }}
         >
-          ‹
+          <Icoon naam="links" grootte={28} />
         </button>
       )}
       {i < fotos.length - 1 && (
@@ -453,7 +750,7 @@ export function FotoGroot({
             ga(1)
           }}
         >
-          ›
+          <Icoon naam="rechts" grootte={28} />
         </button>
       )}
       <div className="foto-groot__baan">
@@ -506,11 +803,10 @@ export function FotoGroot({
       />
       </div>
       <div className="foto-groot__onder" onClick={(e) => e.stopPropagation()}>
-        <p>
-          <strong>{toon(foto.naam)}</strong>
-          {foto.kamer && ` · kamer ${kamerLabel(foto.kamer)}`}
-          <br />
-          {foto.challenge_titel} · {wanneerGemaakt(foto.gemaakt)}
+        <p className="foto-groot__kop">{foto.challenge_titel}</p>
+        <p className="foto-groot__byline">
+          Foto: {toon(foto.naam)}
+          {foto.kamer && ` · kamer ${kamerLabel(foto.kamer)}`} · {wanneerGemaakt(foto.gemaakt)}
         </p>
       </div>
     </div>
