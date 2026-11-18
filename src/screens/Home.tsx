@@ -19,6 +19,7 @@ import { useNu } from '../lib/nu'
 import { schrijf, useOpgeslagen } from '../lib/opslag'
 import { dagStatus, duur, type ItemMetStatus } from '../lib/programma'
 import { useKlassement } from '../lib/scorebord'
+import { paklijstZin } from '../lib/paklijstZinnen'
 import { datumISO, datumLabel, lokaalNaarDate, resterend } from '../lib/tijd'
 import { cm, graden, useWeer, weerTekst } from '../lib/weer'
 import { FotoGroot, useKamerLabel } from './Fotomuur'
@@ -270,56 +271,11 @@ function Aftellen() {
   )
 }
 
-/*
- * De zin onder het aftellen gaat over iets dat nog niet is afgevinkt op de paklijst. Welk ding en
- * welke zin wisselen bij elke keer dat je Home opent. De zinnen verwijzen niet terug met 'die' of
- * 'dat', zodat ze bij elk item kloppen (ook bij eigen items).
- */
-type Zinmaker = (ding: string) => string
-
-const hoofdletter = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
-
-const ALGEMENE_ZINNEN: Zinmaker[] = [
-  (d) => `Al aan ${d} gedacht? Staat nog niet afgevinkt op je paklijst.`,
-  (d) => `Mooi moment om ${d} alvast op te zoeken.`,
-  (d) => `${hoofdletter(d)}: al gevonden, of nog ergens achter in de kast?`,
-  (d) => `Kleine opdracht voor vandaag: ${d} klaarleggen.`,
-  (d) => `Nog open op je paklijst: ${d}. Even afvinken als je het hebt?`,
-]
-
-const ZINNEN_PER_CATEGORIE: Record<string, Zinmaker[]> = {
-  'Papieren en geld': [(d) => `Zonder ${d} wordt het lastig. Al opgezocht waar het ligt?`],
-  Skikleding: [(d) => `Op de gletsjer wil je ${d} niet missen. Al gevonden?`],
-  Bescherming: [(d) => `Op 3600 meter wil je ${d} niet vergeten. Al gevonden?`],
-  "Kleding voor 's avonds": [(d) => `Ook na het skiën: ${d} al klaargelegd?`],
-  Toilettas: [(d) => `${hoofdletter(d)} vergeet je zo. Al in je toilettas?`],
-  'Voor de busreis': [(d) => `De busreis is lang. ${hoofdletter(d)} al klaar voor onderweg?`],
-  Handig: [(d) => `${hoofdletter(d)} komt vast van pas. Al klaargelegd?`],
-  'Eigen spullen': [(d) => `Op je eigen lijstje staat ${d} nog open. Al geregeld?`],
-}
-
-/**
- * Itemnaam midden in een zin: zonder '(2x)' e.d., met een kleine letter (behalve bij namen) en
- * met 'je' ervoor, zodat het bij elk woord klopt ('je skijas', 'je Tweeslag-clubshirt').
- */
-function dingInZin(naam: string) {
-  const kaal = naam.replace(/\s*\([^)]*\)/g, '').trim()
-  const klein = /^[A-Z][a-z]/.test(kaal) && !kaal.startsWith('Tweeslag') ? kaal.charAt(0).toLowerCase() + kaal.slice(1) : kaal
-  return /^(wat|je|jouw|mijn|een|de|het)\s/i.test(klein) ? klein : `je ${klein}`
-}
-
-function paklijstZin(pak: PakStand, toeval: [number, number]) {
-  if (pak.deel === null) return 'Mooi moment om je skibroek alvast te passen. En om je paklijst te beginnen.'
-  if (pak.open.length === 0) return 'Alles ingepakt. Nu alleen nog wachten op de bus.'
-  const item = pak.open[Math.floor(toeval[0] * pak.open.length)]
-  const zinnen = [...ALGEMENE_ZINNEN, ...(ZINNEN_PER_CATEGORIE[item.categorie] ?? [])]
-  return zinnen[Math.floor(toeval[1] * zinnen.length)](dingInZin(item.naam))
-}
-
+// De zin onder het aftellen: een willekeurig item dat nog niet is afgevinkt (zie lib/paklijstZinnen.ts)
 function KopVoor({ naam, pak }: { naam: string | null; pak: PakStand }) {
   // Eén keer per keer openen gekozen, zodat de zin niet verspringt terwijl je kijkt
-  const [toeval] = useState<[number, number]>(() => [Math.random(), Math.random()])
-  const zin = paklijstZin(pak, toeval)
+  const [toeval] = useState<[number, number, number]>(() => [Math.random(), Math.random(), Math.random()])
+  const zin = paklijstZin(pak.deel === null ? null : pak.open, toeval)
   return (
     <header className="homekop">
       <Sneeuw aantal={8} />
