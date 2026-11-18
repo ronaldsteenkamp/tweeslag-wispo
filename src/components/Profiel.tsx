@@ -506,21 +506,6 @@ export function ProfielFormulier({
         placeholder="Spinnen, stoeltjeslift, stilte in een lift"
       />
 
-      <section className="plaatjeform__prive" aria-labelledby="pf-prive-kop">
-        <h3 id="pf-prive-kop">
-          <Icoon naam="slot" grootte={20} />
-          Niet in het album
-        </h3>
-        <p>
-          Noodnummer, allergieën, medicijnen: die horen niet op een plaatje dat iedereen kan bekijken. De reisleiding
-          heeft ze al van je inschrijving.
-        </p>
-        <p className="plaatjeform__uitleg">
-          Zet je noodcontact ook in de noodinfo van je telefoon (Medische ID op iPhone). Handig als je ergens op de
-          piste ligt en je telefoon op slot zit.
-        </p>
-      </section>
-
       <div className="plaatjeform__knoppen">
         <button type="submit" className="plaatjeknop plaatjeknop--hoofd">
           Plakken
@@ -654,6 +639,15 @@ export function ProfielVenster() {
   const venster = useDialoogFocus<HTMLDivElement>(v !== null)
   // Terugknop (Android, of terugvegen) sluit het profielvenster, niet de app
   useTerugSluit(v !== null, sluit)
+  // Zolang het venster open is, scrolt de pagina eronder niet mee (ook niet als je in het venster
+  // onderaan bent en verder veegt)
+  const open = v !== null
+  useEffect(() => {
+    if (!open) return
+    const html = document.documentElement
+    html.classList.add('venster-open')
+    return () => html.classList.remove('venster-open')
+  }, [open])
   // Alle badges van iemand, in hetzelfde venster (na een tik op +N). Het profiel blijft eronder
   // staan (verborgen), zodat een half ingevuld formulier in Jouw profiel niet kwijtraakt.
   const [overzicht, setOverzicht] = useState<string | null>(null)

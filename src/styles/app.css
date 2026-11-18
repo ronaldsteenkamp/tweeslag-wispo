@@ -732,6 +732,18 @@ button {
 .dialoog--hoog {
   max-height: calc(100dvh - 32px - var(--boven));
   overflow-y: auto;
+  /* Onderaan (of bovenaan) verder vegen: niet doorgeven aan de pagina eronder */
+  overscroll-behavior: contain;
+}
+
+/* Een venster is open (bijv. het profiel): de pagina eronder ligt stil */
+html.venster-open,
+html.venster-open body {
+  overflow: hidden;
+}
+
+.dialoog-achtergrond {
+  overscroll-behavior: contain;
 }
 
 .hero__tekst {

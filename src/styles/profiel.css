@@ -642,47 +642,6 @@ textarea.plaatjeform__invoer {
   outline-offset: 2px;
 }
 
-/* Gevoelig: niet in het album. Een dichte envelop in zandkleur, apart van de rest. */
-.plaatjeform__prive {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 18px 16px 16px;
-  border-radius: 6px;
-  background: var(--pl-zand);
-  color: var(--pl-zand-inkt);
-}
-
-.plaatjeform__prive::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 34px;
-  border-radius: 6px 6px 0 0;
-  background:
-    linear-gradient(to bottom right, transparent 49.5%, rgb(0 0 0 / 0.08) 50%) left / 50% 100% no-repeat,
-    linear-gradient(to bottom left, transparent 49.5%, rgb(0 0 0 / 0.08) 50%) right / 50% 100% no-repeat;
-  pointer-events: none;
-}
-
-.plaatjeform__prive h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font: italic 700 1.2rem/1.1 var(--pl-smal);
-  text-transform: uppercase;
-}
-
-.plaatjeform__prive p {
-  margin: 0;
-}
-
-.plaatjeform__prive .plaatjeform__uitleg {
-  color: var(--pl-zand-inkt);
-}
-
 .plaatjeform__knoppen {
   display: grid;
   gap: 10px;
