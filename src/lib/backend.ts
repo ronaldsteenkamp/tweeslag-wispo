@@ -1,5 +1,6 @@
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
+import { config } from '../config'
 import { laad } from './data'
 import { abonneer, lees, schrijf, schrijfEnMeld } from './opslag'
 
@@ -78,8 +79,21 @@ export function supabase(): Promise<SupabaseClient> | null {
   return clientBelofte
 }
 
+/** Volgens de server (ingelogd met een e-mailadres uit de tabel beheerders) */
+let serverBeheerder = false
+
+/**
+ * Beheerder in de app: ingelogd als beheerder én een beheerdersnaam gekozen. Kiest een beheerder op
+ * zijn telefoon (even) een andere naam, dan ziet hij de app zoals die persoon, zonder beheer.
+ */
+function isBeheerder() {
+  const naam = lees<string | null>('naam', null)?.trim().toLowerCase()
+  return serverBeheerder && !!naam && config.beheerNamen.some((n) => n.toLowerCase() === naam)
+}
+
 async function verwerkSessie(c: SupabaseClient, sessie: Session | null) {
   if (!sessie) {
+    serverBeheerder = false
     zet({ userId: undefined, email: undefined, anoniem: true, beheerder: false, gekoppeld: null })
     return
   }
@@ -88,10 +102,11 @@ async function verwerkSessie(c: SupabaseClient, sessie: Session | null) {
   zet({ userId: sessie.user.id, email: sessie.user.email ?? undefined, anoniem, ...(nieuweGebruiker ? { gekoppeld: null } : {}) })
   if (!anoniem) {
     const { data, error } = await c.rpc('is_beheerder')
-    zet({ beheerder: !error && data === true })
+    serverBeheerder = !error && data === true
   } else {
-    zet({ beheerder: false })
+    serverBeheerder = false
   }
+  zet({ beheerder: isBeheerder() })
   if (nieuweGebruiker) void stuurProfiel()
 }
 
@@ -292,7 +307,8 @@ export function startBackend() {
   }, 60_000)
   // Zelf een (andere) naam gekozen: meteen doorgeven, ook als een ander apparaat hem had
   abonneer('naam', (n) => {
-    if (n === null) return
+    if (stand.beheerder !== isBeheerder()) zet({ beheerder: isBeheerder() })
+    if (n === null || n === undefined) return
     schrijfEnMeld(NAAM_OVERGENOMEN, null)
     void stuurProfiel(false, true)
   })

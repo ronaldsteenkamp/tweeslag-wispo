@@ -262,3 +262,29 @@ test('radTelling: per naam, zonder de testperiode', () => {
   )
   assert.deepEqual([...t], [['anna', 2]])
 })
+
+// ---------- Eigenaar van de telefoon ----------
+import { EIGENAAR_NA_MS, isEigenaar, volgendeEigenaar } from '../src/lib/badgeregels.ts'
+
+test('de eerste gekozen naam is de eigenaar van de telefoon', () => {
+  assert.deepEqual(volgendeEigenaar(null, 'Ronald', 0), { naam: 'Ronald' })
+  assert.equal(volgendeEigenaar(null, null, 0), null)
+})
+
+test('even een andere naam kiezen maakt die niet de eigenaar (geen telefoonbadges voor iedereen)', () => {
+  let e = volgendeEigenaar(null, 'Ronald', 0)
+  e = volgendeEigenaar(e, 'Tom', 1000)
+  assert.equal(isEigenaar(e, 'Tom'), false)
+  assert.equal(isEigenaar(e, 'Ronald'), true)
+  e = volgendeEigenaar(e, 'Tom', 1000 + EIGENAAR_NA_MS - 1)
+  assert.equal(isEigenaar(e, 'Tom'), false)
+  // Terug naar de eigen naam: het wachten begint opnieuw
+  e = volgendeEigenaar(e, 'Ronald', 2000)
+  assert.deepEqual(e, { naam: 'Ronald' })
+})
+
+test('een naam die een dag gekozen blijft wordt eigenaar (verkeerde naam eerst gekozen)', () => {
+  let e = volgendeEigenaar({ naam: 'Bas' }, 'Tom', 0)
+  e = volgendeEigenaar(e, 'tom', EIGENAAR_NA_MS)
+  assert.equal(isEigenaar(e, 'Tom'), true)
+})

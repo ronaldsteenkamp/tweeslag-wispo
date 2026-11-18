@@ -1,7 +1,20 @@
 import { useMemo } from 'react'
 import { abonneer, lees, schrijfEnMeld, useOpgeslagen } from './opslag'
 import { config } from '../config'
-import { BERG_NAUWKEURIGHEID_M, CASINO_FICHES_NODIG, inGebied, isEersteLift, isNachtuil, kouAanBerg, opReis, type BadgeId, type Reis } from './badgeregels'
+import {
+  BERG_NAUWKEURIGHEID_M,
+  CASINO_FICHES_NODIG,
+  inGebied,
+  isEersteLift,
+  isEigenaar,
+  isNachtuil,
+  kouAanBerg,
+  opReis,
+  volgendeEigenaar,
+  type BadgeId,
+  type Eigenaar,
+  type Reis,
+} from './badgeregels'
 import { isGeinstalleerd } from './installatie'
 import { abonneerMeldingen, meldingStatus } from './meldingen'
 import { nu } from './nu'
@@ -69,15 +82,35 @@ function kijkNaarTijd() {
  * hebt aangezet ("Waar ben ik?" of je locatie delen). Hier wordt niet extra om gevraagd.
  */
 export function kijkNaarPlek(p: { lat: number; lon: number; nauwkeurigheid?: number | null }) {
-  if (!opReis(nu().getTime(), REIS)) return
+  if (!opReis(nu().getTime(), REIS) || !eigenaarGekozen()) return
   if ((p.nauwkeurigheid ?? 0) > BERG_NAUWKEURIGHEID_M) return
   if (inGebied(p.lat, p.lon, config.badges.gletsjer)) verdien('bergbeklimmer')
 }
 
+/** Zie volgendeEigenaar in badgeregels.ts */
+export const EIGENAAR = 'apparaat.eigenaar'
+
+/** Bijwerken wie de eigenaar is; geeft true als de gekozen naam de eigenaar is */
+function eigenaarGekozen(): boolean {
+  const naam = lees<string | null>('naam', null)
+  const oud = lees<Eigenaar | null>(EIGENAAR, null)
+  const nieuw = volgendeEigenaar(oud, naam, Date.now())
+  if (JSON.stringify(nieuw) !== JSON.stringify(oud)) schrijfEnMeld(EIGENAAR, nieuw)
+  return isEigenaar(nieuw, naam)
+}
+
 function kijk() {
+  // Badges die de telefoon zelf ziet alleen voor de eigenaar, anders krijgt elke naam die je
+  // hier even kiest ze ook
+  if (!eigenaarGekozen()) return kijkNaarSpel()
   kijkNaarTijd()
   if (isGeinstalleerd()) verdien('vaste-gast')
   if (meldingStatus() === 'aan') verdien('wekker')
+  kijkNaarSpel()
+}
+
+/** Casino en paklijst horen bij de naam (persoonsdata): die gelden voor elke naam */
+function kijkNaarSpel() {
   if (lees('casino.fiches', 0) >= CASINO_FICHES_NODIG) verdien('high-roller', 'spel')
   if (lees('casino.geleend', 0) > 0) verdien('blut', 'spel')
   // Al ingepakt vóór deze versie van de app: dan is het moment onbekend, nu dus
@@ -96,6 +129,7 @@ export function startBadges() {
   abonneerMeldingen(kijk)
   abonneer('casino.fiches', kijk)
   abonneer('casino.geleend', kijk)
+  abonneer('naam', kijk)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') kijk()
   })

@@ -11,8 +11,10 @@ import {
   vroegsteVogels,
   type Feiten,
   type TelefoonBadges,
+  isEigenaar,
+  type Eigenaar,
 } from './badgeregels'
-import { useVerdiend } from './badgesTelefoon'
+import { EIGENAAR, useVerdiend } from './badgesTelefoon'
 import { useEigenBijnaam, useToonNaam } from './bijnamen'
 import { bingoScore, maakKaart } from './bingo'
 import { useData, type Spel } from './data'
@@ -185,6 +187,7 @@ export function useBadges(actief = false) {
   const [ingepakt] = useOpgeslagen<boolean>('paklijst.ingepakt', false)
   const [fiches] = useOpgeslagen<number>('casino.fiches', 1000)
   const verdiend = useVerdiend()
+  const [eigenaar] = useOpgeslagen<Eigenaar | null>(EIGENAAR, null)
   const eigenBijnaam = useEigenBijnaam()
   const toon = useToonNaam()
   const mijnProfiel = useMijnProfiel()
@@ -218,7 +221,8 @@ export function useBadges(actief = false) {
       }
     }
     // Je eigen stemmen (die van anderen zijn geheim; die sturen ze zelf mee)
-    const mijnStemmen = backendIngesteld
+    // De stemmen horen bij dit apparaat: alleen meetellen voor de eigenaar van de telefoon
+    const mijnStemmen = backendIngesteld && isEigenaar(eigenaar, naam)
       ? eigenStemmen(stemmingen, stemstand?.mijn ?? {}, stemstand?.uitslagen ?? {}, Date.now())
       : { geweest: 0, gemist: 0, stemvee: false, waarzegger: 0 }
 
@@ -314,6 +318,7 @@ export function useBadges(actief = false) {
     ingepakt,
     fiches,
     verdiend,
+    eigenaar,
     eigenBijnaam.bijnaam,
     toon,
     mijnProfiel,
