@@ -102,6 +102,31 @@
   letter-spacing: -0.01em;
 }
 
+/* Klok tot op de seconde onder de grote dagen (vaste cijferbreedte, zodat niets verspringt) */
+.homekop__klok {
+  display: block;
+  margin-top: 6px;
+  font: 600 26px/1 var(--h-smal);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.homekop__klok i {
+  margin: 0 8px 0 3px;
+  font-style: normal;
+  font-size: 18px;
+  color: #9fd8ea;
+}
+
+.homekop__klok i:last-child {
+  margin-right: 0;
+}
+
+.homekop__klok b {
+  font-weight: 600;
+  color: #ff9aa2;
+}
+
 .homekop__titel small {
   display: block;
   margin-top: 8px;
