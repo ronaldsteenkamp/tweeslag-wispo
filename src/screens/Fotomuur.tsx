@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { SchermKop } from '../components/SchermKop'
 import { Icoon } from '../components/Icoon'
 import { useBackend } from '../lib/backend'
@@ -6,7 +6,9 @@ import { useToonNaam } from '../lib/bijnamen'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData, type Dag } from '../lib/data'
 import { useKamerNaam } from '../lib/kamernamen'
-import { grooteLink, momentVan, useFotos, type Foto } from '../lib/fotos'
+import { alleFotos, downloadZip, grooteLink, momentVan, useFotos, zetJury, type Foto } from '../lib/fotos'
+import { veiligeNaam } from '../lib/zip'
+import { lokaalNaarDate } from '../lib/tijd'
 import { gooiWeg, probeerOpnieuw, useFotoWachtrijLijst, type WachtendeFoto } from '../lib/fotowachtrij'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { useNu } from '../lib/nu'
@@ -52,7 +54,7 @@ interface Pagina {
   rest: Foto[]
 }
 
-/** Foto's per dag (nieuwste dag eerst); de openingsfoto is de nieuwste liggende foto */
+/** Foto's per dag (nieuwste dag eerst); opening = de (nieuwste) jurykeuze, anders de nieuwste liggende foto */
 function maakPaginas(fotos: Foto[], dagen: Dag[]): Pagina[] {
   const perDag = new Map<string, Foto[]>()
   for (const f of fotos) {
@@ -62,7 +64,7 @@ function maakPaginas(fotos: Foto[], dagen: Dag[]): Pagina[] {
   }
   return [...perDag].map(([datum, lijst]) => {
     const i = dagen.findIndex((d) => d.datum === datum)
-    const opening = lijst.find((f) => verhouding(f) >= 1 && verhouding(f) < PANORAMA) ?? lijst[0]
+    const opening = lijst.find((f) => f.jury) ?? lijst.find((f) => verhouding(f) >= 1 && verhouding(f) < PANORAMA) ?? lijst[0]
     return {
       datum,
       nr: i < 0 ? null : i + 1,
@@ -194,7 +196,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
             </section>
           ) : (
             <>
-              {naDeReis && <Jaarboek paginas={paginas} dagen={dagen} onOpen={openFoto} />}
+              {naDeReis && <Jaarboek paginas={paginas} dagen={dagen} meer={meer} onOpen={openFoto} />}
               {paginas.map((p) => (
                 <article key={p.datum} id={`pagina-${p.datum}`} className="fotomuur__pagina" aria-labelledby={`kop-${p.datum}`}>
                   <header className="fotomuur__paginakop">
@@ -252,6 +254,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
           start={open.i}
           kamerLabel={kamerLabel}
           kop={fotoDag}
+          extra={(f) => <JuryKnop key={f.id} foto={f} jury={backend.beheerder} />}
           onSluit={() => setOpen(null)}
           onBijnaAanHetEind={meer && open.lijst === leesvolgorde ? laadMeer : undefined}
         />
@@ -266,10 +269,15 @@ function FotoKnop({ foto: f, onOpen, groot }: { foto: Foto; onOpen: () => void; 
   const d = momentVan(f)
   return (
     <button type="button" className="fotomuur__foto" onClick={onOpen}>
+      {f.jury && (
+        <span className="fotomuur__jury" aria-hidden="true">
+          Jurykeuze
+        </span>
+      )}
       {f.klein ? (
         <img
           src={groot ?? f.klein}
-          alt={`Foto van ${toon(f.naam)}, ${datumLabel(datumISO(d))} ${tijdUUMM(d)}, challenge ${f.challenge_titel}`}
+          alt={`Foto van ${toon(f.naam)}, ${datumLabel(datumISO(d))} ${tijdUUMM(d)}, challenge ${f.challenge_titel}${f.jury ? ', jurykeuze' : ''}`}
           width={f.breedte ?? undefined}
           height={f.hoogte ?? undefined}
           loading="lazy"
@@ -393,15 +401,91 @@ function Colofon() {
   )
 }
 
-/** Na de reis: omslag met vier foto's (elk van een andere dag) en de inhoudsopgave */
-function Jaarboek({ paginas, dagen, onOpen }: { paginas: Pagina[]; dagen: Dag[]; onOpen: (f: Foto, lijst: Foto[]) => void }) {
-  const omslag = paginas
-    .filter((p) => p.nr)
-    .map((p) => p.opening)
-    .filter((_, i, l) => i % Math.max(1, Math.floor(l.length / 4)) === 0)
-    .slice(0, 4)
+/**
+ * In de grote foto: de stempel als de jury hem koos, en voor beheerders (de jury) de knop om hem
+ * te geven of af te nemen. De server geeft de maker er 10 punten voor (migratie 0017).
+ */
+function JuryKnop({ foto, jury }: { foto: Foto; jury: boolean }) {
+  const toon = useToonNaam()
+  const [aan, setAan] = useState(!!foto.jury)
+  const [bezig, setBezig] = useState(false)
+  const [fout, setFout] = useState<string | null>(null)
+  if (!jury && !aan) return null
+  const wissel = async () => {
+    setBezig(true)
+    setFout(null)
+    const f = await zetJury(foto, !aan)
+    setBezig(false)
+    if (f) setFout(f)
+    else setAan(!aan)
+  }
+  return (
+    <div className="foto-groot__jury">
+      {aan && <span className="fotomuur__stempel">Jurykeuze · +10 voor {toon(foto.naam)}</span>}
+      {jury && (
+        <button type="button" className="fotomuur__knop fotomuur__knop--licht" onClick={() => void wissel()} disabled={bezig} aria-pressed={aan}>
+          <Icoon naam={aan ? 'kruis' : 'stempel'} grootte={18} /> {bezig ? 'Bezig…' : aan ? 'Stempel eraf' : 'Jurykeuze geven'}
+        </button>
+      )}
+      {fout && (
+        <p className="fotomuur__klein" role="alert">
+          {fout}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Volgende kalenderdag, 'JJJJ-MM-DD' */
+const volgendeDag = (iso: string) => new Date(Date.parse(`${iso}T12:00:00Z`) + 86_400_000).toISOString().slice(0, 10)
+
+/** Na de reis: omslag met vier foto's (jurykeuzes voorop), de inhoudsopgave en alles downloaden */
+function Jaarboek({ paginas, dagen, meer, onOpen }: { paginas: Pagina[]; dagen: Dag[]; meer: boolean; onOpen: (f: Foto, lijst: Foto[]) => void }) {
+  const toon = useToonNaam()
+  const [bezig, setBezig] = useState<{ wat: string; klaar: number; totaal: number } | null>(null)
+  const [melding, setMelding] = useState<string | null>(null)
+  const openingen = paginas.filter((p) => p.nr).map((p) => p.opening)
+  const omslag = [...openingen.filter((f) => f.jury), ...openingen.filter((f) => !f.jury)].slice(0, 4)
   const aantal = paginas.reduce((n, p) => n + p.rest.length + 1, 0)
   const metFotos = new Set(paginas.map((p) => p.datum))
+
+  /** Map in de zip: 'Dag 3 Skidag 1' (of de datum, buiten de reis) */
+  const mapVan = (f: Foto) => {
+    const d = datumISO(momentVan(f))
+    const i = dagen.findIndex((x) => x.datum === d)
+    return veiligeNaam(i < 0 ? d : `Dag ${i + 1} ${dagen[i].titel}`)
+  }
+  const naamVan = (f: Foto) =>
+    `${mapVan(f)}/${tijdUUMM(momentVan(f)).replace(':', '.')} ${veiligeNaam(toon(f.naam), 30)} - ${veiligeNaam(f.challenge_titel, 50)}.jpg`
+
+  const download = async (dag?: { d: Dag; nr: number }) => {
+    if (bezig) return
+    const wat = dag ? `Dag ${dag.nr}` : "Alle foto's"
+    setMelding(null)
+    setBezig({ wat, klaar: 0, totaal: 0 })
+    try {
+      const fotos = dag
+        ? await alleFotos(lokaalNaarDate(`${dag.d.datum}T00:00`), lokaalNaarDate(`${volgendeDag(dag.d.datum)}T00:00`))
+        : await alleFotos()
+      if (!fotos.length) {
+        setMelding('Geen foto’s gevonden.')
+        return
+      }
+      setBezig({ wat, klaar: 0, totaal: fotos.length })
+      const zipNaam = veiligeNaam(dag ? `Wispo 2027 - Dag ${dag.nr} ${dag.d.titel}` : "Wispo 2027 - alle foto's", 80) + '.zip'
+      const { mislukt } = await downloadZip(fotos, zipNaam, naamVan, (klaar, totaal) => setBezig({ wat, klaar, totaal }))
+      setMelding(
+        mislukt
+          ? `Klaar: ${fotos.length - mislukt} foto’s. ${mislukt} lukte${mislukt === 1 ? '' : 'n'} niet; probeer het straks nog eens.`
+          : `Klaar: ${fotos.length} foto’s in ${zipNaam}.`,
+      )
+    } catch (e) {
+      setMelding(`Downloaden lukte niet: ${e instanceof Error ? e.message : String(e)}`)
+    } finally {
+      setBezig(null)
+    }
+  }
+
   return (
     <section className="fotomuur__jaarboek">
       {omslag.length === 4 && (
@@ -417,20 +501,48 @@ function Jaarboek({ paginas, dagen, onOpen }: { paginas: Pagina[]; dagen: Dag[];
         Wispo 2027
       </h2>
       <p>
-        {aantal} foto&apos;s op {metFotos.size} pagina&apos;s.
+        {aantal}
+        {meer ? '+' : ''} foto&apos;s op {metFotos.size} pagina&apos;s. Bewaar ze zelf: download alles in één keer of per
+        dag (gewone JPEG&apos;s in een zip, ± 0,3 MB per foto). Op wifi gaat het het snelst.
       </p>
+      <div className="fotomuur__download">
+        <button type="button" className="fotomuur__knop" onClick={() => void download()} disabled={!!bezig}>
+          <Icoon naam="download" grootte={20} /> Alle foto&apos;s (zip)
+        </button>
+        <p className="fotomuur__klein" role="status" aria-live="polite">
+          {bezig
+            ? bezig.totaal
+              ? `${bezig.wat}: ${bezig.klaar} van ${bezig.totaal} ingepakt…`
+              : `${bezig.wat}: foto's opzoeken…`
+            : melding}
+        </p>
+      </div>
       <ol className="fotomuur__inhoud">
         {dagen.map((d, i) => (
           <li key={d.datum}>
             {metFotos.has(d.datum) ? (
-              <a href={`#pagina-${d.datum}`} onClick={(e) => {
-                e.preventDefault()
-                document.getElementById(`pagina-${d.datum}`)?.scrollIntoView()
-              }}>
-                <b>{d.titel}</b>
-                <span aria-hidden="true" />
-                <span className="fotomuur__caps">pag. {i + 1}</span>
-              </a>
+              <>
+                <a
+                  href={`#pagina-${d.datum}`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    document.getElementById(`pagina-${d.datum}`)?.scrollIntoView()
+                  }}
+                >
+                  <b>{d.titel}</b>
+                  <span aria-hidden="true" />
+                  <span className="fotomuur__caps">pag. {i + 1}</span>
+                </a>
+                <button
+                  type="button"
+                  className="fotomuur__inhoud-download"
+                  onClick={() => void download({ d, nr: i + 1 })}
+                  disabled={!!bezig}
+                  aria-label={`Foto's van dag ${i + 1}, ${d.titel}, downloaden`}
+                >
+                  <Icoon naam="download" grootte={20} />
+                </button>
+              </>
             ) : (
               <span className="fotomuur__inhoud-leeg">
                 <b>{d.titel}</b>
@@ -474,6 +586,7 @@ export function FotoGroot({
   start,
   kamerLabel,
   kop,
+  extra,
   onSluit,
   onBijnaAanHetEind,
 }: {
@@ -482,6 +595,8 @@ export function FotoGroot({
   kamerLabel: (nr: string | null) => string
   /** Tekst linksboven (anders 'foto 3 van 12') */
   kop?: (f: Foto) => string
+  /** Extra onder het onderschrift (bijv. de jurykeuze) */
+  extra?: (f: Foto) => ReactNode
   onSluit: () => void
   /** Bijna bij de laatste foto: meer laden (als dat kan) */
   onBijnaAanHetEind?: () => void
@@ -847,6 +962,7 @@ export function FotoGroot({
           Foto: {toon(foto.naam)}
           {foto.kamer && ` · kamer ${kamerLabel(foto.kamer)}`} · {wanneerGemaakt(momentVan(foto).toISOString())}
         </p>
+        {extra?.(foto)}
       </div>
     </div>
   )
