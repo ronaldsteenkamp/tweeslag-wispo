@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { config } from '../config'
 import { lees, schrijf } from './opslag'
+import { datumISO, datumLabel, tijdUUMM } from './tijd'
 
 export interface WeerUur {
   tijd: string // 'JJJJ-MM-DDTUU:MM', lokale tijd
@@ -9,6 +10,11 @@ export interface WeerUur {
   sneeuw: number // cm
   wind: number // km/u
   nulgraden: number // m
+  /** Ontbreken in berichten van vóór de Doorsnede (oude bewaarde berichten) */
+  stoten?: number // km/u
+  zicht?: number // m
+  gevoel?: number // °C
+  richting?: number // graden, waar de wind vandaan komt
 }
 
 export interface WeerDag {
@@ -22,6 +28,9 @@ export interface WeerDag {
   zonUren: number
   /** Gemiddelde nulgradengrens overdag (10–16 uur), afgerond op 50 m */
   nulgraden: number | null
+  /** 'JJJJ-MM-DDTUU:MM' */
+  zonOp?: string
+  zonOnder?: string
 }
 
 export interface WeerLocatie {
@@ -38,36 +47,58 @@ export interface Weer {
   locaties: WeerLocatie[]
 }
 
-// ---------- Weercodes (WMO) → icoon en tekst ----------
+// ---------- Weercodes (WMO) → soort icoon en tekst ----------
 
-const CODES: [number[], string, string][] = [
-  [[0], '☀️', 'Zonnig'],
-  [[1], '🌤️', 'Overwegend zonnig'],
-  [[2], '⛅', 'Half bewolkt'],
-  [[3], '☁️', 'Bewolkt'],
-  [[45, 48], '🌫️', 'Mist'],
-  [[51, 53, 55], '🌦️', 'Motregen'],
-  [[56, 57, 66, 67], '🧊', 'IJzel'],
-  [[61, 63, 65], '🌧️', 'Regen'],
-  [[71, 73, 77], '🌨️', 'Sneeuw'],
-  [[75], '❄️', 'Zware sneeuw'],
-  [[80, 81, 82], '🌦️', 'Buien'],
-  [[85, 86], '🌨️', 'Sneeuwbuien'],
-  [[95, 96, 99], '⛈️', 'Onweer'],
+export type WeerSoort = 'zon' | 'maan' | 'halfzon' | 'halfmaan' | 'wolk' | 'mist' | 'motregen' | 'regen' | 'ijzel' | 'sneeuw' | 'zwaresneeuw' | 'onweer'
+
+const CODES: [number[], WeerSoort, string][] = [
+  [[0], 'zon', 'Zonnig'],
+  [[1], 'halfzon', 'Overwegend zonnig'],
+  [[2], 'halfzon', 'Half bewolkt'],
+  [[3], 'wolk', 'Bewolkt'],
+  [[45, 48], 'mist', 'Mist'],
+  [[51, 53, 55], 'motregen', 'Motregen'],
+  [[56, 57, 66, 67], 'ijzel', 'IJzel'],
+  [[61, 63, 65, 80, 81, 82], 'regen', 'Regen'],
+  [[71, 73, 77, 85], 'sneeuw', 'Sneeuw'],
+  [[75, 86], 'zwaresneeuw', 'Zware sneeuw'],
+  [[95, 96, 99], 'onweer', 'Onweer'],
 ]
 
-export function weerIcoon(code: number, isDag = true): string {
-  if (!isDag && code <= 1) return '🌙'
-  return CODES.find(([c]) => c.includes(code))?.[1] ?? '🌡️'
+/** Welk icoon bij een weercode hoort (’s nachts een maan in plaats van de zon) */
+export function weerSoort(code: number, isDag = true): WeerSoort {
+  const soort = CODES.find(([c]) => c.includes(code))?.[1] ?? 'wolk'
+  if (!isDag && soort === 'zon') return 'maan'
+  if (!isDag && soort === 'halfzon') return 'halfmaan'
+  return soort
 }
 
-export function weerTekst(code: number): string {
+export function weerTekst(code: number, isDag = true): string {
+  if (!isDag && code === 0) return 'Helder'
+  if (!isDag && code <= 2) return 'Licht bewolkt'
   return CODES.find(([c]) => c.includes(code))?.[2] ?? 'Onbekend'
 }
 
-export const graden = (t: number) => `${Math.round(t)}°`
+/** Min-teken in plaats van een streepje: −6° */
+export const graden = (t: number) => {
+  const r = Math.round(t)
+  return `${r < 0 ? '−' : ''}${Math.abs(r)}°`
+}
 export const cm = (s: number) => (s >= 0.5 ? `${Math.round(s)} cm` : s > 0 ? '< 1 cm' : '0 cm')
 export const meters = (m: number) => `${m.toLocaleString('nl-NL')} m`
+/** Zicht: onder 1 km in meters (afgerond op 10), daarboven in hele km */
+export const zichtTekst = (m: number) => (m < 1000 ? `${Math.max(10, Math.round(m / 10) * 10)} m` : `${Math.round(m / 1000)} km`)
+const WINDSTREKEN = ['N', 'NO', 'O', 'ZO', 'Z', 'ZW', 'W', 'NW']
+export const windstreek = (graden: number) => WINDSTREKEN[Math.round((((graden % 360) + 360) % 360) / 45) % 8]
+
+/** 'Bijgewerkt om 14:05', of met datum als het bericht van een andere dag is */
+export function bijgewerkt(weer: Weer, nu: Date): string {
+  const op = new Date(weer.opgehaald)
+  const dag = datumISO(op)
+  return dag === datumISO(nu)
+    ? `Bijgewerkt om ${tijdUUMM(op)}`
+    : `Bijgewerkt op ${datumLabel(dag, 'kort')} om ${tijdUUMM(op)}`
+}
 
 // ---------- Ophalen en omzetten ----------
 
@@ -83,6 +114,10 @@ function zetOm(ruw: any, loc: (typeof config.weer.locaties)[number]): WeerLocati
     sneeuw: h.snowfall[i] ?? 0,
     wind: h.wind_speed_10m[i],
     nulgraden: h.freezing_level_height[i],
+    stoten: h.wind_gusts_10m?.[i] ?? undefined,
+    zicht: h.visibility?.[i] ?? undefined,
+    gevoel: h.apparent_temperature?.[i] ?? undefined,
+    richting: h.wind_direction_10m?.[i] ?? undefined,
   }))
   const d = ruw.daily
   const dagen: WeerDag[] = (d.time as string[]).map((datum, i) => {
@@ -98,6 +133,8 @@ function zetOm(ruw: any, loc: (typeof config.weer.locaties)[number]): WeerLocati
       windstoten: d.wind_gusts_10m_max[i],
       zonUren: (d.sunshine_duration[i] ?? 0) / 3600,
       nulgraden: ng.length ? rond50(ng.reduce((a, b) => a + b, 0) / ng.length) : null,
+      zonOp: d.sunrise?.[i],
+      zonOnder: d.sunset?.[i],
     }
   })
   return {
@@ -125,9 +162,10 @@ function adres() {
     timezone: config.weer.tijdzone,
     forecast_days: '16',
     current: 'temperature_2m,weather_code,wind_speed_10m,is_day',
-    hourly: 'temperature_2m,weather_code,snowfall,wind_speed_10m,freezing_level_height',
+    hourly:
+      'temperature_2m,weather_code,snowfall,wind_speed_10m,freezing_level_height,wind_gusts_10m,visibility,apparent_temperature,wind_direction_10m',
     daily:
-      'weather_code,temperature_2m_max,temperature_2m_min,snowfall_sum,wind_speed_10m_max,wind_gusts_10m_max,sunshine_duration',
+      'weather_code,temperature_2m_max,temperature_2m_min,snowfall_sum,wind_speed_10m_max,wind_gusts_10m_max,sunshine_duration,sunrise,sunset',
   })
   return `https://api.open-meteo.com/v1/forecast?${p}`
 }
@@ -138,6 +176,44 @@ async function haalOp(): Promise<Weer> {
   const ruw = await antwoord.json()
   const lijst = Array.isArray(ruw) ? ruw : [ruw]
   return { opgehaald: Date.now(), locaties: config.weer.locaties.map((loc, i) => zetOm(lijst[i], loc)) }
+}
+
+// ---------- Geweest: van elke dag de verwachting van die dag zelf bewaren ----------
+
+export interface GeweestDag {
+  code: number
+  boven: number
+  dorp: number
+  vers: number
+  wind: number
+}
+
+const GEWEEST = 'weer.geweest'
+
+/** Zo staat in de reislijst bij een voorbije dag wat het werd (de laatste verwachting van die dag) */
+function bewaarVandaag(weer: Weer) {
+  const vandaag = datumISO(new Date(weer.opgehaald))
+  const boven = weer.locaties.find((l) => l.id === 'gletsjer')?.dagen.find((d) => d.datum === vandaag)
+  const dorp = weer.locaties.find((l) => l.id === 'dorp')?.dagen.find((d) => d.datum === vandaag)
+  if (!boven || !dorp) return
+  const oud = lees<Record<string, GeweestDag>>(GEWEEST, {})
+  // Alleen de laatste 30 dagen bewaren
+  const grens = datumISO(new Date(weer.opgehaald - 30 * 864e5))
+  const nieuw = Object.fromEntries(Object.entries(oud).filter(([d]) => d >= grens))
+  // Verse sneeuw zoals op het scherm: sinds de middag ervoor tot 12 uur (zie skidag.ts)
+  const gletsjer = weer.locaties.find((l) => l.id === 'gletsjer')!
+  const gist = new Date(`${vandaag}T12:00:00Z`)
+  gist.setUTCDate(gist.getUTCDate() - 1)
+  const g = gist.toISOString().slice(0, 10)
+  const vers = gletsjer.uren
+    .filter((u) => (u.tijd.startsWith(g) && +u.tijd.slice(11, 13) >= 16) || (u.tijd.startsWith(vandaag) && +u.tijd.slice(11, 13) < 12))
+    .reduce((s, u) => s + u.sneeuw, 0)
+  nieuw[vandaag] = { code: boven.code, boven: boven.tMax, dorp: dorp.tMax, vers, wind: boven.wind }
+  schrijf(GEWEEST, nieuw)
+}
+
+export function geweest(): Record<string, GeweestDag> {
+  return lees<Record<string, GeweestDag>>(GEWEEST, {})
 }
 
 // ---------- Gedeelde stand (één keer ophalen voor alle schermen) ----------
@@ -165,15 +241,19 @@ const zet = (s: Stand) => {
   luisteraars.forEach((f) => f())
 }
 
+/** Een bewaard bericht van vóór de Doorsnede (zonder halverwege) meteen vervangen */
+const verouderdFormaat = (w?: Weer) => !!w && w.locaties.length < config.weer.locaties.length
+
 /** Haalt het weer op als het laatste bericht ouder is dan een uur (of met forceer) */
 export async function verversWeer(forceer = false) {
   if (stand.laden) return
   const leeftijd = stand.weer ? Date.now() - stand.weer.opgehaald : Infinity
-  if (!forceer && leeftijd < config.weer.verversMinuten * 60_000) return
+  if (!forceer && !verouderdFormaat(stand.weer) && leeftijd < config.weer.verversMinuten * 60_000) return
   zet({ ...stand, laden: true })
   try {
     const weer = await haalOp()
     schrijf(SLEUTEL, weer)
+    bewaarVandaag(weer)
     zet({ weer, laden: false, mislukt: false })
   } catch {
     // Geen bereik: het laatst bewaarde bericht blijft staan
@@ -201,40 +281,20 @@ export function useWeer() {
   return stand
 }
 
-// ---------- Dagdelen ----------
+// ---------- Hulpjes per uur ----------
 
-export interface Dagdeel {
-  naam: string
-  code: number
-  tMin: number
-  tMax: number
-  sneeuw: number
-  wind: number
+/** De uren van één datum tussen van (incl.) en tot (excl.) */
+export function urenVan(loc: WeerLocatie | undefined, datum: string, van = 0, tot = 24): WeerUur[] {
+  if (!loc) return []
+  return loc.uren.filter((u) => {
+    const uur = +u.tijd.slice(11, 13)
+    return u.tijd.startsWith(datum) && uur >= van && uur < tot
+  })
 }
 
-const DELEN = [
-  { naam: 'Ochtend', van: 6, tot: 12 },
-  { naam: 'Middag', van: 12, tot: 18 },
-  { naam: 'Avond', van: 18, tot: 24 },
-]
-
-/** Verwachting per dagdeel voor één datum; het 'zwaarste' weer van dat dagdeel bepaalt het icoon */
-export function dagdelen(loc: WeerLocatie, datum: string): Dagdeel[] {
-  return DELEN.flatMap((d) => {
-    const u = loc.uren.filter((x) => {
-      const uur = +x.tijd.slice(11, 13)
-      return x.tijd.startsWith(datum) && uur >= d.van && uur < d.tot
-    })
-    if (!u.length) return []
-    return [
-      {
-        naam: d.naam,
-        code: Math.max(...u.map((x) => x.code)),
-        tMin: Math.min(...u.map((x) => x.temp)),
-        tMax: Math.max(...u.map((x) => x.temp)),
-        sneeuw: u.reduce((s, x) => s + x.sneeuw, 0),
-        wind: Math.max(...u.map((x) => x.wind)),
-      },
-    ]
-  })
+/** Het uur dat nu bezig is (of het dichtstbijzijnde) */
+export function uurNu(loc: WeerLocatie | undefined, moment: Date): WeerUur | undefined {
+  if (!loc) return undefined
+  const sleutel = `${datumISO(moment)}T${tijdUUMM(moment).slice(0, 2)}:00`
+  return loc.uren.find((u) => u.tijd === sleutel)
 }

@@ -48,15 +48,20 @@ export const config = {
    * Weerbericht via Open-Meteo (gratis, geen key). De hoogte (elevation) zorgt dat
    * de temperatuur klopt voor die plek. Gecontroleerd met OpenStreetMap en de
    * hoogtekaart van Open-Meteo: dorp ≈ 1663 m, Dôme de Puy Salié ≈ 3408 m.
+   * Halverwege: op de helling tussen dorp en gletsjer (rond Toura/Jandri), gerekend op 2600 m.
+   * Volgorde: van laag naar hoog (Planning gebruikt locaties[0] = dorp).
    */
   weer: {
     locaties: [
       { id: 'dorp', naam: 'Dorp', latitude: 45.01, longitude: 6.1238, hoogte: 1650 },
+      { id: 'midden', naam: 'Halverwege', latitude: 45.0035, longitude: 6.172, hoogte: 2600 },
       { id: 'gletsjer', naam: 'Gletsjer', latitude: 44.9972, longitude: 6.2226, hoogte: 3400 },
     ],
     tijdzone: 'Europe/Paris',
     /** Hooguit zo vaak opnieuw ophalen */
     verversMinuten: 60,
+    /** Officieel lawinebulletin (BERA) van Météo-France; Les Deux Alpes valt onder het massief Oisans */
+    lawineUrl: 'https://meteofrance.com/meteo-montagne/alpes-du-nord/risques-avalanche',
   },
 
   /** Badges (de drempels staan in src/lib/badgeregels.ts) */
