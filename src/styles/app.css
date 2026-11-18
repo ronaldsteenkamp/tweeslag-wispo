@@ -4053,9 +4053,23 @@ body:has(.huidig .kaartbalk) .toast {
   height: 32px;
   font-family: var(--font-kop);
   font-size: 0.9rem;
+  /* Niets mag verschuiven: de regel is even breed als de tafel, het bedrag heeft een vaste
+     breedte en 'terugnemen' staat los aan de rechterkant */
+  position: relative;
+  justify-content: center;
+  width: 100%;
+}
+
+.casino__inzetregel strong {
+  min-width: 6ch;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
 }
 
 .casino__terug {
+  position: absolute;
+  right: 0;
+  top: 0;
   min-height: 32px;
   color: var(--goud);
 }
