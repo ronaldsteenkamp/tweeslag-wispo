@@ -1,0 +1,1128 @@
+/*
+ * Spel in de stijl "stempelkaart" (gekozen uit mockups/spel-c.html): drukwerk van de vereniging.
+ * Dagkaart die je afscheurt, stempels als bewijs, lottokaart voor de bus, stembiljet, kraslot voor
+ * de uitslag en de stand zoals in het clubblad. Twee inktkleuren (navy + lichtblauw) en stempelrood
+ * op papier, net als Paklijst, Planning en Rad. Contrast tekst/vlak minstens 4,5 : 1.
+ * Alleen transform/opacity bewegen; bij 'minder beweging' vervaagt alles alleen.
+ */
+
+.inhoud--spel {
+  --papier: #f5f2ea;
+  --papier-2: #ebe5d6;
+  --inkt: #0d0058;
+  --inkt-zacht: #4b4e6b;
+  --lijn: #cfc6b2;
+  --blauw: #099fc4;
+  --blauw-tekst: #05607a;
+  --rood: #b3202c;
+  --markeer: #fff1a8;
+  min-height: 100dvh;
+  background: var(--papier);
+  color: var(--inkt);
+}
+
+.inhoud--spel .schermkop {
+  --sneeuwbank: var(--papier);
+}
+
+.spel {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Namen nooit met een afbreekstreepje; alleen als het echt niet past midden in een woord verder */
+.spel .naam {
+  overflow-wrap: anywhere;
+  hyphens: manual;
+}
+
+.spel__caps {
+  display: block;
+  font: 700 14px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+.spel__voetnoot {
+  margin: 0;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--inkt-zacht);
+}
+
+.spel__voetnoot strong {
+  font-style: normal;
+  color: var(--inkt);
+}
+
+.spel__uitleg {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.spel__tussenkop {
+  margin: 8px 0 0;
+  font: 700 30px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.spel__fout {
+  margin: 0;
+  padding: 10px 12px;
+  border: 2px solid var(--rood);
+  color: var(--rood);
+  font: 700 18px/1.2 'Barlow Condensed', sans-serif;
+}
+
+/* ---------- Knoppen: inkt-blokken met een harde schaduw die je echt indrukt ---------- */
+
+.spelknop {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 20px;
+  border: 2px solid var(--inkt);
+  border-radius: 4px;
+  background: var(--inkt);
+  color: var(--papier);
+  font: 700 22px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 5px 0 var(--blauw);
+  transition: transform 0.06s, box-shadow 0.06s;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.spelknop:active:not(:disabled),
+.spelknop.wordt-gehouden {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--blauw);
+}
+
+.spelknop:disabled {
+  opacity: 0.5;
+}
+
+.spelknop--licht {
+  background: transparent;
+  color: var(--inkt);
+}
+
+/* Vasthouden: de inkt loopt van links naar rechts vol */
+.spelknop--houd {
+  --houd: 0;
+  overflow: hidden;
+  width: 100%;
+  min-height: 68px;
+  font-size: 26px;
+  -webkit-touch-callout: none;
+}
+
+.spelknop--houd::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(var(--houd));
+  background: var(--rood);
+  pointer-events: none;
+}
+
+.spelknop--houd > span {
+  position: relative;
+}
+
+.spel__balk {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.spel__balk .spelknop {
+  flex: 1;
+}
+
+.spel__geluid {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  margin-left: auto;
+  border: 2px solid var(--inkt);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--inkt);
+}
+
+/* ---------- Tabbladen: onderstreept, zoals de rubrieken in het clubblad ---------- */
+
+.spel__tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 2px solid var(--inkt);
+}
+
+.spel__tabs--klein {
+  display: flex;
+  gap: 22px;
+}
+
+.spel__tabs button {
+  min-height: 52px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 5px solid transparent;
+  margin-bottom: -2px;
+  background: none;
+  color: var(--inkt-zacht);
+  font: 700 17px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.spel__tabs--klein button {
+  font-size: 20px;
+}
+
+@media (max-width: 374px) {
+  .spel__tabs button {
+    font-size: 15px;
+  }
+}
+
+.spel__tabs button[aria-selected='true'] {
+  color: var(--inkt);
+  border-bottom-color: var(--rood);
+}
+
+/* ---------- Stempel ---------- */
+
+.stempel {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 92px;
+  height: 92px;
+  border: 6px double var(--rood);
+  border-radius: 50%;
+  color: var(--rood);
+  font: 700 15px/0.95 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(-14deg);
+  filter: url(#inkt);
+  opacity: 0.92;
+}
+
+.stempel b {
+  display: block;
+  font-size: 26px;
+  letter-spacing: 0;
+}
+
+.stempel--nieuw {
+  animation: spel-stempel 0.42s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+@keyframes spel-stempel {
+  0% {
+    transform: rotate(-30deg) scale(2.3);
+    opacity: 0;
+  }
+  60% {
+    transform: rotate(-14deg) scale(0.92);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-14deg) scale(1);
+  }
+}
+
+/* ---------- Dagkaart en stempelkaart ---------- */
+
+.dagkaart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px 16px;
+  border: 2px solid var(--inkt);
+  background: var(--papier-2);
+  overflow: clip;
+}
+
+.dagkaart__kop {
+  padding-top: 14px;
+}
+
+.dagkaart__titel {
+  margin: 2px 0 0;
+  font: 700 40px/0.92 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 rgba(9, 159, 196, 0.6);
+}
+
+.dagkaart__stand {
+  margin: 0;
+}
+
+.dagkaart__perforatie {
+  margin: 0 -16px;
+  padding: 0 16px 4px;
+  border-bottom: 2px dashed var(--inkt);
+  font: 700 12px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+.dagkaart__stub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: calc(100% + 32px);
+  min-height: 88px;
+  margin: -10px -16px 0;
+  padding: 16px;
+  border: 0;
+  background: var(--inkt);
+  color: var(--papier);
+  text-align: left;
+  transform-origin: 20% 0;
+  transition: transform 0.48s cubic-bezier(0.5, 0, 0.7, 0.4), opacity 0.42s;
+  touch-action: manipulation;
+}
+
+.dagkaart__stub b {
+  display: block;
+  font: 700 30px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.dagkaart__stub small {
+  font: 600 15px/1.2 Barlow, sans-serif;
+  opacity: 0.9;
+}
+
+.dagkaart__stub:active {
+  transform: translateY(2px) rotate(0.6deg);
+}
+
+.dagkaart.scheurt .dagkaart__stub {
+  transform: translate(40px, -60px) rotate(14deg);
+  opacity: 0;
+}
+
+.dagkaart__dicht {
+  margin: 0;
+  padding: 26px 0 10px;
+  text-align: center;
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--inkt-zacht);
+}
+
+.dagkaart--teaser {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-style: dashed;
+  background: transparent;
+  color: var(--inkt-zacht);
+}
+
+.dagkaart--teaser p {
+  margin: 0;
+}
+
+.dagkaart--teaser strong {
+  font: 700 20px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  color: var(--inkt);
+}
+
+.dagkaart__vol {
+  margin: 4px 0 0;
+  padding: 10px 14px;
+  border: 2px solid var(--rood);
+  color: var(--rood);
+  font: 700 22px/1.1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  text-align: center;
+  transform: rotate(-1deg);
+}
+
+.stempelkaart {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px dashed var(--inkt);
+}
+
+.stempelkaart li + li {
+  border-top: 1px dashed var(--inkt);
+}
+
+/* Net opengescheurd: de regels worden één voor één gedrukt */
+.dagkaart.net-open .stempelkaart li {
+  animation: spel-drukken 0.35s calc(0.15s + var(--i, 0) * 0.22s) backwards;
+}
+
+@keyframes spel-drukken {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+    filter: blur(3px);
+  }
+}
+
+.ch {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 92px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 108px;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.ch:active {
+  background: rgba(9, 159, 196, 0.1);
+}
+
+.ch__tekst b {
+  display: block;
+  font: 700 26px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.ch__tekst > span {
+  display: block;
+  margin-top: 4px;
+  font-size: 1rem;
+  color: var(--inkt-zacht);
+}
+
+.ch__tekst em {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font: 600 15px/1 Barlow, sans-serif;
+  font-style: normal;
+  color: var(--blauw-tekst);
+}
+
+.ch__vak {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin-left: auto;
+  border: 2.5px dashed var(--inkt);
+  border-radius: 50%;
+  font: 700 27px/1 'Barlow Condensed', sans-serif;
+}
+
+.ch.is-klaar .ch__vak {
+  border-color: transparent;
+}
+
+.ch.is-klaar .ch__tekst > span {
+  text-decoration: line-through;
+  text-decoration-color: rgba(179, 32, 44, 0.6);
+}
+
+.ch.net-gedaan {
+  animation: spel-bonk 0.42s;
+}
+
+@keyframes spel-bonk {
+  55% {
+    transform: none;
+  }
+  65% {
+    transform: translateY(3px);
+  }
+  80% {
+    transform: translateY(-1px);
+  }
+}
+
+/* ---------- Busbingo: lottokaart ---------- */
+
+.lotto {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: 2px solid var(--inkt);
+  background: var(--papier-2);
+}
+
+.lotto__vak {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 0;
+  border-right: 1px solid var(--lijn);
+  border-bottom: 1px solid var(--lijn);
+  background: none;
+  color: var(--inkt);
+  font: 600 13px/1.05 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  text-align: center;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  touch-action: manipulation;
+}
+
+@media (min-width: 380px) {
+  .lotto__vak {
+    font-size: 14.5px;
+  }
+}
+
+.lotto__vak:nth-child(5n) {
+  border-right: 0;
+}
+
+.lotto__vak:nth-child(n + 21) {
+  border-bottom: 0;
+}
+
+.lotto__vak--vrij {
+  background: var(--inkt);
+  color: var(--papier);
+  font: 700 19px/0.9 'Barlow Condensed', sans-serif;
+}
+
+.lotto__vak:active:not(:disabled) {
+  background: rgba(9, 159, 196, 0.12);
+}
+
+.lotto__cirkel {
+  position: absolute;
+  inset: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  fill: none;
+  stroke: var(--blauw);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 330;
+  stroke-dashoffset: 330;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.lotto__vak.is-aan .lotto__cirkel {
+  stroke-dashoffset: 0;
+}
+
+.lotto__vak.net-aan.is-aan .lotto__cirkel {
+  animation: spel-pen 0.35s ease-out;
+}
+
+@keyframes spel-pen {
+  from {
+    stroke-dashoffset: 330;
+  }
+}
+
+.lotto__strepen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.lotto__strepen line {
+  stroke: var(--rood);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: 700;
+  opacity: 0.8;
+}
+
+.lotto__strepen line.is-nieuw {
+  animation: spel-streep 0.5s cubic-bezier(0.5, 0, 0.3, 1) both;
+}
+
+@keyframes spel-streep {
+  from {
+    stroke-dashoffset: 700;
+  }
+}
+
+.lotto__stand {
+  margin: 0;
+  font: 700 20px/1.2 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* BINGO-stempel midden in beeld */
+.spel__meld {
+  position: fixed;
+  z-index: 35;
+  left: 50%;
+  top: 42%;
+  padding: 10px 26px 12px;
+  border: 6px double var(--rood);
+  background: var(--papier);
+  color: var(--rood);
+  font: 700 60px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  filter: url(#inkt);
+  pointer-events: none;
+  animation: spel-meld 1.9s both;
+}
+
+.spel__meld small {
+  display: block;
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+@keyframes spel-meld {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-25deg) scale(2.2);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-8deg) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Stemmen: stembiljet ---------- */
+
+.spel__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--inkt-zacht);
+}
+
+.spel__status p {
+  margin: 0;
+}
+
+.biljet,
+.uitslag {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 2px solid var(--inkt);
+  background: var(--papier-2);
+}
+
+.biljet__vraag {
+  margin: 2px 0 0;
+  font: 700 30px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.biljet__zoek {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid var(--inkt);
+}
+
+.biljet__zoek input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  border: 0;
+  background: none;
+  color: var(--inkt);
+  font: 18px Georgia, serif;
+  outline: none;
+}
+
+.biljet__namen {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+}
+
+.biljet__naam {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px dotted var(--lijn);
+  background: none;
+  color: var(--inkt);
+  font: 600 18px/1.1 Barlow, sans-serif;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.biljet__naam[aria-disabled='true'] {
+  color: var(--inkt-zacht);
+}
+
+.biljet__naam small {
+  font: italic 14px Georgia, serif;
+}
+
+.biljet__hokje {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--inkt);
+}
+
+.biljet__hokje svg {
+  position: absolute;
+  inset: -6px;
+  width: 40px;
+  height: 40px;
+  fill: none;
+  stroke: var(--rood);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  transition: stroke-dashoffset 0.25s;
+}
+
+.biljet__naam[aria-pressed='true'] .biljet__hokje svg {
+  stroke-dashoffset: 0;
+}
+
+/* De stemknop blijft onderin beeld staan, boven de tabbalk */
+.biljet__stem {
+  position: sticky;
+  bottom: calc(var(--tabbalk-hoogte, 72px) + env(safe-area-inset-bottom));
+  z-index: 2;
+  display: grid;
+  gap: 6px;
+  margin: 0 -14px -14px;
+  padding: 18px 14px 12px;
+  background: linear-gradient(transparent, var(--papier-2) 18px);
+}
+
+.biljet__stem p {
+  margin: 0;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--inkt-zacht);
+}
+
+.biljet__gestemd {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 8px 0 4px;
+  text-align: center;
+}
+
+.biljet__gestemd .stempel {
+  width: 150px;
+  height: 150px;
+  font-size: 20px;
+}
+
+.biljet__gestemd .stempel b {
+  max-width: 116px;
+  font-size: 28px;
+  line-height: 0.9;
+}
+
+.biljet__gestemd p {
+  margin: 0;
+  font-style: italic;
+  font-size: 1.05rem;
+}
+
+/* Overzicht van alle stemmingen */
+.programma {
+  border-top: 2px solid var(--inkt);
+  padding-top: 4px;
+}
+
+.programma summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  font: 700 20px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.programma__dag h3 {
+  margin: 10px 0 4px;
+  font: 700 15px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+.programma ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.programma li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--lijn);
+}
+
+.programma li small {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--inkt-zacht);
+}
+
+.programma li.is-voorbij {
+  color: var(--inkt-zacht);
+}
+
+.programma__label {
+  flex: none;
+  font: 700 14px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+.programma__label.is-open {
+  color: var(--rood);
+}
+
+/* ---------- Uitslag: kraslot ---------- */
+
+.uitslag__winnaar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  min-height: 112px;
+  border: 3px solid var(--rood);
+  background: var(--papier);
+}
+
+.uitslag__plek {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  background: var(--rood);
+  color: #fff;
+  font: 700 48px/0.9 'Barlow Condensed', sans-serif;
+  text-align: center;
+}
+
+.uitslag__plek small {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+
+.uitslag__naam {
+  margin: 0;
+  font: 700 32px/0.95 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.uitslag__naam.is-lang {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.uitslag__extra {
+  margin: 4px 0 0;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--inkt-zacht);
+}
+
+.uitslag__stempel {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 84px;
+  height: 84px;
+  margin-top: -42px;
+  font-size: 13px;
+}
+
+.uitslag__stempel b {
+  font-size: 18px;
+}
+
+.uitslag .kraslot__inhoud {
+  padding-right: 96px;
+}
+
+.kraslot {
+  position: relative;
+  display: grid;
+  align-content: center;
+  min-height: 106px;
+}
+
+.kraslot__inhoud {
+  padding: 12px 14px;
+}
+
+.kraslot:not(.is-open) .kraslot__inhoud {
+  visibility: hidden;
+}
+
+.kraslot__laag {
+  position: absolute;
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  border-radius: 3px;
+  touch-action: none;
+  cursor: crosshair;
+  transition: opacity 0.32s;
+}
+
+.kraslot__laag.weg {
+  opacity: 0;
+}
+
+/* Tijdens het krassen is de inhoud er al (onder het zilver) */
+.kraslot:has(.kraslot__laag) .kraslot__inhoud {
+  visibility: visible;
+}
+
+.kraslot__zelf {
+  position: absolute;
+  right: 0;
+  bottom: -46px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--blauw-tekst);
+  font: 600 16px/1 Barlow, sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.uitslag:has(.kraslot__zelf) .uitslag__winnaar {
+  margin-bottom: 40px;
+}
+
+.uitslag__lijst,
+.clubblad__lijst {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.uitslag__lijst li,
+.clubblad__lijst li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto 52px;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 4px;
+  border-bottom: 1px dotted var(--lijn);
+}
+
+.uitslag__lijst li {
+  grid-template-columns: 44px minmax(0, 1fr) 40px;
+  padding: 6px 4px;
+}
+
+.uitslag.net-open .uitslag__lijst {
+  animation: spel-vervagen 0.5s 0.3s backwards;
+}
+
+@keyframes spel-vervagen {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- Klassement: de stand in het clubblad ---------- */
+
+.clubblad {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.clubblad__mijn {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.clubblad__mijn b {
+  font: 700 54px/1 'Barlow Condensed', sans-serif;
+}
+
+.clubblad__lijst li {
+  background: var(--papier);
+}
+
+.r__plek {
+  font: 700 22px/1 'Barlow Condensed', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.r__naam {
+  min-width: 0;
+}
+
+.r__naam b,
+.r__persoon {
+  font: 600 19px/1.15 Barlow, sans-serif;
+}
+
+.r__persoon {
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--lijn);
+  text-underline-offset: 3px;
+}
+
+.r__naam small {
+  display: block;
+  font: italic 14px/1.2 Georgia, serif;
+  color: var(--inkt-zacht);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.r__pijl {
+  font: 700 17px/1 'Barlow Condensed', sans-serif;
+  color: var(--inkt-zacht);
+}
+
+.r__pijl.op {
+  color: var(--blauw-tekst);
+}
+
+.r__pijl.neer {
+  color: var(--rood);
+}
+
+.r__pnt {
+  text-align: right;
+  font: 700 24px/1 'Barlow Condensed', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.clubblad__lijst .is-top .r__naam b,
+.clubblad__lijst .is-top .r__persoon,
+.clubblad__lijst .is-eerste .r__naam b,
+.clubblad__lijst .is-eerste .r__persoon {
+  font-weight: 700;
+  font-size: 21px;
+}
+
+.clubblad__lijst .is-eerste .r__plek {
+  color: var(--rood);
+}
+
+/* Eigen rij: met markeerstift */
+.clubblad__lijst li.is-eigen,
+.uitslag__lijst li.is-eigen {
+  background: linear-gradient(100deg, transparent 0 1%, var(--markeer) 2% 97%, transparent 99%) no-repeat 0 60% / 100% 70%, var(--papier);
+}
+
+.spel__blok {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- Melding na een foto ---------- */
+
+.spel__toast {
+  position: fixed;
+  z-index: 30;
+  left: 16px;
+  right: 16px;
+  bottom: calc(var(--tabbalk-hoogte, 72px) + 16px + env(safe-area-inset-bottom));
+  max-width: 448px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 2px solid var(--inkt);
+  background: var(--papier);
+  color: var(--inkt);
+  font: 600 16px/1.3 Barlow, sans-serif;
+  box-shadow: 0 5px 0 var(--blauw);
+  animation: spel-vervagen 0.25s;
+}
+
+.spel__toast svg {
+  flex: none;
+}
+
+/* ---------- Minder beweging: alleen vervagen, geen sprongen ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .stempel--nieuw,
+  .ch.net-gedaan,
+  .spel__meld,
+  .dagkaart.net-open .stempelkaart li,
+  .lotto__strepen line.is-nieuw,
+  .lotto__vak.net-aan.is-aan .lotto__cirkel {
+    animation: spel-vervagen 0.3s !important;
+  }
+
+  .dagkaart__stub {
+    transition: opacity 0.2s;
+  }
+
+  .dagkaart.scheurt .dagkaart__stub {
+    transform: none;
+  }
+}

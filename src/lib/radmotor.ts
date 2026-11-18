@@ -104,7 +104,7 @@ export type Materiaal = 'metaal' | 'klep' | 'hout' | 'kompas'
 let ctx: AudioContext | null = null
 let ruis: AudioBuffer | null = null
 
-function audio(): AudioContext | null {
+export function audio(): AudioContext | null {
   try {
     ctx ??= new AudioContext()
     if (ctx.state === 'suspended') void ctx.resume()
@@ -119,7 +119,7 @@ function audio(): AudioContext | null {
   }
 }
 
-function ruisStoot(c: AudioContext, t: number, type: BiquadFilterType, freq: number, q: number, duur: number, sterkte: number) {
+export function ruisStoot(c: AudioContext, t: number, type: BiquadFilterType, freq: number, q: number, duur: number, sterkte: number) {
   const s = c.createBufferSource()
   s.buffer = ruis
   const f = c.createBiquadFilter()
@@ -134,7 +134,7 @@ function ruisStoot(c: AudioContext, t: number, type: BiquadFilterType, freq: num
   s.stop(t + duur + 0.02)
 }
 
-function toon(c: AudioContext, t: number, vorm: OscillatorType, freq: number, eind: number, duur: number, sterkte: number, filter?: AudioNode) {
+export function toon(c: AudioContext, t: number, vorm: OscillatorType, freq: number, eind: number, duur: number, sterkte: number, filter?: AudioNode) {
   const o = c.createOscillator()
   o.type = vorm
   o.frequency.setValueAtTime(freq, t)

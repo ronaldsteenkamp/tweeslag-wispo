@@ -62,6 +62,12 @@ function wisAlsBegonnen() {
   schrijfEnMeld('spel.challenges', [])
   schrijfEnMeld('spel.bingo.vinkjes', [])
   schrijfEnMeld('spel.bingo.kaart', null) // nieuwe, geschudde busbingokaart (ook op een open scherm)
+  // Stempelkaart-onderdelen: dagkaarten weer dicht, bingo-rijen en krasloten opnieuw, stand zonder pijlen
+  schrijfEnMeld('spel.dagkaarten', [])
+  schrijfEnMeld('spel.bingo.gevierd', [])
+  schrijfEnMeld('spel.gekrast', [])
+  schrijfEnMeld('spel.stand.vorige', null)
+  schrijfEnMeld('spel.stand.huidig', null)
   schrijfEnMeld('casino.fiches', 1000)
   schrijfEnMeld('casino.geleend', 0)
   schrijfEnMeld('casino.inzet', {})

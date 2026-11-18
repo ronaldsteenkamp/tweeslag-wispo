@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
@@ -6,10 +6,12 @@ import { FotoUpload } from '../components/FotoUpload'
 import { Klassement } from '../components/Klassement'
 import { Stemmen } from '../components/Stemmen'
 import { Sneeuw } from '../components/Sneeuw'
+import { GeluidKnop } from '../components/rad/basis'
+import { InktFilter, Stempel } from '../components/Stempelkaart'
 import { config } from '../config'
 import { backendIngesteld } from '../lib/backend'
 import { useToonNaam } from '../lib/bijnamen'
-import { bingoScore, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
+import { bingoScore, LIJNEN, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
 import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
 import { testOntgrendeld, useNu } from '../lib/nu'
 import { isTestperiode } from '../lib/testperiode'
@@ -17,12 +19,17 @@ import { lees, useOpgeslagen } from '../lib/opslag'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { KLASSEMENT_CACHE, type Klassement as KlassementData } from '../lib/scorebord'
 import { SchermKop } from '../components/SchermKop'
+import { klank, minderBeweging, trilSpel, useSpelGeluid } from '../lib/spelgeluid'
 import { tabToetsen } from '../lib/tabbladen'
 import { datumISO, datumLabel, lokaalNaarDate } from '../lib/tijd'
+import '../styles/barlow.css'
+import '../styles/spel.css'
 
 const spelOpen = lokaalNaarDate(config.spelOpen)
 const ONDERDELEN = ['challenges', 'bingo', 'stemmen', 'klassement'] as const
 const openMoment = (d: ChallengeDag) => lokaalNaarDate(`${d.datum}T${d.openOm ?? config.challengesOpenOm}`)
+/** Emoji vooraan een tekst (uit spel.json) weglaten: het Spel praat in drukwerk, niet in emoji */
+const zonderEmoji = (t: string) => t.replace(/^[\p{Extended_Pictographic}\p{Regional_Indicator}][\p{Extended_Pictographic}️‍\p{Regional_Indicator}]*\s*/u, '')
 
 export default function Spel() {
   // Challenges gaan op hele minuten open; de aftelklok tikt zelf elke seconde
@@ -44,7 +51,7 @@ export default function Spel() {
             bijna vertrekt.
           </p>
           <Aftelklok doel={spelOpen} />
-          <p className="klein">Wat er gaat gebeuren? Geheim! 🤫</p>
+          <p className="klein">Wat er gaat gebeuren? Dat lees je dan op de eerste dagkaart.</p>
         </section>
       </div>
     )
@@ -72,11 +79,14 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
   const toon = useToonNaam()
+  const [geluid, setGeluid] = useSpelGeluid()
   const [fotoVoor, setFotoVoor] = useState<{ id: string; titel: string } | null>(null)
   const [fotoGelukt, setFotoGelukt] = useState<string | null>(null)
+  // De challenge die net een stempel kreeg (voor de bonk en het geluid)
+  const [netGedaan, setNetGedaan] = useState<string | null>(null)
   useEffect(() => {
     if (!fotoGelukt) return
-    const id = window.setTimeout(() => setFotoGelukt(null), 3500)
+    const id = window.setTimeout(() => setFotoGelukt(null), 4000)
     return () => window.clearTimeout(id)
   }, [fotoGelukt])
 
@@ -113,8 +123,15 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
     // nu: af en toe opnieuw lezen, want het klassement wordt op de achtergrond bijgewerkt
   }, [nieuweKop, naam, nu])
 
+  const stempelen = (id: string) => {
+    setNetGedaan(id)
+    klank('stempel', geluid)
+    trilSpel('stempel', geluid)
+  }
+
   return (
-    <div className="scherm">
+    <div className="scherm spel">
+      <InktFilter />
       {nieuweKop ? (
         // Met de nieuwe kop staat de score in de kop (geen tweede donkerblauw blok eronder)
         <SchermKop
@@ -142,36 +159,24 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
       )}
       {testOntgrendeld && <p className="melding melding--test">Testmodus: alles is open (?unlock=1)</p>}
       {isTestperiode(nu) && (
-        <p className="melding">
-          <strong>Testperiode.</strong> Probeer alles gerust uit: alle challenges staan open. Op {datumLabel(config.spelOpen.slice(0, 10))} om {config.spelOpen.slice(11)} begint het echte spel:
-          dan worden je vinkjes, punten en casinofiches gewist, krijg je een nieuwe busbingokaart en verdwijnen de
-          teststemmingen. Foto's die je als bewijs uploadt blijven wel op de fotomuur staan.
+        <p className="spel__voetnoot">
+          <strong>Testperiode.</strong> Probeer alles gerust uit: alle challenges staan open. Op {datumLabel(config.spelOpen.slice(0, 10))} om{' '}
+          {config.spelOpen.slice(11)} begint het echte spel: dan worden je stempels, punten en casinofiches gewist, krijg je een nieuwe
+          busbingokaart en verdwijnen de teststemmingen. Foto's die je als bewijs uploadt blijven wel op de fotomuur staan.
         </p>
-      )}
-      {backendIngesteld && (
-        <button type="button" className="knop knop--accent knop--breed" onClick={() => (window.location.hash = '#fotos')}>
-          📸 Fotomuur
-        </button>
       )}
 
-      {!nieuweKop && <section className="kaartje score golf" aria-live="polite">
-        <Sneeuw aantal={14} />
-        <p className="score__label">{naam ? `Score van ${toon(naam)}` : 'Jouw score'}</p>
-        <p className="score__totaal">
-          {challengePunten + bingo.totaal} <span>punten</span>
-        </p>
-        <p className="score__deel">
-          Challenges {challengePunten} · Busbingo {bingo.totaal}
-        </p>
-        <p className="klein">
-          {backendIngesteld
-            ? 'Je score telt mee in het klassement.'
-            : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
-        </p>
-      </section>}
+      <div className="spel__balk">
+        {backendIngesteld && (
+          <button type="button" className="spelknop spelknop--licht" onClick={() => (window.location.hash = '#fotos')}>
+            <Icoon naam="camera" grootte={22} /> Fotomuur
+          </button>
+        )}
+        <GeluidKnop aan={geluid} zet={setGeluid} className="spel__geluid" />
+      </div>
 
       <div
-        className="segment segment--vier"
+        className="spel__tabs"
         role="tablist"
         aria-label="Onderdeel"
         onKeyDown={tabToetsen(ONDERDELEN, onderdeel, setOnderdeel)}
@@ -183,8 +188,10 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             role="tab"
             aria-selected={onderdeel === o}
             tabIndex={onderdeel === o ? 0 : -1}
-            className={`segment__knop${onderdeel === o ? ' is-actief' : ''}`}
-            onClick={() => setOnderdeel(o)}
+            onClick={() => {
+              if (o !== onderdeel) klank('tik', geluid)
+              setOnderdeel(o)
+            }}
           >
             {o === 'challenges' ? 'Challenges' : o === 'bingo' ? 'Busbingo' : o === 'stemmen' ? 'Stemmen' : 'Klassement'}
           </button>
@@ -200,21 +207,27 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
           dagen={data.challenges}
           nu={nu}
           gedaan={gedaanSet}
-          onWissel={(id) => setGedaan((oud) => (oud.includes(id) ? oud.filter((x) => x !== id) : [...oud, id]))}
+          netGedaan={netGedaan}
+          geluid={geluid}
+          naam={naam ? toon(naam) : null}
+          onWissel={(id) => {
+            const was = gedaanSet.has(id)
+            setGedaan((oud) => (oud.includes(id) ? oud.filter((x) => x !== id) : [...oud, id]))
+            if (!was) stempelen(id)
+            else klank('papier', geluid)
+          }}
           onFoto={backendIngesteld ? setFotoVoor : undefined}
         />
       ) : (
         <Bingo
           kaart={kaart}
-          vrijVakje={data.bingo.vrijVakje ?? '❄️ Vrij'}
           score={bingo}
           punten={data.punten}
           tekort={data.bingo.vakjes.length < 24}
+          geluid={geluid}
           onWissel={(t) => setGemarkeerd((oud) => (oud.includes(t) ? oud.filter((x) => x !== t) : [...oud, t]))}
         />
       )}
-
-      {/* Onder de challenges en de busbingo, zodat die zelf bovenaan blijven */}
 
       {fotoVoor && (
         <FotoUpload
@@ -225,15 +238,16 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             const id = fotoVoor.id
             const extra = gedaanSet.has(id)
             setGedaan((oud) => (oud.includes(id) ? oud : [...oud, id]))
-            const waar = later ? 'Foto bewaard ✓ Hij gaat naar de fotomuur zodra er bereik is.' : 'Foto staat op de fotomuur ✓'
-            setFotoGelukt(extra ? `${waar} Extra inzending voor "${fotoVoor.titel}".` : `${waar} "${fotoVoor.titel}" is afgevinkt.`)
+            if (!extra) stempelen(id)
+            const waar = later ? 'Foto bewaard. Hij gaat naar de fotomuur zodra er bereik is.' : 'Foto staat op de fotomuur.'
+            setFotoGelukt(extra ? `${waar} Extra inzending voor "${fotoVoor.titel}".` : `${waar} Stempel erop voor "${fotoVoor.titel}".`)
             setFotoVoor(null)
           }}
         />
       )}
       {fotoGelukt && (
-        <div className="feest feest--klein" role="status" onClick={() => setFotoGelukt(null)}>
-          📸 {fotoGelukt}
+        <div className="spel__toast" role="status" onClick={() => setFotoGelukt(null)}>
+          <Icoon naam="camera" grootte={22} /> {fotoGelukt}
         </div>
       )}
     </div>
@@ -244,141 +258,238 @@ function Challenges({
   dagen,
   nu,
   gedaan,
+  netGedaan,
+  geluid,
+  naam,
   onWissel,
   onFoto,
 }: {
   dagen: ChallengeDag[]
   nu: Date
   gedaan: Set<string>
+  netGedaan: string | null
+  geluid: boolean
+  naam: string | null
   onWissel: (id: string) => void
   /** Foto als bewijs uploaden (alleen met backend) */
   onFoto?: (c: { id: string; titel: string }) => void
 }) {
   const vandaag = datumISO(nu)
   const gesorteerd = [...dagen].sort((a, b) => a.datum.localeCompare(b.datum))
+  const nummer = (d: ChallengeDag) => gesorteerd.indexOf(d) + 1
   const open = gesorteerd.filter((d) => testOntgrendeld || isTestperiode(nu) || nu >= openMoment(d)).reverse()
   const volgende = gesorteerd.find((d) => !testOntgrendeld && !isTestperiode(nu) && nu < openMoment(d))
+  // Een nieuwe dagkaart moet je eerst openscheuren (één keer per dag per telefoon)
+  const [gezien, setGezien] = useOpgeslagen<string[]>('spel.dagkaarten', [])
+  const [scheurt, setScheurt] = useState<string | null>(null)
+  const [netOpen, setNetOpen] = useState<string | null>(null)
+
+  const scheurOpen = (d: ChallengeDag) => {
+    if (scheurt) return
+    klank('scheur', geluid)
+    trilSpel('tik', geluid)
+    setScheurt(d.datum)
+    window.setTimeout(
+      () => {
+        setGezien((oud) => (oud.includes(d.datum) ? oud : [...oud, d.datum]))
+        setScheurt(null)
+        setNetOpen(d.datum)
+        // De regels worden één voor één "gedrukt"
+        if (!minderBeweging()) d.items.forEach((_, i) => window.setTimeout(() => klank('papier', geluid), 150 + i * 220))
+      },
+      minderBeweging() ? 0 : 480,
+    )
+  }
 
   return (
     <>
+      {open.length === 0 && <p className="laadtekst">Nog geen challenges open.</p>}
+      {open.map((d, i) => {
+        const nieuw = i === 0 && !gezien.includes(d.datum)
+        const klaar = d.items.filter((c) => gedaan.has(c.id)).length
+        const te = d.items.reduce((s, c) => s + c.punten, 0)
+        return (
+          <section key={d.datum} className={`dagkaart${nieuw ? ' is-dicht' : ''}${scheurt === d.datum ? ' scheurt' : ''}${netOpen === d.datum ? ' net-open' : ''}`}>
+            <div className="dagkaart__kop">
+              <span className="spel__caps">{d.datum === vandaag ? `Vandaag · ${datumLabel(d.datum)}` : datumLabel(d.datum)}</span>
+              <h2 className="dagkaart__titel">Dagkaart nr. {nummer(d)}</h2>
+            </div>
+            {nieuw ? (
+              <>
+                <div className="dagkaart__perforatie" aria-hidden="true">
+                  <span>Scheur hier</span>
+                </div>
+                <button type="button" className="dagkaart__stub" onClick={() => scheurOpen(d)}>
+                  <span>
+                    <b>Scheur open</b>
+                    <small>
+                      {d.items.length} challenge{d.items.length === 1 ? '' : 's'} · samen {te} punten
+                    </small>
+                  </span>
+                  <Icoon naam="pijl" grootte={30} />
+                </button>
+                <p className="dagkaart__dicht">Nog dicht. Geen spieken.</p>
+              </>
+            ) : (
+              <>
+                <p className="dagkaart__stand spel__caps">
+                  {klaar} van {d.items.length} gestempeld
+                </p>
+                <ol className="stempelkaart">
+                  {d.items.map((c, j) => {
+                    const isKlaar = gedaan.has(c.id)
+                    const inhoud = (
+                      <>
+                        <span className="ch__tekst">
+                          <b>{c.titel}</b>
+                          {c.omschrijving && <span>{c.omschrijving}</span>}
+                          {onFoto && (
+                            <em>
+                              <Icoon naam="camera" grootte={18} /> {isKlaar ? 'Betere inzending?' : 'Foto als bewijs'}
+                            </em>
+                          )}
+                        </span>
+                        <span className="ch__vak" aria-hidden="true">
+                          {isKlaar ? (
+                            <Stempel nieuw={netGedaan === c.id}>
+                              Gedaan
+                              <b>+{c.punten}</b>
+                            </Stempel>
+                          ) : (
+                            `+${c.punten}`
+                          )}
+                        </span>
+                      </>
+                    )
+                    return (
+                      <li key={c.id} style={{ '--i': j } as React.CSSProperties}>
+                        {onFoto ? (
+                          // Met fotomuur: punten krijg je alleen door een foto in te sturen, niet zelf aan te vinken
+                          <button
+                            type="button"
+                            className={`ch${isKlaar ? ' is-klaar' : ''}${netGedaan === c.id ? ' net-gedaan' : ''}`}
+                            aria-label={`${c.titel}: ${isKlaar ? `gestempeld, ${c.punten} punten. Nog een foto insturen` : `stuur een foto in voor ${c.punten} punten`}`}
+                            onClick={() => onFoto({ id: c.id, titel: c.titel })}
+                          >
+                            {inhoud}
+                          </button>
+                        ) : (
+                          // Zonder backend (geen fotomuur) blijft zelf afstempelen de enige manier
+                          <button
+                            type="button"
+                            className={`ch${isKlaar ? ' is-klaar' : ''}${netGedaan === c.id ? ' net-gedaan' : ''}`}
+                            aria-pressed={isKlaar}
+                            aria-label={`${c.titel}: ${isKlaar ? 'gestempeld' : `nog niet gedaan, ${c.punten} punten`}`}
+                            onClick={() => onWissel(c.id)}
+                          >
+                            {inhoud}
+                          </button>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ol>
+                {klaar === d.items.length && d.items.length > 0 && (
+                  <p className="dagkaart__vol">Kaart vol.{naam ? ` Netjes, ${naam}.` : ' Netjes.'}</p>
+                )}
+              </>
+            )}
+          </section>
+        )
+      })}
       {volgende && (
-        <div className="kaartje teaser">
+        <div className="dagkaart dagkaart--teaser">
           <Icoon naam="slot" />
           <p>
-            <strong>
-              {volgende.items.length} nieuwe challenge{volgende.items.length === 1 ? '' : 's'}
-            </strong>{' '}
-            op {datumLabel(volgende.datum)} om {volgende.openOm ?? config.challengesOpenOm}
+            <strong>Dagkaart nr. {nummer(volgende)}</strong> ligt klaar op {datumLabel(volgende.datum)} om{' '}
+            {volgende.openOm ?? config.challengesOpenOm}.
           </p>
         </div>
       )}
-      {open.length === 0 && <p className="laadtekst">Nog geen challenges open.</p>}
-      {open.map((d) => (
-        <section key={d.datum} className="challengedag">
-          <h2 className="tussenkop">{d.datum === vandaag ? `Vandaag · ${datumLabel(d.datum)}` : datumLabel(d.datum)}</h2>
-          {d.items.map((c) => {
-            const klaar = gedaan.has(c.id)
-            return (
-              <article key={c.id} className={`kaartje challenge${klaar ? ' is-klaar' : ''}`}>
-                <div className="challenge__tekst">
-                  <h3>{c.titel}</h3>
-                  {c.omschrijving && <p>{c.omschrijving}</p>}
-                  {onFoto && (
-                    <button type="button" className="challenge__foto" onClick={() => onFoto({ id: c.id, titel: c.titel })}>
-                      <Icoon naam="camera" grootte={18} /> {klaar ? 'Betere inzending?' : 'Foto als bewijs'}
-                    </button>
-                  )}
-                </div>
-                {onFoto ? (
-                  // Met fotomuur: punten krijg je alleen door een foto in te sturen, niet zelf aan te vinken
-                  <span
-                    className={`challenge__knop challenge__knop--stand${klaar ? ' is-klaar' : ''}`}
-                    role="img"
-                    aria-label={`${c.titel}: ${klaar ? `gedaan, ${c.punten} punten` : `stuur een foto in voor ${c.punten} punten`}`}
-                  >
-                    {klaar ? <Icoon naam="vink" grootte={28} /> : <span>+{c.punten}</span>}
-                  </span>
-                ) : (
-                  // Zonder backend (geen fotomuur) blijft zelf afvinken de enige manier
-                  <button
-                    type="button"
-                    className={`challenge__knop${klaar ? ' is-klaar' : ''}`}
-                    aria-pressed={klaar}
-                    aria-label={`${c.titel}: ${klaar ? 'gedaan' : 'nog niet gedaan'}`}
-                    onClick={() => onWissel(c.id)}
-                  >
-                    {klaar ? <Icoon naam="vink" grootte={28} /> : <span>+{c.punten}</span>}
-                  </button>
-                )}
-              </article>
-            )
-          })}
-        </section>
-      ))}
     </>
-  )
-}
-
-/** Begint een vakje met een emoji, dan staat die groot boven de tekst */
-function VakjeInhoud({ tekst }: { tekst: string }) {
-  const m = tekst.match(/^([\p{Extended_Pictographic}\p{Regional_Indicator}][\p{Extended_Pictographic}️‍\p{Regional_Indicator}]*)\s+(.*)$/u)
-  if (!m) return <span>{tekst}</span>
-  return (
-    <span className="bingo__inhoud">
-      <span className="bingo__emoji" aria-hidden="true">
-        {m[1]}
-      </span>
-      <span>{m[2]}</span>
-    </span>
   )
 }
 
 function Bingo({
   kaart,
-  vrijVakje,
   score,
   punten,
   tekort,
+  geluid,
   onWissel,
 }: {
   kaart: string[]
-  vrijVakje: string
   score: ReturnType<typeof bingoScore>
   punten: SpelData['punten']
   tekort: boolean
+  geluid: boolean
   onWissel: (tekst: string) => void
 }) {
-  const [feest, setFeest] = useState<string | null>(null)
-  const vorigeLijnen = useRef(score.lijnen)
+  const raster = useRef<HTMLDivElement>(null)
+  const volle = LIJNEN.filter((l) => l.every(score.aan))
+  // Welke rijen er al gevierd zijn: een rij uit- en weer aanzetten geeft geen tweede feest
+  const [gevierdOpslag, setGevierd] = useOpgeslagen<string[]>('spel.bingo.gevierd', [])
+  const gevierd = Array.isArray(gevierdOpslag) ? gevierdOpslag : []
+  const [melding, setMelding] = useState<{ tekst: string; sub: string; n: number } | null>(null)
+  const [nieuweLijn, setNieuweLijn] = useState<string | null>(null)
+  const [netAan, setNetAan] = useState<number | null>(null)
+  const [centra, setCentra] = useState<[number, number][]>([])
 
-  useEffect(() => {
-    if (score.lijnen > vorigeLijnen.current) {
-      setFeest(score.vol ? `VOLLE KAART! +${punten.bingoVolleKaart}` : `BUSBINGO! +${punten.bingoRij}`)
+  // Middelpunten van de vakjes, voor de rode strepen door volle rijen
+  useLayoutEffect(() => {
+    const meet = () => {
+      const el = raster.current
+      if (!el) return
+      setCentra([...el.children].filter((c) => c.classList.contains('lotto__vak')).map((c) => {
+        const v = c as HTMLElement
+        return [v.offsetLeft + v.offsetWidth / 2, v.offsetTop + v.offsetHeight / 2]
+      }))
     }
-    vorigeLijnen.current = score.lijnen
-  }, [score.lijnen, score.vol, punten])
+    meet()
+    const ro = new ResizeObserver(meet)
+    if (raster.current) ro.observe(raster.current)
+    return () => ro.disconnect()
+  }, [])
+
+  const sleutels = volle.map((l) => l.join('-'))
+  const nieuw = sleutels.filter((s) => !gevierd.includes(s))
+  useEffect(() => {
+    if (!nieuw.length) return
+    setNieuweLijn(nieuw[nieuw.length - 1])
+    setMelding(
+      score.vol
+        ? { tekst: 'Volle kaart!', sub: `+${punten.bingoVolleKaart}`, n: Date.now() }
+        : { tekst: 'Bingo!', sub: `+${punten.bingoRij}`, n: Date.now() },
+    )
+    klank('bel', geluid)
+    trilSpel('bingo', geluid)
+    setGevierd([...gevierd, ...nieuw])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nieuw.join('|')])
 
   useEffect(() => {
-    if (!feest) return
-    const id = window.setTimeout(() => setFeest(null), 2500)
+    if (!melding) return
+    const id = window.setTimeout(() => setMelding(null), 1900)
     return () => window.clearTimeout(id)
-  }, [feest])
+  }, [melding])
 
   return (
     <>
-      <p className="klein">
-        Busbingo voor in de nachtbus. Tik een vakje aan als je het ziet. {punten.bingoVakje} punten per vakje, {punten.bingoRij} per rij (ook
-        kolommen en diagonalen) en {punten.bingoVolleKaart} voor een volle kaart.
+      <p className="spel__uitleg">
+        Busbingo voor in de nachtbus. Zie je het, omcirkel het. {punten.bingoVakje} punten per vakje, {punten.bingoRij} per rij
+        (ook kolommen en diagonalen) en {punten.bingoVolleKaart} voor een volle kaart.
       </p>
       {tekort && <p className="melding">Let op: spel.json heeft minder dan 24 busbingovakjes.</p>}
-      <div className="bingo" role="grid" aria-label="Busbingo">
+      <div className="lotto" role="grid" aria-label="Busbingo" ref={raster}>
         {Array.from({ length: 25 }, (_, i) => {
           const tekst = vakjeTekst(kaart, i)
           const aan = score.aan(i)
           if (i === MIDDEN) {
             return (
-              <div key={i} className="bingo__vak bingo__vak--vrij is-aan" role="gridcell">
-                <VakjeInhoud tekst={vrijVakje} />
+              <div key={i} className="lotto__vak lotto__vak--vrij" role="gridcell" aria-label="Vrij vakje">
+                2SLAG
+                <br />
+                vrij
               </div>
             )
           }
@@ -387,22 +498,40 @@ function Bingo({
               key={i}
               type="button"
               role="gridcell"
-              className={`bingo__vak${aan ? ' is-aan' : ''}`}
+              className={`lotto__vak${aan ? ' is-aan' : ''}${netAan === i ? ' net-aan' : ''}`}
               aria-pressed={aan}
               disabled={!tekst}
-              onClick={() => tekst && onWissel(tekst)}
+              onClick={() => {
+                if (!tekst) return
+                setNetAan(aan ? null : i)
+                klank(aan ? 'papier' : 'pen', geluid)
+                if (!aan) trilSpel('tik', geluid)
+                onWissel(tekst)
+              }}
             >
-              {tekst ? <VakjeInhoud tekst={tekst} /> : '—'}
+              <span>{tekst ? zonderEmoji(tekst) : '—'}</span>
+              <svg className="lotto__cirkel" viewBox="0 0 100 100" aria-hidden="true">
+                <path d="M52 9C80 8 93 30 91 53 89 79 66 93 45 91 19 89 7 67 9 45 11 23 29 10 58 11" />
+              </svg>
             </button>
           )
         })}
+        {centra.length === 25 && (
+          <svg className="lotto__strepen" aria-hidden="true">
+            {volle.map((l) => {
+              const [a, b] = [centra[l[0]], centra[l[4]]]
+              return <line key={l.join('-')} className={nieuweLijn === l.join('-') ? 'is-nieuw' : ''} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />
+            })}
+          </svg>
+        )}
       </div>
-      <p className="bingo__stand">
-        {score.vakjes} van 24 vakjes · {score.lijnen} {score.lijnen === 1 ? 'rij' : 'rijen'}
+      <p className="lotto__stand">
+        {score.vakjes} van 24 vakjes · {score.lijnen} {score.lijnen === 1 ? 'rij' : 'rijen'} · {score.totaal} punten
       </p>
-      {feest && (
-        <div className="feest" role="status">
-          🚌 {feest} 🎉
+      {melding && (
+        <div key={melding.n} className="spel__meld" role="status">
+          {melding.tekst}
+          <small>{melding.sub}</small>
         </div>
       )}
     </>
