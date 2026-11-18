@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -10,6 +11,12 @@ export default defineConfig({
   base,
   plugins: [
     react(),
+    {
+      // Het logo rechtstreeks in het laadscherm van index.html (geen apart verzoek, dus geen leeg moment)
+      name: 'logo-in-laadscherm',
+      transformIndexHtml: (html) =>
+        html.replace('<!--logo-->', readFileSync(new URL('./public/logo.svg', import.meta.url), 'utf8').trim()),
+    },
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,

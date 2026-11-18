@@ -1,4 +1,5 @@
 import React from 'react'
+import { flushSync } from 'react-dom'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import { resetCasinoAlsNodig } from './components/Roulette'
@@ -53,10 +54,29 @@ const klaarVoorHome = Promise.all([
   wachtOp(['planning', 'paklijst', 'kamers']),
 ])
 
-Promise.race([klaarVoorHome, new Promise((r) => window.setTimeout(r, 1500))]).finally(() => {
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>,
+/** Laadscherm laten wegvagen zodra de app echt op het scherm staat (twee frames na het tekenen) */
+function verbergLaadscherm() {
+  const laden = document.getElementById('laden')
+  if (!laden) return
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      laden.classList.add('weg')
+      const weg = () => laden.remove()
+      laden.addEventListener('transitionend', weg, { once: true })
+      window.setTimeout(weg, 600)
+    }),
   )
+}
+
+Promise.race([klaarVoorHome, new Promise((r) => window.setTimeout(r, 1500))]).finally(() => {
+  const root = ReactDOM.createRoot(document.getElementById('root')!)
+  // Synchroon tekenen, zodat Home er al staat als het laadscherm begint te vervagen
+  flushSync(() =>
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>,
+    ),
+  )
+  verbergLaadscherm()
 })
