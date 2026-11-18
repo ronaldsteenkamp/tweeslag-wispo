@@ -61,19 +61,25 @@ const klaarVoorHome = Promise.all([
 
 /**
  * Laadscherm laten wegvagen zodra de app echt op het scherm staat: twee frames na het tekenen en
- * dan nog even, zodat iOS alles onder het laadscherm al geschilderd heeft voordat het vervagen
- * begint (anders soms heel even een zwart vlak).
+ * dan nog even, zodat iOS alles onder het laadscherm al geschilderd heeft. Daarna weg ermee en
+ * mag de sneeuw op Home gaan vallen (zie de uitleg in index.html).
  */
 function verbergLaadscherm() {
   const laden = document.getElementById('laden')
-  if (!laden) return
+  const klaar = () => {
+    laden?.remove()
+    document.documentElement.classList.remove('opstarten')
+  }
+  if (!laden) return klaar()
   requestAnimationFrame(() =>
     requestAnimationFrame(() =>
       window.setTimeout(() => {
         laden.classList.add('weg')
-        const weg = () => laden.remove()
-        laden.addEventListener('transitionend', weg, { once: true })
-        window.setTimeout(weg, 600)
+        // Alleen de achtergrond van het laadscherm zelf telt (het logo vervaagt sneller)
+        laden.addEventListener('transitionend', (e) => {
+          if (e.target === laden) klaar()
+        })
+        window.setTimeout(klaar, 600)
       }, 80),
     ),
   )

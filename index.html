@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="nl">
+<html lang="nl" class="opstarten">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
@@ -22,13 +22,22 @@
        * laadscherm wegvagen zodra Home getekend is.
        */
       /*
-       * will-change: meteen een eigen laag. Anders maakt iOS die pas bij het begin van het vervagen
-       * aan, en tekent het een nog niet geschilderd stuk (linksboven) heel even zwart.
+       * Geen eigen laag voor dit grote, dekkende vlak (dus geen opacity of will-change erop): als
+       * iOS daar halverwege een laag van maakt, tekent het een nog niet geschilderd stuk
+       * (linksboven) heel even zwart. Daarom vervaagt de achtergrondkleur (dat is gewoon
+       * hertekenen) en alleen het logo zelf met opacity.
        */
-      #laden { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #0d0058; transition: opacity 0.3s ease-out; will-change: opacity; }
-      #laden svg { display: block; width: min(65vw, 65vh); height: auto; }
-      #laden.weg { opacity: 0; pointer-events: none; }
-      @media (prefers-reduced-motion: reduce) { #laden { transition-duration: 0.01s; } }
+      #laden { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background-color: #0d0058; transition: background-color 0.3s ease-out; }
+      #laden svg { display: block; width: min(65vw, 65vh); height: auto; transition: opacity 0.2s ease-out; }
+      #laden.weg { background-color: rgba(13, 0, 88, 0); pointer-events: none; }
+      #laden.weg svg { opacity: 0; }
+      /*
+       * Zolang het laadscherm er is: geen vallende sneeuw op Home. Elke bewegende vlok krijgt op
+       * iOS een eigen laag, en die dwingt het laadscherm erboven ook in een eigen laag (met
+       * hetzelfde zwarte vlak). main.tsx haalt 'opstarten' weg als het laadscherm weg is.
+       */
+      html.opstarten .sneeuw { display: none; }
+      @media (prefers-reduced-motion: reduce) { #laden, #laden svg { transition-duration: 0.01s; } }
     </style>
   </head>
   <body>
