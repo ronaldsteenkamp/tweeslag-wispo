@@ -20,6 +20,8 @@ export function FotoUpload({
   const camera = useRef<HTMLInputElement>(null)
   const galerij = useRef<HTMLInputElement>(null)
   const [foto, setFoto] = useState<Verkleind | null>(null)
+  // Vast id per gekozen foto: opnieuw proberen of 'later versturen' zet hem er nooit dubbel op
+  const [fotoId, setFotoId] = useState(() => crypto.randomUUID())
   const [voorbeeld, setVoorbeeld] = useState<string | null>(null)
   const [stap, setStap] = useState<'kiezen' | 'verkleinen' | 'klaar' | 'uploaden'>('kiezen')
   const [fout, setFout] = useState<string | null>(null)
@@ -42,6 +44,7 @@ export function FotoUpload({
     try {
       const v = await verklein(bestand)
       setFoto(v)
+      setFotoId(crypto.randomUUID())
       setVoorbeeld(URL.createObjectURL(v.groot))
       setStap('klaar')
     } catch (e) {
@@ -53,7 +56,7 @@ export function FotoUpload({
   const later = async () => {
     if (!foto) return
     setStap('uploaden')
-    const f = await bewaarVoorLater(foto, challenge)
+    const f = await bewaarVoorLater(foto, challenge, fotoId)
     if (f) {
       setFout(f)
       setStap('klaar')
@@ -64,7 +67,7 @@ export function FotoUpload({
     if (!foto) return
     setStap('uploaden')
     setFout(null)
-    const f = await uploadFoto(foto, challenge)
+    const f = await uploadFoto(foto, challenge, fotoId)
     if (f) {
       setFout(f)
       setMagLater(true)

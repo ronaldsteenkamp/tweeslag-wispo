@@ -9,7 +9,7 @@
     "build": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && vite build",
     "preview": "vite preview",
     "qr": "node scripts/make-qr.mjs",
-    "test": "node --test scripts/rad.test.mjs scripts/badges.test.mjs scripts/kamernamen.test.mjs scripts/persoonsdata.test.mjs"
+    "test": "node --test scripts/rad.test.mjs scripts/badges.test.mjs scripts/kamernamen.test.mjs scripts/persoonsdata.test.mjs scripts/exifdatum.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",
