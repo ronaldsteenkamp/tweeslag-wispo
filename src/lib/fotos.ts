@@ -28,7 +28,7 @@ export interface Foto {
   hoogte: number | null
   /** Moment van uploaden */
   gemaakt: string
-  /** Moment dat de foto genomen is (sinds migratie 0015; anders gelijk aan gemaakt) */
+  /** Moment dat de foto genomen is (sinds migratie 0016; anders gelijk aan gemaakt) */
   genomen?: string | null
   /** Tijdelijke link naar de kleine versie */
   klein?: string
@@ -213,9 +213,9 @@ export async function uploadFoto(
       hoogte: foto.hoogte,
       // naam en kamer vult de server zelf in
     }
-    // 'genomen' neemt de server alleen over als het geloofwaardig is (zie migratie 0015)
+    // 'genomen' neemt de server alleen over als het geloofwaardig is (zie migratie 0016)
     let { error } = await c.from('fotos').insert(foto.genomen ? { ...rij, genomen: foto.genomen } : rij)
-    // Migratie 0015 nog niet gedraaid: dan zonder (de foto komt op het uploadmoment)
+    // Migratie 0016 nog niet gedraaid: dan zonder (de foto komt op het uploadmoment)
     if (error && foto.genomen && /genomen/.test(error.message ?? '')) ({ error } = await c.from('fotos').insert(rij))
     // Staat er al: een eerdere poging is toch aangekomen
     if (error && !bestaatAl(error)) throw error
@@ -308,7 +308,7 @@ export function useFotos(aantal: number, actief = true) {
         .order('genomen', { ascending: false })
         .order('gemaakt', { ascending: false })
         .limit(limiet + 1)
-      // Migratie 0015 nog niet gedraaid (kolom 'genomen' bestaat niet): zoals vroeger
+      // Migratie 0016 nog niet gedraaid (kolom 'genomen' bestaat niet): zoals vroeger
       if (error?.code === '42703') {
         const oud = await c.from('fotos').select(velden).order('gemaakt', { ascending: false }).limit(limiet + 1)
         data = oud.data as typeof data

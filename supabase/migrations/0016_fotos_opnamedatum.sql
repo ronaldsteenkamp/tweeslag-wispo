@@ -5,7 +5,7 @@
 -- De server neemt dat alleen over als het geloofwaardig is: niet in de toekomst en niet ouder dan
 -- 30 dagen. Anders (en bij oude versies van de app die het niet meesturen) = het uploadmoment.
 --
--- Uitvoeren: Supabase → SQL Editor → New query → plak dit bestand → Run (na 0014_persoonsdata.sql),
+-- Uitvoeren: Supabase → SQL Editor → New query → plak dit bestand → Run (na 0015_profiel_optioneel.sql),
 -- VÓÓR de app-versie die 'genomen' opvraagt live gaat. Het script mag vaker uitgevoerd worden.
 
 alter table public.fotos add column if not exists genomen timestamptz;
