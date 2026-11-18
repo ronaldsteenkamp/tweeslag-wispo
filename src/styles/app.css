@@ -4557,35 +4557,68 @@ body:has(.huidig .kaartbalk) .toast {
 
 /* ---------- Badges ---------- */
 
-/* Een badge: rond plaatje met een gouden rand, zoals een medaille */
+/*
+ * Een badge: rond stickertje met een witte rand en een eigen lijn-icoon (BadgeIcoon.tsx).
+ * De kleur hoort bij de soort: voorbereiding (lichtblauw), spel (rood), eer (donkerblauw met
+ * goud) en op de berg (groen). Icoon tegen de kleur minstens 4,5 : 1.
+ */
 .badge {
+  --badge-kleur: var(--tweeslag-lichtblauw);
+  --badge-inkt: var(--tweeslag-donkerblauw);
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   flex: none;
   padding: 0;
-  border: 2px solid var(--goud, #f3d36b);
+  border: 3px solid #fff;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffffff, var(--accent-zacht));
-  box-shadow: var(--schaduw);
-  font-size: 1.25rem;
+  background: var(--badge-kleur);
+  box-shadow: 0 0 0 1px rgb(13 0 88 / 0.14), 0 4px 8px -4px rgb(13 0 88 / 0.45);
+  color: var(--badge-inkt);
   line-height: 1;
-  color: inherit;
   cursor: pointer;
+}
+
+.badge--voorbereiding {
+  --badge-kleur: #099fc4;
+  --badge-inkt: #0d0058;
+}
+
+.badge--spel {
+  --badge-kleur: #c4212f;
+  --badge-inkt: #fff;
+}
+
+.badge--eer {
+  --badge-kleur: #0d0058;
+  --badge-inkt: #f3d36b;
+}
+
+.badge--berg {
+  --badge-kleur: #1e7a4c;
+  --badge-inkt: #fff;
+}
+
+/* Net als stickers: niet allemaal precies recht */
+.badgerij__lijst li:nth-child(3n + 1) .badge {
+  transform: rotate(-5deg);
+}
+
+.badgerij__lijst li:nth-child(3n + 2) .badge {
+  transform: rotate(4deg);
 }
 
 button.badge {
   min-height: 0;
   font: inherit;
-  font-size: 1.25rem;
 }
 
 .badge.is-gekozen {
-  border-color: var(--tweeslag-lichtblauw);
-  box-shadow: 0 0 0 3px var(--accent-zacht);
+  outline: 3px solid var(--tweeslag-lichtblauw);
+  outline-offset: 2px;
 }
 
 .badge__aantal {
@@ -4602,9 +4635,8 @@ button.badge {
 }
 
 .badge--groot {
-  width: 46px;
-  height: 46px;
-  font-size: 1.45rem;
+  width: 48px;
+  height: 48px;
   cursor: default;
 }
 
@@ -4808,13 +4840,12 @@ button.badge {
   margin-bottom: 12px;
 }
 
-/* Nog niet verdiend: grijs en een stippelrand */
+/* Nog niet verdiend: een lege plek met stippelrand, zoals in een plaatjesalbum */
 .badgekaart__item:not(.is-verdiend) .badge {
-  border-style: dashed;
-  border-color: var(--rand);
-  background: var(--achtergrond);
-  filter: grayscale(1);
-  opacity: 0.55;
+  border: 2px dashed #8f89b0;
+  background: transparent;
+  box-shadow: none;
+  color: #6f7391;
 }
 
 .badgekaart__item:not(.is-verdiend) strong {
@@ -4824,13 +4855,22 @@ button.badge {
 /* Melding bij een nieuwe badge (een knop: tik om je profiel te openen) */
 .feest.feest--klein.badgemelding {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
   border: 0;
   font-family: var(--font-kop);
   color: var(--opvallend-tekst);
   cursor: pointer;
   z-index: 75;
+}
+
+.badgemelding__tekst {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .badgemelding small {

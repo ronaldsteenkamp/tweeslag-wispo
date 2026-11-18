@@ -112,9 +112,12 @@ export const geenFeiten: Feiten = {
   nachtuil: false,
 }
 
+/** Soort badge: bepaalt de kleur van het stickertje (het icoon staat in components/BadgeIcoon.tsx) */
+export type BadgeSoort = 'voorbereiding' | 'spel' | 'eer' | 'berg'
+
 export interface BadgeDef {
   id: BadgeId
-  emoji: string
+  soort: BadgeSoort
   naam: string
   /** Waarvoor je hem krijgt */
   uitleg: string
@@ -134,28 +137,28 @@ const meervoud = (n: number, een: string, meer: string) => `${n} ${n === 1 ? een
 export const BADGES: BadgeDef[] = [
   {
     id: 'open-boek',
-    emoji: '✍️',
+    soort: 'voorbereiding',
     naam: 'Open boek',
     uitleg: 'Profiel helemaal ingevuld, met foto',
     nogTeDoen: () => 'Vul je profiel helemaal in, met een foto',
   },
   {
     id: 'bijnaam',
-    emoji: '🏷️',
+    soort: 'voorbereiding',
     naam: 'Bijnaam',
     uitleg: 'Een bijnaam gekozen',
     nogTeDoen: () => 'Kies een bijnaam in Jouw profiel',
   },
   {
     id: 'vaste-gast',
-    emoji: '📲',
+    soort: 'voorbereiding',
     naam: 'Vaste gast',
     uitleg: 'De app staat op het beginscherm',
     nogTeDoen: () => 'Zet de app op je beginscherm en open hem daar',
   },
   {
     id: 'wekker',
-    emoji: '🔔',
+    soort: 'voorbereiding',
     naam: 'Wekker',
     uitleg: 'Meldingen van de app staan aan',
     nogTeDoen: () => 'Zet meldingen aan op Home',
@@ -163,14 +166,14 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'ingepakt',
-    emoji: '🎒',
+    soort: 'voorbereiding',
     naam: 'Ingepakt',
     uitleg: 'De hele paklijst afgevinkt',
     nogTeDoen: () => 'Vink je hele paklijst af',
   },
   {
     id: 'vroege-vogel',
-    emoji: '🐦',
+    soort: 'voorbereiding',
     naam: 'Vroege vogel',
     uitleg: 'Als eerste van de groep de hele paklijst afgevinkt',
     nogTeDoen: () => 'Vink als eerste van de groep je hele paklijst af',
@@ -178,28 +181,28 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'challenge-jager',
-    emoji: '🎯',
+    soort: 'spel',
     naam: 'Challenge-jager',
     uitleg: `${CHALLENGES_NODIG} challenges gedaan`,
     nogTeDoen: (f) => `Doe ${CHALLENGES_NODIG} challenges (nu ${f.challenges})`,
   },
   {
     id: 'bingo',
-    emoji: '🚌',
+    soort: 'spel',
     naam: 'Bingo!',
     uitleg: 'Een rij op de busbingo',
     nogTeDoen: () => 'Haal een rij op de busbingo',
   },
   {
     id: 'volle-kaart',
-    emoji: '🏆',
+    soort: 'spel',
     naam: 'Volle kaart',
     uitleg: 'De hele busbingokaart vol',
     nogTeDoen: () => 'Maak je busbingokaart helemaal vol',
   },
   {
     id: 'stem-van-de-dag',
-    emoji: '👑',
+    soort: 'eer',
     naam: 'Stem van de dag',
     uitleg: 'Een dagelijkse stemming gewonnen',
     nogTeDoen: () => 'Win een dagelijkse stemming',
@@ -207,7 +210,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'stemvee',
-    emoji: '🗳️',
+    soort: 'eer',
     naam: 'Stemvee',
     uitleg: 'Op elke stemming gestemd',
     nogTeDoen: (f) =>
@@ -218,7 +221,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'waarzegger',
-    emoji: '🔮',
+    soort: 'eer',
     naam: 'Waarzegger',
     uitleg: `Minstens ${WAARZEGGER_NODIG} keer gestemd op wie de stemming won`,
     nogTeDoen: (f) => `Stem ${WAARZEGGER_NODIG} keer op de winnaar van een stemming (nu ${f.waarzegger})`,
@@ -226,7 +229,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'fotograaf',
-    emoji: '📸',
+    soort: 'eer',
     naam: 'Fotograaf',
     uitleg: "De meeste foto's op de fotomuur",
     nogTeDoen: (f) => `Zet de meeste foto's op de fotomuur, minstens ${FOTOS_NODIG} (nu ${f.fotos})`,
@@ -235,7 +238,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'high-roller',
-    emoji: '🎰',
+    soort: 'spel',
     naam: 'High roller',
     uitleg: `${CASINO_FICHES_NODIG.toLocaleString('nl-NL')} fiches gehaald in het casino`,
     nogTeDoen: (f) =>
@@ -243,7 +246,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'lot',
-    emoji: '🎡',
+    soort: 'spel',
     naam: 'Lot uit de loterij',
     uitleg: `${RAD_NODIG} keer door het klos-rad gekozen`,
     nogTeDoen: (f) => `Word ${RAD_NODIG} keer door het klos-rad gekozen (nu ${f.radGekozen})`,
@@ -251,7 +254,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'bergbeklimmer',
-    emoji: '⛰️',
+    soort: 'berg',
     naam: 'Bergbeklimmer',
     uitleg: 'Op de gletsjer geweest (boven 3000 m), met je plek op de pistekaart',
     nogTeDoen: () => 'Zet op de gletsjer je plek aan op de pistekaart',
@@ -259,7 +262,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'eerste-lift',
-    emoji: '🌅',
+    soort: 'berg',
     naam: 'Eerste lift',
     uitleg: `De app geopend vóór ${EERSTE_LIFT_TOT} op een skidag`,
     nogTeDoen: () => `Open de app op een skidag vóór ${EERSTE_LIFT_TOT}`,
@@ -267,7 +270,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'ijskonijn',
-    emoji: '🥶',
+    soort: 'berg',
     naam: 'IJskonijn',
     uitleg: `De app geopend toen het op de berg ${IJSKONIJN_GRADEN}° of kouder was`,
     nogTeDoen: () => `Open de app als het op de berg ${IJSKONIJN_GRADEN}° of kouder is`,
@@ -275,7 +278,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'koploper',
-    emoji: '🥇',
+    soort: 'eer',
     naam: 'Koploper',
     uitleg: 'Nu de nummer 1 van het klassement',
     nogTeDoen: () => 'Sta bovenaan in het klassement',
@@ -284,7 +287,7 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'kamerkampioen',
-    emoji: '🛌',
+    soort: 'eer',
     naam: 'Kamerkampioen',
     uitleg: 'Je kamer heeft samen de meeste punten',
     nogTeDoen: () => 'Zorg dat je kamer samen de meeste punten heeft',
@@ -293,14 +296,14 @@ export const BADGES: BadgeDef[] = [
   },
   {
     id: 'blut',
-    emoji: '💸',
+    soort: 'spel',
     naam: 'Blut',
     uitleg: 'Fiches moeten lenen bij de bank van het casino',
     nogTeDoen: () => 'Speel in het casino al je fiches kwijt (of liever niet)',
   },
   {
     id: 'nachtuil',
-    emoji: '🦉',
+    soort: 'berg',
     naam: 'Nachtuil',
     uitleg: `De app geopend tussen ${NACHTUIL_VAN} en ${NACHTUIL_TOT} 's nachts`,
     nogTeDoen: () => `Open de app tussen ${NACHTUIL_VAN} en ${NACHTUIL_TOT} 's nachts (en ga daarna slapen)`,
