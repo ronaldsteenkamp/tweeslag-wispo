@@ -671,7 +671,15 @@ function WeerRij({ nu, naarWeer }: { nu: Date; naarWeer: () => void }) {
   if (gletsjer && dorp)
     onder = `Gletsjer ${graden(gletsjer.nu.temp)}${vers !== undefined ? `, ${cm(vers)} verse sneeuw` : ''}. Dorp ${graden(dorp.nu.temp)}, ${weerTekst(dorp.nu.code).toLowerCase()}.`
   else onder = laden ? 'Weerbericht laden…' : 'Nog geen weerbericht. Open de app een keer met internet.'
-  return <Rij bord={<Bord kleur="blauw" icoon="sneeuwvlok" vierkant />} titel="Nu op de berg" onder={onder} onKlik={naarWeer} />
+  // Twee regels vrijhouden: het weerbericht komt pas na het openen binnen en is dan langer dan 'laden…'
+  return (
+    <Rij
+      bord={<Bord kleur="blauw" icoon="sneeuwvlok" vierkant />}
+      titel="Nu op de berg"
+      onder={<span className="homerij__tweeregels">{onder}</span>}
+      onKlik={naarWeer}
+    />
+  )
 }
 
 /** Tijdens de reis: drie borden naar Spel, Fotomuur en Kaart */
