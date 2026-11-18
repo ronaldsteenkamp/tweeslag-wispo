@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-// Alles wat de gebruiker zelf doet (vinkjes, naam, spel) staat alleen op dit apparaat.
+// Alles wat de gebruiker zelf doet (vinkjes, naam, spel) staat op dit apparaat. Wat bij de naam
+// hoort gaat daarnaast via persoonsdata.ts naar de server (zie persoonsdataregels.ts).
 const VOORVOEGSEL = 'tweeslag-wispo.'
 
 export function lees<T>(sleutel: string, standaard: T): T {
@@ -18,6 +19,18 @@ export function schrijf<T>(sleutel: string, waarde: T): void {
   } catch {
     // Privémodus of opslag vol: de app werkt door, alleen zonder bewaren
   }
+  volger?.(sleutel)
+}
+
+/** Staat er voor deze sleutel iets bewaard? */
+export function bewaard(sleutel: string): boolean {
+  return ruw(sleutel) !== null
+}
+
+// Eén volger van alle schrijfacties: persoonsdata.ts houdt zo bij wat er veranderd is
+let volger: ((sleutel: string) => void) | null = null
+export function volgSchrijven(f: (sleutel: string) => void) {
+  volger = f
 }
 
 // Zodat bijvoorbeeld een naam die je in het welkomstscherm kiest meteen ook op Home staat
@@ -27,6 +40,19 @@ const luisteraars = new Map<string, Set<(waarde: unknown) => void>>()
 export function schrijfEnMeld<T>(sleutel: string, waarde: T): void {
   schrijf(sleutel, waarde)
   luisteraars.get(sleutel)?.forEach((f) => f(waarde))
+}
+
+/**
+ * Helemaal weghalen (en open schermen terug naar hun standaardwaarde laten gaan). Abonnees
+ * krijgen `undefined`.
+ */
+export function wisEnMeld(sleutel: string): void {
+  try {
+    window.localStorage.removeItem(VOORVOEGSEL + sleutel)
+  } catch {
+    // niets aan te doen
+  }
+  luisteraars.get(sleutel)?.forEach((f) => f(undefined))
 }
 
 /** Buiten React luisteren naar wijzigingen van een bewaarde waarde (bijv. de naam) */
@@ -51,7 +77,9 @@ export function useOpgeslagen<T>(sleutel: string, standaard: T) {
   useEffect(() => {
     const set = luisteraars.get(sleutel) ?? new Set()
     luisteraars.set(sleutel, set)
-    const luister = (w: unknown) => {
+    const luister = (gemeld: unknown) => {
+      // Weggehaald (wisEnMeld): terug naar de standaardwaarde
+      const w = gemeld === undefined ? standaard : gemeld
       if (Object.is(w, huidig.current)) return
       vanElders.current.add(w)
       setWaarde(w as T)
