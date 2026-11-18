@@ -1,51 +1,50 @@
 import { useState } from 'react'
-import { stuurTestmelding, useMeldingen, zetMeldingenAan, zetMeldingenUit } from '../lib/meldingen'
+import { stuurTestmelding, useMeldingen, zetMeldingenAan } from '../lib/meldingen'
 import { Icoon } from './Icoon'
 
 /**
  * Op Home, helemaal onderaan: meldingen aanzetten (pas na een tik wordt om toestemming gevraagd).
  * Uit: een rij met een rood bord en een schakelaar, zoals de andere rijen op Home.
- * Aan: geen kaartje meer, alleen een stille regel met Testmelding en Uitzetten.
+ * Na aanzetten komt er meteen een testmelding en verdwijnt het blok. Uitzetten kan via de
+ * instellingen van de telefoon. Alleen als de testmelding niet lukt, blijft er een regel staan
+ * met 'Opnieuw proberen' (zet het abonnement opnieuw op de server en stuurt weer een test).
  * Opmaak in styles/home.css (.homerij, .schakelaar, .meldingen-stil).
  */
 export function MeldingenKaart() {
   const status = useMeldingen()
   const [bezig, setBezig] = useState(false)
   const [tekst, setTekst] = useState<string | null>(null)
+  const [testMislukt, setTestMislukt] = useState(false)
 
   if (status === 'geen-backend' || status === 'niet-ondersteund') return null
 
   const aan = async () => {
     setBezig(true)
     setTekst(null)
+    setTestMislukt(false)
     const fout = await zetMeldingenAan()
+    if (fout) {
+      setBezig(false)
+      setTekst(fout)
+      return
+    }
+    const uitslag = await stuurTestmelding()
     setBezig(false)
-    setTekst(fout ?? 'Meldingen staan aan.')
-  }
-  const test = async () => {
-    setBezig(true)
-    setTekst(await stuurTestmelding())
-    setBezig(false)
-  }
-  const uit = async () => {
-    setBezig(true)
-    await zetMeldingenUit()
-    setBezig(false)
-    setTekst('Meldingen staan uit.')
+    if (!uitslag.startsWith('Testmelding verstuurd')) {
+      setTestMislukt(true)
+      setTekst(uitslag.replace(/\s*Zet meldingen uit en weer aan\.$/, ''))
+    }
   }
 
   if (status === 'aan') {
+    if (!testMislukt) return null
     return (
       <section className="meldingen-stil" aria-label="Meldingen">
         <p>
-          <Icoon naam="bel" grootte={16} /> Meldingen staan aan
+          <Icoon naam="bel" grootte={16} /> Meldingen staan aan, maar de testmelding kwam niet aan
           <span aria-hidden="true"> · </span>
-          <button type="button" onClick={() => void test()} disabled={bezig}>
-            Testmelding
-          </button>
-          <span aria-hidden="true"> · </span>
-          <button type="button" onClick={() => void uit()} disabled={bezig}>
-            Uitzetten
+          <button type="button" onClick={() => void aan()} disabled={bezig}>
+            {bezig ? 'Even geduld…' : 'Opnieuw proberen'}
           </button>
         </p>
         {tekst && <p className="meldingen-stil__tekst">{tekst}</p>}
