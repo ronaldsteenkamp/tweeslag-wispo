@@ -276,8 +276,10 @@ export function useBadges(actief = false) {
         ...telefoon,
         profielVol,
         bijnaam: eigen ? !!eigenBijnaam.bijnaam : toon(n) !== n,
-        ingepakt: eigen ? ingepakt || !!sp?.ingepakt : !!sp?.ingepakt,
-        vroegeVogel: vogels.has(s),
+        // Eigen paklijst: van deze telefoon (persoonsdata van de naam). De serverrij hoort bij het
+        // apparaat en kan na het wisselen van naam nog even de vorige naam bevatten.
+        ingepakt: eigen ? ingepakt : !!sp?.ingepakt,
+        vroegeVogel: vogels.has(s) && (!eigen || ingepakt),
         challenges: eigen && mijnSpel ? mijnSpel.challenges : (sp?.challenges ?? 0),
         bingoLijnen: eigen && mijnSpel ? mijnSpel.lijnen : lijnenUitPunten(vakjes, sp?.bingoPunten ?? 0, spel?.punten),
         volleKaart: eigen && mijnSpel ? mijnSpel.vol : vakjes >= 24,

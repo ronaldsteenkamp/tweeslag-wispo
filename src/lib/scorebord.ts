@@ -1,6 +1,7 @@
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { abonneerBackend, backendIngesteld, backendStand, supabase } from './backend'
+import { paklijstVoorServer } from './badgeregels'
 import { bingoScore, maakKaart } from './bingo'
 import { laad } from './data'
 import { abonneer, lees, schrijf } from './opslag'
@@ -81,25 +82,19 @@ export async function verstuurVoortgang() {
     schrijf(TE_VERSTUREN, false)
     const { error } = await c.from('voortgang').upsert({ user_id: b.userId, ...voortgang }, { onConflict: 'user_id' })
     if (error) throw error
-    // Badge 🎒 Ingepakt: los erachteraan, zodat de score ook verstuurd wordt als de kolom
-    // (migratie 0011) er nog niet is. Mislukt dit, dan gaat het de volgende keer mee.
+    // Badges 🎒 Ingepakt en 🐦 Vroege vogel (migraties 0011/0012), de badges die alleen deze
+    // telefoon kent: los erachteraan, zodat de score ook verstuurd wordt als die kolommen er niet
+    // zijn. Altijd de echte stand van de gekozen naam, ook "niet ingepakt": de rij hoort bij het
+    // apparaat, dus na het wisselen van naam mag de vorige naam er niet in blijven staan. Het
+    // vroegste moment van de naam (ook van een andere telefoon) komt uit de persoonsdata.
     const stil = () => undefined
-    if (lees('paklijst.ingepakt', false)) {
-      await c.from('voortgang').update({ ingepakt: true }).eq('user_id', b.userId).then(stil, stil)
-    }
-    // Badges die alleen deze telefoon kent, en wanneer je ingepakt had (migratie 0012). Ook los,
-    // zodat de rest gewoon werkt als die kolommen er nog niet zijn.
-    await c.from('voortgang').update({ badges: lees('badges.telefoon', {}) }).eq('user_id', b.userId).then(stil, stil)
-    const ingepaktOp = lees<number | null>('paklijst.ingepaktOp', null)
-    if (ingepaktOp !== null) {
-      // Alleen de eerste keer: een later moment (bijv. van een nieuwe telefoon) overschrijft het niet
-      await c
-        .from('voortgang')
-        .update({ ingepakt_op: new Date(Math.min(ingepaktOp, Date.now())).toISOString() })
-        .eq('user_id', b.userId)
-        .is('ingepakt_op', null)
-        .then(stil, stil)
-    }
+    const pak = paklijstVoorServer(lees('paklijst.ingepakt', false), lees<number | null>('paklijst.ingepaktOp', null), Date.now())
+    await c.from('voortgang').update({ ingepakt: pak.ingepakt }).eq('user_id', b.userId).then(stil, stil)
+    await c
+      .from('voortgang')
+      .update({ badges: lees('badges.telefoon', {}), ingepakt_op: pak.ingepakt_op })
+      .eq('user_id', b.userId)
+      .then(stil, stil)
     schrijf(LAATST_VERSTUURD, Date.now())
     zetSync(lees(TE_VERSTUREN, false) ? 'wacht' : 'verstuurd')
   } catch {

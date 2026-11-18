@@ -548,6 +548,18 @@ export function eigenStemmen(
 // ---------- Paklijst ----------
 
 /**
+ * Wat de telefoon voor 🎒 Ingepakt en 🐦 Vroege vogel naar de server stuurt. Altijd allebei, ook
+ * als je (nog) niet ingepakt hebt: de rij op de server hoort bij het apparaat, en na het wisselen
+ * van naam mag de stand van de vorige naam er niet blijven staan. Nooit een moment in de toekomst.
+ */
+export function paklijstVoorServer(ingepakt: boolean, op: number | null, nu: number): { ingepakt: boolean; ingepakt_op: string | null } {
+  return {
+    ingepakt,
+    ingepakt_op: ingepakt && typeof op === 'number' && Number.isFinite(op) ? new Date(Math.min(op, nu)).toISOString() : null,
+  }
+}
+
+/**
  * 🐦 Vroege vogel: wie als eerste helemaal ingepakt had (ingepakt_op). Bij precies hetzelfde
  * moment allebei. Geeft de sleutels (naam in kleine letters) terug.
  */

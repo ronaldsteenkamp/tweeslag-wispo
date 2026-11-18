@@ -288,3 +288,17 @@ test('een naam die een dag gekozen blijft wordt eigenaar (verkeerde naam eerst g
   e = volgendeEigenaar(e, 'tom', EIGENAAR_NA_MS)
   assert.equal(isEigenaar(e, 'Tom'), true)
 })
+// ---------- Ingepakt en Vroege vogel naar de server ----------
+import { paklijstVoorServer } from '../src/lib/badgeregels.ts'
+
+test('ingepakt: de echte stand gaat mee, ook "niet ingepakt" (na wisselen van naam)', () => {
+  assert.deepEqual(paklijstVoorServer(false, null, 5000), { ingepakt: false, ingepakt_op: null })
+  // Een moment zonder ingepakt (oude stand) telt niet
+  assert.deepEqual(paklijstVoorServer(false, 1000, 5000), { ingepakt: false, ingepakt_op: null })
+})
+
+test('ingepakt: het moment gaat mee, nooit in de toekomst', () => {
+  assert.deepEqual(paklijstVoorServer(true, 1000, 5000), { ingepakt: true, ingepakt_op: new Date(1000).toISOString() })
+  assert.equal(paklijstVoorServer(true, 9000, 5000).ingepakt_op, new Date(5000).toISOString())
+  assert.equal(paklijstVoorServer(true, null, 5000).ingepakt_op, null)
+})

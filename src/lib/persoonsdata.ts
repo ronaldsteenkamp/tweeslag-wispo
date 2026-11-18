@@ -163,12 +163,28 @@ async function haalOpNu() {
       }
       return
     }
+    let rijen = (data ?? []) as Rij[]
+    // Na een reset op deze telefoon: ook de gegevens van deze naam op de server wissen, anders
+    // komen ze hier meteen weer terug (bijv. als een telefoon met een oudere versie van de app
+    // ze na het wissen nog verstuurd heeft). Eén keer per reset per naam: staat de rij 'reset' al
+    // op deze reset, dan heeft een andere telefoon van dezelfde naam het al gedaan.
+    if (lees<string | null>(WIS_SERVER, null) === RESET) {
+      if (rijen.find((r) => r.sleutel === RESET_RIJ)?.waarde !== RESET) {
+        const weg = await c.from(TABEL).delete().eq('naam', m.naam)
+        if (weg.error) return
+        const merk = await c.from(TABEL).upsert({ naam: m.naam, sleutel: RESET_RIJ, waarde: RESET }, { onConflict: 'naam,sleutel' })
+        if (merk.error) return
+        rijen = []
+      }
+      schrijf(WIS_SERVER, null)
+    }
+
     // Intussen een andere naam gekozen: niets doen
     const nu = leesMeta()
     if (!nu || nu.naam !== m.naam || nu.opgehaald) return
 
     const server: Record<string, Versie> = {}
-    for (const r of (data ?? []) as Rij[]) {
+    for (const r of rijen) {
       if (r.sleutel in PERSOONLIJK) server[r.sleutel] = { waarde: r.waarde, bijgewerkt: Date.parse(r.bijgewerkt) || 0 }
     }
     const lokaal: Record<string, Versie> = {}
@@ -281,9 +297,13 @@ export function abonneerKlaar(f: () => void): () => void {
  * wordt hetzelfde gewist (met de hand, in de SQL Editor); zonder dit zou een telefoon zijn oude
  * stand meteen weer terugsturen. Nog een keer iedereen resetten: datum ophogen.
  */
-const RESET = '2026-11-18b'
+const RESET = '2026-11-18c'
 const RESET_SLEUTEL = 'persoonsdata.reset'
-/** Namen waarvan de voortgang blijft staan (2026-11-18b: niemand) */
+/** Nog te doen na een reset: de serverstand van de naam wissen */
+const WIS_SERVER = 'persoonsdata.wisServer'
+/** Rij op de server (geen persoonlijke sleutel) die zegt van welke reset de stand is */
+const RESET_RIJ = 'reset'
+/** Namen waarvan de voortgang blijft staan (sinds 2026-11-18b: niemand) */
 const BEHOUDEN: string[] = []
 /** Naast de persoonlijke sleutels: wat er verder bij de voortgang hoort */
 const OOK_WISSEN = ['spel.testmoment', 'spel.stand.vorige', 'spel.stand.huidig', 'rad.teVersturen', 'apparaat.eigenaar']
@@ -294,6 +314,8 @@ export function resetVoortgangAlsNodig() {
   const behouden = (n: string) => BEHOUDEN.includes(naamSleutel(n))
   if (!naam || !behouden(naam)) {
     for (const s of [...PERSOONLIJKE_SLEUTELS, ...OOK_WISSEN, META]) wisEnMeld(s)
+    // Bij het eerstvolgende ophalen ook de serverstand van de naam wissen (zie haalOpNu)
+    schrijf(WIS_SERVER, RESET)
   }
   // Apart gezette gegevens van andere namen ook weg
   const apart = lees<Apart>(APART, {})
