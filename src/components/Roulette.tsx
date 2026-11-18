@@ -341,16 +341,19 @@ export function Roulette({
             {geluidAan ? '🔊' : '🔇'}
           </button>
 
-          <RouletteWiel
-            n={n}
-            wiel={wiel}
-            bal={bal}
-            staart={staart}
-            hoek={hoek.current}
-            balHoek={balHoek.current ?? hoek.current + 180 / (n + 1)}
-            balStraal={balStraal.current}
-            uitslag={uitslag?.getal ?? null}
-          />
+          {/* Het wiel vult de ruimte die de tafel over heeft, zodat de tafel tot de tabbalk reikt */}
+          <div className="casino__wielplek">
+            <RouletteWiel
+              n={n}
+              wiel={wiel}
+              bal={bal}
+              staart={staart}
+              hoek={hoek.current}
+              balHoek={balHoek.current ?? hoek.current + 180 / (n + 1)}
+              balStraal={balStraal.current}
+              uitslag={uitslag?.getal ?? null}
+            />
+          </div>
           {uitslag && uitslag.uitbetaald > uitslag.ingezet && <Confetti key={ronde} />}
 
           <div className="casino__veld">

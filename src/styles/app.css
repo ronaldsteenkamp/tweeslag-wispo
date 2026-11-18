@@ -3879,8 +3879,24 @@ body:has(.huidig .kaartbalk) .toast {
 }
 
 /* Het wiel groeit mee met de schermhoogte, zodat alles op één scherm past */
+/* De tafel is precies zo hoog als het scherm tussen de smalle kopbalk en de tabbalk; het wiel
+   krijgt alle ruimte die het speelveld overlaat (zo groot als past in breedte en hoogte) */
+.casino__tafel {
+  min-height: calc(100dvh - var(--schermkop-balk, var(--boven)) - var(--tabbalk-hoogte) - var(--onder) - 20px);
+}
+
+.casino__wielplek {
+  flex: 1 1 0;
+  align-self: stretch;
+  min-height: 150px;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .casino__wiel {
-  width: clamp(150px, calc(100dvh - 610px), 300px);
+  width: min(100cqw, 100cqh);
   height: auto;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
 }
@@ -4219,9 +4235,18 @@ body:has(.huidig .kaartbalk) .toast {
     margin-bottom: 0;
   }
 
-  .casino__wiel {
+  .casino__tafel {
+    min-height: 0;
+  }
+
+  .casino__wielplek {
     grid-column: 1;
     grid-row: 2 / span 4;
+    container-type: normal;
+    min-height: 0;
+  }
+
+  .casino__wiel {
     width: clamp(200px, calc(100dvh - 330px), 320px);
   }
 
