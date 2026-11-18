@@ -6,8 +6,9 @@ import { useToonNaam } from '../lib/bijnamen'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useData, type Dag } from '../lib/data'
 import { useKamerNaam } from '../lib/kamernamen'
-import { grooteLink, useFotos, type Foto } from '../lib/fotos'
-import { useFotoWachtrijLijst, type WachtendeFoto } from '../lib/fotowachtrij'
+import { grooteLink, momentVan, useFotos, type Foto } from '../lib/fotos'
+import { gooiWeg, probeerOpnieuw, useFotoWachtrijLijst, type WachtendeFoto } from '../lib/fotowachtrij'
+import { BevestigDialoog } from '../components/BevestigDialoog'
 import { useNu } from '../lib/nu'
 import { lees, schrijfEnMeld } from '../lib/opslag'
 import { useTerugSluit } from '../lib/terugknop'
@@ -55,7 +56,7 @@ interface Pagina {
 function maakPaginas(fotos: Foto[], dagen: Dag[]): Pagina[] {
   const perDag = new Map<string, Foto[]>()
   for (const f of fotos) {
-    const d = datumISO(new Date(f.gemaakt))
+    const d = datumISO(momentVan(f))
     if (!perDag.has(d)) perDag.set(d, [])
     perDag.get(d)!.push(f)
   }
@@ -134,7 +135,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
 
   const verbonden = backend.status === 'verbonden' && !!backend.gekoppeld
   const fotoDag = (f: Foto) => {
-    const d = datumISO(new Date(f.gemaakt))
+    const d = datumISO(momentVan(f))
     const i = dagen.findIndex((x) => x.datum === d)
     return i < 0 ? datumLabel(d, 'kort') : `Pag. ${i + 1} · ${dagen[i].titel}`
   }
@@ -214,7 +215,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
                       <figure key={b.fotos[0].id} className="fotomuur__panorama">
                         <FotoKnop foto={b.fotos[0]} onOpen={() => openFoto(b.fotos[0])} />
                         <figcaption className="fotomuur__byline">
-                          {b.fotos[0].challenge_titel} · {toon(b.fotos[0].naam)} · {tijdUUMM(new Date(b.fotos[0].gemaakt))}
+                          {b.fotos[0].challenge_titel} · {toon(b.fotos[0].naam)} · {tijdUUMM(momentVan(b.fotos[0]))}
                         </figcaption>
                       </figure>
                     ) : (
@@ -223,7 +224,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
                           <figure key={f.id} className="fotomuur__stuk">
                             <FotoKnop foto={f} onOpen={() => openFoto(f)} />
                             <figcaption>
-                              <b>{toon(f.naam)}</b> · {tijdUUMM(new Date(f.gemaakt))}
+                              <b>{toon(f.naam)}</b> · {tijdUUMM(momentVan(f))}
                             </figcaption>
                           </figure>
                         ))}
@@ -262,7 +263,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
 /** Een foto op de muur als knop; de alt-tekst noemt wie, wanneer en welke challenge */
 function FotoKnop({ foto: f, onOpen, groot }: { foto: Foto; onOpen: () => void; groot?: string | null }) {
   const toon = useToonNaam()
-  const d = new Date(f.gemaakt)
+  const d = momentVan(f)
   return (
     <button type="button" className="fotomuur__foto" onClick={onOpen}>
       {f.klein ? (
@@ -310,7 +311,7 @@ function Opening({ foto: f, kamerLabel, onOpen }: { foto: Foto; kamerLabel: (nr:
       <h3>{f.challenge_titel}</h3>
       <p className="fotomuur__byline">
         Foto: {toon(f.naam)}
-        {f.kamer ? ` · kamer ${kamerLabel(f.kamer)}` : ''} · {tijdUUMM(new Date(f.gemaakt))}
+        {f.kamer ? ` · kamer ${kamerLabel(f.kamer)}` : ''} · {tijdUUMM(momentVan(f))}
       </p>
     </figure>
   )
@@ -318,6 +319,7 @@ function Opening({ foto: f, kamerLabel, onOpen }: { foto: Foto; kamerLabel: (nr:
 
 /** Foto's die nog op deze telefoon staan en op bereik wachten */
 function TerPerse({ wachtend, verbonden }: { wachtend: WachtendeFoto[]; verbonden: boolean }) {
+  const [weg, setWeg] = useState<WachtendeFoto | null>(null)
   if (!wachtend.length) return null
   return (
     <section className="fotomuur__pers" aria-live="polite" aria-labelledby="ter-perse">
@@ -329,15 +331,52 @@ function TerPerse({ wachtend, verbonden }: { wachtend: WachtendeFoto[]; verbonde
             <div>
               <p>{w.titel}</p>
               <span className={`fotomuur__stempel${w.bezig ? ' fotomuur__stempel--blauw' : ''}`}>
-                {w.bezig ? 'Wordt gedrukt…' : !verbonden ? 'Wacht op bereik' : w.pogingen ? 'Opnieuw in de rij' : 'Bijna aan de beurt'}
+                {w.bezig
+                  ? 'Wordt gedrukt…'
+                  : w.vast
+                    ? 'Niet gelukt'
+                    : !verbonden
+                      ? 'Wacht op bereik'
+                      : w.pogingen
+                        ? 'Opnieuw in de rij'
+                        : 'Bijna aan de beurt'}
               </span>
+              {w.vast && (
+                <>
+                  {w.fout && <p className="fotomuur__klein">{w.fout}</p>}
+                  <div className="fotomuur__perskeuze">
+                    <button type="button" className="fotomuur__knop" onClick={() => void probeerOpnieuw(w.id)}>
+                      <Icoon naam="herstel" grootte={18} /> Opnieuw
+                    </button>
+                    <button type="button" className="fotomuur__knop fotomuur__knop--licht" onClick={() => setWeg(w)}>
+                      Weggooien
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </li>
         ))}
       </ul>
-      {!verbonden && (
+      {!verbonden ? (
         <p className="fotomuur__klein">Je foto&apos;s liggen veilig op je telefoon en gaan vanzelf naar de drukker zodra er bereik is.</p>
+      ) : (
+        wachtend.some((w) => w.vast) && (
+          <p className="fotomuur__klein">Een foto die niet lukt blijft hier staan tot jij kiest: nog een keer, of weg.</p>
+        )
       )}
+      <BevestigDialoog
+        open={!!weg}
+        titel="Foto weggooien?"
+        tekst={`De foto voor "${weg?.titel ?? ''}" staat alleen op deze telefoon. Weg is weg. De stempel voor de challenge blijft staan.`}
+        bevestigLabel="Weggooien"
+        gevaarlijk
+        onAnnuleer={() => setWeg(null)}
+        onBevestig={() => {
+          if (weg) void gooiWeg(weg.id)
+          setWeg(null)
+        }}
+      />
     </section>
   )
 }
@@ -806,7 +845,7 @@ export function FotoGroot({
         <p className="foto-groot__kop">{foto.challenge_titel}</p>
         <p className="foto-groot__byline">
           Foto: {toon(foto.naam)}
-          {foto.kamer && ` · kamer ${kamerLabel(foto.kamer)}`} · {wanneerGemaakt(foto.gemaakt)}
+          {foto.kamer && ` · kamer ${kamerLabel(foto.kamer)}`} · {wanneerGemaakt(momentVan(foto).toISOString())}
         </p>
       </div>
     </div>

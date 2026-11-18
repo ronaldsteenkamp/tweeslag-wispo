@@ -6,6 +6,11 @@ import { uploadFoto, type Verkleind } from './fotos'
  * Foto's die zonder bereik als bewijs zijn gemaakt. Ze staan (verkleind) in IndexedDB op deze
  * telefoon en gaan vanzelf naar de fotomuur zodra er verbinding is en de naam gekoppeld is.
  * De challenge telt meteen als gedaan; alleen de foto komt later.
+ *
+ * Elke foto houdt zijn eigen id; dat wordt ook het pad op de server. Gaat een poging halverwege mis
+ * (of sluit de app net na het versturen), dan zet een nieuwe poging hem er nooit twee keer op.
+ * Een foto wordt nooit stilletjes weggegooid: na een paar mislukte pogingen blijft hij staan
+ * ("Niet gelukt") tot je zelf op Opnieuw of Weggooien tikt.
  */
 
 interface Wachtend {
@@ -13,9 +18,13 @@ interface Wachtend {
   foto: Verkleind
   challenge: { id: string; titel: string }
   pogingen: number
+  /** Te vaak mislukt: niet meer vanzelf proberen, wachten op de gebruiker */
+  vast?: boolean
+  /** Laatste foutmelding van de server */
+  fout?: string
 }
 
-/** Na zoveel mislukte pogingen (met verbinding) geven we het op, anders blijft hij eeuwig hangen */
+/** Na zoveel mislukte pogingen (met verbinding) stoppen we met vanzelf proberen */
 const MAX_POGINGEN = 5
 
 const DB = 'tweeslag-wispo'
@@ -52,6 +61,9 @@ export interface WachtendeFoto {
   pogingen: number
   /** Wordt nu verstuurd */
   bezig: boolean
+  /** Te vaak mislukt; de gebruiker kiest Opnieuw of Weggooien */
+  vast: boolean
+  fout: string | null
   /** Tijdelijke link naar de kleine versie op deze telefoon */
   klein: string
 }
@@ -82,14 +94,29 @@ async function telOpnieuw() {
 function alsLijst(): WachtendeFoto[] {
   return lijst.map((r) => {
     if (!voorbeelden.has(r.id)) voorbeelden.set(r.id, URL.createObjectURL(r.foto.klein))
-    return { id: r.id, titel: r.challenge.titel, pogingen: r.pogingen, bezig: r.id === bezigMet, klein: voorbeelden.get(r.id)! }
+    return {
+      id: r.id,
+      titel: r.challenge.titel,
+      pogingen: r.pogingen,
+      bezig: r.id === bezigMet,
+      vast: !!r.vast,
+      fout: r.fout ?? null,
+      klein: voorbeelden.get(r.id)!,
+    }
   })
 }
 
-/** Bewaart een foto om later te versturen. Geeft een foutmelding, of null als het gelukt is. */
-export async function bewaarVoorLater(foto: Verkleind, challenge: { id: string; titel: string }): Promise<string | null> {
+/**
+ * Bewaart een foto om later te versturen. Geeft een foutmelding, of null als het gelukt is.
+ * Geef het `id` mee van een poging die net mislukte, dan kan die foto er nooit dubbel op komen.
+ */
+export async function bewaarVoorLater(
+  foto: Verkleind,
+  challenge: { id: string; titel: string },
+  id: string = crypto.randomUUID(),
+): Promise<string | null> {
   try {
-    const rij: Wachtend = { id: crypto.randomUUID(), foto, challenge, pogingen: 0 }
+    const rij: Wachtend = { id, foto, challenge, pogingen: 0 }
     await metWinkel('readwrite', (w) => w.put(rij))
     void telOpnieuw()
     return null
@@ -100,6 +127,9 @@ export async function bewaarVoorLater(foto: Verkleind, challenge: { id: string; 
 
 let bezig = false
 
+/** Fout door wegvallend bereik (en dus niet door de foto zelf)? */
+export const lijktBereik = (fout: string) => /geen verbinding|failed to fetch|load failed|network|netwerk|timed? ?out|time-out|abort/i.test(fout)
+
 /** Verstuurt wat er klaarstaat, als het kan */
 export async function verstuurWachtrij() {
   const b = backendStand()
@@ -107,12 +137,17 @@ export async function verstuurWachtrij() {
   bezig = true
   try {
     for (const rij of await alle()) {
+      if (rij.vast) continue
       if (backendStand().status !== 'verbonden') break
       bezigMet = rij.id
       meld()
-      const fout = await uploadFoto(rij.foto, rij.challenge)
-      if (!fout || rij.pogingen + 1 >= MAX_POGINGEN) await metWinkel('readwrite', (w) => w.delete(rij.id))
-      else await metWinkel('readwrite', (w) => w.put({ ...rij, pogingen: rij.pogingen + 1 }))
+      const fout = await uploadFoto(rij.foto, rij.challenge, rij.id)
+      if (!fout) await metWinkel('readwrite', (w) => w.delete(rij.id))
+      else if (lijktBereik(fout)) break // haperend bereik telt niet als poging: straks gewoon verder
+      else {
+        const pogingen = rij.pogingen + 1
+        await metWinkel('readwrite', (w) => w.put({ ...rij, pogingen, fout, vast: pogingen >= MAX_POGINGEN }))
+      }
     }
   } catch {
     // Volgende keer opnieuw
@@ -121,6 +156,21 @@ export async function verstuurWachtrij() {
     bezigMet = null
     void telOpnieuw()
   }
+}
+
+/** Een vastgelopen foto nog een keer proberen (opnieuw vijf pogingen) */
+export async function probeerOpnieuw(id: string) {
+  const rij = lijst.find((r) => r.id === id)
+  if (!rij) return
+  await metWinkel('readwrite', (w) => w.put({ ...rij, pogingen: 0, vast: false, fout: undefined }))
+  await telOpnieuw()
+  void verstuurWachtrij()
+}
+
+/** Een wachtende foto weggooien (alleen op verzoek van de gebruiker) */
+export async function gooiWeg(id: string) {
+  await metWinkel('readwrite', (w) => w.delete(id))
+  await telOpnieuw()
 }
 
 /** De foto's die nog op verbinding wachten, voor het blok "Ter perse" op de Fotomuur */

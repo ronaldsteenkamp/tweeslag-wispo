@@ -1,12 +1,16 @@
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { abonneerBackend, backendIngesteld, backendStand, supabase } from './backend'
+import { leesExifDatum } from './exifdatum'
 import { lees, schrijf } from './opslag'
+import { lokaalNaarDate } from './tijd'
 
 /*
  * Fotomuur. Foto's worden in de browser verkleind (max. 1600 px, ~300 kB) plus een kleine
- * versie voor de muur (480 px), zonder EXIF-gegevens (dus ook zonder locatie). Ze staan in
- * de privé-bucket 'fotos' en zijn alleen te zien via tijdelijke links (signed URLs).
+ * versie voor de muur (480 px), zonder EXIF-gegevens (dus ook zonder locatie). Alleen het
+ * opnamemoment wordt vooraf uitgelezen en apart meegestuurd ('genomen'), zodat een foto die
+ * later verstuurd wordt toch op de goede dag staat. Ze staan in de privé-bucket 'fotos' en zijn
+ * alleen te zien via tijdelijke links (signed URLs).
  */
 
 export const BUCKET = 'fotos'
@@ -22,10 +26,16 @@ export interface Foto {
   pad: string
   breedte: number | null
   hoogte: number | null
+  /** Moment van uploaden */
   gemaakt: string
+  /** Moment dat de foto genomen is (sinds migratie 0015; anders gelijk aan gemaakt) */
+  genomen?: string | null
   /** Tijdelijke link naar de kleine versie */
   klein?: string
 }
+
+/** Wanneer de foto genomen is: daarop staat hij op de muur */
+export const momentVan = (f: Foto) => new Date(f.genomen ?? f.gemaakt)
 
 export const kleinPad = (pad: string) => pad.replace(/\.jpg$/, '-klein.jpg')
 
@@ -82,15 +92,38 @@ export interface Verkleind {
   klein: Blob
   breedte: number
   hoogte: number
+  /** Wanneer de foto genomen is (ISO), zie opnamemoment(). Ontbreekt bij oudere wachtende foto's. */
+  genomen?: string
+}
+
+/**
+ * Wanneer is de foto genomen? Eerst uit de EXIF van de foto zelf, anders de datum van het bestand,
+ * anders nu (bij een foto die je net maakt klopt dat). Nooit in de toekomst.
+ */
+export async function opnamemoment(bestand: Blob, nu = Date.now()): Promise<Date> {
+  let t: number | null = null
+  try {
+    const exif = leesExifDatum(await bestand.slice(0, 256 * 1024).arrayBuffer())
+    if (exif) {
+      // Met tijdzone als de telefoon die meeschreef, anders als tijd in Nederland/Frankrijk
+      t = exif.offset ? new Date(`${exif.lokaal}${exif.offset}`).getTime() : lokaalNaarDate(exif.lokaal).getTime()
+    }
+  } catch {
+    // Geen leesbare EXIF: dan de terugval hieronder
+  }
+  if ((t === null || Number.isNaN(t)) && bestand instanceof File && bestand.lastModified > 0) t = bestand.lastModified
+  if (t === null || Number.isNaN(t) || t > nu) t = nu
+  return new Date(t)
 }
 
 /** Verkleint een gekozen foto tot max. 1600 px en ~300 kB, plus een kleine versie voor de muur */
 export async function verklein(bestand: Blob): Promise<Verkleind> {
+  const genomen = (await opnamemoment(bestand)).toISOString()
   const beeld = await laadBeeld(bestand)
   try {
     const groot = await naarJpeg(beeld.bron, beeld.b, beeld.h, 1600, 300_000)
     const klein = await naarJpeg(beeld.bron, beeld.b, beeld.h, 480, 60_000)
-    return { groot: groot.blob, klein: klein.blob, breedte: groot.breedte, hoogte: groot.hoogte }
+    return { groot: groot.blob, klein: klein.blob, breedte: groot.breedte, hoogte: groot.hoogte, genomen }
   } finally {
     beeld.sluit()
   }
@@ -138,34 +171,58 @@ const foutTekst = (e: unknown) => {
   return FOUTEN[m] ?? m
 }
 
-/** Uploadt beide versies en legt de foto vast. Geeft een foutmelding terug, of null als het gelukt is. */
-export async function uploadFoto(foto: Verkleind, challenge: { id: string; titel: string }): Promise<string | null> {
+/** Bestaat dit bestand of deze foto al? (een eerdere poging die toch gelukt was) */
+const bestaatAl = (e: unknown) => {
+  const f = e as { message?: string; statusCode?: string | number; code?: string; error?: string }
+  return (
+    String(f?.statusCode) === '409' ||
+    f?.code === '23505' ||
+    /already exists|duplicate/i.test(`${f?.message ?? ''} ${f?.error ?? ''}`)
+  )
+}
+
+/**
+ * Uploadt beide versies en legt de foto vast. Geeft een foutmelding terug, of null als het gelukt is.
+ * `id` hoort vast bij deze ene foto: een nieuwe poging met hetzelfde id (na een time-out of als de
+ * app halverwege dichtging) zet hem er nooit twee keer op.
+ */
+export async function uploadFoto(
+  foto: Verkleind,
+  challenge: { id: string; titel: string },
+  id: string = crypto.randomUUID(),
+): Promise<string | null> {
   const cb = supabase()
   const b = backendStand()
   if (!cb || b.status !== 'verbonden' || !b.userId) return 'Geen verbinding. Uploaden kan alleen met internet.'
   if (!b.gekoppeld) return FOUTEN.geen_naam
   const c = await cb
-  const pad = `${b.userId}/${crypto.randomUUID()}.jpg`
+  const pad = `${b.userId}/${id}.jpg`
   const opslag = c.storage.from(BUCKET)
   try {
     const [g, k] = await Promise.all([
       opslag.upload(pad, foto.groot, { contentType: 'image/jpeg', upsert: false }),
       opslag.upload(kleinPad(pad), foto.klein, { contentType: 'image/jpeg', upsert: false }),
     ])
-    if (g.error) throw g.error
-    if (k.error) throw k.error
-    const { error } = await c.from('fotos').insert({
+    if (g.error && !bestaatAl(g.error)) throw g.error
+    if (k.error && !bestaatAl(k.error)) throw k.error
+    const rij: Record<string, unknown> = {
       pad,
       challenge_id: challenge.id,
       challenge_titel: challenge.titel.slice(0, 120),
       breedte: foto.breedte,
       hoogte: foto.hoogte,
       // naam en kamer vult de server zelf in
-    })
-    if (error) throw error
+    }
+    // 'genomen' neemt de server alleen over als het geloofwaardig is (zie migratie 0015)
+    let { error } = await c.from('fotos').insert(foto.genomen ? { ...rij, genomen: foto.genomen } : rij)
+    // Migratie 0015 nog niet gedraaid: dan zonder (de foto komt op het uploadmoment)
+    if (error && foto.genomen && /genomen/.test(error.message ?? '')) ({ error } = await c.from('fotos').insert(rij))
+    // Staat er al: een eerdere poging is toch aangekomen
+    if (error && !bestaatAl(error)) throw error
     meldWijziging()
     return null
   } catch (e) {
+    // Bestanden van een foto die al op de muur staat, laat de server hier niet weghalen (0009)
     await opslag.remove([pad, kleinPad(pad)]).catch(() => {})
     return `Uploaden lukte niet: ${foutTekst(e)}`
   }
@@ -243,11 +300,20 @@ export function useFotos(aantal: number, actief = true) {
     }
     try {
       const c = await cb
-      const { data, error } = await c
+      const velden = 'id, user_id, naam, kamer, challenge_id, challenge_titel, pad, breedte, hoogte, gemaakt'
+      // Op volgorde van het moment dat de foto genomen is
+      let { data, error } = await c
         .from('fotos')
-        .select('id, user_id, naam, kamer, challenge_id, challenge_titel, pad, breedte, hoogte, gemaakt')
+        .select(`${velden}, genomen`)
+        .order('genomen', { ascending: false })
         .order('gemaakt', { ascending: false })
         .limit(limiet + 1)
+      // Migratie 0015 nog niet gedraaid (kolom 'genomen' bestaat niet): zoals vroeger
+      if (error?.code === '42703') {
+        const oud = await c.from('fotos').select(velden).order('gemaakt', { ascending: false }).limit(limiet + 1)
+        data = oud.data as typeof data
+        error = oud.error
+      }
       if (error) throw error
       const rijen = (data ?? []) as Foto[]
       const zichtbaar = rijen.slice(0, limiet)

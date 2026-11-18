@@ -156,6 +156,19 @@
   text-transform: uppercase;
 }
 
+.fotomuur__perskeuze {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.fotomuur__perskeuze .fotomuur__knop {
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 17px;
+}
+
 .fotomuur__stempel--blauw {
   border-color: var(--blauw-tekst);
   color: var(--blauw-tekst);
