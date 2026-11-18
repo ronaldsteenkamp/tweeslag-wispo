@@ -92,7 +92,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
 
   return (
     <div className="scherm home">
-      {fase === 'voor' && <KopVoor nu={nu} naam={naam} pakDeel={pak.deel} />}
+      {fase === 'voor' && <KopVoor naam={naam} pakDeel={pak.deel} />}
       {fase === 'vertrekdag' && dag && <KopVertrekdag nu={nu} naam={naam} dag={dag} />}
       {fase === 'tijdens' && <KopDag nu={nu} naam={naam} dag={dag} index={index} aantal={dagen.length} naarWeer={naarWeer} />}
       {fase === 'na' && <KopNa naam={naam} />}
@@ -234,7 +234,16 @@ function Berg({ vlag = false }: { vlag?: boolean }) {
   )
 }
 
-function KopVoor({ nu, naam, pakDeel }: { nu: Date; naam: string | null; pakDeel: number | null }) {
+const tweeCijfers = (n: number) => String(n).padStart(2, '0')
+
+/**
+ * Aftellen tot de bus: groot de dagen (of uren), daaronder een klok tot op de seconde (zonder de
+ * uren als die al groot staan). Alleen dit
+ * stukje ververst elke seconde. De klok is voor schermlezers verborgen (anders elke seconde
+ * nieuwe tekst); die lezen de grote regel.
+ */
+function Aftellen() {
+  const nu = useNu(1000)
   const r = resterend(vertrek.getTime() - nu.getTime())
   const groot =
     r.dagen >= 1
@@ -242,6 +251,26 @@ function KopVoor({ nu, naam, pakDeel }: { nu: Date; naam: string | null; pakDeel
       : r.uren >= 1
         ? `Nog ${r.uren} uur`
         : `Nog ${Math.max(1, r.minuten)} min`
+  return (
+    <>
+      {groot}
+      <span className="homekop__klok" aria-hidden="true">
+        {r.dagen >= 1 ? (
+          <>
+            {tweeCijfers(r.uren)}
+            <i>u</i>
+          </>
+        ) : null}
+        {tweeCijfers(r.minuten)}
+        <i>m</i>
+        <b>{tweeCijfers(r.seconden)}</b>
+        <i>s</i>
+      </span>
+    </>
+  )
+}
+
+function KopVoor({ naam, pakDeel }: { naam: string | null; pakDeel: number | null }) {
   const zin =
     pakDeel === null || pakDeel < 0.5
       ? 'Mooi moment om je skibroek alvast te passen. En om je paklijst te beginnen.'
@@ -253,7 +282,7 @@ function KopVoor({ nu, naam, pakDeel }: { nu: Date; naam: string | null; pakDeel
       <Sneeuw aantal={8} />
       <KopRij boven={`Wispo 2027 · ${config.bestemming}`} naam={naam} />
       <h1 className="homekop__titel">
-        {groot}
+        <Aftellen />
         <small>
           tot de bus vertrekt · {datumLabel(config.vertrek.slice(0, 10))}, {vertrekTijd}
         </small>
