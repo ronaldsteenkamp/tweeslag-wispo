@@ -229,6 +229,8 @@ const normaliseer: { [K in DataNaam]: (ruw: Ruw) => DataTypes[K] } = {
 export const DATA_BESTANDEN: DataNaam[] = ['planning', 'paklijst', 'kamers', 'spel', 'stemmingen', 'rad']
 
 const cache = new Map<DataNaam, Promise<unknown>>()
+/** Al binnengekomen bestanden, zodat een scherm ze meteen heeft (zonder een leeg moment dat verspringt) */
+const klaar = new Map<DataNaam, unknown>()
 
 // ---------- Kamerverdeling van de server ----------
 // Slaat de reisleiding de kamerverdeling op in de app (zie kamerverdeling.ts), dan gaat die voor op
@@ -276,9 +278,12 @@ export function laad<K extends DataNaam>(naam: K, opnieuw = false): Promise<Data
   if (opnieuw || !cache.has(naam)) {
     const belofte = haalOp(naam)
     cache.set(naam, belofte)
-    belofte.catch(() => {
-      if (cache.get(naam) === belofte) cache.delete(naam)
-    })
+    belofte.then(
+      (data) => klaar.set(naam, data),
+      () => {
+        if (cache.get(naam) === belofte) cache.delete(naam)
+      },
+    )
   }
   const belofte = cache.get(naam) as Promise<DataTypes[K]>
   if (naam !== 'kamers') return belofte
@@ -297,8 +302,19 @@ export function haalAllesVooraf() {
   for (const naam of DATA_BESTANDEN) laad(naam, true).catch(() => {})
 }
 
+function alKlaar<K extends DataNaam>(naam: K): DataTypes[K] | undefined {
+  const data = klaar.get(naam) as DataTypes[K] | undefined
+  if (data === undefined) return naam === 'kamers' ? ((serverKamers ?? undefined) as DataTypes[K] | undefined) : undefined
+  return naam === 'kamers' ? (combineer(data as Kamers) as DataTypes[K]) : data
+}
+
+/** Wacht tot deze bestanden er zijn (of mislukt zijn), bijv. voordat de app voor het eerst tekent */
+export function wachtOp(namen: DataNaam[]): Promise<void> {
+  return Promise.all(namen.map((n) => laad(n).catch(() => {}))).then(() => {})
+}
+
 export function useData<K extends DataNaam>(naam: K) {
-  const [staat, setStaat] = useState<{ data?: DataTypes[K]; fout?: DataFout }>({})
+  const [staat, setStaat] = useState<{ data?: DataTypes[K]; fout?: DataFout }>(() => ({ data: alKlaar(naam) }))
   // Opnieuw zodra er een nieuwe kamerverdeling van de server is
   const [versie, setVersie] = useState(0)
   useEffect(() => {

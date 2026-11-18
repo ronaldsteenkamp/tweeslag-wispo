@@ -102,6 +102,13 @@
   letter-spacing: -0.01em;
 }
 
+/* Ruimte voor twee regels, zodat de rij niet groeit als de tekst later binnenkomt */
+.homerij__tweeregels {
+  display: block;
+  min-height: 2.9em;
+  min-height: 2lh;
+}
+
 /* Klok tot op de seconde onder de grote dagen (vaste cijferbreedte, zodat niets verspringt) */
 .homekop__klok {
   display: block;

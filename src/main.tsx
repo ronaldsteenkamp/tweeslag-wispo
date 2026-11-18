@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import { resetCasinoAlsNodig } from './components/Roulette'
 import { startBackend } from './lib/backend'
+import { wachtOp } from './lib/data'
 import { vangInstallatieMelding } from './lib/installatie'
 import { startKamerverdeling } from './lib/kamerverdeling'
 import { startProfielen } from './lib/profiel'
@@ -41,8 +42,21 @@ resetCasinoAlsNodig()
 // Na het casino-reset: anders telt een oude stand nog voor High roller of Blut
 startBadges()
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+/*
+ * Het laadscherm (logo, in index.html) blijft heel even staan tot de lettertypes en de gegevens
+ * voor Home er zijn. Anders tekent Home eerst met een ander lettertype en zonder paklijst en
+ * planning, en verspringt alles als die binnenkomen. Nooit langer dan 1,5 seconde (slecht bereik).
+ */
+const LETTERTYPES = ['400 1em Barlow', '600 1em Barlow', '600 1em "Barlow Condensed"', '700 1em "Barlow Condensed"']
+const klaarVoorHome = Promise.all([
+  ...LETTERTYPES.map((f) => document.fonts?.load(f).catch(() => {})),
+  wachtOp(['planning', 'paklijst', 'kamers']),
+])
+
+Promise.race([klaarVoorHome, new Promise((r) => window.setTimeout(r, 1500))]).finally(() => {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  )
+})
