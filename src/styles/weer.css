@@ -1,0 +1,646 @@
+/*
+ * Weer en sneeuw — "Doorsnede" (zie screens/Weer.tsx, gekozen uit mockups/weer-b.html).
+ * Papier en inkt zoals Paklijst en Planning; Barlow Condensed voor cijfers (lijnen uit onder elkaar).
+ * Contrast op het papier: inkt 15:1, zacht 7:1, rood 6:1; lichtblauw alleen als lijn (4:1).
+ * Alleen in de lichte stand, zoals de rest van de app.
+ */
+
+.inhoud--weer {
+  --w-papier: #f5f2ea;
+  --w-kaart: #fffdf8;
+  --w-inkt: #0d0058;
+  --w-zacht: #4b4e6b;
+  --w-lijn: #d9d3c4;
+  --w-berg: #dfeaf0;
+  --w-berg-schaduw: #c3d6e1;
+  --w-streep: #0a80a0;
+  --w-rood: #c4212f;
+  --w-groen: #1e7a4c;
+  --w-blauw: #1d5fc4;
+  --w-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  --w-tekst: Barlow, 'Trebuchet MS', sans-serif;
+  min-height: 100dvh;
+  background: var(--w-papier);
+  color: var(--w-inkt);
+}
+
+.inhoud--weer .schermkop {
+  --sneeuwbank: var(--w-papier);
+  position: relative;
+}
+
+.weer {
+  font-family: var(--w-tekst);
+  gap: 28px;
+}
+
+.weer p {
+  font-family: var(--w-tekst);
+}
+
+.weericoon {
+  flex: none;
+  vertical-align: middle;
+}
+
+/* ---------- Kop: de vraag en het antwoord ---------- */
+
+.weerkop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.weerkop__lucht {
+  position: absolute;
+  z-index: -1;
+  right: 6px;
+  top: calc(var(--boven) - 4px);
+  width: 104px;
+  height: 92px;
+  fill: none;
+  stroke: #9fe3f4;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+
+.weerkop__vraag {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #d9dcf5;
+}
+
+.weerkop p.weerkop__antwoord {
+  font: 700 2rem/1.02 var(--w-smal);
+  text-wrap: balance;
+}
+
+.weerkop__sub {
+  max-width: 34ch;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: #e6e8fb;
+}
+
+.weerkop__oordeel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+  padding: 5px 10px 5px 8px;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--w-inkt);
+  font-family: var(--w-smal) !important;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.weerkop__oordeel i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--w-groen);
+}
+
+.weer[data-niveau='matig'] .weerkop__oordeel i {
+  background: var(--w-blauw);
+}
+
+.weer[data-niveau='slecht'] .weerkop__oordeel i {
+  background: var(--w-rood);
+}
+
+.weerkop__bijgewerkt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #c9cdf0;
+}
+
+.weerkop__stempel {
+  align-self: stretch;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 2px dashed #ff9aa3;
+  border-radius: 6px;
+  font-family: var(--w-tekst);
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.weerkop__stempel b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 0.8rem/1.2 var(--w-smal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffb3ba;
+}
+
+/* ---------- Blokken ---------- */
+
+.weer__blok {
+  display: flex;
+  flex-direction: column;
+}
+
+.weer__kop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--w-inkt);
+  font: 700 1.3rem/1.1 var(--w-smal);
+}
+
+.weer__kop small {
+  font: 600 0.75rem/1 var(--w-tekst);
+  color: var(--w-zacht);
+}
+
+/* ---------- Doorsnede ---------- */
+
+.doorsnede {
+  position: relative;
+  aspect-ratio: 358 / 280;
+  margin-top: 10px;
+}
+
+.doorsnede__berg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.doorsnede .lichaam {
+  fill: var(--w-berg);
+  stroke: var(--w-inkt);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.doorsnede .schaduw {
+  fill: var(--w-berg-schaduw);
+}
+
+.doorsnede .vers {
+  fill: #fff;
+  stroke: var(--w-inkt);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.doorsnede .verstekst,
+.doorsnede .nultekst {
+  font: 700 12px var(--w-smal);
+  letter-spacing: 0.04em;
+}
+
+.doorsnede .verstekst {
+  fill: var(--w-inkt);
+}
+
+.doorsnede .nul {
+  stroke: var(--w-rood);
+  stroke-width: 1.6;
+  stroke-dasharray: 5 4;
+}
+
+.doorsnede .nultekst {
+  fill: var(--w-rood);
+}
+
+.doorsnede .wolk__vlak {
+  fill: var(--w-papier);
+  opacity: 0.85;
+}
+
+.doorsnede .wolk path {
+  stroke: var(--w-zacht);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.doorsnede .wolk__tekst {
+  fill: var(--w-zacht);
+  font: 700 12px var(--w-smal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.doorsnede .leider {
+  stroke: var(--w-inkt);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.doorsnede .punt {
+  fill: var(--w-papier);
+  stroke: var(--w-inkt);
+  stroke-width: 2;
+}
+
+.doorsnede .teken {
+  fill: none;
+  stroke: var(--w-inkt);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.doorsnede .vlokjes path {
+  stroke: var(--w-inkt);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  opacity: 0.7;
+  animation: weer-val 6s linear infinite;
+}
+
+.doorsnede .strepen path {
+  stroke: var(--w-inkt);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: 0.7;
+  animation: weer-waai 1.8s linear infinite;
+}
+
+@keyframes weer-val {
+  from { transform: translateY(-20px); opacity: 0; }
+  20% { opacity: 0.7; }
+  80% { opacity: 0.7; }
+  to { transform: translateY(40px); opacity: 0; }
+}
+
+@keyframes weer-waai {
+  from { transform: translateX(-12px); opacity: 0; }
+  30% { opacity: 0.8; }
+  to { transform: translateX(18px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doorsnede .vlokjes path,
+  .doorsnede .strepen path {
+    animation: none;
+  }
+}
+
+.hoogte {
+  position: absolute;
+  left: 63%;
+  right: 0;
+  transform: translateY(-50%);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+  align-items: center;
+}
+
+.hoogte__naam {
+  grid-column: 1 / -1;
+  font: 700 12px/1.1 var(--w-smal) !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--w-zacht);
+}
+
+.weer p.hoogte__temp {
+  font: 700 34px/1 var(--w-smal);
+  font-variant-numeric: tabular-nums;
+}
+
+.hoogte__wind {
+  grid-column: 1 / -1;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--w-zacht);
+  white-space: nowrap;
+}
+
+.hoogte__wind b {
+  color: var(--w-inkt);
+}
+
+.hoogte.is-hard .hoogte__wind b {
+  color: var(--w-rood);
+}
+
+.doorsnede__legenda {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--w-zacht);
+}
+
+/* ---------- Wat telt ---------- */
+
+.telt {
+  display: grid;
+  margin: 0;
+}
+
+.telt > div {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  column-gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--w-lijn);
+}
+
+.telt dt {
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.telt dt small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--w-zacht);
+}
+
+.telt dd {
+  margin: 0;
+  text-align: right;
+  font: 700 1.45rem/1 var(--w-smal);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.telt dd small {
+  display: block;
+  margin-top: 3px;
+  font: 600 0.72rem/1.1 var(--w-tekst);
+  color: var(--w-zacht);
+}
+
+.telt .is-let dd {
+  color: var(--w-rood);
+}
+
+.telt .is-goed dd {
+  color: var(--w-groen);
+}
+
+/* ---------- Per uur ---------- */
+
+.uren {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+  overflow: visible;
+}
+
+.uren__gletsjer {
+  fill: none;
+  stroke: var(--w-inkt);
+  stroke-width: 2.5;
+}
+
+.uren__dorp {
+  fill: none;
+  stroke: var(--w-streep);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 4;
+}
+
+.uren__tg {
+  fill: var(--w-inkt);
+  font: 700 13px var(--w-smal);
+}
+
+.uren__td {
+  fill: var(--w-zacht);
+  font: 600 12px var(--w-smal);
+}
+
+.uren__sneeuw {
+  fill: var(--w-inkt);
+  opacity: 0.8;
+}
+
+.uren__wind {
+  fill: var(--w-inkt);
+  font: 700 12px var(--w-smal);
+}
+
+.uren__wind.is-hard {
+  fill: var(--w-rood);
+}
+
+.uren__as {
+  fill: var(--w-zacht);
+  font: 600 12px var(--w-smal);
+}
+
+.uren__raster {
+  stroke: var(--w-lijn);
+}
+
+.uren__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 6px;
+  font-weight: 600;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--w-zacht);
+}
+
+.uren__legenda i {
+  display: inline-block;
+  width: 18px;
+  margin-right: 3px;
+  vertical-align: middle;
+  border-top: 2.5px solid var(--w-inkt);
+}
+
+.uren__legenda i.d {
+  border-top: 2.5px dashed var(--w-streep);
+}
+
+/* ---------- Lawinerisico ---------- */
+
+.lawine {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 14px;
+  border: 2px solid var(--w-inkt);
+  border-radius: 6px;
+  background: var(--w-kaart);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.lawine .lawine__klein {
+  font-size: 0.78rem;
+  color: var(--w-zacht);
+}
+
+.lawine a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  min-height: 44px;
+  font-weight: 600;
+  color: var(--w-inkt);
+}
+
+/* ---------- Dagen ---------- */
+
+.dagen {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dagen li {
+  display: grid;
+  grid-template-columns: 54px 28px 78px 1fr 34px;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--w-lijn);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.dagen__dag {
+  font: 700 1rem/1 var(--w-smal);
+}
+
+.dagen__dag small {
+  display: block;
+  margin-top: 2px;
+  font: 600 0.62rem/1 var(--w-smal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--w-zacht);
+}
+
+.dagen__temp {
+  font: 700 1.05rem/1 var(--w-smal);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dagen__temp span {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--w-zacht);
+}
+
+.dagen__vers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 0.85rem/1 var(--w-smal);
+}
+
+.dagen__vers i {
+  display: block;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--w-inkt);
+}
+
+.dagen__vers.is-leeg {
+  color: var(--w-zacht);
+}
+
+.dagen__wind {
+  text-align: right;
+  font: 600 0.8rem/1 var(--w-smal);
+  color: var(--w-zacht);
+}
+
+.dagen__leeg {
+  grid-column: 2 / -1;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--w-zacht);
+}
+
+.dagen li.is-vandaag {
+  margin: 0 -10px;
+  padding: 4px 10px;
+  border: 2px solid var(--w-inkt);
+  border-radius: 6px;
+  background: var(--w-kaart);
+}
+
+.dagen li.is-geweest {
+  color: var(--w-zacht);
+}
+
+.dagen li.is-geweest .dagen__temp,
+.dagen li.is-geweest .dagen__vers i,
+.dagen li.is-onzeker .dagen__temp,
+.dagen li.is-onzeker .weericoon {
+  opacity: 0.6;
+}
+
+.dagen__noot {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--w-zacht);
+}
+
+/* ---------- Voet ---------- */
+
+.weer__voet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.weer__bron {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--w-zacht);
+}
+
+.weer__bron a {
+  color: var(--w-inkt);
+}
+
+.weer__vernieuw {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  border: 2px solid var(--w-inkt);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--w-inkt);
+  font: 600 1rem/1 var(--w-tekst);
+  touch-action: manipulation;
+}
+
+.weer__vernieuw:disabled {
+  opacity: 0.55;
+}

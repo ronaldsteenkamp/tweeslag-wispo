@@ -8,7 +8,8 @@ import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { useNu } from '../lib/nu'
 import { dagStatus, duur, isVervallen, type ItemMetStatus, type VrijeTijd } from '../lib/programma'
 import { datumISO, datumLabel, lokaalNaarDate, tijdUUMM } from '../lib/tijd'
-import { graden, useWeer, weerIcoon, weerTekst } from '../lib/weer'
+import { graden, useWeer, weerSoort, weerTekst } from '../lib/weer'
+import { WeerIcoon } from '../components/WeerIcoon'
 import '../styles/barlow.css'
 import '../styles/planning.css'
 
@@ -444,7 +445,7 @@ export default function Planning() {
         weerVandaag && (
           <span title={`${weerTekst(weerVandaag.code)} in het dorp`}>
             <span className="schermkop__groot" aria-hidden="true">
-              {weerIcoon(weerVandaag.code)}
+              <WeerIcoon naam={weerSoort(weerVandaag.code)} grootte={30} />
             </span>
             <br />
             {graden(weerVandaag.tMax)}
