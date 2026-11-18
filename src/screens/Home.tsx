@@ -13,7 +13,7 @@ import { NAAM_OVERGENOMEN, useBackend } from '../lib/backend'
 import { useToonNaam } from '../lib/bijnamen'
 import { useData, type Dag } from '../lib/data'
 import { useFotos } from '../lib/fotos'
-import { isAf, useMijnProfiel } from '../lib/profiel'
+import { heeftIets, useMijnProfiel } from '../lib/profiel'
 import { platform } from '../lib/installatie'
 import { useNu } from '../lib/nu'
 import { schrijf, useOpgeslagen } from '../lib/opslag'
@@ -89,7 +89,8 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
     schrijf('spel.onderdeel', 'stemmen')
     naarTab('spel')
   }
-  const profielOpen = naam !== null && profiel !== null && !isAf(profiel)
+  // Alleen zolang er nog helemaal niets op je plaatje staat (niets is verplicht)
+  const profielOpen = naam !== null && profiel !== null && !heeftIets(profiel)
 
   return (
     <div className="scherm home">
@@ -609,8 +610,8 @@ function ProfielRij() {
   return (
     <Rij
       bord={<Bord kleur="rood" icoon="groep" />}
-      titel="Vertel iets over jezelf"
-      onder="Ski of board, je niveau, een geheim feitje, je karaokenummer en je grootste angst"
+      titel="Je plaatje is nog niet geplakt"
+      onder="Een foto, ski of board, je piste. Wat je wilt, niets is verplicht."
       onKlik={() => openMijnProfiel()}
     />
   )

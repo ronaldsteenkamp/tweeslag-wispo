@@ -11,13 +11,15 @@ import {
   wisBijnaam,
 } from '../lib/bijnamen'
 import { useDialoogFocus } from '../lib/dialoogFocus'
-import { useData } from '../lib/data'
+import { useData, type Kamers } from '../lib/data'
+import { useKamerNaam } from '../lib/kamernamen'
 import { useOpgeslagen } from '../lib/opslag'
 import { useTerugSluit } from '../lib/terugknop'
 import {
-  isAf,
+  heeftIets,
   MAX,
   NIVEAUS,
+  PISTES,
   SKI_KEUZES,
   sleutel,
   slaProfielOp,
@@ -26,14 +28,24 @@ import {
   useProfielFoto,
   type Profiel,
   type ProfielRij,
+  type Ski,
 } from '../lib/profiel'
 import { BevestigDialoog } from './BevestigDialoog'
 import { FotoBijsnijder } from './FotoBijsnijder'
+import { Icoon, type IcoonNaam } from './Icoon'
 import { NaamKiezer, useAlleNamen } from './NaamKiezer'
+import '../styles/barlow.css'
+import '../styles/profiel.css'
+
+/*
+ * Profielen als spelerskaartjes: iedereen een plaatje in het Tweeslag-album. Voorkant: foto (of een
+ * lege plek "nog niet geplakt"), naam, ski of board, piste en kamer. Achterkant: karaoke, wat niemand
+ * weet en de grootste angst. Niets is verplicht; wat leeg is, staat er gewoon niet op.
+ */
 
 // ---------- Eén venster voor de hele app ----------
 
-type Venster = { soort: 'bekijk'; naam: string } | { soort: 'mijn'; naamKiezen: boolean } | null
+type Venster = { soort: 'bekijk'; naam: string; melding?: string } | { soort: 'mijn'; naamKiezen: boolean } | null
 
 let venster: Venster = null
 const vensterLuisteraars = new Set<() => void>()
@@ -42,9 +54,9 @@ const zetVenster = (v: Venster) => {
   vensterLuisteraars.forEach((f) => f())
 }
 
-/** Toont het profielkaartje van iemand (of je eigen) */
+/** Toont het plaatje van iemand (of je eigen) */
 export const toonProfiel = (naam: string) => zetVenster({ soort: 'bekijk', naam })
-/** Opent je eigen profiel om aan te passen, eventueel meteen met het kiezen van je naam */
+/** Opent je eigen plaatje om aan te passen, eventueel meteen met het kiezen van je naam */
 export const openMijnProfiel = (naamKiezen = false) => zetVenster({ soort: 'mijn', naamKiezen })
 
 function useVenster() {
@@ -61,114 +73,236 @@ function useVenster() {
 
 // ---------- Stukjes ----------
 
-const initialen = (naam: string) =>
-  naam
-    .split(/[\s-]+/)
-    .filter(Boolean)
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join('')
-    .toLocaleUpperCase('nl')
+const SKI_ICOON: Record<Ski, IcoonNaam> = { ski: 'ski', board: 'board', allebei: 'allebei', nooit: 'bier' }
 
-/** Profielfoto, of de initialen als er geen foto is */
-export function Avatar({
-  naam,
-  pad,
-  lokaal,
-  groot,
-}: {
-  naam: string
-  pad: string | null
-  lokaal?: string | null
-  groot?: boolean
-}) {
-  const url = useProfielFoto(pad, lokaal)
-  const toon = useToonNaam()
+/** Pistebordje in de kleur van het niveau, met het nummer erop (dubbelzwart: ◆◆) */
+export function Pistebord({ niveau, className = '' }: { niveau: number; className?: string }) {
+  const piste = PISTES[niveau - 1]
+  if (!piste) return null
   return (
-    <span className={`avatar${groot ? ' avatar--groot' : ''}`} aria-hidden="true">
-      {url ? <img src={url} alt="" /> : initialen(toon(naam))}
+    <span
+      className={`pistebord pistebord--${piste.kleur} ${className}`}
+      role="img"
+      aria-label={`${piste.naam}e piste: ${NIVEAUS[niveau - 1]}`}
+    >
+      <span aria-hidden="true">{piste.kleur === 'dubbelzwart' ? '◆◆' : niveau}</span>
     </span>
   )
 }
 
-function Niveau({ niveau }: { niveau: number }) {
-  return (
-    <span className="niveau" aria-label={`Niveau ${niveau} van 5: ${NIVEAUS[niveau - 1]}`}>
-      <span className="niveau__balk" aria-hidden="true">
-        {NIVEAUS.map((_, i) => (
-          <span key={i} className={i < niveau ? 'is-aan' : ''} />
-        ))}
-      </span>
-      {NIVEAUS[niveau - 1]}
-    </span>
-  )
+/** Plaatjesnummer (plek op het alfabet) en kamer van iemand */
+export function plaatjeInfo(naam: string, namen: string[], kamers?: Kamers) {
+  const i = namen.findIndex((n) => sleutel(n) === sleutel(naam))
+  const kamer = kamers?.kamers.find((k) => k.bewoners.some((b) => sleutel(b) === sleutel(naam))) ?? null
+  return { nummer: i >= 0 ? i + 1 : null, kamer }
 }
 
-/** Een bekeken profiel: van de server, of je eigen (ook als het nog verstuurd moet worden) */
-type Bekeken = Pick<ProfielRij, 'naam' | 'ski' | 'niveau' | 'feitje' | 'karaoke' | 'artiest' | 'angst' | 'foto_pad'> & {
+const nr = (n: number | null) => (n === null ? '' : String(n).padStart(2, '0'))
+
+/** Wat er op een plaatje staat: van de server, of je eigen (ook als het nog verstuurd moet worden) */
+export type Bekeken = Pick<ProfielRij, 'naam' | 'ski' | 'niveau' | 'feitje' | 'karaoke' | 'artiest' | 'angst' | 'foto_pad'> & {
   fotoLokaal?: string | null
 }
 
-/** Bijnaam (of naam) als titel, met de gewone naam er klein onder als er een bijnaam is */
-function NaamKop({ naam }: { naam: string }) {
-  const bijnaam = useBijnaamVan(naam)
-  return (
-    <h2 id="venster-titel" className="profielkaart__naam">
-      {bijnaam ?? naam}
-      {bijnaam && <small>{naam}</small>}
-    </h2>
-  )
-}
+const leegPlaatje = (naam: string): Bekeken => ({
+  naam,
+  ski: null,
+  niveau: null,
+  feitje: '',
+  karaoke: '',
+  artiest: '',
+  angst: '',
+  foto_pad: null,
+})
 
-function ProfielInhoud({ p }: { p: Bekeken }) {
+const vanProfiel = (p: Profiel): Bekeken => ({ ...p, foto_pad: p.foto, fotoLokaal: p.fotoLokaal })
+
+/** Het spelerskaartje, voor- en achterkant. Draaien gaat met de knop eronder (of door erop te tikken). */
+export function Plaatje({
+  p,
+  nummer,
+  kamer,
+  omgedraaid = false,
+  onDraai,
+}: {
+  p: Bekeken
+  nummer: number | null
+  kamer: string | null
+  omgedraaid?: boolean
+  onDraai?: () => void
+}) {
+  const url = useProfielFoto(p.foto_pad, p.fotoLokaal)
+  const bijnaam = useBijnaamVan(p.naam)
+  const ski = SKI_KEUZES.find((k) => k.waarde === p.ski)
+  const piste = p.niveau ? PISTES[p.niveau - 1] : null
+  const getoond = bijnaam ?? p.naam
+
+  const verhaal: { icoon: IcoonNaam; label: string; tekst: React.ReactNode }[] = []
+  if (p.karaoke || p.artiest)
+    verhaal.push({
+      icoon: 'microfoon',
+      label: 'Bus-karaoke',
+      tekst: (
+        <>
+          {p.karaoke}
+          {p.artiest && <small>{p.karaoke ? ' – ' : ''}{p.artiest}</small>}
+        </>
+      ),
+    })
+  if (p.feitje) verhaal.push({ icoon: 'fluister', label: 'Wat niemand weet', tekst: p.feitje })
+  if (p.angst) verhaal.push({ icoon: 'bliksem', label: 'Bang voor', tekst: p.angst })
+
   return (
-    <div className="profielkaart">
-      <div className="profielkaart__kop">
-        <Avatar naam={p.naam} pad={p.foto_pad} lokaal={p.fotoLokaal} groot />
-        <NaamKop naam={p.naam} />
+    <div className={`plaatje${omgedraaid ? ' is-omgedraaid' : ''}`}>
+      <div className="plaatje__draaier" onClick={onDraai}>
+        {/* Voorkant */}
+        <div className="plaatje__kant plaatje__voor" aria-hidden={omgedraaid}>
+          {url ? (
+            <>
+              <img src={url} alt={`Foto van ${p.naam}`} />
+              {nummer !== null && <span className="plaatje__nr">№ {nr(nummer)}</span>}
+            </>
+          ) : (
+            <div className="plaatje__gat" aria-hidden="true">
+              <b>{nr(nummer)}</b>
+              <span>Nog niet geplakt</span>
+            </div>
+          )}
+          {p.niveau && <Pistebord niveau={p.niveau} className="plaatje__piste" />}
+          <div className="plaatje__band">
+            <p className="plaatje__naam">
+              {getoond}
+              {bijnaam && <small>{p.naam}</small>}
+            </p>
+            <p className="plaatje__positie">
+              <span>
+                {ski ? (
+                  <>
+                    <Icoon naam={SKI_ICOON[ski.waarde]} grootte={18} />
+                    {ski.label}
+                  </>
+                ) : (
+                  'Tweeslag'
+                )}
+              </span>
+              {kamer && (
+                <span>
+                  <Icoon naam="kamers" grootte={18} />
+                  <span className="verborgen">Kamer </span>
+                  {kamer}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Achterkant */}
+        <div className="plaatje__kant plaatje__achter" aria-hidden={!omgedraaid}>
+          <p className="achter__kop">
+            <span>Seizoen 2027 · Les 2 Alpes</span>
+            <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="" />
+          </p>
+          <p className="achter__naam">{getoond}</p>
+          <dl className="achter__feiten">
+            <div>
+              <dt>Speelt als</dt>
+              <dd className={ski ? '' : 'is-leeg'}>
+                {ski ? (
+                  <>
+                    <Icoon naam={SKI_ICOON[ski.waarde]} grootte={17} />
+                    {ski.label}
+                  </>
+                ) : (
+                  '–'
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Piste</dt>
+              <dd className={piste ? '' : 'is-leeg'}>
+                {piste && p.niveau ? (
+                  <>
+                    <Pistebord niveau={p.niveau} />
+                    {piste.naam}
+                  </>
+                ) : (
+                  '–'
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Kamer</dt>
+              <dd className={kamer ? '' : 'is-leeg'}>{kamer ?? '–'}</dd>
+            </div>
+          </dl>
+          {p.niveau && <p className="achter__niveau">{NIVEAUS[p.niveau - 1]}</p>}
+          {verhaal.length ? (
+            <dl className="achter__verhaal">
+              {verhaal.map((v) => (
+                <div key={v.label}>
+                  <Icoon naam={v.icoon} grootte={19} />
+                  <div>
+                    <dt>{v.label}</dt>
+                    <dd>{v.tekst}</dd>
+                  </div>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <div className="achter__blanco">
+              <p>De rest van de achterkant is nog blanco.</p>
+              <i />
+              <i />
+              <i />
+            </div>
+          )}
+          <p className="achter__voet">
+            <span>
+              Tweeslag Groningen
+              <br />
+              Wispo 05.03–14.03.2027
+            </span>
+            {nummer !== null && <b>№ {nr(nummer)}</b>}
+          </p>
+        </div>
       </div>
-      <BadgeRij naam={p.naam} />
-      <dl className="profielkaart__lijst">
-        <div>
-          <dt>⛷️ Ski of board</dt>
-          <dd>{SKI_KEUZES.find((k) => k.waarde === p.ski)?.label}</dd>
-        </div>
-        <div>
-          <dt>📊 Niveau</dt>
-          <dd>
-            <Niveau niveau={p.niveau} />
-          </dd>
-        </div>
-        <div>
-          <dt>🤫 Wat niemand van me weet</dt>
-          <dd>{p.feitje}</dd>
-        </div>
-        <div>
-          <dt>🎤 Karaokenummer</dt>
-          <dd>
-            {p.karaoke}
-            {p.artiest && <span className="profielkaart__artiest"> – {p.artiest}</span>}
-          </dd>
-        </div>
-        <div>
-          <dt>🥶 Grootste angst</dt>
-          <dd>{p.angst}</dd>
-        </div>
-      </dl>
     </div>
   )
 }
 
+/** Plaatje met de knop "Draai om" eronder */
+function DraaibaarPlaatje(props: { p: Bekeken; nummer: number | null; kamer: string | null }) {
+  const [om, setOm] = useState(false)
+  return (
+    <>
+      <Plaatje {...props} omgedraaid={om} onDraai={() => setOm(!om)} />
+      <button type="button" className="draaiknop" aria-pressed={om} onClick={() => setOm(!om)}>
+        <Icoon naam="draai" grootte={20} />
+        {om ? 'Voorkant' : 'Draai om'}
+      </button>
+    </>
+  )
+}
+
+/** "Kamer 103 · Lawine" (met de naam die de bewoners zelf kozen) */
+function useKamerTekst(kamer: { nummer: string; naam?: string } | null) {
+  const kamerNaam = useKamerNaam()
+  if (!kamer) return null
+  const naam = kamerNaam(kamer)
+  return `Kamer ${kamer.nummer}${naam ? ` · ${naam}` : ''}`
+}
+
 // ---------- Invullen ----------
 
-/** Het profielformulier, voor het welkomstscherm en voor "Jouw profiel" */
+/** Het formulier voor je plaatje, voor het welkomstscherm en voor "Jouw plaatje" */
 export function ProfielFormulier({
   profiel,
   onKlaar,
-  laterLabel = 'Later invullen',
+  laterLabel = 'Later',
 }: {
   profiel: Profiel
-  onKlaar: () => void
+  /** opgeslagen: true na Plakken, false na Later/Annuleren */
+  onKlaar: (opgeslagen: boolean) => void
   laterLabel?: string
 }) {
   const [ski, setSki] = useState(profiel.ski)
@@ -184,8 +318,9 @@ export function ProfielFormulier({
   const [origineel, setOrigineel] = useState<File | null>(null)
   const [bijsnijden, setBijsnijden] = useState<File | null>(null)
   const bestand = useRef<HTMLInputElement>(null)
-
-  const af = isAf({ ski, niveau, feitje, karaoke, artiest, angst })
+  const { data } = useData('kamers')
+  const namen = useAlleNamen(data)
+  const { nummer, kamer } = plaatjeInfo(profiel.naam, namen, data)
 
   const kiesFoto = (f: File | undefined) => {
     if (bestand.current) bestand.current.value = ''
@@ -212,38 +347,43 @@ export function ProfielFormulier({
 
   if (bijsnijden) {
     return (
-      <FotoBijsnijder
-        bestand={bijsnijden}
-        onKlaar={(b) => void bijgesneden(b)}
-        onAnnuleer={() => setBijsnijden(null)}
-      />
+      <FotoBijsnijder bestand={bijsnijden} onKlaar={(b) => void bijgesneden(b)} onAnnuleer={() => setBijsnijden(null)} />
     )
   }
 
   const opslaan = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!af) return
     slaProfielOp({ ...profiel, ski, niveau, feitje, karaoke, artiest, angst, foto, fotoLokaal })
-    onKlaar()
+    onKlaar(true)
   }
 
+  const voorbeeld: Bekeken = { naam: profiel.naam, ski, niveau, feitje, karaoke, artiest, angst, foto_pad: foto, fotoLokaal }
+  const heeftFoto = !!(foto || fotoLokaal)
+
   return (
-    <form className="profielformulier" onSubmit={opslaan}>
-      <div className="profielformulier__foto">
-        <Avatar naam={profiel.naam} pad={foto} lokaal={fotoLokaal} groot />
-        <div className="profielformulier__fotoknoppen">
-          <button type="button" className="knop knop--secundair knop--klein" onClick={() => bestand.current?.click()}>
-            📸 {foto || fotoLokaal ? 'Andere foto' : 'Foto kiezen'}
+    <form className="plaatjeform" onSubmit={opslaan}>
+      <div className="plaatjeform__voorbeeld" aria-hidden="true">
+        <Plaatje p={voorbeeld} nummer={nummer} kamer={kamer?.nummer ?? null} />
+      </div>
+
+      <section className="plaatjeform__blok" aria-labelledby="pf-foto-kop">
+        <h3 className="plaatjeform__label" id="pf-foto-kop">
+          Foto voor je plaatje
+        </h3>
+        <div className="plaatjeform__fotorij">
+          <button type="button" className="plaatjeknop plaatjeknop--neven" onClick={() => bestand.current?.click()}>
+            <Icoon naam="camera" grootte={20} />
+            {heeftFoto ? 'Andere foto' : 'Foto kiezen'}
           </button>
           {origineel && fotoLokaal && (
-            <button type="button" className="tekstknop" onClick={() => setBijsnijden(origineel)}>
+            <button type="button" className="plaatjeknop--tekst" onClick={() => setBijsnijden(origineel)}>
               Opnieuw bijsnijden
             </button>
           )}
-          {(foto || fotoLokaal) && (
+          {heeftFoto && (
             <button
               type="button"
-              className="tekstknop"
+              className="plaatjeknop--tekst"
               onClick={() => {
                 setFoto(null)
                 setFotoLokaal(null)
@@ -253,100 +393,149 @@ export function ProfielFormulier({
               Foto weghalen
             </button>
           )}
-          <span className="klein">Optioneel</span>
         </div>
-        <input ref={bestand} type="file" accept="image/*" hidden onChange={(e) => kiesFoto(e.target.files?.[0])} />
-      </div>
-      {fotoFout && <p className="melding melding--fout">{fotoFout}</p>}
+        <input
+          ref={bestand}
+          type="file"
+          accept="image/*"
+          hidden
+          aria-describedby="pf-foto-uitleg"
+          onChange={(e) => kiesFoto(e.target.files?.[0])}
+        />
+        <p className="plaatjeform__uitleg" id="pf-foto-uitleg">
+          Mag, hoeft niet. Wordt op je telefoon verkleind; de locatie uit de foto gaat eraf.
+        </p>
+        {fotoFout && <p className="melding melding--fout">{fotoFout}</p>}
+      </section>
 
-      <fieldset className="veld">
-        <legend>⛷️ Ski of board</legend>
-        <div className="keuzes">
+      <fieldset className="plaatjeform__blok">
+        <legend className="plaatjeform__label">Op de berg speel je als…</legend>
+        <div className="plaatjeform__keuzes plaatjeform__keuzes--twee">
           {SKI_KEUZES.map((k) => (
-            <button
-              key={k.waarde}
-              type="button"
-              className={`keuze${ski === k.waarde ? ' is-actief' : ''}`}
-              aria-pressed={ski === k.waarde}
-              onClick={() => setSki(k.waarde)}
-            >
-              {k.label}
-            </button>
+            <label key={k.waarde} className="plaatjekeuze">
+              <input
+                type="radio"
+                name="ski"
+                value={k.waarde}
+                checked={ski === k.waarde}
+                onChange={() => setSki(k.waarde)}
+                onClick={() => ski === k.waarde && setSki(null)}
+              />
+              <span className="plaatjekeuze__vak">
+                <Icoon naam={SKI_ICOON[k.waarde]} grootte={22} />
+                {k.label}
+              </span>
+            </label>
           ))}
         </div>
       </fieldset>
 
-      <fieldset className="veld">
-        <legend>📊 Niveau</legend>
-        <div className="keuzes keuzes--lijst">
+      <fieldset className="plaatjeform__blok">
+        <legend className="plaatjeform__label">Jouw piste</legend>
+        <div className="plaatjeform__keuzes">
           {NIVEAUS.map((label, i) => (
-            <button
-              key={label}
-              type="button"
-              className={`keuze${niveau === i + 1 ? ' is-actief' : ''}`}
-              aria-pressed={niveau === i + 1}
-              onClick={() => setNiveau(i + 1)}
-            >
-              <span className="keuze__nummer">{i + 1}</span>
-              {label}
-            </button>
+            <label key={label} className="plaatjekeuze">
+              <input
+                type="radio"
+                name="niveau"
+                value={i + 1}
+                checked={niveau === i + 1}
+                onChange={() => setNiveau(i + 1)}
+                onClick={() => niveau === i + 1 && setNiveau(null)}
+              />
+              <span className="plaatjekeuze__vak">
+                <Pistebord niveau={i + 1} />
+                <span className="plaatjekeuze__tekst">
+                  <b>{PISTES[i].naam}</b>
+                  {label}
+                </span>
+              </span>
+            </label>
           ))}
         </div>
       </fieldset>
 
       <Tekstveld
-        label="🤫 Leuk feitje dat niemand van je weet"
+        id="pf-feitje"
+        label="Wat niemand van je weet"
         waarde={feitje}
         max={MAX.feitje}
         onWijzig={setFeitje}
         placeholder="Ik heb ooit een speer gegooid op het NK"
         lang
       />
-      <fieldset className="veld">
-        <legend>🎤 Karaokenummer</legend>
-        <div className="karaoke">
-          <label>
-            <span className="verborgen">Nummer</span>
+
+      <fieldset className="plaatjeform__blok">
+        <legend className="plaatjeform__label">Jouw nummer voor in de bus</legend>
+        <div className="plaatjeform__twee">
+          <div>
+            <label className="plaatjeform__sublabel" htmlFor="pf-karaoke">
+              Nummer
+            </label>
             <input
-              className="invoer"
+              id="pf-karaoke"
+              className="plaatjeform__invoer"
               value={karaoke}
               maxLength={MAX.karaoke}
-              placeholder="Nummer"
+              autoComplete="off"
               onChange={(e) => setKaraoke(e.target.value)}
             />
-          </label>
-          <label>
-            <span className="verborgen">Artiest</span>
+          </div>
+          <div>
+            <label className="plaatjeform__sublabel" htmlFor="pf-artiest">
+              Artiest
+            </label>
             <input
-              className="invoer"
+              id="pf-artiest"
+              className="plaatjeform__invoer"
               value={artiest}
               maxLength={MAX.artiest}
-              placeholder="Artiest"
+              autoComplete="off"
               onChange={(e) => setArtiest(e.target.value)}
             />
-          </label>
+          </div>
         </div>
       </fieldset>
+
       <Tekstveld
-        label="🥶 Grootste angst"
+        id="pf-angst"
+        label="Grootste angst"
         waarde={angst}
         max={MAX.angst}
         onWijzig={setAngst}
-        placeholder="Spinnen, stoeltjeslift, stilte in een lift met onbekenden"
+        placeholder="Spinnen, stoeltjeslift, stilte in een lift"
       />
 
-      {!af && <p className="klein">Beantwoord alle vragen om op te slaan. Alleen de foto mag je overslaan.</p>}
-      <button type="submit" className="knop knop--primair knop--breed" disabled={!af}>
-        Opslaan
-      </button>
-      <button type="button" className="knop knop--secundair knop--breed" onClick={onKlaar}>
-        {laterLabel}
-      </button>
+      <section className="plaatjeform__prive" aria-labelledby="pf-prive-kop">
+        <h3 id="pf-prive-kop">
+          <Icoon naam="slot" grootte={20} />
+          Niet in het album
+        </h3>
+        <p>
+          Noodnummer, allergieën, medicijnen: die horen niet op een plaatje dat iedereen kan bekijken. De reisleiding
+          heeft ze al van je inschrijving.
+        </p>
+        <p className="plaatjeform__uitleg">
+          Zet je noodcontact ook in de noodinfo van je telefoon (Medische ID op iPhone). Handig als je ergens op de
+          piste ligt en je telefoon op slot zit.
+        </p>
+      </section>
+
+      <div className="plaatjeform__knoppen">
+        <button type="submit" className="plaatjeknop plaatjeknop--hoofd">
+          Plakken
+        </button>
+        <button type="button" className="plaatjeknop plaatjeknop--neven" onClick={() => onKlaar(false)}>
+          {laterLabel}
+        </button>
+      </div>
+      <p className="plaatjeform__uitleg plaatjeform__uitleg--midden">Niets is verplicht. Een half plaatje is ook een plaatje.</p>
     </form>
   )
 }
 
 function Tekstveld({
+  id,
   label,
   waarde,
   max,
@@ -354,6 +543,7 @@ function Tekstveld({
   placeholder,
   lang,
 }: {
+  id: string
   label: string
   waarde: string
   max: number
@@ -362,22 +552,27 @@ function Tekstveld({
   lang?: boolean
 }) {
   const props = {
-    className: 'invoer',
+    id,
+    className: 'plaatjeform__invoer',
     value: waarde,
     maxLength: max,
     placeholder,
+    autoComplete: 'off',
+    'aria-describedby': `${id}-teller`,
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onWijzig(e.target.value),
   }
   return (
-    <label className="veld">
-      <span className="veld__kop">
-        <span>{label}</span>
-        <span className={`teller${waarde.length >= max ? ' teller--klaar' : ''}`}>
+    <div className="plaatjeform__blok">
+      <div className="plaatjeform__labelrij">
+        <label className="plaatjeform__label" htmlFor={id}>
+          {label}
+        </label>
+        <span className="plaatjeform__teller" id={`${id}-teller`}>
           {waarde.length}/{max}
         </span>
-      </span>
+      </div>
       {lang ? <textarea rows={3} {...props} /> : <input {...props} />}
-    </label>
+    </div>
   )
 }
 
@@ -406,27 +601,30 @@ export function BijnaamVeld({ namen }: { namen: string[] }) {
   }
 
   return (
-    <form className="veld bijnaam" onSubmit={opslaan}>
-      <label className="veld__kop" htmlFor="bijnaam-invoer">
-        <span>😎 Bijnaam</span>
-        <span className={`teller${tekst.length >= MAX_BIJNAAM ? ' teller--klaar' : ''}`}>
+    <form className="plaatjeform__blok bijnaam" onSubmit={opslaan}>
+      <div className="plaatjeform__labelrij">
+        <label className="plaatjeform__label" htmlFor="bijnaam-invoer">
+          Bijnaam <span className="plaatjeform__optioneel">mag leeg</span>
+        </label>
+        <span className="plaatjeform__teller">
           {tekst.length}/{MAX_BIJNAAM}
         </span>
-      </label>
+      </div>
       <div className="bijnaam__rij">
         <input
           id="bijnaam-invoer"
-          className="invoer"
+          className="plaatjeform__invoer"
           value={tekst}
           maxLength={MAX_BIJNAAM}
-          placeholder="Optioneel"
-          autoComplete="off"
+          autoComplete="nickname"
+          autoCapitalize="words"
+          aria-describedby="bijnaam-uitleg"
           onChange={(e) => {
             setTekst(e.target.value)
             setOpgeslagen(false)
           }}
         />
-        <button type="submit" className="knop knop--secundair" disabled={!!fout || !gewijzigd}>
+        <button type="submit" className="plaatjeknop plaatjeknop--neven" disabled={!!fout || !gewijzigd}>
           {tekst.trim() || !bijnaam ? 'Bewaar' : 'Weghalen'}
         </button>
       </div>
@@ -435,12 +633,12 @@ export function BijnaamVeld({ namen }: { namen: string[] }) {
       ) : serverFout && !gewijzigd ? (
         <p className="melding melding--fout">{serverFout}</p>
       ) : (
-        <p className="klein">
+        <p className="plaatjeform__uitleg" id="bijnaam-uitleg" role="status">
           {opgeslagen && !gewijzigd
             ? teVersturen
               ? 'Bewaard. Hij gaat naar de anderen zodra er verbinding is.'
-              : 'Bewaard ✓'
-            : 'Iedereen ziet deze bijnaam in de app in plaats van je naam.'}
+              : 'Bewaard. Zo heet je nu overal in de app.'
+            : 'Staat overal in de app in plaats van je naam.'}
         </p>
       )}
     </form>
@@ -449,7 +647,7 @@ export function BijnaamVeld({ namen }: { namen: string[] }) {
 
 // ---------- Het venster ----------
 
-/** Eén keer in App: toont een profielkaartje of je eigen profiel om aan te passen */
+/** Eén keer in App: toont een plaatje of je eigen plaatje om aan te passen */
 export function ProfielVenster() {
   const v = useVenster()
   const sluit = () => zetVenster(null)
@@ -460,6 +658,10 @@ export function ProfielVenster() {
   // staan (verborgen), zodat een half ingevuld formulier in Jouw profiel niet kwijtraakt.
   const [overzicht, setOverzicht] = useState<string | null>(null)
   useEffect(() => setOverzicht(null), [v])
+  // Ander venster: weer bovenaan beginnen
+  useEffect(() => {
+    venster.current?.scrollTo({ top: 0 })
+  }, [v, venster])
   const terugUitOverzicht = () => {
     setOverzicht(null)
     // Weer naar het rondje +N (of de tekstknop) waar je vandaan kwam
@@ -483,11 +685,11 @@ export function ProfielVenster() {
 
   if (!v) return null
   return (
-    // Naast het venster tikken sluit alleen een bekeken profiel; bij invullen zou je je antwoorden kwijtraken
+    // Naast het venster tikken sluit alleen een bekeken plaatje; bij invullen zou je je antwoorden kwijtraken
     <div className="dialoog-achtergrond" onClick={v.soort === 'bekijk' ? sluit : undefined}>
       <div
         ref={venster}
-        className="dialoog dialoog--hoog"
+        className="dialoog dialoog--hoog dialoog--plaatje"
         role="dialog"
         aria-modal="true"
         aria-labelledby="venster-titel"
@@ -497,7 +699,7 @@ export function ProfielVenster() {
           {/* display: contents, zodat de opmaak van het venster (gap) gewoon blijft gelden */}
           <div style={{ display: overzicht ? 'none' : 'contents' }}>
             {v.soort === 'bekijk' ? (
-              <Bekijk naam={v.naam} onSluit={sluit} />
+              <Bekijk key={v.naam} naam={v.naam} melding={v.melding} onSluit={sluit} />
             ) : (
               <MijnProfiel naamKiezen={v.naamKiezen} onSluit={sluit} />
             )}
@@ -509,11 +711,25 @@ export function ProfielVenster() {
   )
 }
 
-function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
+function VensterKop({ boven, titel, verborgen }: { boven: string; titel: string; verborgen?: string }) {
+  return (
+    <header className="plaatjekop">
+      <p className="plaatjekop__boven">{boven}</p>
+      <h2 id="venster-titel" className="plaatjekop__titel">
+        {titel}
+        {verborgen && <span className="verborgen">{verborgen}</span>}
+      </h2>
+    </header>
+  )
+}
+
+function Bekijk({ naam, melding, onSluit }: { naam: string; melding?: string; onSluit: () => void }) {
   const [mijnNaam] = useOpgeslagen<string | null>('naam', null)
   const mijn = useMijnProfiel()
   const { perNaam } = useProfielen()
   const backend = useBackend()
+  const { data } = useData('kamers')
+  const namen = useAlleNamen(data)
   const [bijnaamWissen, setBijnaamWissen] = useState(false)
   const [fout, setFout] = useState<string | null>(null)
   const bijnaam = useBijnaamVan(naam)
@@ -521,30 +737,33 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
 
   const eigen = mijnNaam !== null && sleutel(mijnNaam) === sleutel(naam)
   const rij = perNaam.get(sleutel(naam))
-  const p: Bekeken | null =
-    eigen && mijn && isAf(mijn)
-      ? { ...mijn, ski: mijn.ski!, niveau: mijn.niveau!, foto_pad: mijn.foto, fotoLokaal: mijn.fotoLokaal }
-      : !eigen && rij
-        ? rij
-        : null
+  const p: Bekeken = eigen && mijn ? vanProfiel(mijn) : !eigen && rij ? rij : leegPlaatje(naam)
+  const leeg = !heeftIets(p)
+  const { nummer, kamer } = plaatjeInfo(naam, namen, data)
+  const kamerTekst = useKamerTekst(kamer)
 
   return (
     <>
-      {p ? (
-        <ProfielInhoud p={p} />
-      ) : (
-        <>
-          <div className="profielkaart__kop">
-            <Avatar naam={naam} pad={null} groot />
-            <NaamKop naam={naam} />
-          </div>
-          <BadgeRij naam={naam} />
-          <p>{eigen ? 'Je hebt je profiel nog niet ingevuld.' : `${toon(naam)} heeft nog geen profiel ingevuld.`}</p>
-        </>
+      <VensterKop
+        boven={eigen ? 'Tweeslag-album 2027' : (kamerTekst ?? 'Tweeslag-album 2027')}
+        titel={eigen ? 'Jouw plaatje' : nummer !== null ? `Plaatje ${nr(nummer)}` : toon(naam)}
+        verborgen={eigen || nummer === null ? undefined : `: ${toon(naam)}`}
+      />
+      {melding && (
+        <p className="plaatje__melding" role="status">
+          {melding}
+        </p>
       )}
+      {eigen && leeg && (
+        <p className="plaatje__rustig">Je plaatje is nog niet geplakt. Geen haast: het album hoeft pas in maart vol.</p>
+      )}
+      <DraaibaarPlaatje p={p} nummer={nummer} kamer={kamer?.nummer ?? null} />
+      {!eigen && leeg && <p className="plaatje__rustig">{toon(naam)} komt nog. Zo'n plaatje is extra zeldzaam.</p>}
+      <BadgeRij naam={naam} />
       {eigen && (
-        <button type="button" className="knop knop--primair knop--breed" onClick={() => openMijnProfiel()}>
-          {p ? 'Aanpassen' : 'Profiel invullen'}
+        <button type="button" className="plaatjeknop plaatjeknop--hoofd" onClick={() => openMijnProfiel()}>
+          <Icoon naam="potlood" grootte={20} />
+          {leeg ? 'Plaatje maken' : 'Plaatje aanpassen'}
         </button>
       )}
       {!eigen && bijnaam && backend.beheerder && (
@@ -565,7 +784,7 @@ function Bekijk({ naam, onSluit }: { naam: string; onSluit: () => void }) {
         }}
       />
       {fout && <p className="melding melding--fout">{fout}</p>}
-      <button type="button" className="knop knop--secundair knop--breed" onClick={onSluit}>
+      <button type="button" className="plaatjeknop plaatjeknop--neven" onClick={onSluit}>
         Sluiten
       </button>
     </>
@@ -582,7 +801,7 @@ function MijnProfiel({ naamKiezen, onSluit }: { naamKiezen: boolean; onSluit: ()
   if (kiezen || !naam || !profiel) {
     return (
       <>
-        <h2 id="venster-titel">Wie ben jij?</h2>
+        <VensterKop boven="Tweeslag-album 2027" titel="Wie ben jij?" />
         <p>{naam ? `Nu gekozen: ${naam}. Tik op je eigen naam.` : 'Tik op je naam.'}</p>
         {data ? (
           <NaamKiezer
@@ -597,7 +816,7 @@ function MijnProfiel({ naamKiezen, onSluit }: { naamKiezen: boolean; onSluit: ()
         )}
         <button
           type="button"
-          className="knop knop--secundair knop--breed"
+          className="plaatjeknop plaatjeknop--neven"
           onClick={() => (naam && !naamKiezen ? setKiezen(false) : onSluit())}
         >
           Annuleren
@@ -608,21 +827,22 @@ function MijnProfiel({ naamKiezen, onSluit }: { naamKiezen: boolean; onSluit: ()
 
   return (
     <>
-      <h2 id="venster-titel">Jouw profiel</h2>
-      <p className="profiel__naamregel">
-        <strong>{naam}</strong>
-        <button type="button" className="tekstknop" onClick={() => setKiezen(true)}>
+      <VensterKop boven="Jouw plaatje" titel={heeftIets(profiel) ? 'Plaatje aanpassen' : 'Plaatje maken'} />
+      <p className="plaatje__wie">
+        Je bent <strong>{naam}</strong>
+        <button type="button" className="plaatjeknop--tekst" onClick={() => setKiezen(true)}>
           Andere naam kiezen
         </button>
       </p>
-      <BadgeRij naam={naam} />
       <BijnaamVeld namen={namen} />
       {/* Opnieuw beginnen zodra het profiel van de server binnen is (na het kiezen van een naam) */}
       <ProfielFormulier
         key={`${profiel.naam}|${profiel.verstuurd ? 'server' : 'lokaal'}`}
         profiel={profiel}
-        onKlaar={onSluit}
-        laterLabel={isAf(profiel) ? 'Annuleren' : 'Later invullen'}
+        onKlaar={(opgeslagen) =>
+          opgeslagen ? zetVenster({ soort: 'bekijk', naam, melding: 'Geplakt! Zo staat je plaatje in het album.' }) : onSluit()
+        }
+        laterLabel={heeftIets(profiel) ? 'Terug zonder plakken' : 'Later'}
       />
     </>
   )
