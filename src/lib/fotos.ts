@@ -131,30 +131,70 @@ export async function verklein(bestand: Blob): Promise<Verkleind> {
   }
 }
 
+/** Verkleint in stappen van hooguit de helft: veel scherper dan in één keer van 4000 naar 960 px */
+function verkleinScherp(bron: CanvasImageSource, x: number, y: number, b: number, h: number, doelB: number, doelH: number) {
+  let canvas = document.createElement('canvas')
+  let ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Verkleinen lukt niet in deze browser')
+  let w = b
+  let hh = h
+  // Eerst de uitsnede zelf (op ware grootte, maar nooit groter dan 4× het doel)
+  const start = Math.min(1, (doelB * 4) / b)
+  w = Math.round(b * start)
+  hh = Math.round(h * start)
+  canvas.width = w
+  canvas.height = hh
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  ctx.drawImage(bron, x, y, b, h, 0, 0, w, hh)
+  while (w / 2 >= doelB) {
+    const volgende = document.createElement('canvas')
+    volgende.width = Math.round(w / 2)
+    volgende.height = Math.round(hh / 2)
+    const c2 = volgende.getContext('2d')
+    if (!c2) break
+    c2.imageSmoothingEnabled = true
+    c2.imageSmoothingQuality = 'high'
+    c2.drawImage(canvas, 0, 0, volgende.width, volgende.height)
+    canvas = volgende
+    ctx = c2
+    w = volgende.width
+    hh = volgende.height
+  }
+  if (w === doelB && hh === doelH) return canvas
+  const eind = document.createElement('canvas')
+  eind.width = doelB
+  eind.height = doelH
+  const ce = eind.getContext('2d')
+  if (!ce) throw new Error('Verkleinen lukt niet in deze browser')
+  ce.imageSmoothingEnabled = true
+  ce.imageSmoothingQuality = 'high'
+  ce.drawImage(canvas, 0, 0, doelB, doelH)
+  return eind
+}
+
 /**
- * Snijdt een vierkant uit de foto (in pixels van de foto, na draaien volgens EXIF) en maakt er
- * een JPEG van max. `uit` px van (voor de profielfoto).
+ * Snijdt een rechthoek uit de foto (in pixels van de foto, na draaien volgens EXIF) en maakt er
+ * een JPEG van, max. `uitBreedte` px breed (de profielfoto: staand 4:5, zoals het spelerskaartje).
+ * Door de canvas gaan alle EXIF-gegevens (ook de locatie) eraf.
  */
 export async function snijUit(
   bestand: Blob,
-  uitsnede: { x: number; y: number; zijde: number },
-  uit = 512,
-  maxBytes = 90_000,
+  uitsnede: { x: number; y: number; b: number; h: number },
+  uitBreedte = 960,
+  maxBytes = 350_000,
 ): Promise<Blob> {
   const beeld = await laadBeeld(bestand)
   try {
-    let doel = Math.max(1, Math.round(Math.min(uit, uitsnede.zijde)))
+    let doelB = Math.max(1, Math.round(Math.min(uitBreedte, uitsnede.b)))
     for (let poging = 0; poging < 5; poging++) {
-      const canvas = document.createElement('canvas')
-      canvas.width = canvas.height = doel
-      const ctx = canvas.getContext('2d')
-      if (!ctx) throw new Error('Verkleinen lukt niet in deze browser')
-      ctx.drawImage(beeld.bron, uitsnede.x, uitsnede.y, uitsnede.zijde, uitsnede.zijde, 0, 0, doel, doel)
-      for (const kwaliteit of [0.82, 0.72, 0.62]) {
+      const doelH = Math.max(1, Math.round((doelB * uitsnede.h) / uitsnede.b))
+      const canvas = verkleinScherp(beeld.bron, uitsnede.x, uitsnede.y, uitsnede.b, uitsnede.h, doelB, doelH)
+      for (const kwaliteit of [0.88, 0.82, 0.76]) {
         const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', kwaliteit))
         if (blob && blob.size <= maxBytes) return blob
       }
-      doel = Math.round(doel * 0.8)
+      doelB = Math.round(doelB * 0.85)
     }
     throw new Error('De foto kon niet klein genoeg gemaakt worden')
   } finally {

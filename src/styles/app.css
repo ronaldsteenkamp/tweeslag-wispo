@@ -3346,7 +3346,7 @@ body:has(.huidig .kaartbalk) .toast {
   color: var(--tekst-zacht);
 }
 
-/* Profielfoto bijsnijden: het rondje is wat er straks te zien is */
+/* Profielfoto bijsnijden: het kader is het spelerskaartje (4 : 5), met de plek van de naamband */
 .bijsnijder {
   display: flex;
   flex-direction: column;
@@ -3356,11 +3356,13 @@ body:has(.huidig .kaartbalk) .toast {
 .bijsnijder__kader {
   position: relative;
   width: 100%;
-  max-width: 320px;
-  aspect-ratio: 1;
+  max-width: 280px;
+  aspect-ratio: 4 / 5;
   margin: 0 auto;
   overflow: hidden;
-  border-radius: 16px;
+  border: 7px solid #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15), 0 14px 26px -16px rgb(13 0 88 / 0.5);
   background: var(--tweeslag-donkerblauw);
   touch-action: none;
   cursor: grab;
@@ -3379,12 +3381,21 @@ body:has(.huidig .kaartbalk) .toast {
   pointer-events: none;
 }
 
-.bijsnijder__rondje {
+.bijsnijder__band {
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  box-shadow: 0 0 0 999px rgba(13, 0, 88, 0.6);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26%;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 12px 10px;
+  background: rgb(13 0 88 / 0.62);
+  clip-path: polygon(0 22%, 100% 0, 100% 100%, 0 100%);
+  color: #fff;
+  font: italic 700 1rem/1 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   pointer-events: none;
 }
 

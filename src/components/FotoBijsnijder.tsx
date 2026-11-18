@@ -2,10 +2,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { snijUit } from '../lib/fotos'
 
 const MAX_ZOOM = 4
+/** Breedte : hoogte van de uitsnede, zoals het spelerskaartje (4 : 5) */
+const VERHOUDING = 4 / 5
 
 /**
  * Profielfoto bijsnijden: slepen om te verplaatsen, knijpen, scrollen of de schuif om te zoomen.
- * Het rondje laat zien wat er straks als profielfoto te zien is.
+ * Het kader heeft de vorm van het spelerskaartje; onderaan zie je waar de naamband komt.
  */
 export function FotoBijsnijder({
   bestand,
@@ -18,7 +20,7 @@ export function FotoBijsnijder({
 }) {
   const [url, setUrl] = useState<string | null>(null)
   const [maat, setMaat] = useState<{ b: number; h: number } | null>(null)
-  const [vak, setVak] = useState(0) // breedte (= hoogte) van het vierkant op het scherm
+  const [vak, setVak] = useState({ b: 0, h: 0 }) // het kader op het scherm
   const [zoom, setZoom] = useState(1)
   // Bij knijpen komen er meerdere bewegingen per frame: dan telt de nieuwste zoom, niet die van de render
   const zoomNu = useRef(1)
@@ -38,23 +40,23 @@ export function FotoBijsnijder({
   useLayoutEffect(() => {
     const el = kader.current
     if (!el) return
-    const meet = () => setVak(el.clientWidth)
+    const meet = () => setVak({ b: el.clientWidth, h: el.clientHeight })
     meet()
     const ro = new ResizeObserver(meet)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
 
-  // Bij zoom 1 bedekt de foto precies het vierkant
-  const basis = maat && vak ? vak / Math.min(maat.b, maat.h) : 0
+  // Bij zoom 1 bedekt de foto precies het kader
+  const basis = maat && vak.b ? Math.max(vak.b / maat.b, vak.h / maat.h) : 0
   const schaal = basis * zoom
   const breed = maat ? maat.b * schaal : 0
   const hoog = maat ? maat.h * schaal : 0
 
-  /** Houdt de foto over het hele vierkant, zonder lege randen */
+  /** Houdt de foto over het hele kader, zonder lege randen */
   const binnen = (v: { x: number; y: number }, b = breed, h = hoog) => {
-    const mx = Math.max(0, (b - vak) / 2)
-    const my = Math.max(0, (h - vak) / 2)
+    const mx = Math.max(0, (b - vak.b) / 2)
+    const my = Math.max(0, (h - vak.h) / 2)
     return { x: Math.min(mx, Math.max(-mx, v.x)), y: Math.min(my, Math.max(-my, v.y)) }
   }
 
@@ -111,13 +113,14 @@ export function FotoBijsnijder({
     setBezig(true)
     setFout(null)
     try {
-      // Waar ligt het vierkant in de pixels van de foto?
-      const links = vak / 2 - breed / 2 + verschuiving.x
-      const boven = vak / 2 - hoog / 2 + verschuiving.y
-      const zijde = vak / schaal
-      const x = Math.min(maat.b - zijde, Math.max(0, -links / schaal))
-      const y = Math.min(maat.h - zijde, Math.max(0, -boven / schaal))
-      onKlaar(await snijUit(bestand, { x, y, zijde }))
+      // Waar ligt het kader in de pixels van de foto?
+      const links = vak.b / 2 - breed / 2 + verschuiving.x
+      const boven = vak.h / 2 - hoog / 2 + verschuiving.y
+      const b = Math.min(maat.b, vak.b / schaal)
+      const h = Math.min(maat.h, b / VERHOUDING)
+      const x = Math.min(maat.b - b, Math.max(0, -links / schaal))
+      const y = Math.min(maat.h - h, Math.max(0, -boven / schaal))
+      onKlaar(await snijUit(bestand, { x, y, b, h }))
     } catch (e) {
       setFout(e instanceof Error ? e.message : 'Deze foto lukt niet. Probeer een andere.')
       setBezig(false)
@@ -153,16 +156,14 @@ export function FotoBijsnijder({
             }
           />
         )}
-        <div className="bijsnijder__rondje" aria-hidden="true" />
+        {/* Waar straks de naamband van het plaatje over de foto valt */}
+        <div className="bijsnijder__band" aria-hidden="true">
+          <span>Hier komt je naam</span>
+        </div>
       </div>
 
       <div className="bijsnijder__zoom">
-        <button
-          type="button"
-          className="icoonknop"
-          aria-label="Uitzoomen"
-          onClick={() => zetZoom(zoomNu.current / 1.25)}
-        >
+        <button type="button" className="icoonknop" aria-label="Uitzoomen" onClick={() => zetZoom(zoomNu.current / 1.25)}>
           −
         </button>
         <input
@@ -174,12 +175,7 @@ export function FotoBijsnijder({
           aria-label="Zoom"
           onChange={(e) => zetZoom(Number(e.target.value))}
         />
-        <button
-          type="button"
-          className="icoonknop"
-          aria-label="Inzoomen"
-          onClick={() => zetZoom(zoomNu.current * 1.25)}
-        >
+        <button type="button" className="icoonknop" aria-label="Inzoomen" onClick={() => zetZoom(zoomNu.current * 1.25)}>
           +
         </button>
       </div>
