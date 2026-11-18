@@ -30,13 +30,22 @@ export const NIVEAUS = [
   'Zwarte piste voor ontbijt',
 ]
 
+/** Pistekleur per niveau (1 t/m 5), zoals de borden op de berg */
+export const PISTES = [
+  { kleur: 'groen', naam: 'Groen' },
+  { kleur: 'blauw', naam: 'Blauw' },
+  { kleur: 'rood', naam: 'Rood' },
+  { kleur: 'zwart', naam: 'Zwart' },
+  { kleur: 'dubbelzwart', naam: 'Dubbelzwart' },
+] as const
+
 export const MAX = { feitje: 140, karaoke: 60, artiest: 60, angst: 80 }
 
-/** Zoals de rij op de server */
+/** Zoals de rij op de server. Alles behalve de naam mag leeg zijn. */
 export interface ProfielRij {
   naam: string
-  ski: Ski
-  niveau: number
+  ski: Ski | null
+  niveau: number | null
   feitje: string
   karaoke: string
   artiest: string
@@ -88,9 +97,9 @@ export const leegProfiel = (naam: string): Profiel => ({
 
 const vanRij = (r: ProfielRij): Profiel => ({
   naam: r.naam,
-  ski: r.ski,
-  niveau: r.niveau,
-  feitje: r.feitje,
+  ski: r.ski ?? null,
+  niveau: r.niveau ?? null,
+  feitje: r.feitje ?? '',
   karaoke: r.karaoke ?? '',
   artiest: r.artiest ?? '',
   angst: r.angst ?? '',
@@ -99,15 +108,21 @@ const vanRij = (r: ProfielRij): Profiel => ({
   verstuurd: true,
 })
 
-/** Alle vragen zijn verplicht (alleen de foto niet) */
-export const isAf = (
-  p: Pick<Profiel, 'ski' | 'niveau' | 'feitje' | 'karaoke' | 'artiest' | 'angst'> | null | undefined,
-) => !!p && !!p.ski && !!p.niveau && [p.feitje, p.karaoke, p.artiest, p.angst].every((t) => (t ?? '').trim().length > 0)
+type Vragen = Pick<Profiel, 'ski' | 'niveau' | 'feitje' | 'karaoke' | 'artiest' | 'angst'>
 
-/** Heeft deze naam al een volledig profiel (hier of op de server)? */
-export function profielAfVoor(naam: string) {
+/** Zijn alle vragen beantwoord? (Niets is verplicht; dit telt alleen voor de badge.) */
+export const isAf = (p: Vragen | null | undefined) =>
+  !!p && !!p.ski && !!p.niveau && [p.feitje, p.karaoke, p.artiest, p.angst].every((t) => (t ?? '').trim().length > 0)
+
+/** Staat er iets op het plaatje: een foto of minstens één antwoord? */
+export const heeftIets = (p: (Vragen & { foto?: string | null; fotoLokaal?: string | null; foto_pad?: string | null }) | null | undefined) =>
+  !!p &&
+  (!!p.ski || !!p.niveau || !!(p.foto || p.fotoLokaal || p.foto_pad) || [p.feitje, p.karaoke, p.artiest, p.angst].some((t) => (t ?? '').trim().length > 0))
+
+/** Heeft deze naam al een plaatje (hier of op de server)? */
+export function profielBestaatVoor(naam: string) {
   const p = lees<Profiel | null>(PROFIEL, null)
-  return (p?.naam === naam && isAf(p)) || !!cacheRij(naam)
+  return (p?.naam === naam && heeftIets(p)) || !!cacheRij(naam)
 }
 
 const cacheRij = (naam: string) => lees<Cache | null>(CACHE, null)?.rijen.find((r) => sleutel(r.naam) === sleutel(naam))
@@ -152,7 +167,7 @@ let bezig = false
 export async function verstuurProfiel() {
   const b = backendStand()
   let p = lees<Profiel | null>(PROFIEL, null)
-  if (!backendIngesteld || bezig || !lees(TE_VERSTUREN, false) || !p || !isAf(p)) return
+  if (!backendIngesteld || bezig || !lees(TE_VERSTUREN, false) || !p) return
   // Alleen het apparaat dat de naam op de server heeft mag schrijven
   if (b.status !== 'verbonden' || !b.userId || b.gekoppeld?.naam !== p.naam) return
   const cb = supabase()
@@ -180,8 +195,8 @@ export async function verstuurProfiel() {
     const { error } = await c.from('profielen').upsert(
       {
         naam: p.naam,
-        ski: p.ski,
-        niveau: p.niveau,
+        ski: p.ski ?? null,
+        niveau: p.niveau ?? null,
         feitje: p.feitje.slice(0, MAX.feitje),
         karaoke: p.karaoke.slice(0, MAX.karaoke),
         artiest: p.artiest.slice(0, MAX.artiest),

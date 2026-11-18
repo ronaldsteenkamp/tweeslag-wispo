@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type CSSProperties, type FormEvent } from 'react'
 import { DataStatus } from '../components/DataStatus'
-import { NaamKiezer, useAlleNamen } from '../components/NaamKiezer'
-import { openMijnProfiel, toonProfiel } from '../components/Profiel'
+import { Icoon } from '../components/Icoon'
+import { NaamKiezer, normaal, useAlleNamen } from '../components/NaamKiezer'
+import { openMijnProfiel, Pistebord, toonProfiel } from '../components/Profiel'
 import { SchermKop } from '../components/SchermKop'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { config } from '../config'
@@ -10,7 +11,7 @@ import { useToonNaam } from '../lib/bijnamen'
 import { kamernaamFout, MAX_KAMERNAAM } from '../lib/kamernaamregels'
 import { slaKamernaamOp, useEigenKamernamen, useKamerNaam } from '../lib/kamernamen'
 import { useOpgeslagen } from '../lib/opslag'
-import { profielAfVoor } from '../lib/profiel'
+import { profielBestaatVoor, sleutel, useMijnProfiel, useProfielen, useProfielFoto } from '../lib/profiel'
 
 export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () => void; naarBeheer: () => void }) {
   const { data, fout } = useData('kamers')
@@ -19,6 +20,8 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
 
   const alleNamen = useAlleNamen(data)
   const toon = useToonNaam()
+  const kamerNaamVan = useKamerNaam()
+  const [zoek, setZoek] = useState('')
   const isReisleiding = naam !== null && config.reisleiding.includes(naam)
 
   if (!data) {
@@ -48,7 +51,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
           onKies={(n) => {
             setNaam(n)
             window.scrollTo(0, 0)
-            if (!profielAfVoor(n)) openMijnProfiel()
+            if (!profielBestaatVoor(n)) openMijnProfiel()
           }}
         />
       </div>
@@ -58,6 +61,15 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   const eigenKamer = data.kamers.find((k) => k.bewoners.includes(naam))
   const andere = data.kamers.filter((k) => k !== eigenKamer)
   const zonderKamer = data.zonderKamer
+
+  // Zoeken: op naam, bijnaam of kamernummer/-naam
+  const q = normaal(zoek)
+  const past = (n: string) => !q || normaal(n).includes(q) || normaal(toon(n)).includes(q)
+  const kamerPast = (k: Kamer) => !!q && (normaal(k.nummer) === q || normaal(kamerNaamVan(k) ?? '').includes(q))
+  const toont = (k: Kamer) => kamerPast(k) || k.bewoners.some(past)
+  /** Past de kamer zelf, dan iedereen erin tonen; anders alleen wie past */
+  const filterVoor = (k: Kamer) => (kamerPast(k) ? () => true : past)
+  const gevonden = data.kamers.some(toont) || zonderKamer.some(past)
 
   // Met de nieuwe kop: "Jij slaapt in kamer N met …" (de anderen met hun bijnaam, zoals overal)
   const kamergenoten = eigenKamer?.bewoners.filter((b) => b !== naam).map(toon) ?? []
@@ -76,37 +88,58 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
         </>
       )}
 
-      {eigenKamer && (
-        <section className="kaartje kamer kamer--eigen" aria-label="Jouw kamer">
-          <p className="kamer__label">Jouw kamer</p>
-          <KamerInhoud kamer={eigenKamer} jij={naam} />
-          <KamernaamVeld kamer={eigenKamer} kamers={data.kamers} />
+      <div className="albumzoek">
+        <div className="zoekveld">
+          <Icoon naam="zoek" />
+          <label className="verborgen" htmlFor="zoek-plaatje">
+            Zoek op naam, bijnaam of kamer
+          </label>
+          <input
+            id="zoek-plaatje"
+            type="search"
+            className="invoer"
+            placeholder="Zoek een plaatje"
+            value={zoek}
+            onChange={(e) => setZoek(e.target.value)}
+            autoComplete="off"
+            enterKeyHint="search"
+          />
+        </div>
+      </div>
+
+      {eigenKamer && toont(eigenKamer) && (
+        <section className="albumpagina albumpagina--eigen" aria-label="Jouw kamer">
+          <KamerInhoud kamer={eigenKamer} jij={naam} alleNamen={alleNamen} filter={filterVoor(eigenKamer)} eigen />
+          {!q && <KamernaamVeld kamer={eigenKamer} kamers={data.kamers} />}
         </section>
       )}
 
-      {!eigenKamer && (
-        <section className="kaartje kamer kamer--eigen" aria-label="Jouw kamer">
-          <p className="kamer__label">Jouw kamer</p>
+      {!eigenKamer && !q && (
+        <section className="albumpagina albumpagina--eigen" aria-label="Jouw kamer">
           <p>Je hebt nog geen kamer. De reisleiding maakt de kamerverdeling; daarna staat je kamer hier.</p>
         </section>
       )}
 
-      <h2 className="tussenkop">Alle kamers</h2>
+      {!q && <h2 className="albumtussenkop">Alle kamers</h2>}
 
-      {andere.map((k) => (
-        <section className="kaartje kamer" key={k.nummer + (k.naam ?? '')}>
-          <KamerInhoud kamer={k} jij={naam} />
-        </section>
-      ))}
+      {andere
+        .filter(toont)
+        .map((k) => (
+          <section className="albumpagina" key={k.nummer + (k.naam ?? '')}>
+            <KamerInhoud kamer={k} jij={naam} alleNamen={alleNamen} filter={filterVoor(k)} />
+          </section>
+        ))}
 
-      {zonderKamer.length > 0 && (
-        <section className="kaartje kamer">
-          <div className="kamer__kop">
+      {zonderKamer.some(past) && (
+        <section className="albumpagina">
+          <div className="albumpagina__kop">
             <h2>Nog geen kamer</h2>
           </div>
-          <Bewoners namen={zonderKamer} jij={naam} />
+          <Bewoners namen={zonderKamer.filter(past)} jij={naam} alleNamen={alleNamen} kamer={null} />
         </section>
       )}
+
+      {q && !gevonden && <p className="laadtekst">Niemand gevonden. Zoek op voornaam, bijnaam of kamernummer.</p>}
 
       {isReisleiding && (
         <>
@@ -127,21 +160,32 @@ function opsomming(namen: string[]): string {
   return namen.length <= 1 ? (namen[0] ?? '') : `${namen.slice(0, -1).join(', ')} en ${namen[namen.length - 1]}`
 }
 
-function KamerInhoud({ kamer, jij }: { kamer: Kamer; jij: string }) {
+function KamerInhoud({
+  kamer,
+  jij,
+  alleNamen,
+  filter,
+  eigen = false,
+}: {
+  kamer: Kamer
+  jij: string
+  alleNamen: string[]
+  filter: (n: string) => boolean
+  eigen?: boolean
+}) {
   const kamerNaam = useKamerNaam()(kamer)
+  const vrij = kamer.bedden !== undefined && kamer.bedden > kamer.bewoners.length ? kamer.bedden - kamer.bewoners.length : 0
   return (
     <>
-      <div className="kamer__kop">
-        <span className="kamer__nummer">{kamer.nummer}</span>
-        {kamerNaam && <h2>{kamerNaam}</h2>}
-        {kamer.bedden !== undefined && (
-          <span className="kamer__bedden">
-            {kamer.bedden} bedden
-            {kamer.bedden > kamer.bewoners.length && ` · ${kamer.bedden - kamer.bewoners.length} vrij`}
-          </span>
-        )}
+      <div className="albumpagina__kop">
+        <h2>{kamerNaam ?? `Kamer ${kamer.nummer}`}</h2>
+        <span>
+          {eigen ? 'Jouw kamer · ' : ''}
+          {kamerNaam ? `Kamer ${kamer.nummer}` : ''}
+          {vrij > 0 && `${kamerNaam ? ' · ' : ''}${vrij} vrij`}
+        </span>
       </div>
-      <Bewoners namen={kamer.bewoners} jij={jij} />
+      <Bewoners namen={kamer.bewoners.filter(filter)} jij={jij} alleNamen={alleNamen} kamer={kamer.nummer} />
     </>
   )
 }
@@ -180,7 +224,8 @@ function KamernaamVeld({ kamer, kamers }: { kamer: Kamer; kamers: Kamer[] }) {
   if (!open) {
     return (
       <button type="button" className="tekstknop kamernaam__knop" onClick={openen}>
-        ✏️ {huidig ? 'Naam van de kamer aanpassen' : 'Geef je kamer een naam'}
+        <Icoon naam="potlood" grootte={20} />
+        {huidig ? 'Naam van de kamer aanpassen' : 'Geef je kamer een naam'}
       </button>
     )
   }
@@ -228,18 +273,75 @@ function KamernaamVeld({ kamer, kamers }: { kamer: Kamer; kamers: Kamer[] }) {
   )
 }
 
-function Bewoners({ namen, jij }: { namen: string[]; jij: string }) {
-  const toon = useToonNaam()
+/** De bewoners als plaatjes in het album: twee naast elkaar, tik voor het hele plaatje */
+function Bewoners({ namen, jij, alleNamen, kamer }: { namen: string[]; jij: string; alleNamen: string[]; kamer: string | null }) {
+  const { perNaam } = useProfielen()
+  const mijn = useMijnProfiel()
   return (
-    <ul className="bewoners">
-      {namen.map((b) => (
-        <li key={b} className={b === jij ? 'is-jij' : ''}>
-          <button type="button" className="bewoners__naam" onClick={() => toonProfiel(b)}>
-            {toon(b)}
-            {b === jij && <span className="label label--accent">jij</span>}
-          </button>
-        </li>
-      ))}
+    <ul className="album">
+      {namen.map((b, i) => {
+        const eigen = b === jij
+        const rij = perNaam.get(sleutel(b))
+        const foto = eigen ? { pad: mijn?.foto ?? null, lokaal: mijn?.fotoLokaal ?? null } : { pad: rij?.foto_pad ?? null, lokaal: null }
+        const niveau = eigen ? (mijn?.niveau ?? null) : (rij?.niveau ?? null)
+        return (
+          <li key={b}>
+            <MiniPlaatje
+              naam={b}
+              jij={eigen}
+              pad={foto.pad}
+              lokaal={foto.lokaal}
+              niveau={niveau}
+              nummer={alleNamen.indexOf(b) + 1}
+              kamer={kamer}
+              draai={DRAAI[i % DRAAI.length]}
+            />
+          </li>
+        )
+      })}
     </ul>
+  )
+}
+
+const DRAAI = [-1.5, 1.2, 0.6, -0.8]
+
+function MiniPlaatje(props: {
+  naam: string
+  jij: boolean
+  pad: string | null
+  lokaal: string | null
+  niveau: number | null
+  nummer: number
+  kamer: string | null
+  draai: number
+}) {
+  const { naam, jij, niveau, nummer, kamer, draai } = props
+  const url = useProfielFoto(props.pad, props.lokaal)
+  const toon = useToonNaam()
+  const getoond = toon(naam)
+  const label = `${naam}${getoond !== naam ? `, ${getoond}` : ''}${kamer ? `, kamer ${kamer}` : ''}${jij ? ', jij' : ''}`
+  const naamregel = (
+    <span className="mini__naam">
+      {getoond}
+      {jij && <span className="mini__jij">jij</span>}
+    </span>
+  )
+  return (
+    <button type="button" className={`mini${url ? '' : ' mini--leeg'}${jij ? ' is-jij' : ''}`} onClick={() => toonProfiel(naam)} aria-label={label}>
+      {url ? (
+        <span className="mini__beeld" style={{ '--draai': `${draai}deg` } as CSSProperties}>
+          <img src={url} alt="" />
+          {niveau && <Pistebord niveau={niveau} className="mini__piste" />}
+          {naamregel}
+        </span>
+      ) : (
+        <>
+          <span className="mini__beeld" aria-hidden="true">
+            <b>{String(nummer).padStart(2, '0')}</b>
+          </span>
+          {naamregel}
+        </>
+      )}
+    </button>
   )
 }
