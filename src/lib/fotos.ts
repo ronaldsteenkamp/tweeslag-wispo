@@ -30,6 +30,8 @@ export interface Foto {
   gemaakt: string
   /** Moment dat de foto genomen is (sinds migratie 0016; anders gelijk aan gemaakt) */
   genomen?: string | null
+  /** Stempel van de jury (sinds migratie 0017) */
+  jury?: boolean
   /** Tijdelijke link naar de kleine versie */
   klein?: string
 }
@@ -240,6 +242,100 @@ export async function verwijderFoto(f: Foto): Promise<string | null> {
   return null
 }
 
+/**
+ * Jurykeuze aan of uit (alleen beheerders; de server geeft de maker er 10 punten voor, zie
+ * migratie 0017). Geeft een foutmelding terug, of null als het gelukt is.
+ */
+export async function zetJury(f: Foto, aan: boolean): Promise<string | null> {
+  const cb = supabase()
+  if (!cb || backendStand().status !== 'verbonden') return 'Geen verbinding.'
+  const { data, error } = await (await cb).from('fotos').update({ jury: aan }).eq('id', f.id).select('id')
+  if (error) return `Lukte niet: ${error.message}`
+  if (!data?.length) return 'Alleen de jury (beheerders) kan dit.'
+  f.jury = aan
+  meldWijziging()
+  return null
+}
+
+// ---------- Downloaden (jaarboek) ----------
+
+/** Alle foto's (zonder links), oudste eerst; optioneel alleen tussen twee momenten */
+export async function alleFotos(van?: Date, tot?: Date): Promise<Foto[]> {
+  const cb = supabase()
+  if (!cb) throw new Error('Geen verbinding.')
+  const c = await cb
+  const uit: Foto[] = []
+  // Per 1000 (zoveel geeft de server maximaal in één keer)
+  for (let begin = 0; ; begin += 1000) {
+    let q = c.from('fotos').select('id, user_id, naam, kamer, challenge_id, challenge_titel, pad, breedte, hoogte, gemaakt, genomen')
+    if (van) q = q.gte('genomen', van.toISOString())
+    if (tot) q = q.lt('genomen', tot.toISOString())
+    const { data, error } = await q.order('genomen', { ascending: true }).order('id').range(begin, begin + 999)
+    if (error) throw error
+    uit.push(...((data ?? []) as Foto[]))
+    if (!data || data.length < 1000) return uit
+  }
+}
+
+/**
+ * Pakt de grote versies van deze foto's in één zip en biedt die aan als download. `naamVan` geeft
+ * per foto de naam in de zip (met map). Haalt er een paar tegelijk op (niet via de service worker,
+ * die is voor de kleine versies). `opVoortgang(klaar, totaal)` tijdens het ophalen.
+ */
+export async function downloadZip(
+  fotos: Foto[],
+  zipNaam: string,
+  naamVan: (f: Foto) => string,
+  opVoortgang?: (klaar: number, totaal: number) => void,
+): Promise<{ mislukt: number }> {
+  const cb = supabase()
+  if (!cb) throw new Error('Geen verbinding.')
+  const opslag = (await cb).storage.from(BUCKET)
+  const { ZipMaker } = await import('./zip')
+  const zip = new ZipMaker()
+  let klaar = 0
+  let mislukt = 0
+  let volgende = 0
+  // Op volgorde in de zip, ook al komen ze in willekeurige volgorde binnen
+  const binnen = new Map<number, Uint8Array | null>()
+  let teSchrijven = 0
+  const schrijf = () => {
+    while (binnen.has(teSchrijven)) {
+      const data = binnen.get(teSchrijven)
+      const f = fotos[teSchrijven]
+      binnen.delete(teSchrijven)
+      if (data) zip.voegToe(naamVan(f), data, momentVan(f))
+      teSchrijven++
+    }
+  }
+  const werker = async () => {
+    while (volgende < fotos.length) {
+      const i = volgende++
+      let data: Uint8Array | null = null
+      for (let poging = 0; poging < 3 && !data; poging++) {
+        const { data: blob } = await opslag.download(fotos[i].pad)
+        if (blob) data = new Uint8Array(await blob.arrayBuffer())
+      }
+      if (!data) mislukt++
+      binnen.set(i, data)
+      schrijf()
+      opVoortgang?.(++klaar, fotos.length)
+    }
+  }
+  await Promise.all([werker(), werker(), werker(), werker()])
+  if (!zip.aantalBestanden) throw new Error("Geen enkele foto kon worden opgehaald.")
+  const url = URL.createObjectURL(zip.blob())
+  const a = document.createElement('a')
+  a.href = url
+  a.download = zipNaam
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  // Even laten staan, anders breekt een trage download af
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  return { mislukt }
+}
+
 /** Tijdelijke link naar de grote versie (bij het openen van een foto) */
 export async function grooteLink(f: Foto): Promise<string | null> {
   const cb = supabase()
@@ -300,22 +396,15 @@ export function useFotos(aantal: number, actief = true) {
     }
     try {
       const c = await cb
-      const velden = 'id, user_id, naam, kamer, challenge_id, challenge_titel, pad, breedte, hoogte, gemaakt'
+      const velden = 'id, user_id, naam, kamer, challenge_id, challenge_titel, pad, breedte, hoogte, gemaakt, genomen'
       // Op volgorde van het moment dat de foto genomen is
-      let { data, error } = await c
-        .from('fotos')
-        .select(`${velden}, genomen`)
-        .order('genomen', { ascending: false })
-        .order('gemaakt', { ascending: false })
-        .limit(limiet + 1)
-      // Migratie 0016 nog niet gedraaid (kolom 'genomen' bestaat niet): zoals vroeger
-      if (error?.code === '42703') {
-        const oud = await c.from('fotos').select(velden).order('gemaakt', { ascending: false }).limit(limiet + 1)
-        data = oud.data as typeof data
-        error = oud.error
-      }
+      const haal = (v: string) =>
+        c.from('fotos').select(v).order('genomen', { ascending: false }).order('gemaakt', { ascending: false }).limit(limiet + 1)
+      let { data, error } = await haal(`${velden}, jury`)
+      // Migratie 0017 nog niet gedraaid (kolom 'jury' bestaat niet): zonder jurykeuze
+      if (error?.code === '42703') ({ data, error } = await haal(velden))
       if (error) throw error
-      const rijen = (data ?? []) as Foto[]
+      const rijen = (data ?? []) as unknown as Foto[]
       const zichtbaar = rijen.slice(0, limiet)
       // Alleen nieuwe links vragen voor foto's zonder (nog lang genoeg) geldige link
       const t = Date.now()

@@ -207,6 +207,7 @@
 
 /* De foto als knop: geen eigen opmaak, de foto is het vlak */
 .fotomuur__foto {
+  position: relative;
   display: block;
   width: 100%;
   padding: 0;
@@ -220,6 +221,32 @@
   width: 100%;
   height: auto;
   object-fit: cover;
+}
+
+/* Stempel van de jury, schuin op de hoek van de foto */
+.fotomuur__jury {
+  position: absolute;
+  z-index: 1;
+  top: 10px;
+  right: 8px;
+  padding: 1px 7px;
+  border: 2px solid var(--rood);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--papier) 88%, transparent);
+  color: var(--rood);
+  font: 700 13px/1.3 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-7deg);
+  pointer-events: none;
+}
+
+.fotomuur__zet--b .fotomuur__jury,
+.fotomuur__zet--a > :not(:first-child) .fotomuur__jury {
+  top: 6px;
+  right: 4px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
 }
 
 .fotomuur__leegvlak {
@@ -404,6 +431,67 @@
   padding: 0;
   list-style: none;
   border-top: 3px double var(--inkt);
+}
+
+/* In de grote foto: stempel en (voor de jury) de knop */
+.foto-groot__jury {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.foto-groot__jury .fotomuur__stempel {
+  margin-top: 0;
+}
+
+.foto-groot__jury .fotomuur__knop {
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 17px;
+}
+
+.foto-groot__jury .fotomuur__klein {
+  flex-basis: 100%;
+}
+
+.fotomuur__download {
+  margin-top: 16px;
+}
+
+.fotomuur__download .fotomuur__klein {
+  min-height: 1.4em;
+  margin-top: 10px;
+}
+
+.fotomuur__inhoud li {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--lijn);
+}
+
+.fotomuur__inhoud li > a,
+.fotomuur__inhoud li > .fotomuur__inhoud-leeg {
+  flex: 1;
+  border-bottom: 0;
+}
+
+.fotomuur__inhoud-download {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--inkt);
+}
+
+.fotomuur__inhoud-download:disabled,
+.fotomuur__download .fotomuur__knop:disabled {
+  opacity: 0.45;
 }
 
 .fotomuur__inhoud a,

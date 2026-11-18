@@ -17,6 +17,8 @@ const paden = {
   herstel: 'M4 12a8 8 0 1 0 2.5-5.8M4 4v4.5h4.5',
   pijl: 'M5 12h14M13 6l6 6-6 6',
   links: 'M15 5.5 8.5 12l6.5 6.5',
+  download: 'M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14',
+  stempel: 'M9.5 4h5l-1 6h-3zM7 10h10l1 4H6zM5 14h14v3H5zM7 20h10',
   rechts: 'M9 5.5l6.5 6.5L9 18.5',
   menu: 'M12 5.5v.01M12 12v.01M12 18.5v.01',
   camera: 'M4 8h3.5l2-2.5h5L16.5 8H20v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
