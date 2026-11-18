@@ -281,11 +281,12 @@ export function abonneerKlaar(f: () => void): () => void {
  * wordt hetzelfde gewist (met de hand, in de SQL Editor); zonder dit zou een telefoon zijn oude
  * stand meteen weer terugsturen. Nog een keer iedereen resetten: datum ophogen.
  */
-const RESET = '2026-11-18'
+const RESET = '2026-11-18b'
 const RESET_SLEUTEL = 'persoonsdata.reset'
-const BEHOUDEN = ['ronald', 'sten']
+/** Namen waarvan de voortgang blijft staan (2026-11-18b: niemand) */
+const BEHOUDEN: string[] = []
 /** Naast de persoonlijke sleutels: wat er verder bij de voortgang hoort */
-const OOK_WISSEN = ['spel.testmoment', 'spel.stand.vorige', 'spel.stand.huidig', 'rad.teVersturen']
+const OOK_WISSEN = ['spel.testmoment', 'spel.stand.vorige', 'spel.stand.huidig', 'rad.teVersturen', 'apparaat.eigenaar']
 
 export function resetVoortgangAlsNodig() {
   if (!backendIngesteld || lees<string | null>(RESET_SLEUTEL, null) === RESET) return

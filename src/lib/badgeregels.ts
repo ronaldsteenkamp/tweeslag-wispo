@@ -348,6 +348,31 @@ export function badgesUit(f: Feiten, leiders: { fotos: number; totaal: number })
 // ---------- Badges die alleen de telefoon ziet ----------
 // Die gaan als { badge: aantal } mee naar de server (voortgang.badges), zodat anderen ze ook zien.
 
+/**
+ * Eigenaar van de telefoon: alleen die krijgt de badges die de telefoon zelf ziet (beginscherm,
+ * meldingen, vroeg/laat open, op de gletsjer, ijskoud) en die uit de stemmen van dit apparaat.
+ * Dat is de eerste naam die op de telefoon gekozen is. Kiest iemand een andere naam, dan wordt die
+ * pas eigenaar als die naam een dag lang gekozen blijft (even wisselen om te kijken telt niet).
+ */
+export interface Eigenaar {
+  naam: string
+  kandidaat?: { naam: string; sinds: number }
+}
+
+export const EIGENAAR_NA_MS = 24 * 60 * 60 * 1000
+
+const zelfdeNaam = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
+
+export function volgendeEigenaar(e: Eigenaar | null, naam: string | null, nu: number): Eigenaar | null {
+  if (!naam) return e
+  if (!e) return { naam }
+  if (zelfdeNaam(e.naam, naam)) return e.kandidaat ? { naam: e.naam } : e
+  if (e.kandidaat && zelfdeNaam(e.kandidaat.naam, naam)) return nu - e.kandidaat.sinds >= EIGENAAR_NA_MS ? { naam } : e
+  return { naam: e.naam, kandidaat: { naam, sinds: nu } }
+}
+
+export const isEigenaar = (e: Eigenaar | null, naam: string | null) => !!e && !!naam && zelfdeNaam(e.naam, naam)
+
 export type TelefoonBadges = Partial<Record<BadgeId, number>>
 
 /** Wat deze telefoon over zichzelf naar de server stuurt */

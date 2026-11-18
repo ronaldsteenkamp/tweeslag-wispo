@@ -30,6 +30,11 @@ export const config = {
    * 'aan': iedereen ziet de nieuwe koppen.
    */
   nieuweKoppen: 'aan' as 'uit' | 'test' | 'aan',
+  /**
+   * Namen die beheerder mogen zijn. Beheerfuncties staan alleen aan als je op deze telefoon als
+   * beheerder bent ingelogd (e-mail in de tabel beheerders) ÉN een van deze namen gekozen hebt.
+   */
+  beheerNamen: ['Ronald', 'Sten'],
   /** Standaardtijd waarop de challenges van een dag opengaan (als 'openOm' ontbreekt in spel.json) */
   challengesOpenOm: '07:00',
 

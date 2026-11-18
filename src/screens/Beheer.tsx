@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { SchermKop } from '../components/SchermKop'
+import { config } from '../config'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { metEchteNaam, useToonNaam } from '../lib/bijnamen'
 import { Verbinding } from '../components/Verbinding'
@@ -164,7 +165,8 @@ export default function Beheer({ terug }: { terug: () => void }) {
           <h2>Ingelogd</h2>
           {!b.beheerder && (
             <p className="melding">
-              Dit adres staat nog niet in de tabel <code>beheerders</code>. Voeg het toe in Supabase (SQL Editor):
+              Beheer staat alleen aan als je een van deze namen gekozen hebt: {config.beheerNamen.join(', ')}, én dit
+              adres in de tabel <code>beheerders</code> staat. Toevoegen in Supabase (SQL Editor):
               <br />
               <code>insert into public.beheerders (email) values ('{b.email}');</code>
             </p>
