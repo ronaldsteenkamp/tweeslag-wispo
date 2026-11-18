@@ -318,6 +318,14 @@ function Opening({ foto: f, kamerLabel, onOpen }: { foto: Foto; kamerLabel: (nr:
 }
 
 /** Foto's die nog op deze telefoon staan en op bereik wachten */
+/** Tekst op de stempel van een wachtende foto */
+function persStempel(w: WachtendeFoto, verbonden: boolean) {
+  if (w.bezig) return 'Wordt gedrukt…'
+  if (w.vast) return 'Niet gelukt'
+  if (!verbonden) return 'Wacht op bereik'
+  return w.pogingen ? 'Opnieuw in de rij' : 'Bijna aan de beurt'
+}
+
 function TerPerse({ wachtend, verbonden }: { wachtend: WachtendeFoto[]; verbonden: boolean }) {
   const [weg, setWeg] = useState<WachtendeFoto | null>(null)
   if (!wachtend.length) return null
@@ -331,15 +339,7 @@ function TerPerse({ wachtend, verbonden }: { wachtend: WachtendeFoto[]; verbonde
             <div>
               <p>{w.titel}</p>
               <span className={`fotomuur__stempel${w.bezig ? ' fotomuur__stempel--blauw' : ''}`}>
-                {w.bezig
-                  ? 'Wordt gedrukt…'
-                  : w.vast
-                    ? 'Niet gelukt'
-                    : !verbonden
-                      ? 'Wacht op bereik'
-                      : w.pogingen
-                        ? 'Opnieuw in de rij'
-                        : 'Bijna aan de beurt'}
+                {persStempel(w, verbonden)}
               </span>
               {w.vast && (
                 <>
