@@ -6,6 +6,7 @@ import { voorVertrek } from '../lib/badgesTelefoon'
 import { useToonNaam } from '../lib/bijnamen'
 import { lees, schrijf, schrijfEnMeld } from '../lib/opslag'
 import { sleutel } from '../lib/profiel'
+import { BadgeIcoon } from './BadgeIcoon'
 import { Feestregen } from './Feestregen'
 import { toonProfiel } from './Profiel'
 
@@ -114,13 +115,13 @@ export function BadgeRij({ naam, alles = false }: { naam: string; alles?: boolea
                   else knoppen.current.delete(b.id)
                 }}
                 type="button"
-                className={`badge${gekozen === b.id ? ' is-gekozen' : ''}`}
+                className={`badge badge--${def.soort}${gekozen === b.id ? ' is-gekozen' : ''}`}
                 aria-label={`${label(b)}: ${def.uitleg}`}
                 aria-expanded={gekozen === b.id}
                 aria-controls={ballonId}
                 onClick={() => setGekozen(gekozen === b.id ? null : b.id)}
               >
-                <span aria-hidden="true">{def.emoji}</span>
+                <BadgeIcoon id={b.id} />
                 {b.aantal && b.aantal > 1 && <span className="badge__aantal">×{b.aantal}</span>}
               </button>
             </li>
@@ -149,9 +150,7 @@ export function BadgeRij({ naam, alles = false }: { naam: string; alles?: boolea
           role="status"
           style={{ '--pijl-x': `${pijlX}px` } as CSSProperties}
         >
-          <strong>
-            {d.emoji} {label(uitleg)}
-          </strong>
+          <strong>{label(uitleg)}</strong>
           <span>
             {d.uitleg}
             {d.wisselt && ' (gaat naar wie voorop staat)'}
@@ -186,8 +185,8 @@ export function BadgeOverzicht({ naam, onTerug }: { naam: string; onTerug: () =>
 
   const regel = (d: BadgeDef, b?: Badge) => (
     <li key={d.id} className={`badgekaart__item${b ? ' is-verdiend' : ''}`}>
-      <span className="badge badge--groot" aria-hidden="true">
-        {d.emoji}
+      <span className={`badge badge--groot badge--${d.soort}`} aria-hidden="true">
+        <BadgeIcoon id={d.id} grootte={24} />
       </span>
       <span className="badgekaart__tekst">
         <strong>
@@ -308,7 +307,7 @@ export function BadgeMelding() {
     return () => window.clearTimeout(id)
   }, [melding])
 
-  const tekst = useMemo(() => (melding ? `${badgeDef(melding.id).emoji} Nieuwe badge: ${label(melding)}` : null), [melding])
+  const tekst = useMemo(() => (melding ? `Nieuwe badge: ${label(melding)}` : null), [melding])
 
   return (
     <>
@@ -323,8 +322,13 @@ export function BadgeMelding() {
             toonProfiel(mijnNaam)
           }}
         >
-          {tekst}
-          <small>{badgeDef(melding.id).uitleg} · tik voor je profiel</small>
+          <span className={`badge badge--groot badge--${badgeDef(melding.id).soort}`} aria-hidden="true">
+            <BadgeIcoon id={melding.id} grootte={24} />
+          </span>
+          <span className="badgemelding__tekst">
+            {tekst}
+            <small>{badgeDef(melding.id).uitleg} · tik voor je profiel</small>
+          </span>
         </button>
       )}
     </>

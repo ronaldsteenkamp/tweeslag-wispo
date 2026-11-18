@@ -82,10 +82,11 @@ test('de lachbadges staan achteraan', () => {
   assert.deepEqual(BADGES.slice(-2).map((b) => b.id), ['blut', 'nachtuil'])
 })
 
-test('elke badge heeft een unieke id, emoji, naam, uitleg en nogTeDoen', () => {
+test('elke badge heeft een unieke id, soort, naam, uitleg en nogTeDoen', () => {
   assert.equal(new Set(BADGES.map((b) => b.id)).size, BADGES.length)
   for (const b of BADGES) {
-    assert.ok(b.emoji && b.naam && b.uitleg, b.id)
+    assert.ok(['voorbereiding', 'spel', 'eer', 'berg'].includes(b.soort), b.id)
+    assert.ok(b.naam && b.uitleg, b.id)
     assert.equal(typeof b.nogTeDoen(geenFeiten), 'string', b.id)
   }
 })
