@@ -4049,7 +4049,8 @@ body:has(.huidig .kaartbalk) .toast {
   align-items: center;
   gap: 8px;
   margin: -2px 0 0;
-  min-height: 24px;
+  /* Vaste hoogte, ook als de knop 'terugnemen' verschijnt: anders krimpt het wiel bij inzetten */
+  height: 32px;
   font-family: var(--font-kop);
   font-size: 0.9rem;
 }
@@ -4062,7 +4063,10 @@ body:has(.huidig .kaartbalk) .toast {
 .casino__bank {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 4px;
+  /* Even hoog als bediening (48) + tussenruimte (6) + inzetregel (32, marge -2), zodat het wiel gelijk blijft */
+  min-height: 84px;
   width: 100%;
   text-align: center;
 }
