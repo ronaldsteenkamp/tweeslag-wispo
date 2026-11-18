@@ -54,17 +54,23 @@ const klaarVoorHome = Promise.all([
   wachtOp(['planning', 'paklijst', 'kamers']),
 ])
 
-/** Laadscherm laten wegvagen zodra de app echt op het scherm staat (twee frames na het tekenen) */
+/**
+ * Laadscherm laten wegvagen zodra de app echt op het scherm staat: twee frames na het tekenen en
+ * dan nog even, zodat iOS alles onder het laadscherm al geschilderd heeft voordat het vervagen
+ * begint (anders soms heel even een zwart vlak).
+ */
 function verbergLaadscherm() {
   const laden = document.getElementById('laden')
   if (!laden) return
   requestAnimationFrame(() =>
-    requestAnimationFrame(() => {
-      laden.classList.add('weg')
-      const weg = () => laden.remove()
-      laden.addEventListener('transitionend', weg, { once: true })
-      window.setTimeout(weg, 600)
-    }),
+    requestAnimationFrame(() =>
+      window.setTimeout(() => {
+        laden.classList.add('weg')
+        const weg = () => laden.remove()
+        laden.addEventListener('transitionend', weg, { once: true })
+        window.setTimeout(weg, 600)
+      }, 80),
+    ),
   )
 }
 

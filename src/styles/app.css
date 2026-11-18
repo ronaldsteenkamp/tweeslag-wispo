@@ -367,10 +367,9 @@ button {
   /* minmax(0, …): kolommen mogen smaller dan het langste woord, anders loopt de balk op 320 px buiten beeld */
   grid-template-columns: repeat(7, minmax(0, 1fr));
   padding: 0 4px var(--onder);
+  /* Geen backdrop-filter: die tekent op iPhones soms heel even zwart (bij opstarten/vervagen) */
   background: var(--tabbalk);
   border-top: 1px solid var(--rand);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
 }
 
 .tab {

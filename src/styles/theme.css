@@ -47,7 +47,7 @@
   --voortgang: linear-gradient(90deg, var(--tweeslag-lichtblauw), var(--tweeslag-donkerblauw));
   --kaart-achtergrond: #dfe8ef;
 
-  --tabbalk: rgba(255, 255, 255, 0.96);
+  --tabbalk: #fff;
   --schaduw: 0 2px 12px rgba(13, 0, 88, 0.08);
 
   /* Winterdecoratie: bergen met sneeuwtoppen onder de donkerblauwe koppen,
