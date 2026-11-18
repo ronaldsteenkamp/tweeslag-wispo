@@ -15,14 +15,21 @@
     <style>
       /* Voorkomt een wit flitsje voordat de app geladen is */
       html { background: #0d0058; }
-      #laden { position: fixed; inset: 0; display: grid; place-items: center; background: #0d0058; }
-      #laden img { width: 96px; height: 96px; border-radius: 22px; }
+      /*
+       * Laadscherm: precies zoals het iOS-splashscreen (logo 65% van de korte kant, in het midden;
+       * zie pwa-assets.config.ts, padding 0.35), zodat er bij het opstarten niets verspringt. Het
+       * logo staat in de pagina zelf (geen los bestand dat nog moet laden). main.tsx laat het
+       * laadscherm wegvagen zodra Home getekend is.
+       */
+      #laden { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #0d0058; transition: opacity 0.3s ease-out; }
+      #laden svg { display: block; width: min(65vw, 65vh); height: auto; }
+      #laden.weg { opacity: 0; pointer-events: none; }
+      @media (prefers-reduced-motion: reduce) { #laden { transition-duration: 0.01s; } }
     </style>
   </head>
   <body>
-    <div id="root">
-      <div id="laden"><img src="/logo.svg" alt="" /></div>
-    </div>
+    <div id="laden" aria-hidden="true"><!--logo--></div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
