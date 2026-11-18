@@ -85,7 +85,9 @@ export function FotoUpload({
         aria-labelledby="foto-upload-titel"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="foto-upload-titel">📸 Bewijs: {challenge.titel}</h2>
+        <h2 id="foto-upload-titel" className="foto-upload__titel">
+          <Icoon naam="camera" grootte={24} /> Bewijs: {challenge.titel}
+        </h2>
 
         {voorbeeld && <img className="foto-upload__voorbeeld" src={voorbeeld} alt="Voorbeeld van je foto" />}
         {foto && (

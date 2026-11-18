@@ -45,15 +45,45 @@ async function metWinkel<T>(modus: IDBTransactionMode, f: (w: IDBObjectStore) =>
 
 const alle = () => metWinkel<Wachtend[]>('readonly', (w) => w.getAll() as IDBRequest<Wachtend[]>)
 
+/** Wat de Fotomuur van een wachtende foto laat zien ("Ter perse") */
+export interface WachtendeFoto {
+  id: string
+  titel: string
+  pogingen: number
+  /** Wordt nu verstuurd */
+  bezig: boolean
+  /** Tijdelijke link naar de kleine versie op deze telefoon */
+  klein: string
+}
+
 let aantal = 0
+let lijst: Wachtend[] = []
+let bezigMet: string | null = null
+const voorbeelden = new Map<string, string>()
 const luisteraars = new Set<() => void>()
+const meld = () => luisteraars.forEach((f) => f())
 async function telOpnieuw() {
   try {
-    aantal = (await alle()).length
+    lijst = await alle()
   } catch {
-    aantal = 0
+    lijst = []
   }
-  luisteraars.forEach((f) => f())
+  aantal = lijst.length
+  // Voorbeeldjes opruimen van foto's die er niet meer zijn
+  for (const [id, url] of voorbeelden) {
+    if (!lijst.some((r) => r.id === id)) {
+      URL.revokeObjectURL(url)
+      voorbeelden.delete(id)
+    }
+  }
+  meld()
+}
+
+function alsLijst(): WachtendeFoto[] {
+  return lijst.map((r) => {
+    if (!voorbeelden.has(r.id)) voorbeelden.set(r.id, URL.createObjectURL(r.foto.klein))
+    return { id: r.id, titel: r.challenge.titel, pogingen: r.pogingen, bezig: r.id === bezigMet, klein: voorbeelden.get(r.id)! }
+  })
 }
 
 /** Bewaart een foto om later te versturen. Geeft een foutmelding, of null als het gelukt is. */
@@ -78,6 +108,8 @@ export async function verstuurWachtrij() {
   try {
     for (const rij of await alle()) {
       if (backendStand().status !== 'verbonden') break
+      bezigMet = rij.id
+      meld()
       const fout = await uploadFoto(rij.foto, rij.challenge)
       if (!fout || rij.pogingen + 1 >= MAX_POGINGEN) await metWinkel('readwrite', (w) => w.delete(rij.id))
       else await metWinkel('readwrite', (w) => w.put({ ...rij, pogingen: rij.pogingen + 1 }))
@@ -86,8 +118,22 @@ export async function verstuurWachtrij() {
     // Volgende keer opnieuw
   } finally {
     bezig = false
+    bezigMet = null
     void telOpnieuw()
   }
+}
+
+/** De foto's die nog op verbinding wachten, voor het blok "Ter perse" op de Fotomuur */
+export function useFotoWachtrijLijst(): WachtendeFoto[] {
+  const [, ververs] = useState(0)
+  useEffect(() => {
+    const f = () => ververs((n) => n + 1)
+    luisteraars.add(f)
+    return () => {
+      luisteraars.delete(f)
+    }
+  }, [])
+  return alsLijst()
 }
 
 /** Aantal foto's dat nog op verbinding wacht */

@@ -1922,71 +1922,15 @@ button {
   gap: 6px;
 }
 
-.fotomuur__raster {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
+/* De muur zelf staat in styles/fotomuur.css */
+
+.foto-upload__titel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.fotomuur__foto {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  aspect-ratio: 1;
-  padding: 0;
-  border: 0;
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--oppervlak-2);
-  font-size: 2rem;
-}
-
-.fotomuur__foto img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.fotomuur__onderschrift {
-  margin: 6px 2px 0;
-  font-family: var(--font-kop);
-  font-size: 0.85rem;
-  line-height: 1.3;
-}
-
-.fotomuur__onderschrift small {
-  display: block;
-  color: var(--tekst-zacht);
-}
-
-.fotostrip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-
-/* Foto die je nog niet geopend hebt: label en een lichtblauwe rand */
-.fotomuur__foto.is-nieuw {
-  position: relative;
-  box-shadow: 0 0 0 3px var(--opvallend);
-}
-.fotomuur__nieuw {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--opvallend);
-  color: #fff;
-  font-family: var(--font-kop);
-  font-size: 0.68rem;
-  font-weight: 800;
-  line-height: 1.4;
-  pointer-events: none;
-}
+/* ---------- Foto groot (Fotomuur en Home): op papier, zoals het clubblad ---------- */
 
 .foto-groot {
   position: fixed;
@@ -1998,8 +1942,8 @@ button {
   justify-content: center;
   gap: 12px;
   padding: calc(16px + var(--boven)) 8px calc(16px + var(--onder));
-  background: rgba(3, 6, 24, 0.96);
-  color: #fff;
+  background: #f5f2ea;
+  color: #0d0058;
   /* Een ingezoomde foto blijft binnen het scherm */
   overflow: hidden;
   /* Zelf swipen: de browser mag niet scrollen of zoomen tijdens het vegen */
@@ -2013,10 +1957,11 @@ button {
   z-index: 0;
   cursor: zoom-in;
   max-width: 100%;
-  max-height: calc(100dvh - 170px - var(--boven) - var(--onder));
-  border-radius: 10px;
+  max-height: calc(100dvh - 200px - var(--boven) - var(--onder));
   object-fit: contain;
-  background: rgba(255, 255, 255, 0.06);
+  /* Afdruk met een witte rand op het papier */
+  background: #ebe5d6;
+  box-shadow: 0 0 0 6px #fffdf8, 0 1px 0 6px #cfc6b2;
   will-change: transform;
 }
 
@@ -2031,7 +1976,7 @@ button {
   min-height: 0;
 }
 .foto-groot__baan img {
-  max-width: calc(100vw - 16px);
+  max-width: calc(100vw - 36px);
 }
 .foto-groot__rail {
   position: absolute;
@@ -2049,14 +1994,16 @@ button {
 .foto-groot__teller {
   position: absolute;
   z-index: 2;
-  top: calc(22px + var(--boven));
-  left: 0;
-  right: 0;
+  top: calc(24px + var(--boven));
+  left: 18px;
+  right: 70px;
   margin: 0;
-  text-align: center;
-  font-family: var(--font-kop);
-  font-weight: 700;
-  opacity: 0.8;
+  font: 700 15px/1.2 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   pointer-events: none;
 }
 
@@ -2070,12 +2017,10 @@ button {
   width: 44px;
   height: 64px;
   margin-top: -32px;
-  border: 0;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  font-size: 2.2rem;
-  line-height: 1;
+  border: 2px solid #0d0058;
+  border-radius: 4px;
+  background: #f5f2ea;
+  color: #0d0058;
 }
 
 .foto-groot__pijl--vorige {
@@ -2086,9 +2031,10 @@ button {
   right: 6px;
 }
 
+/* Op een telefoon veeg je; dan staan de pijltjes alleen in de weg */
 @media (hover: none) {
   .foto-groot__pijl {
-    background: rgba(255, 255, 255, 0.06);
+    display: none;
   }
 }
 
@@ -2099,29 +2045,37 @@ button {
   right: 12px;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: none;
+  color: #0d0058;
 }
 
 .foto-groot__onder {
   position: relative;
   z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  width: 100%;
+  width: calc(100% - 20px);
   max-width: 600px;
-  font-family: var(--font-kop);
+  padding-top: 10px;
+  border-top: 1px solid #cfc6b2;
 }
 
 .foto-groot__onder p {
   margin: 0;
+}
+
+.foto-groot__kop {
+  font: 700 26px/1 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  text-transform: uppercase;
+}
+
+.foto-groot__byline {
+  margin-top: 6px !important;
+  font: 600 15px/1.3 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4b4e6b;
 }
 
 .foto-groot__onder .knop {
