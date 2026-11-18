@@ -329,6 +329,20 @@
   color: var(--inkt-zacht);
 }
 
+/* Beheerder ziet een dag die nog niet open is: gestippelde rand en een rode regel erboven */
+.dagkaart--vooruit {
+  border-style: dashed;
+}
+
+.dagkaart__beheer {
+  display: block;
+  margin-bottom: 6px;
+  font: 700 14px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rood);
+}
+
 .dagkaart--teaser {
   flex-direction: row;
   align-items: center;

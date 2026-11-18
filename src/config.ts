@@ -12,7 +12,8 @@ export const config = {
   /** Vanaf dit moment is het spel open (en begint het echte spel) */
   spelOpen: '2027-03-05T18:00',
   /**
-   * true: het spel staat al open vóór spelOpen, als testperiode om uit te proberen.
+   * true: het spel staat al open vóór spelOpen, als testperiode om uit te proberen (busbingo, stemmen,
+   * klassement). Een dagkaart met challenges gaat ook dan pas op zijn eigen dag open; beheerders zien alle dagen.
    * Wat iemand in de testperiode doet, wordt op spelOpen op de telefoon gewist (zie lib/testperiode.ts).
    * false: het spel zit tot spelOpen op slot.
    */

@@ -9,12 +9,11 @@ import { Sneeuw } from '../components/Sneeuw'
 import { GeluidKnop } from '../components/rad/basis'
 import { InktFilter, Stempel } from '../components/Stempelkaart'
 import { config } from '../config'
-import { backendIngesteld } from '../lib/backend'
+import { backendIngesteld, useBackend } from '../lib/backend'
 import { useToonNaam } from '../lib/bijnamen'
 import { bingoScore, LIJNEN, maakKaart, MIDDEN, vakjeTekst } from '../lib/bingo'
 import { useData, type ChallengeDag, type Spel as SpelData } from '../lib/data'
 import { testOntgrendeld, useNu } from '../lib/nu'
-import { isTestperiode } from '../lib/testperiode'
 import { lees, useOpgeslagen } from '../lib/opslag'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { KLASSEMENT_CACHE, type Klassement as KlassementData } from '../lib/scorebord'
@@ -158,13 +157,6 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         <h1>Spel</h1>
       )}
       {testOntgrendeld && <p className="melding melding--test">Testmodus: alles is open (?unlock=1)</p>}
-      {isTestperiode(nu) && (
-        <p className="spel__voetnoot">
-          <strong>Testperiode.</strong> Probeer alles gerust uit: alle challenges staan open. Op {datumLabel(config.spelOpen.slice(0, 10))} om{' '}
-          {config.spelOpen.slice(11)} begint het echte spel: dan worden je stempels, punten en casinofiches gewist, krijg je een nieuwe
-          busbingokaart en verdwijnen de teststemmingen. Foto's die je als bewijs uploadt blijven wel op de fotomuur staan.
-        </p>
-      )}
 
       <div className="spel__balk">
         {backendIngesteld && (
@@ -277,8 +269,15 @@ function Challenges({
   const vandaag = datumISO(nu)
   const gesorteerd = [...dagen].sort((a, b) => a.datum.localeCompare(b.datum))
   const nummer = (d: ChallengeDag) => gesorteerd.indexOf(d) + 1
-  const open = gesorteerd.filter((d) => testOntgrendeld || isTestperiode(nu) || nu >= openMoment(d)).reverse()
-  const volgende = gesorteerd.find((d) => !testOntgrendeld && !isTestperiode(nu) && nu < openMoment(d))
+  // Een dagkaart gaat pas op zijn eigen dag open (ook in de testperiode). Beheerders zien alle
+  // dagen alvast, om ze te kunnen controleren; met ?unlock=1 kan dat ook om te testen.
+  const { beheerder } = useBackend()
+  const alleOpen = testOntgrendeld || beheerder
+  const isOpen = (d: ChallengeDag) => nu >= openMoment(d)
+  const open = gesorteerd.filter((d) => alleOpen || isOpen(d)).reverse()
+  const volgende = alleOpen ? undefined : gesorteerd.find((d) => !isOpen(d))
+  // Openscheuren alleen bij de nieuwste dag die echt voor iedereen open is
+  const nieuwsteOpen = [...gesorteerd].reverse().find(isOpen)
   // Een nieuwe dagkaart moet je eerst openscheuren (één keer per dag per telefoon)
   const [gezien, setGezien] = useOpgeslagen<string[]>('spel.dagkaarten', [])
   const [scheurt, setScheurt] = useState<string | null>(null)
@@ -304,13 +303,22 @@ function Challenges({
   return (
     <>
       {open.length === 0 && <p className="laadtekst">Nog geen challenges open.</p>}
-      {open.map((d, i) => {
-        const nieuw = i === 0 && !gezien.includes(d.datum)
+      {open.map((d) => {
+        const nieuw = d === nieuwsteOpen && !gezien.includes(d.datum)
+        const vooruit = !isOpen(d)
         const klaar = d.items.filter((c) => gedaan.has(c.id)).length
         const te = d.items.reduce((s, c) => s + c.punten, 0)
         return (
-          <section key={d.datum} className={`dagkaart${nieuw ? ' is-dicht' : ''}${scheurt === d.datum ? ' scheurt' : ''}${netOpen === d.datum ? ' net-open' : ''}`}>
+          <section
+            key={d.datum}
+            className={`dagkaart${vooruit ? ' dagkaart--vooruit' : ''}${nieuw ? ' is-dicht' : ''}${scheurt === d.datum ? ' scheurt' : ''}${netOpen === d.datum ? ' net-open' : ''}`}
+          >
             <div className="dagkaart__kop">
+              {vooruit && (
+                <span className="dagkaart__beheer">
+                  Alleen voor beheerders · voor iedereen open op {datumLabel(d.datum, 'kort')} om {d.openOm ?? config.challengesOpenOm}
+                </span>
+              )}
               <span className="spel__caps">{d.datum === vandaag ? `Vandaag · ${datumLabel(d.datum)}` : datumLabel(d.datum)}</span>
               <h2 className="dagkaart__titel">Dagkaart nr. {nummer(d)}</h2>
             </div>
