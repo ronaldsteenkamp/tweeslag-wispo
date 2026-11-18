@@ -7,6 +7,7 @@ import { startBackend } from './lib/backend'
 import { wachtOp } from './lib/data'
 import { vangInstallatieMelding } from './lib/installatie'
 import { startKamerverdeling } from './lib/kamerverdeling'
+import { startPersoonsdata } from './lib/persoonsdata'
 import { startProfielen } from './lib/profiel'
 import { startBijnamen } from './lib/bijnamen'
 import { startKamernamen } from './lib/kamernamen'
@@ -28,6 +29,8 @@ document.addEventListener('gesturestart', (e) => e.preventDefault())
 vangInstallatieMelding()
 // Gedeelde functies (alleen als Supabase is ingesteld; anders gebeurt er niets)
 startBackend()
+// Vóór alles wat persoonlijke waarden schrijft (testperiode, casino-reset, badges)
+startPersoonsdata()
 startTestperiode()
 startScorebord()
 startProfielen()

@@ -4,6 +4,7 @@ import { abonneerBackend, backendIngesteld, backendStand, supabase } from './bac
 import { bingoScore, maakKaart } from './bingo'
 import { laad } from './data'
 import { abonneer, lees, schrijf } from './opslag'
+import { abonneerKlaar, klaarVoorVersturen } from './persoonsdata'
 
 /*
  * Scorebord: de spelvoortgang van deze telefoon gaat naar de server, het klassement komt terug.
@@ -62,7 +63,9 @@ let bezig = false
 export async function verstuurVoortgang() {
   const b = backendStand()
   if (!backendIngesteld || bezig || !lees(TE_VERSTUREN, true)) return
-  if (b.status !== 'verbonden' || !b.gekoppeld || !b.userId) {
+  // Pas versturen als de gegevens van de naam opgehaald en samengevoegd zijn: anders kan een
+  // nieuwe telefoon met een lege stand de score van die naam op nul zetten
+  if (b.status !== 'verbonden' || !b.gekoppeld || !b.userId || !klaarVoorVersturen()) {
     zetSync('wacht')
     return
   }
@@ -121,8 +124,10 @@ let gestart = false
 export function startScorebord() {
   if (gestart || !backendIngesteld) return
   gestart = true
-  // Bij elke start één keer de volledige stand sturen (herstelt zich na wisselen van telefoon)
+  // Bij elke start één keer de volledige stand sturen. Die komt uit de persoonsdata: op een nieuwe
+  // telefoon pas nadat de gegevens van de naam zijn opgehaald en samengevoegd (zie persoonsdata.ts).
   schrijf(TE_VERSTUREN, true)
+  abonneerKlaar(() => void verstuurVoortgang())
   abonneer('spel.challenges', markeer)
   abonneer('spel.bingo.vinkjes', markeer)
   abonneer('paklijst.ingepakt', markeer)
