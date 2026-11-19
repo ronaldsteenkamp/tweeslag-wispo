@@ -11,9 +11,26 @@ import { useEffect, useRef } from 'react'
  */
 
 const stapel: (() => void)[] = []
-// Zoveel popstates komen van ons eigen history.back() (zelf gesloten): niets mee doen
+// Zoveel popstates komen van ons eigen history.go(-n) (zelf gesloten): niets mee doen
 let negeer = 0
 let gestart = false
+
+/*
+ * Zelf gesloten vensters halen hun stap niet meteen weg, maar net daarna. Gaat in dezelfde tik een
+ * nieuw venster open (bijv. "Nog een keer": het briefje sluit en het insturen opent), dan neemt
+ * dat de vrijgekomen stap over. Anders zou de terug-stap van het oude venster de nieuwe stap weghalen
+ * en ging het volgende sluiten één stap te ver: de app uit.
+ */
+let vrij = 0
+let gepland = false
+function ruimOp() {
+  gepland = false
+  if (vrij <= 0) return
+  const n = vrij
+  vrij = 0
+  negeer++
+  window.history.go(-n)
+}
 
 function start() {
   if (gestart) return
@@ -35,7 +52,9 @@ export function useTerugSluit(open: boolean, onSluit: () => void) {
   useEffect(() => {
     if (!open) return
     start()
-    window.history.pushState({ venster: true }, '')
+    // Een stap die net vrijkwam hergebruiken, anders een nieuwe stap
+    if (vrij > 0) vrij--
+    else window.history.pushState({ venster: true }, '')
     let viaTerug = false
     const item = () => {
       viaTerug = true
@@ -46,8 +65,11 @@ export function useTerugSluit(open: boolean, onSluit: () => void) {
       const i = stapel.lastIndexOf(item)
       if (i >= 0) stapel.splice(i, 1)
       if (!viaTerug) {
-        negeer++
-        window.history.back()
+        vrij++
+        if (!gepland) {
+          gepland = true
+          window.setTimeout(ruimOp, 0)
+        }
       }
     }
   }, [open])
