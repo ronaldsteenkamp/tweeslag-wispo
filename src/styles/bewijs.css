@@ -20,6 +20,7 @@
   z-index: 38; /* boven de tabbalk, onder de bevestigdialoog (40) */
   background: var(--papier);
   color: var(--inkt);
+  overflow-x: clip; /* een wegschuivend kiekje geeft geen scrollbalk */
   overflow-y: auto;
   overscroll-behavior: contain;
   animation: bewijs-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);

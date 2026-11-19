@@ -233,7 +233,7 @@ function Beoordelen({
       <div ref={dialoog} className="bewijs redactie" role="dialog" aria-modal="true" aria-labelledby="beoordeel-titel">
         <div className="bewijs__balk">
           <button type="button" className="bewijs__rond" onClick={onSluit} aria-label="Terug naar de tafel">
-            <Icoon naam="menu" grootte={24} />
+            <Icoon naam="kruis" grootte={24} />
           </button>
           <span className="spel__caps">
             {nr} van {van}

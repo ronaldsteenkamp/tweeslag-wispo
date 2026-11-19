@@ -186,8 +186,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
                 is nog leeg.
               </h2>
               <p>
-                De redactie, dat zijn jullie, zit klaar. Alles wat je instuurt voor een challenge komt in het blad, per dag een
-                pagina.
+                Stuur een kiekje in bij een challenge. Zodra de redactie het plaatst, staat het hier, per dag een pagina.
               </p>
               <button type="button" className="fotomuur__knop" onClick={naarChallenges}>
                 <Icoon naam="camera" grootte={20} /> Eerste foto inzenden
@@ -376,7 +375,7 @@ function TerPerse({ wachtend, verbonden }: { wachtend: WachtendeFoto[]; verbonde
       <BevestigDialoog
         open={!!weg}
         titel="Foto weggooien?"
-        tekst={`De foto voor "${weg?.titel ?? ''}" staat alleen op deze telefoon. Weg is weg. De stempel voor de challenge blijft staan.`}
+        tekst={`De foto voor "${weg?.titel ?? ''}" staat alleen op deze telefoon. Weg is weg.`}
         bevestigLabel="Weggooien"
         gevaarlijk
         onAnnuleer={() => setWeg(null)}
