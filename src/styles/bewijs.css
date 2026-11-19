@@ -931,7 +931,8 @@
 }
 
 .bewijs__onderschrift {
-  margin: -4px 8px 0;
+  /* Ruim onder het (scheve) kiekje, zodat de rand van de foto er niet overheen valt */
+  margin: 14px 8px 0;
   font: italic 1.08rem/1.4 Georgia, serif;
   color: var(--inkt);
 }

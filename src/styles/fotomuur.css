@@ -554,7 +554,8 @@
 }
 
 .fotomuur__onderschrift--groot {
-  margin-top: 6px;
+  margin-top: 10px;
+  margin-bottom: 8px;
   font-size: 1.15rem;
 }
 
