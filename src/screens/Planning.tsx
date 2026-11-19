@@ -412,8 +412,8 @@ export default function Planning({ naarWeer }: { naarWeer: () => void }) {
       <div className="segment" role="group" aria-label="Weergave">
         {(
           [
-            ['dag', dagIndex >= 0 ? 'Vandaag' : 'Per dag'],
             ['reis', 'Hele reis'],
+            ['dag', dagIndex >= 0 ? 'Vandaag' : 'Per dag'],
           ] as const
         ).map(([waarde, label]) => (
           <button
