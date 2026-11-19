@@ -569,18 +569,10 @@ function PaklijstRij({ pak, naarPaklijst }: { pak: PakStand; naarPaklijst: () =>
       onder={klaar ? 'Alles ingepakt' : `${pak.klaar} van ${pak.totaal} ingepakt`}
       onKlik={naarPaklijst}
     >
-      {/* De voortgang als stukje afdaling */}
-      <svg className="homerij__profiel" viewBox="0 0 300 16" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M2 3 60 6 120 9 180 11 240 13 298 14" className="homerij__profiel-rest" pathLength={100} />
-        {pak.klaar > 0 && (
-          <path
-            d="M2 3 60 6 120 9 180 11 240 13 298 14"
-            className="homerij__profiel-klaar"
-            pathLength={100}
-            strokeDasharray={`${(pak.deel ?? 0) * 100} 100`}
-          />
-        )}
-      </svg>
+      {/* Voortgang als gewone horizontale balk */}
+      <span className="homerij__balk" aria-hidden="true">
+        <span style={{ width: `${(pak.deel ?? 0) * 100}%` }} />
+      </span>
     </Rij>
   )
 }

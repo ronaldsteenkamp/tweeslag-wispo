@@ -491,22 +491,23 @@
   color: var(--h-zacht);
 }
 
-.homerij__profiel {
+/* Voortgang van de paklijst: gewone horizontale balk */
+.homerij__balk {
   display: block;
   width: 100%;
-  height: 16px;
-  margin-top: 6px;
-  fill: none;
-  stroke-width: 4;
-  stroke-linecap: round;
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--h-lijn);
+  overflow: hidden;
 }
 
-.homerij__profiel-rest {
-  stroke: var(--h-lijn);
-}
-
-.homerij__profiel-klaar {
-  stroke: var(--h-groen);
+.homerij__balk span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--h-groen);
+  transition: width 0.3s ease-out;
 }
 
 .homerij__vakje {
