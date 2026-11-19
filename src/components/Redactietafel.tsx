@@ -289,7 +289,6 @@ function Beoordelen({
         <button type="button" className="bewijs__tekstknop" onClick={() => void wisselJury()} aria-pressed={jury}>
           <Icoon naam={jury ? 'vink' : 'plus'} grootte={20} /> Jurykeuze (+10)
         </button>
-        <p className="bewijs__klein">Toetsen: G = plaatsen, N = briefje terug, pijltjes = bladeren.</p>
       </div>
       {reden && (
         <div className="bewijs-achtergrond" onClick={() => setReden(false)}>
