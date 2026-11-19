@@ -435,7 +435,7 @@ function Challenges({
         <button type="button" className="redactieknop" onClick={opTafel}>
           <span>
             <b>Redactietafel</b>
-            <small>{aantalOpTafel === null ? 'Kiekjes beoordelen' : aantalOpTafel === 0 ? 'Niets op tafel' : `${aantalOpTafel} kiekje${aantalOpTafel === 1 ? '' : 's'} op tafel`}</small>
+            <small>{aantalOpTafel === null ? 'Kiekjes en stukjes beoordelen' : aantalOpTafel === 0 ? 'Niets op tafel' : `${aantalOpTafel} op tafel`}</small>
           </span>
           <Icoon naam="stempel" grootte={28} />
         </button>

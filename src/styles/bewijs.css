@@ -145,7 +145,8 @@
   color: var(--rood);
 }
 
-.spelknop--rood {
+/* Dubbele klasse: bewijs.css kan vóór spel.css geladen worden (via het Clubblad) */
+.spelknop.spelknop--rood {
   border-color: var(--rood);
   background: var(--rood);
   color: #fff;
