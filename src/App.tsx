@@ -34,11 +34,13 @@ function hoofdTab(s: Scherm): Tab {
 }
 
 const isSubscherm = (s: Scherm) => s !== hoofdTab(s)
-type Stap = { subscherm?: boolean; van?: Tab } | null
+type Stap = { subscherm?: boolean; van?: Tab; vanHome?: boolean } | null
 /** Staat er een geschiedenis-stap onder dit subscherm (gezet door kies of bij het opstarten)? */
 const isSubschermStap = () => (window.history.state as Stap)?.subscherm === true
 /** Vanaf welke tab het subscherm geopend is (Weer kan vanaf Home én Planning) */
 const subschermVan = () => (window.history.state as Stap)?.van
+/** Staat Home als stap onder deze tab (geopend via een knop op Home)? */
+const isVanHomeStap = () => (window.history.state as Stap)?.vanHome === true
 
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
@@ -112,6 +114,11 @@ export default function App() {
         window.history.back()
         return
       }
+      // Terug naar Home terwijl Home als stap onder deze tab ligt: ook een stap terug
+      if (t === 'home' && !isSubscherm(tab) && isVanHomeStap()) {
+        window.history.back()
+        return
+      }
       const { pathname, search } = window.location
       // Naar een subscherm (Weer, Fotomuur, ...): een nieuwe stap, zodat de terugknop van de
       // telefoon terug naar de tab gaat. Tussen tabs: geen stappen (terug sluit dan de app).
@@ -120,13 +127,29 @@ export default function App() {
         window.history.pushState(stap, '', `${pathname}${search}#${t}`)
         setVan(stap.van)
       } else {
-        window.history.replaceState(isSubscherm(t) ? window.history.state : null, '', `${pathname}${search}#${t}`)
+        // Tussen tabs blijft 'vanHome' staan, zodat Home daarna nog steeds een stap terug is
+        const vanHome: Stap = isVanHomeStap() ? { vanHome: true } : null
+        window.history.replaceState(isSubscherm(t) ? window.history.state : vanHome, '', `${pathname}${search}#${t}`)
         if (!isSubscherm(t)) setVan(undefined)
       }
       setTab(t)
       window.scrollTo(0, 0)
     },
     [tab, van],
+  )
+
+  // Een knop op Home (Planning, Paklijst, Spel, Kaart): een nieuwe stap in de geschiedenis,
+  // zodat de terugknop van de telefoon weer op Home uitkomt (via de tabbalk blijft het zonder stap).
+  const vanuitHome = useCallback(
+    (t: Tab) => {
+      if (tab !== 'home' || t === 'home') return kies(t)
+      const { pathname, search } = window.location
+      window.history.pushState({ vanHome: true } satisfies Stap, '', `${pathname}${search}#${t}`)
+      setVan(undefined)
+      setTab(t)
+      window.scrollTo(0, 0)
+    },
+    [tab, kies],
   )
 
   // Vegen tussen de tabs van de tabbalk (niet tijdens het welkomstscherm). Vanuit een
@@ -149,7 +172,7 @@ export default function App() {
   const scherm = (s: Scherm) => {
     switch (s) {
       case 'home':
-        return <Home naarTab={kies} naarWeer={() => kies('weer')} />
+        return <Home naarTab={vanuitHome} naarWeer={() => kies('weer')} />
       case 'weer':
         return <Weer terug={() => kies(basisTab('weer'))} />
       case 'beheer':
