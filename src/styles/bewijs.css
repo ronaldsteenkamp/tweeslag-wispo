@@ -872,6 +872,79 @@
   resize: vertical;
 }
 
+/* ---------- Bevestigen (bijv. je kiekje weghalen): een kaartje op papier ---------- */
+
+.dialoog-achtergrond:has(> .dialoog--redactie) {
+  place-items: center;
+  background: rgba(13, 0, 88, 0.45);
+}
+
+.dialoog.dialoog--redactie {
+  position: relative;
+  gap: 10px;
+  max-width: 400px;
+  padding: 26px 20px 20px;
+  border-radius: 2px;
+  background: var(--foto-rand);
+  color: var(--inkt);
+  box-shadow: 0 14px 34px rgba(13, 0, 88, 0.3);
+  transform: rotate(-0.8deg);
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Plakband bovenop */
+.dialoog--redactie::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: calc(50% - 38px);
+  width: 76px;
+  height: 20px;
+  background: rgba(232, 224, 200, 0.9);
+  transform: rotate(2.5deg);
+}
+
+.dialoog--redactie h2 {
+  margin: 0;
+  font: 700 28px/1.02 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  color: var(--inkt);
+}
+
+.dialoog--redactie p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: var(--inkt-zacht);
+}
+
+.dialoog--redactie .dialoog__knoppen {
+  margin-top: 10px;
+}
+
+.dialoog--redactie .knop {
+  min-height: 52px;
+  border: 2px solid var(--inkt);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--inkt);
+  font: 700 20px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 0 var(--blauw);
+}
+
+.dialoog--redactie .knop--gevaar {
+  border-color: var(--rood);
+  background: var(--rood);
+  color: #fff;
+}
+
+.dialoog--redactie .knop:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--blauw);
+}
+
 /* ---------- Minder beweging ---------- */
 
 @media (prefers-reduced-motion: reduce) {

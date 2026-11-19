@@ -7,6 +7,8 @@ interface Props {
   bevestigLabel: string
   annuleerLabel?: string
   gevaarlijk?: boolean
+  /** Eigen uiterlijk, bijv. 'dialoog--redactie' (papier, zoals het Spel) */
+  className?: string
   onBevestig: () => void
   onAnnuleer: () => void
 }
@@ -19,6 +21,7 @@ export function BevestigDialoog({
   bevestigLabel,
   annuleerLabel = 'Annuleren',
   gevaarlijk,
+  className,
   onBevestig,
   onAnnuleer,
 }: Props) {
@@ -36,7 +39,7 @@ export function BevestigDialoog({
   return (
     <div className="dialoog-achtergrond" onClick={onAnnuleer}>
       <div
-        className="dialoog"
+        className={className ? `dialoog ${className}` : 'dialoog'}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="dialoog-titel"

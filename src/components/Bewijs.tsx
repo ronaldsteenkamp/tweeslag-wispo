@@ -432,7 +432,9 @@ export function InzendingBlad({
               : 'Hij verdwijnt bij de redactie.'
         }
         bevestigLabel="Weghalen"
+        annuleerLabel="Laten staan"
         gevaarlijk
+        className="dialoog--redactie"
         onBevestig={() => void weghalen()}
         onAnnuleer={() => setBevestig(false)}
       />
