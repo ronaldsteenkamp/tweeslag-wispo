@@ -24,8 +24,6 @@ import { datumISO, datumLabel, lokaalNaarDate, resterend } from '../lib/tijd'
 import { cm, graden, useWeer, weerTekst } from '../lib/weer'
 import { FotoGroot, useKamerLabel } from './Fotomuur'
 import { beeldVoor, soortActiviteit } from './Planning'
-// Ingebakken in de bundel (?inline), zodat het logo bij de eerste keer openen meteen in de kop staat
-import logoWinter from '../assets/2slag-winter.svg?inline'
 import '../styles/barlow.css'
 import '../styles/home.css'
 
@@ -287,10 +285,7 @@ function KopVoor({ naam, pak }: { naam: string | null; pak: PakStand }) {
   return (
     <header className="homekop">
       <Sneeuw aantal={8} />
-      <KopRij
-        boven={<img className="homekop__logo" src={logoWinter} alt={`Tweeslag, Wispo 2027 · ${config.bestemming}`} width={86} height={40} />}
-        naam={naam}
-      />
+      <KopRij boven={`Wispo 2027 · ${config.bestemming}`} naam={naam} />
       <h1 className="homekop__titel">
         <Aftellen />
         <small>
