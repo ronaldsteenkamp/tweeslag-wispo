@@ -37,9 +37,12 @@ export interface GeslotenStemming {
 export interface Beoordeeld {
   id: string
   naam: string
-  challenge_titel: string
+  /** null bij een los stukje (rubriek Ingezonden) */
+  challenge_titel: string | null
   status: 'goed' | 'af'
   punten: number
+  /** Ingezonden stukje (migratie 0019) of kiekje */
+  soort?: 'foto' | 'stukje'
 }
 
 /** Eén melding per persoon, ook als de redactie er meer tegelijk beoordeelde */
@@ -47,12 +50,15 @@ export function redactieMelding(fotos: Beoordeeld[]): { titel: string; tekst: st
   const goed = fotos.filter((f) => f.status === 'goed')
   const af = fotos.filter((f) => f.status === 'af')
   const punten = goed.reduce((s, f) => s + (f.punten || 0), 0)
+  const woord = (f: Beoordeeld) => (f.soort === 'stukje' ? 'stukje' : 'kiekje')
+  const voor = (f: Beoordeeld) => (f.challenge_titel ? ` voor "${f.challenge_titel}"` : ' voor de rubriek Ingezonden')
+  const meervoud = (l: Beoordeeld[]) => (l.every((f) => f.soort === 'stukje') ? 'stukjes' : l.every((f) => f.soort !== 'stukje') ? 'kiekjes' : 'inzendingen')
   const titel = goed.length ? 'Geplaatst! Van de redactie' : 'Briefje van de redactie'
   const delen: string[] = []
-  if (goed.length === 1) delen.push(`Je kiekje voor "${goed[0].challenge_titel}" staat in het clubblad: +${punten}.`)
-  else if (goed.length > 1) delen.push(`${goed.length} kiekjes geplaatst: +${punten} in totaal.`)
-  if (af.length === 1) delen.push(`Voor "${af[0].challenge_titel}" ligt een briefje klaar. Probeer het nog een keer!`)
-  else if (af.length > 1) delen.push(`Voor ${af.length} kiekjes ligt een briefje klaar.`)
+  if (goed.length === 1) delen.push(`Je ${woord(goed[0])}${voor(goed[0])} staat in het clubblad${punten ? `: +${punten}` : ''}.`)
+  else if (goed.length > 1) delen.push(`${goed.length} ${meervoud(goed)} geplaatst${punten ? `: +${punten} in totaal` : ''}.`)
+  if (af.length === 1) delen.push(`Voor je ${woord(af[0])}${voor(af[0]).replace(' voor ', ' bij ')} ligt een briefje klaar. Probeer het nog een keer!`)
+  else if (af.length > 1) delen.push(`Voor ${af.length} ${meervoud(af)} ligt een briefje klaar.`)
   return { titel, tekst: delen.join(' ') }
 }
 

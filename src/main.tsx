@@ -16,6 +16,7 @@ import { startTestperiode } from './lib/testperiode'
 import { startLocatie } from './lib/locatie'
 import { startMeldingen } from './lib/meldingen'
 import { startFotoWachtrij } from './lib/fotowachtrij'
+import { startStukjesWachtrij } from './lib/stukjes'
 import { startStemming } from './lib/stemming'
 import { startBadges } from './lib/badgesTelefoon'
 import { startRadUitslagen } from './lib/radUitslagen'
@@ -43,6 +44,7 @@ startStemming()
 startMeldingen()
 startLocatie()
 startFotoWachtrij()
+startStukjesWachtrij()
 startRadUitslagen()
 resetCasinoAlsNodig()
 // Na het casino-reset: anders telt een oude stand nog voor High roller of Blut
