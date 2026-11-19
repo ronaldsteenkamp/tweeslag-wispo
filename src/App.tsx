@@ -33,6 +33,10 @@ function hoofdTab(s: Scherm): Tab {
   return s
 }
 
+const isSubscherm = (s: Scherm) => s !== hoofdTab(s)
+/** Staat er een geschiedenis-stap onder dit subscherm (gezet door kies of bij het opstarten)? */
+const isSubschermStap = () => (window.history.state as { subscherm?: boolean } | null)?.subscherm === true
+
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
   // #nieuwekop / #oudekop: schakelaar voor de nieuwe schermkoppen (zie lib/nieuweKoppen.ts)
@@ -63,8 +67,19 @@ export default function App() {
   useSchermWakker(tab === 'kaart' || tab === 'rad' || (tab === 'spel' && spelOnderdeel === 'bingo'))
 
   useEffect(() => {
-    const opHash = () => setTab(tabUitAdres())
+    const opHash = () => {
+      setTab(tabUitAdres())
+      window.scrollTo(0, 0)
+    }
     window.addEventListener('hashchange', opHash)
+    // Direct op een subscherm geopend (bijv. #weer): de tab eronder als stap in de geschiedenis
+    // zetten, zodat de terugknop van de telefoon daar uitkomt in plaats van de app te sluiten.
+    const begin = tabUitAdres()
+    if (isSubscherm(begin) && !isSubschermStap()) {
+      const { pathname, search } = window.location
+      window.history.replaceState(null, '', `${pathname}${search}#${hoofdTab(begin)}`)
+      window.history.pushState({ subscherm: true }, '', `${pathname}${search}#${begin}`)
+    }
     return () => window.removeEventListener('hashchange', opHash)
   }, [])
 
@@ -83,8 +98,18 @@ export default function App() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
+      // Terug van een subscherm naar zijn tab: een stap terug in de geschiedenis (dan komt
+      // de terugknop van de telefoon daarna niet nog eens op het subscherm uit). De hashchange
+      // zet de tab.
+      if (isSubscherm(tab) && t === hoofdTab(tab) && isSubschermStap()) {
+        window.history.back()
+        return
+      }
       const { pathname, search } = window.location
-      window.history.replaceState(null, '', `${pathname}${search}#${t}`)
+      // Naar een subscherm (Weer, Fotomuur, ...): een nieuwe stap, zodat de terugknop van de
+      // telefoon terug naar de tab gaat. Tussen tabs: geen stappen (terug sluit dan de app).
+      if (isSubscherm(t) && !isSubscherm(tab)) window.history.pushState({ subscherm: true }, '', `${pathname}${search}#${t}`)
+      else window.history.replaceState(isSubscherm(t) ? window.history.state : null, '', `${pathname}${search}#${t}`)
       setTab(t)
       window.scrollTo(0, 0)
     },
