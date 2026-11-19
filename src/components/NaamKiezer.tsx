@@ -20,9 +20,19 @@ function scrollHouder(el: HTMLElement | null): HTMLElement | null {
   return null
 }
 
-/** Raster met grote naamknoppen en een zoekveld */
-export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: string) => void }) {
+/** Raster met grote naamknoppen en een zoekveld. Met skipas: elke naam is een skipas aan het rek
+ *  (welkomstscherm); de gekozen pas krijgt eerst een stempel "van mij". */
+export function NaamKiezer({
+  namen,
+  onKies,
+  skipas = false,
+}: {
+  namen: string[]
+  onKies: (n: string) => void
+  skipas?: boolean
+}) {
   const [zoek, setZoek] = useState('')
+  const [gestempeld, setGestempeld] = useState<string | null>(null)
   // Aan het zoeken: het zoekveld staat bovenaan en de lijst houdt zijn hoogte, zodat de pagina
   // niet korter wordt bij elke letter (anders schuift alles naar beneden, achter het toetsenbord)
   const [zoekend, setZoekend] = useState(false)
@@ -35,6 +45,18 @@ export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: str
   // Naam gekozen: terug naar boven. Tijdens het zoeken stond het zoekveld bovenaan in beeld; het
   // scherm daarna (bijv. je profiel in hetzelfde venster) zou anders half naar beneden beginnen.
   const kies = (n: string) => {
+    if (skipas) {
+      if (gestempeld) return
+      // Even de stempel laten zien; zonder beweging (reduced motion) meteen door
+      setGestempeld(n)
+      const rustig = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      window.setTimeout(() => doorMet(n), rustig ? 0 : 650)
+      return
+    }
+    doorMet(n)
+  }
+
+  const doorMet = (n: string) => {
     const houder = scrollHouder(veld.current)
     window.clearTimeout(schuifTimer.current)
     setZoekend(false)
@@ -71,8 +93,24 @@ export function NaamKiezer({ namen, onKies }: { namen: string[]; onKies: (n: str
           />
         </div>
       )}
-      <div className={`namenraster${zoekend ? ' namenraster--zoekend' : ''}`}>
-        {lijst.map((n) => (
+      <div className={`namenraster${skipas ? ' namenraster--skipas' : ''}${zoekend ? ' namenraster--zoekend' : ''}`}>
+        {skipas &&
+          lijst.map((n) => (
+            <button
+              key={n}
+              type="button"
+              className={`skipas${gestempeld === n ? ' is-gestempeld' : ''}`}
+              onClick={() => kies(n)}
+            >
+              <span className="skipas__soort" aria-hidden="true">
+                Wispo 2027
+              </span>
+              <b>{n}</b>
+              {toon(n) !== n && <small>{toon(n)}</small>}
+              {gestempeld === n && <span className="skipas__stempel">van mij</span>}
+            </button>
+          ))}
+        {!skipas && lijst.map((n) => (
           <button key={n} type="button" className="knop knop--naam" onClick={() => kies(n)}>
             {n}
             {/* Hier de echte naam (je kiest wie je bent), met de bijnaam erbij */}

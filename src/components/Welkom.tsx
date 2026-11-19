@@ -8,10 +8,15 @@ import { profielBestaatVoor, useMijnProfiel } from '../lib/profiel'
 import { NaamKiezer, useAlleNamen } from './NaamKiezer'
 import { BijnaamVeld, ProfielFormulier } from './Profiel'
 import { Sneeuw } from './Sneeuw'
+// Ingebakken in de bundel (?inline), zodat het logo er bij de allereerste keer openen meteen staat
+import woordmerk from '../assets/2slag-winter.svg?inline'
+import '../styles/barlow.css'
+import '../styles/welkom.css'
 
 /**
  * Welkomstscherm bij de allereerste keer openen (bijvoorbeeld via de QR-code):
- * eerst je naam kiezen, daarna de app op je beginscherm zetten.
+ * eerst je naam kiezen (je skipas pakken), daarna je plaatje en de app op je beginscherm zetten.
+ * Kop zoals Home (donkerblauw, berg met vlag), papier eronder. Opmaak in styles/welkom.css.
  */
 export function Welkom({ onKlaar }: { onKlaar: () => void }) {
   const { data, fout } = useData('kamers')
@@ -39,21 +44,30 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
 
   return (
     <div className="welkom" role="dialog" aria-modal="true" aria-labelledby="welkom-titel" ref={vak}>
-      <header className="welkom__kop golf">
-        <Sneeuw aantal={20} maan />
-        <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="Tweeslag" className="welkom__logo" />
-        <p className="welkom__onder">Wispo 2027 · Les Deux Alpes</p>
+      <header className="welkom__kop">
+        <Sneeuw aantal={8} />
+        <img src={woordmerk} alt="Tweeslag" className="welkom__logo" width={86} height={40} />
         <h1 id="welkom-titel">
-          {stap === 'naam' ? 'Welkom! Wie ben jij?' : stap === 'profiel' ? 'Maak je plaatje' : naam ? `Hoi ${toon(naam)}!` : 'Hoi!'}
+          {stap === 'naam' ? 'Pak je skipas' : stap === 'profiel' ? 'Maak je plaatje' : naam ? `Hoi ${toon(naam)}` : 'Bijna klaar'}
         </h1>
+        {stap === 'naam' && (
+          <p className="welkom__zin">Er hangt er een met jouw naam. Daarmee weet de app welke kamer en score bij jou horen.</p>
+        )}
+        <svg className="welkom__berg" viewBox="0 0 390 120" preserveAspectRatio="none" aria-hidden="true">
+          <path className="berg" d="M0 120V96L40 78 70 86 110 52 140 64 175 24 205 40 235 30 262 54 300 70 340 66 390 92V120Z" />
+          <path className="schaduw" d="M175 24 205 40 196 74 168 70ZM110 52 140 64 128 86ZM235 30 262 54 246 70Z" />
+          <path className="dal" d="M0 120V110C70 100 140 112 210 106S340 98 390 108V120Z" />
+          <path d="M175 24V6" stroke="#fff" strokeWidth="1.6" />
+          <path className="vlag" d="M175 6l14 5-14 5Z" />
+        </svg>
       </header>
 
       <div className="welkom__inhoud">
         {stap === 'naam' ? (
           <>
-            <p>Kies je naam. Dan zie je meteen je kamer en staat je naam bij je spelscore.</p>
             {data ? (
               <NaamKiezer
+                skipas
                 namen={namen}
                 onKies={(n) => {
                   setNaam(n)
@@ -82,7 +96,7 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
           </>
         ) : (
           <>
-            <h2>📲 Zet de app op je beginscherm</h2>
+            <h2>Zet de app op je beginscherm</h2>
             <p>
               Dan staat hij tussen je andere apps, opent hij schermvullend en werkt hij ook op de berg zonder bereik.
             </p>
