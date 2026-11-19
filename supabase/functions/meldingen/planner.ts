@@ -33,6 +33,29 @@ export interface GeslotenStemming {
   uitslag: { kandidaat: string; stemmen: number }[]
 }
 
+/** Een beoordeeld kiekje (migratie 0018), voor de melding "Van de redactie" */
+export interface Beoordeeld {
+  id: string
+  naam: string
+  challenge_titel: string
+  status: 'goed' | 'af'
+  punten: number
+}
+
+/** Eén melding per persoon, ook als de redactie er meer tegelijk beoordeelde */
+export function redactieMelding(fotos: Beoordeeld[]): { titel: string; tekst: string } {
+  const goed = fotos.filter((f) => f.status === 'goed')
+  const af = fotos.filter((f) => f.status === 'af')
+  const punten = goed.reduce((s, f) => s + (f.punten || 0), 0)
+  const titel = goed.length ? 'Geplaatst! Van de redactie' : 'Briefje van de redactie'
+  const delen: string[] = []
+  if (goed.length === 1) delen.push(`Je kiekje voor "${goed[0].challenge_titel}" staat in het clubblad: +${punten}.`)
+  else if (goed.length > 1) delen.push(`${goed.length} kiekjes geplaatst: +${punten} in totaal.`)
+  if (af.length === 1) delen.push(`Voor "${af[0].challenge_titel}" ligt een briefje klaar. Probeer het nog een keer!`)
+  else if (af.length > 1) delen.push(`Voor ${af.length} kiekjes ligt een briefje klaar.`)
+  return { titel, tekst: delen.join(' ') }
+}
+
 const TZ = 'Europe/Amsterdam'
 const MINUUT = 60_000
 /** Zoals challengesOpenOm in src/config.ts */

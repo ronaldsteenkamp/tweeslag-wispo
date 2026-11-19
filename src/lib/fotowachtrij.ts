@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { abonneerBackend, backendIngesteld, backendStand } from './backend'
-import { uploadFoto, type Verkleind } from './fotos'
+import { uploadFoto, type BewijsInfo, type Verkleind } from './fotos'
 
 /*
  * Foto's die zonder bereik als bewijs zijn gemaakt. Ze staan (verkleind) in IndexedDB op deze
@@ -16,7 +16,7 @@ import { uploadFoto, type Verkleind } from './fotos'
 interface Wachtend {
   id: string
   foto: Verkleind
-  challenge: { id: string; titel: string }
+  challenge: BewijsInfo
   pogingen: number
   /** Te vaak mislukt: niet meer vanzelf proberen, wachten op de gebruiker */
   vast?: boolean
@@ -57,6 +57,8 @@ const alle = () => metWinkel<Wachtend[]>('readonly', (w) => w.getAll() as IDBReq
 /** Wat de Fotomuur van een wachtende foto laat zien ("Ter perse") */
 export interface WachtendeFoto {
   id: string
+  /** Bij welke challenge */
+  challengeId: string
   titel: string
   pogingen: number
   /** Wordt nu verstuurd */
@@ -96,6 +98,7 @@ function alsLijst(): WachtendeFoto[] {
     if (!voorbeelden.has(r.id)) voorbeelden.set(r.id, URL.createObjectURL(r.foto.klein))
     return {
       id: r.id,
+      challengeId: r.challenge.id,
       titel: r.challenge.titel,
       pogingen: r.pogingen,
       bezig: r.id === bezigMet,
@@ -112,7 +115,7 @@ function alsLijst(): WachtendeFoto[] {
  */
 export async function bewaarVoorLater(
   foto: Verkleind,
-  challenge: { id: string; titel: string },
+  challenge: BewijsInfo,
   id: string = crypto.randomUUID(),
 ): Promise<string | null> {
   try {

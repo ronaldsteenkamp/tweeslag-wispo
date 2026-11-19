@@ -12,7 +12,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
 import webpush from 'npm:web-push@3.6.7'
-import { teVersturen, type GeslotenStemming, type Melding } from './planner.ts'
+import { redactieMelding, teVersturen, type Beoordeeld, type GeslotenStemming, type Melding } from './planner.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -153,15 +153,51 @@ async function geslotenStemmingen(nu: number): Promise<GeslotenStemming[]> {
   })
 }
 
+/**
+ * Van de redactie (migratie 0018): wie een kiekje beoordeeld kreeg, krijgt één melding op zijn
+ * eigen telefoons (alle apparaten met die naam). Per persoon samengevoegd; daarna 'gemeld'.
+ */
+async function redactieMeldingen() {
+  const { data, error } = await db
+    .from('fotos')
+    .select('id, naam, challenge_titel, status, punten')
+    .in('status', ['goed', 'af'])
+    .is('gemeld', null)
+    .not('beoordeeld_op', 'is', null)
+    .limit(500)
+  // Migratie 0018 nog niet gedraaid: niets te doen
+  if (error) return { redactie: error.code === '42703' ? 'nog geen 0018' : error.message }
+  if (!data?.length) return { redactie: 0 }
+  const perNaam = new Map<string, Beoordeeld[]>()
+  for (const f of data) {
+    const k = String(f.naam).toLowerCase()
+    perNaam.set(k, [...(perNaam.get(k) ?? []), f as Beoordeeld])
+  }
+  let gelukt = 0
+  for (const [naam, fotos] of perNaam) {
+    const { data: apparaten } = await db.from('deelnemers').select('user_id').ilike('naam', naam)
+    const ids = (apparaten ?? []).map((a) => a.user_id)
+    const { data: abo } = ids.length
+      ? await db.from('push_abonnementen').select('endpoint, p256dh, auth').in('user_id', ids)
+      : { data: [] }
+    const m = redactieMelding(fotos)
+    if (abo?.length) gelukt += (await verstuur(abo, { ...m, url: './#spel', tag: `redactie-${naam}` })).gelukt
+    // Ook zonder telefoon met meldingen: als gemeld zetten, anders blijft hij elke 5 minuten terugkomen
+    await db.from('fotos').update({ gemeld: new Date().toISOString() }).in('id', fotos.map((f) => f.id))
+  }
+  return { redactie: perNaam.size, redactieGelukt: gelukt }
+}
+
 async function gepland() {
   const nu = Date.now()
+  const redactie = await redactieMeldingen().catch((e) => ({ redactie: String(e?.message ?? e) }))
   const [planning, spel, stemmingen] = await Promise.all([
     json('data/planning.json').catch(() => ({})),
     json('data/spel.json').catch(() => ({})),
     geslotenStemmingen(nu),
   ])
   const lijst = teVersturen(nu, planning, spel, stemmingen)
-  if (!lijst.length) return { verstuurd: [] }
+  if (!lijst.length) return { verstuurd: [], ...redactie }
   const abonnementen = await alleAbonnementen()
   const verstuurd = []
   for (const m of lijst) {
@@ -171,7 +207,7 @@ async function gepland() {
     await db.from('meldingen').update({ aantal: r.gelukt }).eq('id', id)
     verstuurd.push({ sleutel: m.sleutel, ...r })
   }
-  return { verstuurd }
+  return { verstuurd, ...redactie }
 }
 
 // ---------- Ingang ----------
