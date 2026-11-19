@@ -334,7 +334,7 @@ function Inhoud({ dagen, vandaag, naar }: { dagen: Dag[]; vandaag: string; naar:
   )
 }
 
-export default function Planning() {
+export default function Planning({ naarWeer }: { naarWeer: () => void }) {
   const { data, fout } = useData('planning')
   const nu = useNu(30000)
   const vandaag = datumISO(nu)
@@ -443,14 +443,13 @@ export default function Planning() {
       ondertitel={regel && <span role="status">{regel}</span>}
       rechts={
         weerVandaag && (
-          <span title={`${weerTekst(weerVandaag.code)} in het dorp`}>
+          <button type="button" className="schermkop__knop" onClick={naarWeer} title={`${weerTekst(weerVandaag.code)} in het dorp`}>
             <span className="schermkop__groot" aria-hidden="true">
               <WeerIcoon naam={weerSoort(weerVandaag.code)} grootte={30} />
             </span>
-            <br />
             {graden(weerVandaag.tMax)}
-            <span className="verborgen"> in het dorp vandaag, {weerTekst(weerVandaag.code)}</span>
-          </span>
+            <span className="verborgen"> in het dorp vandaag, {weerTekst(weerVandaag.code)}. Meer over weer en sneeuw</span>
+          </button>
         )
       }
     >
