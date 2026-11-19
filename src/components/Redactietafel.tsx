@@ -269,7 +269,7 @@ function Beoordelen({
           )}
           {foto.zichtbaar === 'redactie' && (
             <li>
-              <Icoon naam="slot" grootte={20} /> Met anderen erop, alleen voor de redactie: komt niet op de muur
+              <Icoon naam="slot" grootte={20} /> Met anderen erop, alleen voor de redactie: komt niet in het clubblad
             </li>
           )}
         </ul>

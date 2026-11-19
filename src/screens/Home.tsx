@@ -656,7 +656,7 @@ function Borden({ naam, naarTab }: { naam: string | null; naarTab: (t: Tab) => v
       <button type="button" onClick={() => (window.location.hash = '#fotos')}>
         <Bord kleur="rood" icoon="camera" />
         <b>Foto's</b>
-        <small>De fotomuur</small>
+        <small>Het clubblad</small>
       </button>
       <button type="button" onClick={() => naarTab('kaart')}>
         <Bord kleur="blauw" icoon="kaart" vierkant />
@@ -705,12 +705,12 @@ function Terugblik({ naam, naarStemmen }: { naam: string | null; naarStemmen: ()
   return (
     <>
       <p className="home__zin">
-        Wat een week. Zet je mooiste foto&apos;s op de muur, dan maken we er voor de ALV een terugblik van.
+        Wat een week. Zet je mooiste foto&apos;s in het clubblad, dan maken we er voor de ALV een terugblik van.
       </p>
 
       {fotos && fotos.length > 0 && (
         <section>
-          <Kopje titel="Ansichtkaarten" knop="Fotomuur" onKlik={naarFotomuur} />
+          <Kopje titel="Ansichtkaarten" knop="Clubblad" onKlik={naarFotomuur} />
           <div className="ansichten">
             {fotos.map((f, i) => (
               <button key={f.id} type="button" className="ansicht" onClick={() => setOpen(i)}>
@@ -725,7 +725,7 @@ function Terugblik({ naam, naarStemmen }: { naam: string | null; naarStemmen: ()
         </section>
       )}
       <button type="button" className="home__knop" onClick={naarFotomuur}>
-        Naar de fotomuur
+        Naar het clubblad
       </button>
 
       {top.length > 0 && (
