@@ -1,822 +1,407 @@
-/* ---------- Kamers als plattegrond (richting A, zie mockups/kamers-a.html) ----------
-   Een bouwtekening op ruitjespapier: muren in inkt, de gang lichtblauw, jouw appartement in clubblauw.
-   Alleen licht, zoals de rest van de app (color-scheme: only light). Contrast kleine tekst >= 4,5 : 1. */
+/* ---------- Kamers als smoelenboek (richting D, zie mockups/kamers-d.html) ----------
+   Per appartement een bladzijde: de naam als kop (Georgia, schuin), het nummer klein erboven, de
+   portretten in clubkleuren met een bergrand. Alleen licht, zoals de rest van de app.
+   Contrast kleine tekst >= 4,5 : 1 op het papier. */
 
 .inhoud--kamers,
-.kp-blad {
-  --kp-papier: #f5f2ea;
-  --kp-raster: rgb(13 0 88 / 0.05);
-  --kp-inkt: #0d0058;
-  --kp-zacht: #4b4e6b;
-  --kp-muur: #0d0058;
-  --kp-gang: #dcecf2;
-  --kp-gang-lijn: #7fb4c8;
-  --kp-jij: #066f8a;
-  --kp-jij-vlak: #cdebf4;
-  --kp-vreemd: #cfc8b6;
-  --kp-groen: #1e7a4c;
-  --kp-vel: #fbf9f4;
-  --kp-focus: #0a7d9c;
-  --kp-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
-  --kp-tekst: Barlow, 'Trebuchet MS', sans-serif;
+.ks-blad {
+  --ks-papier: #f5f2ea;
+  --ks-inkt: #0d0058;
+  --ks-zacht: #4b4e6b;
+  --ks-navy: #0d0058;
+  --ks-accent: #066f8a;
+  --ks-gletsjer: #c8dbe5;
+  --ks-vlak: #fffdf8;
+  --ks-lijn: #d9d3c4;
+  --ks-focus: #0a7d9c;
+  --ks-serif: Georgia, 'Times New Roman', serif;
+  --ks-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
 }
 
 .inhoud--kamers {
   min-height: 100dvh;
-  background:
-    linear-gradient(var(--kp-raster) 1px, transparent 1px) 0 0 / 100% 16px,
-    linear-gradient(90deg, var(--kp-raster) 1px, transparent 1px) 0 0 / 16px 100%,
-    var(--kp-papier);
-  color: var(--kp-inkt);
+  background: var(--ks-papier);
+  color: var(--ks-inkt);
 }
 
 .inhoud--kamers .schermkop {
-  --sneeuwbank: var(--kp-papier);
+  --sneeuwbank: var(--ks-papier);
 }
 
-.kp {
-  font-family: var(--kp-tekst);
+.ks > :not(.schermkop):not(.schermkop__balkplek) {
+  font-family: var(--ks-serif);
 }
 
-.kp p,
-.kp-blad p {
+.ks p {
   margin: 0;
-  font-family: var(--kp-tekst);
 }
 
-.kp button,
-.kp-blad button {
+.ks button,
+.ks-blad button {
   color: inherit;
   font-family: inherit;
 }
 
-.kp :focus-visible,
-.kp-blad :focus-visible {
-  outline: 3px solid var(--kp-focus);
+.ks :focus-visible,
+.ks-blad :focus-visible {
+  outline: 3px solid var(--ks-focus);
   outline-offset: 2px;
 }
 
-/* Kleine kapitalen, zoals in een legenda */
-.kp-etiket {
-  font: 700 0.78rem/1.2 var(--kp-smal);
-  letter-spacing: 0.14em;
+.ks-klein {
+  display: block;
+  font: 700 0.78rem/1.2 var(--ks-smal);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--kp-zacht);
+  color: var(--ks-zacht);
 }
 
-.kp-sectie {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 18px 0 10px;
-  font: 700 1.35rem/1.05 var(--kp-smal);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+.ks-lead {
+  font-style: italic;
+  color: var(--ks-zacht);
 }
 
-.kp-sectie .kp-etiket {
-  font-size: 0.75rem;
+.ks-stil {
+  margin-top: 16px !important;
+  font-style: italic;
+  color: var(--ks-zacht);
 }
 
-.kp-stil {
-  font-size: 0.9rem;
-  color: var(--kp-zacht);
+/* ---------- Rectificatie: je bent verhuisd ---------- */
+.ks-rectificatie {
+  padding: 14px 16px;
+  border: 4px double var(--ks-inkt);
+  background: var(--ks-gletsjer);
 }
 
-/* ---------- Melding: nieuwe indeling ---------- */
-.kp-melding {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 12px;
-  padding: 14px;
-  border: 2px solid var(--kp-inkt);
-  background: var(--kp-vel);
+.ks-rectificatie p {
+  margin-top: 6px;
 }
 
-.kp-melding > svg {
-  grid-row: span 2;
-  width: 26px;
-  height: 26px;
-  color: var(--kp-jij);
-}
-
-.kp-melding strong {
-  font: 700 1.05rem/1.2 var(--kp-smal);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.kp-melding p {
-  font-size: 0.95rem;
-}
-
-.kp-melding button {
-  grid-column: 2;
-  justify-self: start;
+.ks-rectificatie button {
+  margin-top: 10px;
   min-height: 44px;
-  margin-top: 4px;
   padding: 0 16px;
-  border: 2px solid var(--kp-inkt);
+  border: 2px solid var(--ks-inkt);
+  border-radius: 4px;
   background: transparent;
-  font-weight: 600;
+  font: 600 1rem Barlow, 'Trebuchet MS', sans-serif;
   cursor: pointer;
 }
 
-/* ---------- Jouw appartement: uitsnede van de tekening ---------- */
-.kp-mijn__kop {
+/* ---------- Register: de nummers, om naar een bladzijde te springen ---------- */
+.ks-register {
+  position: sticky;
+  top: var(--schermkop-balk, 0px);
+  z-index: 5;
   display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  margin: 6px 0 12px;
+  gap: 2px;
+  margin: 0 -16px;
+  padding: 8px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--ks-papier);
+  border-bottom: 2px solid var(--ks-inkt);
 }
 
-.kp-nummer {
+.ks-register::-webkit-scrollbar {
+  display: none;
+}
+
+.ks-register button {
   flex: none;
-  font: 700 4.6rem/0.82 var(--kp-smal);
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  height: 44px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  font: 700 1rem/1 var(--ks-serif);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  cursor: pointer;
 }
 
-.kp-mijn__kop .kp-etiket {
-  display: block;
-  margin-bottom: 4px;
+.ks-register button.is-jouw {
+  background: var(--ks-navy);
+  color: #fff;
 }
 
-.kp-mijn__naam {
-  display: block;
+/* ---------- Bladzijden ---------- */
+.ks-laag {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ks-verdieping {
   margin: 0;
-  font: 700 1.3rem/1.05 var(--kp-smal);
+  padding: 6px 0;
+  border-top: 2px solid var(--ks-inkt);
+  border-bottom: 1px solid var(--ks-inkt);
+  text-align: center;
+  font: 700 0.85rem/1.2 var(--ks-smal);
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  overflow-wrap: anywhere;
 }
 
-.kp-tekening {
-  position: relative;
-  margin-top: 6px;
-  padding: 14px;
-  border: 4px solid var(--kp-muur);
-  background: var(--kp-jij-vlak);
+.ks-blz {
+  scroll-margin-top: calc(var(--schermkop-balk, 0px) + 76px);
 }
 
-.kp-tekening.is-ander {
-  background: var(--kp-papier);
-}
-
-/* Deuropening met draaicirkel, aan de gangkant */
-.kp-tekening::before {
-  content: '';
-  position: absolute;
-  top: 18px;
-  left: -4px;
-  width: 4px;
-  height: 42px;
-  background: inherit;
-}
-
-.kp-tekening::after {
-  content: '';
-  position: absolute;
-  top: 18px;
-  left: 0;
-  width: 42px;
-  height: 42px;
-  border-top: 2px solid var(--kp-muur);
-  border-right: 1.5px dashed var(--kp-muur);
-  border-radius: 0 100% 0 0;
-  opacity: 0.55;
-  pointer-events: none;
-}
-
-.kp-bedden {
+.ks-kop {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 0;
-  padding: 0 0 0 40px;
-  list-style: none;
-}
-
-.kp-bed > button,
-.kp-bed.is-vrij {
-  display: grid;
-  grid-template-columns: 44px 1fr;
-  align-items: center;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 0 12px;
   width: 100%;
-  min-height: 64px;
-  padding: 0;
-  border: 2px solid var(--kp-muur);
-  background: var(--kp-papier);
+  min-height: 44px;
+  margin-bottom: 14px;
+  padding: 0 0 8px;
+  border: 0;
+  border-bottom: 1px solid var(--ks-lijn);
+  background: none;
   text-align: left;
   cursor: pointer;
 }
 
-.kp-bed.is-vrij {
-  height: 100%;
-  border-style: dashed;
-  border-color: var(--kp-jij);
-  background: transparent;
-  cursor: default;
+.ks-kop > svg {
+  margin-bottom: 6px;
+  color: var(--ks-zacht);
 }
 
-.kp-bed__kussen {
-  align-self: stretch;
-  display: grid;
-  place-items: center;
-  border-right: 2px solid var(--kp-muur);
-  background: var(--kp-vel);
+.ks-nr {
+  display: block;
+  font: 700 0.85rem/1.2 var(--ks-smal);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ks-zacht);
 }
 
-.kp-bed__kussen img {
-  width: 36px;
-  height: 44px;
-  object-fit: cover;
-  object-position: 50% 30%;
+.ks-nr b {
+  font: 700 1.05rem/1 var(--ks-serif);
+  letter-spacing: 0;
+  color: var(--ks-inkt);
+  font-variant-numeric: tabular-nums;
 }
 
-.kp-bed__kussen > span {
-  width: 26px;
-  height: 16px;
-  border: 2px solid var(--kp-muur);
-  border-radius: 6px;
-  opacity: 0.5;
-}
-
-.kp-bed__naam {
-  padding: 6px 8px;
-  font: 600 1.02rem/1.05 var(--kp-smal);
+.ks-naam {
+  display: block;
+  margin-top: 2px;
+  font: italic 700 1.9rem/1.05 var(--ks-serif);
   overflow-wrap: break-word;
   hyphens: auto;
 }
 
-.kp-bed__naam small {
-  display: block;
-  margin-top: 3px;
-  font: 700 0.68rem/1 var(--kp-tekst);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--kp-jij);
+.ks-blz--jouw {
+  margin: 0 -8px;
+  padding: 14px 8px 16px;
+  background: var(--ks-vlak);
+  box-shadow: 0 0 0 1px var(--ks-lijn);
 }
 
-.kp-bed.is-jij > button {
-  border-color: var(--kp-jij);
-  box-shadow: inset 0 0 0 2px var(--kp-jij);
+.ks-blz--jouw .ks-naam {
+  font-size: 2.4rem;
 }
 
-.kp-bed.is-vrij .kp-bed__kussen {
-  border-right-style: dashed;
-  border-color: var(--kp-jij);
-  background: transparent;
+.ks-blz--jouw .ks-nr {
+  color: var(--ks-accent);
 }
 
-.kp-bed.is-vrij .kp-bed__kussen > span {
-  border-color: var(--kp-jij);
+.ks-blz--jouw .kamernaam__knop {
+  margin-top: 10px;
 }
 
-.kp-bed.is-vrij .kp-bed__naam {
-  color: var(--kp-jij);
-  font-weight: 700;
-  font-size: 0.9rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.ks-zonderkop {
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ks-lijn);
+  font: italic 700 1.6rem/1 var(--ks-serif);
 }
 
-.kp-pin {
-  position: absolute;
-  top: -16px;
-  left: -18px;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px 4px 4px;
-  background: var(--kp-jij);
-  color: var(--kp-papier);
-  font: 700 0.8rem/1 var(--kp-smal);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.kp-feiten {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
-  margin-top: 12px !important;
-  font-size: 0.95rem;
-}
-
-.kp-feiten span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.kp-feiten svg {
-  color: var(--kp-jij);
-}
-
-.kp-buren {
-  margin-top: 10px !important;
-  font-size: 0.95rem;
-  color: var(--kp-zacht);
-}
-
-.kp-buren b {
-  color: var(--kp-inkt);
-  font-weight: 600;
-}
-
-.kp-mijn .kamernaam__knop {
-  margin-top: 6px;
-}
-
-.kp-leeg {
+/* ---------- Portretten: vier op een rij; jouw appartement en het onderblad 2 × 2 ---------- */
+.ks-smoelen {
   display: grid;
-  place-items: center;
-  gap: 10px;
-  min-height: 170px;
-  padding: 22px;
-  border: 3px dashed var(--kp-muur);
-  text-align: center;
-}
-
-.kp-leeg svg {
-  color: var(--kp-jij);
-}
-
-.kp-leeg p {
-  max-width: 30ch;
-}
-
-/* ---------- Weergave wisselen ---------- */
-.kp-wissel {
-  display: inline-flex;
-  flex: none;
-  border: 2px solid var(--kp-inkt);
-}
-
-.kp-wissel button {
-  display: inline-grid;
-  place-items: center;
-  min-width: 48px;
-  min-height: 44px;
-  padding: 0 10px;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.kp-wissel button[aria-pressed='true'] {
-  background: var(--kp-inkt);
-  color: var(--kp-papier);
-}
-
-/* ---------- Doorsnede (alleen bij meerdere verdiepingen) ---------- */
-.kp-doorsnede {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 18px;
-  padding: 6px;
-  border: 4px solid var(--kp-muur);
-  border-bottom: 0;
-}
-
-.kp-doorsnede button {
-  display: grid;
-  grid-template-columns: 54px 1fr auto;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 4px 8px;
-  border: 0;
-  border-bottom: 2px solid var(--kp-muur);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-}
-
-.kp-doorsnede b {
-  font: 700 1.4rem/1 var(--kp-smal);
-}
-
-.kp-doorsnede__ramen {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.kp-doorsnede__ramen i {
-  width: 18px;
-  height: 22px;
-  border: 2px solid var(--kp-muur);
-}
-
-.kp-doorsnede__ramen i.ons {
-  background: var(--kp-muur);
-}
-
-.kp-doorsnede__ramen i.jouw {
-  border-color: var(--kp-jij);
-  background: var(--kp-jij);
-}
-
-.kp-doorsnede small {
-  font-size: 0.82rem;
-  color: var(--kp-zacht);
-  text-align: right;
-}
-
-/* ---------- De gang: plattegrond ---------- */
-.kp-verdieping {
-  scroll-margin-top: calc(var(--boven) + 64px);
-}
-
-.kp-verdieping + .kp-verdieping {
-  margin-top: 26px;
-}
-
-.kp-verdieping__kop {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.kp-verdieping__kop h3 {
-  margin: 0;
-  font: 700 1.15rem/1 var(--kp-smal);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.kp-verdieping__kop span {
-  font-size: 0.85rem;
-  color: var(--kp-zacht);
-  text-align: right;
-}
-
-.kp-plan {
-  display: grid;
-  grid-template-columns: 1fr 50px 1fr;
-  border: 4px solid var(--kp-muur);
-  border-top-width: 0;
-}
-
-.kp-plan__begin {
-  grid-column: 1 / -1;
-  grid-row: 1;
-  padding: 8px 10px;
-  border-top: 4px solid var(--kp-muur);
-  border-bottom: 2px solid var(--kp-muur);
-  font: 700 0.75rem/1 var(--kp-smal);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--kp-groen);
-}
-
-.kp-plan__begin span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.kp-plan__gang {
-  grid-column: 2;
-  position: relative;
-  background: var(--kp-gang);
-  border-left: 2px solid var(--kp-muur);
-  border-right: 2px solid var(--kp-muur);
-}
-
-.kp-plan__gang::before {
-  content: '';
-  position: absolute;
-  top: 8px;
-  bottom: 8px;
-  left: 50%;
-  border-left: 2px dashed var(--kp-gang-lijn);
-}
-
-.kp-plan__gang b {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  padding: 2px 6px;
-  background: var(--kp-gang);
-  transform: translate(-50%, -50%) rotate(-90deg);
-  font: 700 0.72rem/1 var(--kp-smal);
-  letter-spacing: 0.3em;
-  color: var(--kp-zacht);
-}
-
-.kp-plan__vakken {
-  display: contents;
-}
-
-.kp-plek {
-  display: flex;
-  min-width: 0;
-}
-
-.kp-plek--links {
-  grid-column: 1;
-}
-
-.kp-plek--rechts {
-  grid-column: 3;
-}
-
-.kp-kamer {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-height: 128px;
-  padding: 10px 10px 12px;
-  border: 0;
-  border-bottom: 2px solid var(--kp-muur);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-}
-
-.kp-kamer--rechts {
-  text-align: right;
-}
-
-/* Deuropening naar de gang */
-.kp-kamer::after {
-  content: '';
-  position: absolute;
-  top: 26px;
-  width: 4px;
-  height: 36px;
-  background: var(--kp-gang);
-}
-
-.kp-kamer--links::after {
-  right: -3px;
-}
-
-.kp-kamer--rechts::after {
-  left: -3px;
-}
-
-@media (hover: hover) {
-  button.kp-kamer:hover {
-    background: color-mix(in srgb, var(--kp-jij-vlak) 45%, transparent);
-  }
-}
-
-.kp-kamer.is-jouw {
-  background: var(--kp-jij-vlak);
-  box-shadow: inset 0 0 0 3px var(--kp-jij);
-}
-
-.kp-kamer.is-vreemd {
-  cursor: default;
-  background: repeating-linear-gradient(135deg, transparent 0 7px, var(--kp-vreemd) 7px 8px);
-}
-
-.kp-kamer.is-kort {
-  min-height: 52px;
-}
-
-/* Jij-markering in de gang, voor jouw deur */
-.kp-hier {
-  position: absolute;
-  top: 27px;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--kp-jij);
-  color: var(--kp-papier);
-}
-
-.kp-kamer--links .kp-hier {
-  left: calc(100% + 8px);
-}
-
-.kp-kamer--rechts .kp-hier {
-  right: calc(100% + 8px);
-}
-
-.kp-kamer__nr {
-  display: block;
-  font: 700 2.5rem/0.85 var(--kp-smal);
-  font-variant-numeric: tabular-nums;
-}
-
-.kp-kamer__naam {
-  display: block;
-  margin-top: 3px;
-  font: 700 0.78rem/1.1 var(--kp-smal);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--kp-zacht);
-  overflow-wrap: anywhere;
-}
-
-.kp-bedjes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  margin: 8px 0 6px;
-}
-
-.kp-kamer--rechts .kp-bedjes {
-  justify-content: flex-end;
-}
-
-.kp-bedjes i,
-.kp-legenda i {
-  display: inline-block;
-  width: 11px;
-  height: 17px;
-  border: 2px solid var(--kp-muur);
-  border-top-width: 5px;
-}
-
-.kp-bedjes i.bezet,
-.kp-legenda i.bezet {
-  background: var(--kp-muur);
-}
-
-.kp-bedjes i.vrij,
-.kp-legenda i.vrij {
-  border-style: dashed;
-  border-color: var(--kp-jij);
-  border-top-width: 2px;
-}
-
-.kp-kamer__wie {
-  display: block;
-  font: 400 0.86rem/1.25 var(--kp-tekst);
-  overflow-wrap: anywhere;
-  hyphens: auto;
-}
-
-.kp-kamer__wie b,
-.kp-rij__wie b,
-.kp-zonder b {
-  font-weight: 700;
-}
-
-.kp-kamer__vrij {
-  display: block;
-  margin-top: 4px;
-  font: 700 0.72rem/1 var(--kp-tekst);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--kp-jij);
-}
-
-.kp-legenda {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
-  margin-top: 10px !important;
-  padding: 10px 12px;
-  border: 2px solid var(--kp-muur);
-  font-size: 0.82rem;
-}
-
-.kp-legenda span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.kp-legenda i.jouw {
-  width: 18px;
-  height: 14px;
-  border: 3px solid var(--kp-jij);
-  background: var(--kp-jij-vlak);
-}
-
-.kp-legenda i.vreemd {
-  width: 18px;
-  height: 14px;
-  border: 1px solid var(--kp-vreemd);
-  background: repeating-linear-gradient(135deg, transparent 0 3px, var(--kp-vreemd) 3px 4px);
-}
-
-/* ---------- Lijst: dezelfde inhoud ---------- */
-.kp-lijst {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 10px;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 4px solid var(--kp-muur);
-  border-bottom: 4px solid var(--kp-muur);
 }
 
-.kp-lijst li + li {
-  border-top: 2px solid var(--kp-muur);
+.ks-blz--jouw .ks-smoelen,
+.ks-blad .ks-smoelen {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 14px;
 }
 
-.kp-rij {
-  display: grid;
-  grid-template-columns: 64px 1fr auto;
-  gap: 12px;
-  align-items: center;
+.ks-smoel {
+  min-width: 0;
+}
+
+.ks-smoel > button,
+.ks-smoel.is-vrij {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   width: 100%;
-  min-height: 64px;
-  padding: 10px 4px;
+  padding: 0;
   border: 0;
-  background: transparent;
+  background: none;
   text-align: left;
   cursor: pointer;
 }
 
-.kp-rij.is-jouw {
-  background: var(--kp-jij-vlak);
+.ks-smoel.is-vrij {
+  cursor: default;
 }
 
-.kp-rij__nr {
-  font: 700 2.1rem/0.9 var(--kp-smal);
-  font-variant-numeric: tabular-nums;
-}
-
-.kp-rij__nr small {
+.ks-beeld {
+  position: relative;
   display: block;
-  margin-top: 3px;
-  font: 700 0.7rem/1 var(--kp-tekst);
-  letter-spacing: 0.08em;
-  color: var(--kp-zacht);
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--ks-navy);
+  clip-path: polygon(0 18%, 22% 6%, 40% 14%, 60% 0, 78% 12%, 100% 5%, 100% 100%, 0 100%);
 }
 
-.kp-rij__wie {
-  font-size: 0.92rem;
-  overflow-wrap: anywhere;
+.ks-beeld img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  filter: url(#ks-duo);
 }
 
-.kp-rij__wie strong {
-  display: block;
-  font: 700 0.85rem/1.1 var(--kp-smal);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--kp-zacht);
-}
-
-.kp-rij > svg {
-  color: var(--kp-zacht);
-}
-
-.kp-zonder {
-  margin-top: 18px;
-  padding: 12px 14px;
-  border: 2px dashed var(--kp-muur);
-}
-
-.kp-zonder p {
-  margin-top: 4px;
-}
-
-.kp-voet {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 18px !important;
-  font-size: 0.82rem;
-  color: var(--kp-zacht);
-}
-
-.kp-voet svg {
-  flex: none;
-}
-
-.kp-reisleiding {
+.ks-beeld b {
+  position: absolute;
+  inset: 16% 0 36%;
   display: grid;
-  gap: 10px;
+  place-items: center;
+  color: #fff;
+  font: 700 1.7rem/1 var(--ks-serif);
+}
+
+.ks-blz--jouw .ks-beeld b,
+.ks-blad .ks-beeld b {
+  font-size: 3.4rem;
+}
+
+.ks-beeld svg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 40%;
+}
+
+.ks-smoel__naam {
+  font: 700 0.84rem/1.15 var(--ks-serif);
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.ks-blz:not(.ks-blz--jouw) + .ks-blz {
   margin-top: 8px;
 }
 
-.kp-reisleiding .knop {
+.ks-blz--jouw .ks-smoel__naam,
+.ks-blad .ks-smoel__naam {
+  font-size: 1.15rem;
+}
+
+.ks-smoel__jij {
+  font: 600 0.8rem/1 var(--ks-smal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ks-accent);
+}
+
+.ks-smoel.is-jij .ks-beeld {
+  background: var(--ks-accent);
+}
+
+/* Vrij bed: een lege fotohoek */
+.ks-smoel.is-vrij .ks-beeld {
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--ks-zacht);
+  background: transparent;
+  clip-path: none;
+  color: var(--ks-zacht);
+}
+
+.ks-smoel.is-vrij .ks-beeld svg {
+  position: static;
+  width: 26px;
+  height: 26px;
+}
+
+.ks-smoel.is-vrij .ks-smoel__naam {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ks-zacht);
+}
+
+/* ---------- Nog niet ingedeeld (jij) ---------- */
+.ks-wit {
+  padding: 18px 16px;
+  border: 4px double var(--ks-inkt);
+}
+
+.ks-wit h2 {
+  margin: 0;
+  font: italic 700 1.9rem/1.1 var(--ks-serif);
+}
+
+.ks-wit p {
+  margin-top: 6px;
+  font-style: italic;
+  color: var(--ks-zacht);
+}
+
+.ks-voet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ks-zacht);
+}
+
+.ks-voet svg {
+  flex: none;
+}
+
+.ks-reisleiding {
+  display: grid;
+  gap: 10px;
+  font-family: Barlow, 'Trebuchet MS', sans-serif;
+}
+
+.ks-reisleiding .knop {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
 
-/* ---------- Eén appartement van dichtbij (onderblad) ---------- */
-.dialoog.kp-blad {
+/* ---------- Onderblad ---------- */
+.dialoog.ks-blad {
   position: relative;
-  border-radius: 0;
-  border: 4px solid var(--kp-muur);
-  border-bottom: 0;
-  background: var(--kp-papier);
-  color: var(--kp-inkt);
-  font-family: var(--kp-tekst);
+  border-radius: 18px 18px 0 0;
+  background: var(--ks-papier);
+  color: var(--ks-inkt);
+  font-family: var(--ks-serif);
 }
 
-.kp-blad p {
+.ks-blad p {
   margin: 0;
 }
 
-.kp-blad__sluit {
+.ks-blad__sluit {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -829,23 +414,11 @@
   cursor: pointer;
 }
 
-.kp-blad__kop {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
+.ks-blad__kop {
   margin: 0 0 8px;
   padding-right: 44px;
 }
 
-.kp-blad__kop .kp-nummer {
-  font-size: 3.6rem;
-}
-
-.kp-blad__kop .kp-etiket {
-  display: block;
-  margin-bottom: 3px;
-}
-
-.kp-blad .kp-tekening {
-  margin-top: 14px;
+.ks-blad__kop .ks-naam {
+  font-size: 2.2rem;
 }
