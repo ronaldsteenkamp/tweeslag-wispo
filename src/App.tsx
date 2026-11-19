@@ -34,8 +34,11 @@ function hoofdTab(s: Scherm): Tab {
 }
 
 const isSubscherm = (s: Scherm) => s !== hoofdTab(s)
+type Stap = { subscherm?: boolean; van?: Tab } | null
 /** Staat er een geschiedenis-stap onder dit subscherm (gezet door kies of bij het opstarten)? */
-const isSubschermStap = () => (window.history.state as { subscherm?: boolean } | null)?.subscherm === true
+const isSubschermStap = () => (window.history.state as Stap)?.subscherm === true
+/** Vanaf welke tab het subscherm geopend is (Weer kan vanaf Home én Planning) */
+const subschermVan = () => (window.history.state as Stap)?.van
 
 function tabUitAdres(): Scherm {
   const h = window.location.hash.slice(1)
@@ -56,6 +59,9 @@ function tabUitAdres(): Scherm {
 
 export default function App() {
   const [tab, setTab] = useState<Scherm>(tabUitAdres)
+  // De tab waar het huidige subscherm bij hoort: Weer vanaf Planning hoort bij Planning
+  const [van, setVan] = useState<Tab | undefined>(subschermVan)
+  const basisTab = (s: Scherm): Tab => (s === 'weer' && van ? van : hoofdTab(s))
   // Wie al een naam heeft gekozen (van voor het welkomstscherm bestond) hoeft het niet te zien
   const [welkomGehad, setWelkomGehad] = useOpgeslagen('welkom.gehad', lees<string | null>('naam', null) !== null)
   const welkomKlaar = useCallback(() => setWelkomGehad(true), [setWelkomGehad])
@@ -69,6 +75,7 @@ export default function App() {
   useEffect(() => {
     const opHash = () => {
       setTab(tabUitAdres())
+      setVan(subschermVan())
       window.scrollTo(0, 0)
     }
     window.addEventListener('hashchange', opHash)
@@ -101,24 +108,30 @@ export default function App() {
       // Terug van een subscherm naar zijn tab: een stap terug in de geschiedenis (dan komt
       // de terugknop van de telefoon daarna niet nog eens op het subscherm uit). De hashchange
       // zet de tab.
-      if (isSubscherm(tab) && t === hoofdTab(tab) && isSubschermStap()) {
+      if (isSubscherm(tab) && t === basisTab(tab) && isSubschermStap()) {
         window.history.back()
         return
       }
       const { pathname, search } = window.location
       // Naar een subscherm (Weer, Fotomuur, ...): een nieuwe stap, zodat de terugknop van de
       // telefoon terug naar de tab gaat. Tussen tabs: geen stappen (terug sluit dan de app).
-      if (isSubscherm(t) && !isSubscherm(tab)) window.history.pushState({ subscherm: true }, '', `${pathname}${search}#${t}`)
-      else window.history.replaceState(isSubscherm(t) ? window.history.state : null, '', `${pathname}${search}#${t}`)
+      if (isSubscherm(t) && !isSubscherm(tab)) {
+        const stap: Stap = { subscherm: true, van: tab as Tab }
+        window.history.pushState(stap, '', `${pathname}${search}#${t}`)
+        setVan(stap.van)
+      } else {
+        window.history.replaceState(isSubscherm(t) ? window.history.state : null, '', `${pathname}${search}#${t}`)
+        if (!isSubscherm(t)) setVan(undefined)
+      }
       setTab(t)
       window.scrollTo(0, 0)
     },
-    [tab],
+    [tab, van],
   )
 
   // Vegen tussen de tabs van de tabbalk (niet tijdens het welkomstscherm). Vanuit een
   // subscherm (bijv. de fotomuur) ga je naar de buren van de tab waar het onder valt.
-  const tabIndex = TABS.findIndex((t) => t.id === hoofdTab(tab))
+  const tabIndex = TABS.findIndex((t) => t.id === basisTab(tab))
   // Tijdens het vegen: het buurscherm dat naast het huidige ligt (zie tabswipe.ts)
   const [buur, setBuur] = useState<1 | -1 | null>(null)
   const buurTab = buur ? TABS[tabIndex + buur]?.id : undefined
@@ -138,11 +151,11 @@ export default function App() {
       case 'home':
         return <Home naarTab={kies} naarWeer={() => kies('weer')} />
       case 'weer':
-        return <Weer terug={() => kies('home')} />
+        return <Weer terug={() => kies(basisTab('weer'))} />
       case 'beheer':
         return <Beheer terug={() => kies('kamers')} />
       case 'planning':
-        return <Planning />
+        return <Planning naarWeer={() => kies('weer')} />
       case 'paklijst':
         return <Paklijst />
       case 'kamers':
@@ -190,7 +203,7 @@ export default function App() {
       <BadgeMelding />
       <UpdateMelding />
       <TabBalk
-        actief={hoofdTab(tab)}
+        actief={basisTab(tab)}
         onKies={kies}
       />
     </>

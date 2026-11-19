@@ -4004,6 +4004,37 @@ body:has(.huidig .kaartbalk) .toast {
   font-size: 1.6rem;
 }
 
+/* Het hele glazen vakje als knop (Planning: weer → Weer-scherm) */
+.schermkop__rechts:has(> .schermkop__knop) {
+  padding: 0;
+}
+
+.schermkop__knop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.schermkop__knop:active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.schermkop__knop:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
 .schermkop__klein {
   font-size: 0.75rem;
   font-weight: 600;
