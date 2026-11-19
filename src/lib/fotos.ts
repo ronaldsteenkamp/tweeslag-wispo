@@ -41,6 +41,8 @@ export interface Foto {
   punten?: number
   bron?: 'camera' | 'galerij'
   beoordeeld_op?: string | null
+  /** Kort onderschrift van de maker (sinds migratie 0019) */
+  onderschrift?: string | null
   /** Tijdelijke link naar de kleine versie */
   klein?: string
 }
@@ -244,6 +246,8 @@ export interface BewijsInfo {
   punten?: number
   zichtbaar?: 'iedereen' | 'redactie'
   bron?: 'camera' | 'galerij'
+  /** Kort onderschrift (migratie 0019) */
+  onderschrift?: string
 }
 
 /** De server kent een kolom nog niet (migratie nog niet gedraaid) */
@@ -281,11 +285,16 @@ export async function uploadFoto(
     if (challenge.punten !== undefined) extra.punten = Math.max(0, Math.min(100, Math.round(challenge.punten)))
     if (challenge.zichtbaar) extra.zichtbaar = challenge.zichtbaar
     if (challenge.bron) extra.bron = challenge.bron
+    const onderschrift = challenge.onderschrift?.trim().slice(0, 140)
     // 'genomen' neemt de server alleen over als het geloofwaardig is (zie migratie 0016)
     if (foto.genomen) rij.genomen = foto.genomen
-    let { error } = await c.from('fotos').insert({ ...rij, ...extra })
-    // Migratie 0018 nog niet gedraaid: dan zonder de nieuwe velden
-    if (error && Object.keys(extra).length && onbekendeKolom(error)) ({ error } = await c.from('fotos').insert(rij))
+    // Eerst alles; kent de server een kolom nog niet (migratie 0019 of 0018 niet gedraaid), dan met minder
+    const pogingen = [...(onderschrift ? [{ ...rij, ...extra, onderschrift }] : []), { ...rij, ...extra }, rij]
+    let error: { code?: string; message?: string } | null = null
+    for (const p of pogingen) {
+      ;({ error } = await c.from('fotos').insert(p))
+      if (!error || !onbekendeKolom(error)) break
+    }
     // Migratie 0016 nog niet gedraaid: dan ook zonder opnamemoment
     if (error && rij.genomen && /genomen/.test(error.message ?? '')) {
       delete rij.genomen
@@ -502,7 +511,9 @@ export function useFotos(aantal: number, actief = true) {
         if (alleenGeplaatst) q = q.eq('status', 'goed').eq('zichtbaar', 'iedereen')
         return q.order('genomen', { ascending: false }).order('gemaakt', { ascending: false }).limit(limiet + 1)
       }
-      let { data, error } = await haal(`${velden}, jury, status`, true)
+      // Met onderschrift (0019); kent de server dat (of de redactie, 0018) nog niet, dan met minder
+      let { data, error } = await haal(`${velden}, jury, status, onderschrift`, true)
+      if (error?.code === '42703') ({ data, error } = await haal(`${velden}, jury, status`, true))
       if (error?.code === '42703') ({ data, error } = await haal(`${velden}, jury`))
       // Migratie 0017 nog niet gedraaid (kolom 'jury' bestaat niet): zonder jurykeuze
       if (error?.code === '42703') ({ data, error } = await haal(velden))

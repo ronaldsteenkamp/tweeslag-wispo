@@ -6,7 +6,7 @@ import { grooteLink, zetJury } from '../lib/fotos'
 import { klank, minderBeweging, trilSpel } from '../lib/spelgeluid'
 import { useTerugSluit } from '../lib/terugknop'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
-import { Kiekje, RedactieStempel } from './Bewijs'
+import { Briefkaart, Kiekje, RedactieStempel } from './Bewijs'
 import { Icoon } from './Icoon'
 
 /*
@@ -21,9 +21,10 @@ const REDENEN = [
   'Niet iedereen die erop moet, staat erop.',
   'Deze hoort volgens ons bij een andere challenge.',
   'Liever niet op de piste: probeer het naast de piste, stilstaand.',
+  'Net iets te persoonlijk voor het clubblad. Kun je het anders zeggen?',
 ]
 
-type Filter = 'alles' | 'redactie' | 'oud'
+type Filter = 'alles' | 'stukjes' | 'redactie' | 'oud'
 
 export function Redactietafel({
   openVan,
@@ -46,6 +47,7 @@ export function Redactietafel({
   useTerugSluit(true, onSluit)
 
   const isOud = (f: Inzending) => {
+    if (f.soort === 'stukje') return false
     const o = openVan(f.challenge_id)
     return !!o && new Date(f.genomen ?? f.gemaakt) < o
   }
@@ -53,7 +55,9 @@ export function Redactietafel({
     () =>
       (lijst ?? [])
         .filter((f) => !klaar.has(f.id))
-        .filter((f) => (filter === 'redactie' ? f.zichtbaar === 'redactie' : filter === 'oud' ? isOud(f) : true)),
+        .filter((f) =>
+          filter === 'stukjes' ? f.soort === 'stukje' : filter === 'redactie' ? f.zichtbaar === 'redactie' : filter === 'oud' ? isOud(f) : true,
+        ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lijst, klaar, filter],
   )
@@ -77,7 +81,7 @@ export function Redactietafel({
         <h2 id="redactie-titel" className="redactie__kop" aria-live="polite">
           {lijst === null ? 'Even kijken…' : `${zichtbaar.length} op tafel`}
         </h2>
-        <p className="redactie__uitleg">Plaatsen geeft meteen punten en zet het kiekje in het clubblad. Een briefje terug is geen straf.</p>
+        <p className="redactie__uitleg">Plaatsen geeft meteen punten en zet het kiekje of stukje in het clubblad. Een briefje terug is geen straf.</p>
         {fout && (
           <p className="bewijs__fout" role="alert">
             {fout}
@@ -87,6 +91,7 @@ export function Redactietafel({
           {(
             [
               ['alles', 'Alles'],
+              ['stukjes', 'Stukjes'],
               ['redactie', 'Alleen voor de redactie'],
               ['oud', 'Oud kiekje'],
             ] as const
@@ -112,12 +117,17 @@ export function Redactietafel({
                   aria-label={`${toon(f.naam)}, ${f.challenge_titel}${isOud(f) ? ', oud kiekje' : ''}${f.zichtbaar === 'redactie' ? ', alleen voor de redactie' : ''}`}
                   style={{ '--scheef': `${i % 2 ? 1.2 : -1}deg` } as React.CSSProperties}
                 >
-                  <span className="redactie__foto">{f.klein && <img src={f.klein} alt="" loading="lazy" />}</span>
+                  {f.soort === 'stukje' ? (
+                    <span className="redactie__foto redactie__foto--tekst">{f.tekst}</span>
+                  ) : (
+                    <span className="redactie__foto">{f.klein && <img src={f.klein} alt="" loading="lazy" />}</span>
+                  )}
                   <b>{toon(f.naam)}</b>
                   <span>{f.challenge_titel}</span>
                   <span className="redactie__vlaggen">
                     {isOud(f) && <i className="vlag vlag--rood">Oud kiekje</i>}
                     {f.zichtbaar === 'redactie' && <i className="vlag">Alleen redactie</i>}
+                    {f.soort === 'stukje' && <i className="vlag">Stukje</i>}
                   </span>
                 </button>
               </li>
@@ -182,10 +192,11 @@ function Beoordelen({
   useTerugSluit(true, onSluit)
   const moment = new Date(foto.genomen ?? foto.gemaakt)
   const punten = foto.punten ?? 0
+  const stukje = foto.soort === 'stukje'
 
   useEffect(() => {
     let weg = false
-    void grooteLink(foto).then((u) => !weg && setGroot(u))
+    if (foto.pad) void grooteLink(foto).then((u) => !weg && setGroot(u))
     return () => void (weg = true)
   }, [foto])
 
@@ -193,7 +204,7 @@ function Beoordelen({
     if (bezig) return
     setFout(null)
     setBezig(status)
-    const f = await beoordeel(foto.id, status, tekst)
+    const f = await beoordeel(foto.id, status, tekst, stukje ? 'stukje' : 'foto')
     if (f) {
       setBezig(null)
       setFout(f)
@@ -248,20 +259,33 @@ function Beoordelen({
           </span>
         </div>
         <div className={`redactie__groot${bezig === 'goed' ? ' gaat-goed' : bezig === 'af' ? ' gaat-af' : ''}`}>
-          <Kiekje src={groot ?? foto.klein} titel={foto.challenge_titel} onder={`${datumLabel(datumISO(moment), 'kort')} · ${tijdUUMM(moment)}`} oud={oud}>
-            {bezig === 'goed' && <RedactieStempel soort="geplaatst" punten={punten} nieuw />}
-          </Kiekje>
+          {stukje ? (
+            <Briefkaart tekst={foto.tekst ?? ''} titel={foto.challenge_id ? foto.challenge_titel : undefined} onder={`${datumLabel(datumISO(moment), 'kort')} · ${tijdUUMM(moment)}`}>
+              {bezig === 'goed' && <RedactieStempel soort="geplaatst" punten={punten} nieuw />}
+            </Briefkaart>
+          ) : (
+            <Kiekje src={groot ?? foto.klein} titel={foto.challenge_titel} onder={`${datumLabel(datumISO(moment), 'kort')} · ${tijdUUMM(moment)}`} oud={oud}>
+              {bezig === 'goed' && <RedactieStempel soort="geplaatst" punten={punten} nieuw />}
+            </Kiekje>
+          )}
+          {!stukje && foto.onderschrift && <p className="bewijs__onderschrift">“{foto.onderschrift}”</p>}
         </div>
         <p className="spel__caps">{toon(foto.naam)}{foto.kamer ? ` · kamer ${foto.kamer}` : ''}</p>
         <h2 id="beoordeel-titel" className="bewijs__titel">
-          {foto.challenge_titel} <span className="redactie__punten">+{punten}</span>
+          {foto.challenge_titel} {punten > 0 && <span className="redactie__punten">+{punten}</span>}
         </h2>
         {omschrijving && <p className="bewijs__uitleg">{omschrijving}</p>}
         <ul className="redactie__meta">
+          {stukje ? (
+            <li>
+              <Icoon naam="potlood" grootte={20} /> {foto.challenge_id ? 'Stukje als bewijs' : 'Los stukje voor de rubriek Ingezonden, geen punten'}, {tijdUUMM(moment)}
+            </li>
+          ) : (
           <li>
             <Icoon naam={foto.bron === 'galerij' ? 'download' : 'camera'} grootte={20} />
             {foto.bron === 'galerij' ? 'Uit de foto’s gekozen' : 'Met de camera gemaakt'}, {tijdUUMM(moment)}
           </li>
+          )}
           {oud && (
             <li className="is-rood">
               <Icoon naam="slot" grootte={20} /> Gemaakt op {datumLabel(datumISO(moment), 'kort')}: vóór deze dagkaart openging
@@ -283,12 +307,14 @@ function Beoordelen({
             Briefje terug
           </button>
           <button type="button" className="spelknop spelknop--rood" onClick={() => void beslis('goed')} disabled={!!bezig} aria-keyshortcuts="g" data-autofocus>
-            <Icoon naam="stempel" grootte={22} /> Plaatsen +{punten}
+            <Icoon naam="stempel" grootte={22} /> Plaatsen{punten > 0 ? ` +${punten}` : ''}
           </button>
         </div>
-        <button type="button" className="bewijs__tekstknop" onClick={() => void wisselJury()} aria-pressed={jury}>
-          <Icoon naam={jury ? 'vink' : 'plus'} grootte={20} /> Jurykeuze (+10)
-        </button>
+        {!stukje && (
+          <button type="button" className="bewijs__tekstknop" onClick={() => void wisselJury()} aria-pressed={jury}>
+            <Icoon naam={jury ? 'vink' : 'plus'} grootte={20} /> Jurykeuze (+10)
+          </button>
+        )}
       </div>
       {reden && (
         <div className="bewijs-achtergrond" onClick={() => setReden(false)}>

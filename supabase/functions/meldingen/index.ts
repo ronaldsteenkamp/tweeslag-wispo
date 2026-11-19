@@ -167,11 +167,23 @@ async function redactieMeldingen() {
     .limit(500)
   // Migratie 0018 nog niet gedraaid: niets te doen
   if (error) return { redactie: error.code === '42703' ? 'nog geen 0018' : error.message }
-  if (!data?.length) return { redactie: 0 }
+  // Ingezonden stukjes (migratie 0019); bestaat de tabel nog niet, dan alleen foto's
+  const { data: stukjes } = await db
+    .from('stukjes')
+    .select('id, naam, challenge_titel, status, punten')
+    .in('status', ['goed', 'af'])
+    .is('gemeld', null)
+    .not('beoordeeld_op', 'is', null)
+    .limit(500)
+  const alles: Beoordeeld[] = [
+    ...(data ?? []).map((f) => ({ ...f, soort: 'foto' as const }) as Beoordeeld),
+    ...(stukjes ?? []).map((s) => ({ ...s, soort: 'stukje' as const }) as Beoordeeld),
+  ]
+  if (!alles.length) return { redactie: 0 }
   const perNaam = new Map<string, Beoordeeld[]>()
-  for (const f of data) {
+  for (const f of alles) {
     const k = String(f.naam).toLowerCase()
-    perNaam.set(k, [...(perNaam.get(k) ?? []), f as Beoordeeld])
+    perNaam.set(k, [...(perNaam.get(k) ?? []), f])
   }
   let gelukt = 0
   for (const [naam, fotos] of perNaam) {
@@ -183,7 +195,11 @@ async function redactieMeldingen() {
     const m = redactieMelding(fotos)
     if (abo?.length) gelukt += (await verstuur(abo, { ...m, url: './#spel', tag: `redactie-${naam}` })).gelukt
     // Ook zonder telefoon met meldingen: als gemeld zetten, anders blijft hij elke 5 minuten terugkomen
-    await db.from('fotos').update({ gemeld: new Date().toISOString() }).in('id', fotos.map((f) => f.id))
+    const nu = new Date().toISOString()
+    const fotoIds = fotos.filter((f) => f.soort !== 'stukje').map((f) => f.id)
+    const stukjeIds = fotos.filter((f) => f.soort === 'stukje').map((f) => f.id)
+    if (fotoIds.length) await db.from('fotos').update({ gemeld: nu }).in('id', fotoIds)
+    if (stukjeIds.length) await db.from('stukjes').update({ gemeld: nu }).in('id', stukjeIds)
   }
   return { redactie: perNaam.size, redactieGelukt: gelukt }
 }

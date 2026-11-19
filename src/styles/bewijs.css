@@ -6,7 +6,8 @@
  * Alleen transform/opacity bewegen; bij 'minder beweging' vervaagt alles alleen.
  */
 
-.inhoud--spel {
+.inhoud--spel,
+.inhoud--fotos {
   --memo: #fff1a8;
   --memo-inkt: #3a3000;
   --foto-rand: #fffdf7;
@@ -875,6 +876,123 @@
   color: var(--inkt);
   font: 1rem/1.4 Georgia, serif;
   resize: vertical;
+}
+
+/* ---------- Onderschrift en stukjes ---------- */
+
+.bewijs__veld {
+  display: grid;
+  gap: 6px;
+  font: 700 20px/1.1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.bewijs__veld small {
+  font: italic 400 15px/1.3 Georgia, serif;
+  text-transform: none;
+  color: var(--inkt-zacht);
+}
+
+.bewijs__veld input,
+.bewijs__veld textarea {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px;
+  border: 2px solid var(--lijn);
+  border-radius: 0;
+  background: var(--foto-rand);
+  color: var(--inkt);
+  font: italic 1.05rem/1.45 Georgia, serif;
+  text-transform: none;
+}
+
+.bewijs__veld input:focus,
+.bewijs__veld textarea:focus {
+  border-color: var(--inkt);
+  outline: none;
+}
+
+.bewijs__veld textarea {
+  resize: vertical;
+  /* Gelinieerd briefpapier */
+  background-image: repeating-linear-gradient(transparent 0 calc(1.45em - 1px), rgba(13, 0, 88, 0.12) calc(1.45em - 1px) 1.45em);
+  background-position: 0 11px;
+  line-height: 1.45em;
+}
+
+.bewijs__veld--groot textarea {
+  min-height: 190px;
+}
+
+.bewijs__teller {
+  justify-self: end;
+  font-style: normal !important;
+}
+
+.bewijs__onderschrift {
+  margin: -4px 8px 0;
+  font: italic 1.08rem/1.4 Georgia, serif;
+  color: var(--inkt);
+}
+
+/* Een ingezonden stukje als briefkaart */
+.briefkaart {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  margin: 6px 6px 0;
+  padding: 18px 18px 16px;
+  background:
+    linear-gradient(90deg, transparent 0 calc(100% - 82px), var(--lijn) calc(100% - 82px) calc(100% - 80px), transparent calc(100% - 80px)) no-repeat,
+    var(--foto-rand);
+  box-shadow: 0 8px 22px rgba(13, 0, 88, 0.14), 0 1px 2px rgba(0, 0, 0, 0.12);
+  transform: rotate(var(--scheef, 0.8deg));
+}
+
+.briefkaart blockquote {
+  margin: 0;
+  padding-right: 90px;
+  min-height: 120px;
+  font: italic 1.15rem/1.5 Georgia, serif;
+  color: #0d0058;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.briefkaart figcaption {
+  font: 600 13px/1 ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  color: #4b4e6b;
+}
+
+.briefkaart .redactiestempel {
+  right: 4px;
+  top: 30px;
+  bottom: auto;
+}
+
+.ch__briefkaart {
+  position: absolute;
+  inset: 8px 2px 4px 6px;
+  display: block;
+  padding: 7px 8px;
+  overflow: hidden;
+  background: var(--foto-rand);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  color: var(--inkt);
+  font: italic 11px/1.35 Georgia, serif;
+  transform: rotate(-3deg);
+  -webkit-mask: linear-gradient(#000 70%, transparent);
+  mask: linear-gradient(#000 70%, transparent);
+}
+
+.redactie__foto--tekst {
+  display: block;
+  overflow: hidden;
+  padding: 12px;
+  font: italic 0.95rem/1.4 Georgia, serif;
+  color: var(--inkt);
+  -webkit-mask: linear-gradient(#000 75%, transparent);
+  mask: linear-gradient(#000 75%, transparent);
 }
 
 /* ---------- Bevestigen (bijv. je kiekje weghalen): een kaartje op papier ---------- */

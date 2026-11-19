@@ -1855,6 +1855,12 @@ html.venster-open body {
   text-transform: uppercase;
 }
 
+.foto-groot__onderschrift {
+  margin-top: 4px !important;
+  font: italic 1.05rem/1.4 Georgia, 'Times New Roman', serif;
+  color: #0d0058;
+}
+
 .foto-groot__byline {
   margin-top: 6px !important;
   font: 600 15px/1.3 'Barlow Condensed', 'Trebuchet MS', sans-serif;
