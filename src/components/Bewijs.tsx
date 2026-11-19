@@ -219,7 +219,6 @@ export function BewijsInsturen({
                 Uit je foto&apos;s
               </button>
             </div>
-            <p className="bewijs__klein">Maak je foto als je stilstaat, naast de piste. Niet tijdens het skiën.</p>
           </>
         )}
 
