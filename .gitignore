@@ -8,3 +8,6 @@ dev-dist
 # Snelkoppelingen voor eigen gebruik
 *.url
 
+
+# Cache van tsc -b
+tsconfig.tsbuildinfo
