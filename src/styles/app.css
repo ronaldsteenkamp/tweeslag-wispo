@@ -1713,28 +1713,7 @@ html.venster-open body {
   font-weight: 700;
 }
 
-.foto-upload__voorbeeld {
-  width: 100%;
-  max-height: 45vh;
-  object-fit: contain;
-  border-radius: 14px;
-  background: var(--oppervlak-2);
-}
-
-.foto-upload .knop {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-/* De muur zelf staat in styles/fotomuur.css */
-
-.foto-upload__titel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* De muur zelf staat in styles/fotomuur.css; bewijs insturen in styles/bewijs.css */
 
 /* ---------- Foto groot (Fotomuur en Home): op papier, zoals het clubblad ---------- */
 

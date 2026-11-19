@@ -32,6 +32,15 @@ export interface Foto {
   genomen?: string | null
   /** Stempel van de jury (sinds migratie 0017) */
   jury?: boolean
+  /** Beoordeling door de redactie (sinds migratie 0018): ter perse, geplaatst of briefje terug */
+  status?: 'ingestuurd' | 'goed' | 'af'
+  /** Waarom de redactie hem terugstuurde */
+  reden?: string | null
+  /** 'redactie': alleen de maker en de redactie zien hem */
+  zichtbaar?: 'iedereen' | 'redactie'
+  punten?: number
+  bron?: 'camera' | 'galerij'
+  beoordeeld_op?: string | null
   /** Tijdelijke link naar de kleine versie */
   klein?: string
 }
@@ -228,9 +237,22 @@ const bestaatAl = (e: unknown) => {
  * `id` hoort vast bij deze ene foto: een nieuwe poging met hetzelfde id (na een time-out of als de
  * app halverwege dichtging) zet hem er nooit twee keer op.
  */
+/** Wat er bij het insturen over de challenge meegaat (punten, zichtbaar en bron sinds migratie 0018) */
+export interface BewijsInfo {
+  id: string
+  titel: string
+  punten?: number
+  zichtbaar?: 'iedereen' | 'redactie'
+  bron?: 'camera' | 'galerij'
+}
+
+/** De server kent een kolom nog niet (migratie nog niet gedraaid) */
+export const onbekendeKolom = (e: { code?: string; message?: string } | null | undefined) =>
+  !!e && (e.code === '42703' || e.code === 'PGRST204' || /column/i.test(e.message ?? ''))
+
 export async function uploadFoto(
   foto: Verkleind,
-  challenge: { id: string; titel: string },
+  challenge: BewijsInfo,
   id: string = crypto.randomUUID(),
 ): Promise<string | null> {
   const cb = supabase()
@@ -255,10 +277,20 @@ export async function uploadFoto(
       hoogte: foto.hoogte,
       // naam en kamer vult de server zelf in
     }
+    const extra: Record<string, unknown> = {}
+    if (challenge.punten !== undefined) extra.punten = Math.max(0, Math.min(100, Math.round(challenge.punten)))
+    if (challenge.zichtbaar) extra.zichtbaar = challenge.zichtbaar
+    if (challenge.bron) extra.bron = challenge.bron
     // 'genomen' neemt de server alleen over als het geloofwaardig is (zie migratie 0016)
-    let { error } = await c.from('fotos').insert(foto.genomen ? { ...rij, genomen: foto.genomen } : rij)
-    // Migratie 0016 nog niet gedraaid: dan zonder (de foto komt op het uploadmoment)
-    if (error && foto.genomen && /genomen/.test(error.message ?? '')) ({ error } = await c.from('fotos').insert(rij))
+    if (foto.genomen) rij.genomen = foto.genomen
+    let { error } = await c.from('fotos').insert({ ...rij, ...extra })
+    // Migratie 0018 nog niet gedraaid: dan zonder de nieuwe velden
+    if (error && Object.keys(extra).length && onbekendeKolom(error)) ({ error } = await c.from('fotos').insert(rij))
+    // Migratie 0016 nog niet gedraaid: dan ook zonder opnamemoment
+    if (error && rij.genomen && /genomen/.test(error.message ?? '')) {
+      delete rij.genomen
+      ;({ error } = await c.from('fotos').insert(rij))
+    }
     // Staat er al: een eerdere poging is toch aangekomen
     if (error && !bestaatAl(error)) throw error
     meldWijziging()
@@ -270,14 +302,19 @@ export async function uploadFoto(
   }
 }
 
+/**
+ * Haalt een foto weg: eerst de rij (dan staat hij nergens meer), daarna de bestanden. Je eigen
+ * bestanden mag je pas opruimen als er geen foto meer naar verwijst (migratie 0009); vanaf een
+ * ander apparaat lukt dat niet, dan blijven de bestanden onzichtbaar achter.
+ */
 export async function verwijderFoto(f: Foto): Promise<string | null> {
   const cb = supabase()
-  if (!cb) return 'Geen verbinding'
+  if (!cb || backendStand().status !== 'verbonden') return 'Geen verbinding. Weghalen kan alleen met internet.'
   const c = await cb
-  const { error: e1 } = await c.storage.from(BUCKET).remove([f.pad, kleinPad(f.pad)])
-  if (e1) return `Verwijderen lukte niet: ${e1.message}`
-  const { error: e2 } = await c.from('fotos').delete().eq('id', f.id)
-  if (e2) return `Verwijderen lukte niet: ${e2.message}`
+  const { data, error: e1 } = await c.from('fotos').delete().eq('id', f.id).select('id')
+  if (e1) return `Weghalen lukte niet: ${e1.message}`
+  if (!data?.length) return 'Weghalen lukte niet: deze foto is niet (meer) van jou.'
+  await c.storage.from(BUCKET).remove([f.pad, kleinPad(f.pad)]).catch(() => {})
   meldWijziging()
   return null
 }
@@ -308,6 +345,8 @@ export async function alleFotos(van?: Date, tot?: Date): Promise<Foto[]> {
   // Per 1000 (zoveel geeft de server maximaal in één keer)
   for (let begin = 0; ; begin += 1000) {
     let q = c.from('fotos').select('id, user_id, naam, kamer, challenge_id, challenge_titel, pad, breedte, hoogte, gemaakt, genomen')
+    // Alleen wat in het clubblad staat (migratie 0018); zonder die migratie staat alles erin
+    if (await heeftBeoordeling()) q = q.eq('status', 'goed').eq('zichtbaar', 'iedereen')
     if (van) q = q.gte('genomen', van.toISOString())
     if (tot) q = q.lt('genomen', tot.toISOString())
     const { data, error } = await q.order('genomen', { ascending: true }).order('id').range(begin, begin + 999)
@@ -387,7 +426,26 @@ export async function grooteLink(f: Foto): Promise<string | null> {
 // ---------- Ophalen ----------
 
 const wijzigingLuisteraars = new Set<() => void>()
-const meldWijziging = () => wijzigingLuisteraars.forEach((f) => f())
+export const meldWijziging = () => wijzigingLuisteraars.forEach((f) => f())
+/** Luister naar fotowijzigingen van deze telefoon (insturen, weghalen, beoordelen) */
+export function opFotoWijziging(f: () => void) {
+  wijzigingLuisteraars.add(f)
+  return () => void wijzigingLuisteraars.delete(f)
+}
+
+/** Kent de server de beoordeling al (migratie 0018)? Eén keer per app-start nagevraagd. */
+let beoordelingBekend: Promise<boolean> | null = null
+export function heeftBeoordeling(): Promise<boolean> {
+  const cb = supabase()
+  if (!cb) return Promise.resolve(false)
+  beoordelingBekend ??= cb.then(async (c) => {
+    const { error } = await c.from('fotos').select('status').limit(1)
+    // Een andere fout (bijv. geen bereik): straks opnieuw vragen
+    if (error && error.code !== '42703') beoordelingBekend = null
+    return !error
+  })
+  return beoordelingBekend
+}
 
 /*
  * Onthouden, zodat foto's er direct staan als je terugkomt op een scherm (Home wordt bij elke
@@ -438,9 +496,14 @@ export function useFotos(aantal: number, actief = true) {
       const c = await cb
       const velden = 'id, user_id, naam, kamer, challenge_id, challenge_titel, pad, breedte, hoogte, gemaakt, genomen'
       // Op volgorde van het moment dat de foto genomen is
-      const haal = (v: string) =>
-        c.from('fotos').select(v).order('genomen', { ascending: false }).order('gemaakt', { ascending: false }).limit(limiet + 1)
-      let { data, error } = await haal(`${velden}, jury`)
+      // Op de muur alleen wat de redactie plaatste en voor iedereen is (migratie 0018)
+      const haal = (v: string, alleenGeplaatst = false) => {
+        let q = c.from('fotos').select(v)
+        if (alleenGeplaatst) q = q.eq('status', 'goed').eq('zichtbaar', 'iedereen')
+        return q.order('genomen', { ascending: false }).order('gemaakt', { ascending: false }).limit(limiet + 1)
+      }
+      let { data, error } = await haal(`${velden}, jury, status`, true)
+      if (error?.code === '42703') ({ data, error } = await haal(`${velden}, jury`))
       // Migratie 0017 nog niet gedraaid (kolom 'jury' bestaat niet): zonder jurykeuze
       if (error?.code === '42703') ({ data, error } = await haal(velden))
       if (error) throw error

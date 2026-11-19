@@ -1,0 +1,891 @@
+/*
+ * Bewijs insturen in de stijl "redactietafel" (gekozen uit mockups/challenge-c.html): hetzelfde
+ * drukwerk als het Spel (stempelkaart) en de Fotomuur (clubblad). Je kiekje hangt met een paperclip
+ * aan de dagkaart; de redactie zet er een rode stempel op of stuurt een geel briefje terug.
+ * Kleuren komen van .inhoud--spel (spel.css). Contrast tekst/vlak minstens 4,5 : 1.
+ * Alleen transform/opacity bewegen; bij 'minder beweging' vervaagt alles alleen.
+ */
+
+.inhoud--spel {
+  --memo: #fff1a8;
+  --memo-inkt: #3a3000;
+  --foto-rand: #fffdf7;
+}
+
+/* ---------- Vol scherm, op papier ---------- */
+
+.bewijs-achtergrond {
+  position: fixed;
+  inset: 0;
+  z-index: 38; /* boven de tabbalk, onder de bevestigdialoog (40) */
+  background: var(--papier);
+  color: var(--inkt);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: bewijs-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes bewijs-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.bewijs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 480px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: calc(8px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.bewijs p,
+.bewijs h2,
+.bewijs h3,
+.bewijs figure,
+.bewijs fieldset {
+  margin: 0;
+}
+
+.bewijs__balk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  margin: 0 -8px;
+}
+
+.bewijs__rond {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--inkt);
+}
+
+.bewijs__rond:disabled {
+  opacity: 0.35;
+}
+
+.bewijs__titel {
+  font: 700 28px/1.02 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.bewijs__uitleg {
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
+.bewijs__klein {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--inkt-zacht);
+}
+
+.bewijs__fout {
+  padding: 10px 12px;
+  border-left: 4px solid var(--rood);
+  background: var(--papier-2);
+  color: var(--inkt);
+}
+
+.bewijs__knoppen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bewijs__knoppen .spelknop {
+  width: 100%;
+}
+
+.bewijs__knoppen--twee {
+  flex-direction: row;
+  gap: 10px;
+}
+
+.bewijs__knoppen--twee .spelknop {
+  flex: 1;
+  width: auto;
+  padding: 0 12px;
+  font-size: 20px;
+}
+
+.bewijs__tekstknop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--inkt);
+  font: 600 17px/1.2 Barlow, sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.bewijs__tekstknop--rood {
+  color: var(--rood);
+}
+
+.bewijs__tekstknop[aria-pressed='true'] {
+  color: var(--rood);
+}
+
+.spelknop--rood {
+  border-color: var(--rood);
+  background: var(--rood);
+  color: #fff;
+}
+
+/* ---------- Plakbriefje met de opdracht ---------- */
+
+.plakbriefje {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  align-items: end;
+  padding: 14px 16px 16px;
+  background: var(--foto-rand);
+  box-shadow: 0 6px 16px rgba(13, 0, 88, 0.12);
+  transform: rotate(-0.8deg);
+}
+
+.plakbriefje::before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: calc(50% - 34px);
+  width: 68px;
+  height: 18px;
+  background: rgba(232, 224, 200, 0.85);
+  transform: rotate(3deg);
+}
+
+.plakbriefje .spel__caps {
+  grid-column: 1 / -1;
+}
+
+.plakbriefje h2 {
+  font: 700 26px/1.02 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.plakbriefje p {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin-top: 4px;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--inkt-zacht);
+}
+
+.plakbriefje__punten {
+  grid-column: 2;
+  grid-row: 2;
+  font: 700 28px/1 'Barlow Condensed', sans-serif;
+  color: var(--rood);
+}
+
+/* ---------- Kiekje ---------- */
+
+.kiekje {
+  position: relative;
+  margin: 6px 6px 0;
+  padding: 10px 10px 0;
+  background: var(--foto-rand);
+  box-shadow: 0 8px 22px rgba(13, 0, 88, 0.14), 0 1px 2px rgba(0, 0, 0, 0.12);
+  transform: rotate(var(--scheef, -1deg));
+}
+
+.kiekje .paperclip {
+  position: absolute;
+  z-index: 2;
+  top: -18px;
+  left: 22px;
+  width: 22px;
+  height: 56px;
+  color: #6f7988;
+}
+
+.kiekje__foto {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--papier-2);
+}
+
+.kiekje__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.kiekje__leeg {
+  display: grid;
+  place-items: center;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  border: 2.5px dashed var(--lijn);
+  color: var(--inkt-zacht);
+}
+
+.kiekje figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  color: #0d0058;
+  font: italic 15px/1.2 Georgia, serif;
+}
+
+.kiekje figcaption span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kiekje figcaption time {
+  flex: none;
+  font: 600 13px/1 ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-style: normal;
+}
+
+.kiekje.is-oud {
+  box-shadow: 0 0 0 3px var(--rood), 0 8px 22px rgba(13, 0, 88, 0.14);
+}
+
+.bewijs__oud {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-left: 4px solid var(--rood);
+  background: var(--papier-2);
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
+.bewijs__oud svg {
+  flex: none;
+  color: var(--rood);
+}
+
+/* ---------- De grote stempel van de redactie ---------- */
+
+.redactiestempel {
+  position: absolute;
+  z-index: 3;
+  right: 6px;
+  bottom: 48px;
+  display: grid;
+  place-content: center;
+  width: 132px;
+  height: 132px;
+  border: 4px solid var(--rood);
+  border-radius: 50%;
+  background: rgba(255, 253, 247, 0.72);
+  color: var(--rood);
+  font: 700 14px/1.05 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(-12deg);
+  filter: url(#inkt);
+}
+
+.redactiestempel b {
+  font-size: 34px;
+  letter-spacing: 0;
+}
+
+.redactiestempel--ter-perse {
+  border: 6px double var(--blauw-tekst);
+  color: var(--blauw-tekst);
+}
+
+.redactiestempel--ligt-klaar {
+  border-style: dashed;
+  border-color: var(--inkt-zacht);
+  color: var(--inkt-zacht);
+}
+
+.redactiestempel.is-nieuw {
+  animation: spel-stempel-groot 0.38s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+@keyframes spel-stempel-groot {
+  0% {
+    transform: rotate(-24deg) scale(2.4);
+    opacity: 0;
+  }
+  60% {
+    transform: rotate(-12deg) scale(0.94);
+    opacity: 1;
+  }
+}
+
+/* ---------- Wie staat erop? ---------- */
+
+.bewijs__wie {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+}
+
+.bewijs__wie legend {
+  margin-bottom: 6px;
+  font: 700 20px/1.1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.bewijs__keuze {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 2px solid var(--lijn);
+  background: var(--foto-rand);
+  font-size: 1rem;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.bewijs__keuze:has(input:checked) {
+  border-color: var(--inkt);
+  background: var(--papier-2);
+}
+
+.bewijs__keuze input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--inkt);
+}
+
+.bewijs__onderweg {
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+
+.bewijs__onderweg b {
+  font: 700 26px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.bewijs__onderweg span {
+  font-style: italic;
+  color: var(--inkt-zacht);
+}
+
+/* ---------- Geel briefje van de redactie ---------- */
+
+.briefje {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--memo);
+  color: var(--memo-inkt);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  transform: rotate(0.6deg);
+}
+
+.briefje .spel__caps {
+  color: var(--memo-inkt);
+}
+
+.briefje p {
+  font-size: 1.08rem;
+  line-height: 1.4;
+}
+
+.briefje small {
+  font-style: italic;
+  font-size: 0.92rem;
+}
+
+.bewijs__acties {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.bewijs__acties .bewijs__tekstknop {
+  align-self: flex-start;
+}
+
+.bewijs__acties .spelknop--licht {
+  font-size: 19px;
+}
+
+/* ---------- Beloning: geplaatst ---------- */
+
+.bewijs-achtergrond--feest {
+  display: grid;
+  place-items: center;
+}
+
+.geplaatst {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(380px, 100%);
+  padding: 32px 16px calc(28px + env(safe-area-inset-bottom));
+  text-align: center;
+  font-family: Georgia, serif;
+}
+
+.geplaatst p,
+.geplaatst h2 {
+  margin: 0;
+}
+
+.geplaatst .kiekje {
+  width: min(260px, 80%);
+}
+
+.geplaatst .redactiestempel {
+  right: -34px;
+  bottom: 30px;
+}
+
+.geplaatst h2 {
+  margin-top: 8px;
+  font: 700 40px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.geplaatst p {
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.geplaatst__stand {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+  padding: 10px 0;
+  border-top: 2px dashed var(--lijn);
+  border-bottom: 2px dashed var(--lijn);
+  font: 700 14px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+.geplaatst__stand b {
+  display: block;
+  font-size: 32px;
+  letter-spacing: 0;
+  color: var(--inkt);
+}
+
+.geplaatst__stand span:first-child b {
+  color: var(--rood);
+}
+
+.geplaatst .spelknop {
+  width: 100%;
+}
+
+/* ---------- Op de dagkaart ---------- */
+
+.ch__kiekje {
+  position: absolute;
+  inset: 6px 4px 2px 8px;
+  display: block;
+  padding: 5px 5px 16px;
+  background: var(--foto-rand);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transform: rotate(4deg);
+}
+
+.ch__kiekje img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--papier-2);
+}
+
+.ch__kiekje .paperclip {
+  position: absolute;
+  top: -12px;
+  left: 12px;
+  width: 16px;
+  height: 40px;
+  color: #6f7988;
+}
+
+/* Met een kiekje erin: geen gestippelde cirkel, wel ruimte voor kiekje + stempel */
+.ch--wacht .ch__vak,
+.ch--ingestuurd .ch__vak,
+.ch--goed .ch__vak,
+.ch--af .ch__vak {
+  position: relative;
+  border-color: transparent;
+}
+
+.ch--goed .ch__vak .stempel {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: auto;
+  height: auto;
+  background: rgba(245, 242, 234, 0.55);
+}
+
+.ch--wacht .ch__kiekje {
+  opacity: 0.75;
+  outline: 2px dashed var(--inkt-zacht);
+  outline-offset: 2px;
+}
+
+.ch__memo {
+  position: absolute;
+  z-index: 2;
+  right: -6px;
+  bottom: -4px;
+  padding: 6px 7px;
+  background: var(--memo);
+  color: var(--memo-inkt);
+  font: 700 12px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transform: rotate(5deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.ch .ch__briefje {
+  display: block;
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--memo);
+  color: var(--memo-inkt);
+  font-style: italic;
+}
+
+.ch__status--ingestuurd {
+  color: var(--blauw-tekst);
+}
+
+.ch .ch__status--goed {
+  color: var(--rood);
+}
+
+.ch .ch__status--af {
+  color: var(--rood);
+}
+
+.ch .ch__status--wacht {
+  color: var(--inkt-zacht);
+}
+
+.ch--goed .ch__tekst > span:not(.ch__briefje) {
+  text-decoration: none;
+}
+
+/* ---------- Redactietafel (beheerders) ---------- */
+
+.redactieknop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 16px;
+  border: 2px solid var(--rood);
+  background: var(--foto-rand);
+  color: var(--rood);
+  text-align: left;
+}
+
+.redactieknop b {
+  display: block;
+  font: 700 24px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.redactieknop small {
+  font: 600 15px/1.2 Barlow, sans-serif;
+  color: var(--inkt);
+}
+
+.redactie__kop {
+  font: 700 40px/0.95 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 rgba(9, 159, 196, 0.6);
+}
+
+.redactie__uitleg {
+  font-style: italic;
+  color: var(--inkt-zacht);
+}
+
+.redactie__filters {
+  display: flex;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 0 16px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.redactie__filters button {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid var(--lijn);
+  background: none;
+  color: var(--inkt);
+  font: 600 16px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.redactie__filters button[aria-pressed='true'] {
+  border-color: var(--inkt);
+  background: var(--inkt);
+  color: var(--papier);
+}
+
+.redactie__rooster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.redactie__tegel {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+}
+
+.redactie__foto {
+  display: block;
+  aspect-ratio: 1;
+  padding: 5px;
+  background: var(--foto-rand);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: rotate(var(--scheef, -1deg));
+}
+
+.redactie__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.redactie__tegel b {
+  margin-top: 4px;
+  font: 700 18px/1.1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.redactie__tegel > span:not(.redactie__foto):not(.redactie__vlaggen) {
+  font-size: 0.92rem;
+  line-height: 1.25;
+  color: var(--inkt-zacht);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.redactie__vlaggen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.vlag {
+  padding: 3px 6px;
+  background: var(--papier-2);
+  color: var(--inkt);
+  font: 700 12px/1 'Barlow Condensed', sans-serif;
+  font-style: normal;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.vlag--rood {
+  color: var(--rood);
+}
+
+.redactie__leeg {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.redactie__leeg b {
+  font: 700 30px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.redactie__nav {
+  display: flex;
+  margin-left: auto;
+}
+
+.redactie__groot {
+  transition: transform 0.4s ease-in 0.25s, opacity 0.4s 0.25s;
+}
+
+.redactie__groot.gaat-goed {
+  transform: translateX(110%) rotate(6deg);
+  opacity: 0;
+}
+
+.redactie__groot.gaat-af {
+  transform: translateX(-110%) rotate(-6deg);
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.redactie__punten {
+  color: var(--blauw-tekst);
+  white-space: nowrap;
+}
+
+.redactie__meta {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.98rem;
+}
+
+.redactie__meta li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.redactie__meta svg {
+  flex: none;
+}
+
+.redactie__meta .is-rood {
+  color: var(--rood);
+  font-weight: 700;
+}
+
+.redenblad {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  gap: 12px;
+  max-width: 480px;
+  max-height: 92dvh;
+  margin: 0 auto;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background: var(--foto-rand);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.3);
+  font-family: Georgia, serif;
+  animation: bewijs-blad 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes bewijs-blad {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.bewijs-achtergrond:has(> .redenblad) {
+  background: rgba(13, 0, 88, 0.35);
+}
+
+.redenblad h3 {
+  margin: 0;
+  font: 700 22px/1.1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.redenblad__lijst {
+  display: grid;
+  gap: 8px;
+}
+
+.redenblad__lijst button {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 2px solid var(--lijn);
+  background: none;
+  color: var(--inkt);
+  font: 1rem/1.35 Georgia, serif;
+  text-align: left;
+}
+
+.redenblad__eigen {
+  display: grid;
+  gap: 4px;
+  font-size: 0.92rem;
+  color: var(--inkt-zacht);
+}
+
+.redenblad__eigen textarea {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid var(--lijn);
+  background: var(--papier);
+  color: var(--inkt);
+  font: 1rem/1.4 Georgia, serif;
+  resize: vertical;
+}
+
+/* ---------- Minder beweging ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .bewijs-achtergrond,
+  .redenblad,
+  .redactiestempel.is-nieuw {
+    animation: none;
+  }
+
+  .redactie__groot {
+    transition: opacity 0.2s;
+  }
+
+  .redactie__groot.gaat-goed,
+  .redactie__groot.gaat-af {
+    transform: none;
+  }
+}

@@ -2,7 +2,10 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Aftelklok } from '../components/Aftelklok'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
-import { FotoUpload } from '../components/FotoUpload'
+import { BewijsInsturen, Geplaatst, InzendingBlad, Paperclip, type ChallengeInfo } from '../components/Bewijs'
+import { Redactietafel } from '../components/Redactietafel'
+import { bestePerChallenge, GEVIERD, useMijnBewijs, useOpTafel, type Inzending } from '../lib/bewijs'
+import { useFotoWachtrijLijst, type WachtendeFoto } from '../lib/fotowachtrij'
 import { Klassement } from '../components/Klassement'
 import { Stemmen } from '../components/Stemmen'
 import { Sneeuw } from '../components/Sneeuw'
@@ -23,6 +26,7 @@ import { tabToetsen } from '../lib/tabbladen'
 import { datumISO, datumLabel, lokaalNaarDate } from '../lib/tijd'
 import '../styles/barlow.css'
 import '../styles/spel.css'
+import '../styles/bewijs.css'
 
 const spelOpen = lokaalNaarDate(config.spelOpen)
 const ONDERDELEN = ['challenges', 'bingo', 'stemmen', 'klassement'] as const
@@ -79,8 +83,45 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   const [naam] = useOpgeslagen<string | null>('naam', null)
   const toon = useToonNaam()
   const [geluid, setGeluid] = useSpelGeluid()
-  const [fotoVoor, setFotoVoor] = useState<{ id: string; titel: string } | null>(null)
+  // Bewijs insturen (fotoVoor) of je eigen kiekje bekijken (blad), per challenge-id
+  const [fotoVoor, setFotoVoor] = useState<string | null>(null)
+  const [blad, setBlad] = useState<string | null>(null)
+  const [tafelOpen, setTafelOpen] = useState(false)
   const [fotoGelukt, setFotoGelukt] = useState<string | null>(null)
+  const { beheerder } = useBackend()
+
+  // Per challenge: de info voor het insturen (met het moment dat de dagkaart openging)
+  const challengeInfo = useMemo(() => {
+    const m = new Map<string, ChallengeInfo>()
+    for (const d of data.challenges) {
+      for (const c of d.items) m.set(c.id, { id: c.id, titel: c.titel, omschrijving: c.omschrijving, punten: c.punten, open: openMoment(d) })
+    }
+    return m
+  }, [data])
+
+  // De redactie (migratie 0018): je eigen kiekjes van de server en wat nog op de post wacht.
+  // Zonder die migratie (beschikbaar = false) telt insturen meteen, zoals vroeger.
+  const bewijs = useMijnBewijs(backendIngesteld ? naam : null)
+  const metRedactie = backendIngesteld && bewijs.beschikbaar
+  const wachtend = useFotoWachtrijLijst()
+  const beste = useMemo(() => bestePerChallenge(bewijs.lijst), [bewijs.lijst])
+  const geplaatst = useMemo(
+    () => [...beste.values()].filter((f) => f.status === 'goed' && challengeInfo.has(f.challenge_id)),
+    [beste, challengeInfo],
+  )
+  const geplaatstIds = useMemo(() => geplaatst.map((f) => f.challenge_id).sort(), [geplaatst])
+  // Wat geplaatst is, telt als gedaan (ook voor de badges en de stand op de telefoon)
+  useEffect(() => {
+    if (!metRedactie || !bewijs.geladen) return
+    if (JSON.stringify([...gedaan].sort()) !== JSON.stringify(geplaatstIds)) setGedaan(geplaatstIds)
+  }, [metRedactie, bewijs.geladen, geplaatstIds, gedaan, setGedaan])
+
+  // De beloning: één keer per geplaatst kiekje. De eerste keer worden oude stempels niet nog eens gevierd.
+  const [gevierd, setGevierd] = useOpgeslagen<string[] | null>(GEVIERD, null)
+  useEffect(() => {
+    if (metRedactie && bewijs.geladen && !Array.isArray(gevierd)) setGevierd(geplaatst.map((f) => f.id))
+  }, [metRedactie, bewijs.geladen, gevierd, geplaatst, setGevierd])
+  const teVieren = metRedactie && Array.isArray(gevierd) && !fotoVoor && !blad && !tafelOpen ? geplaatst.find((f) => !gevierd.includes(f.id)) : undefined
   // De challenge die net een stempel kreeg (voor de bonk en het geluid)
   const [netGedaan, setNetGedaan] = useState<string | null>(null)
   useEffect(() => {
@@ -105,9 +146,9 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   const gedaanSet = useMemo(() => new Set(gedaan), [gedaan])
   const gemarkeerdSet = useMemo(() => new Set(gemarkeerd), [gemarkeerd])
 
-  const challengePunten = data.challenges
-    .flatMap((d) => d.items)
-    .reduce((som, c) => som + (gedaanSet.has(c.id) ? c.punten : 0), 0)
+  const challengePunten = metRedactie
+    ? geplaatst.reduce((som, f) => som + (f.punten || challengeInfo.get(f.challenge_id)?.punten || 0), 0)
+    : data.challenges.flatMap((d) => d.items).reduce((som, c) => som + (gedaanSet.has(c.id) ? c.punten : 0), 0)
   const bingo = bingoScore(kaart, gemarkeerdSet, data.punten)
 
   // Voor de nieuwe kop: je plek in het klassement, zoals het laatst is opgehaald (als dat er is)
@@ -208,7 +249,18 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             if (!was) stempelen(id)
             else klank('papier', geluid)
           }}
-          onFoto={backendIngesteld ? setFotoVoor : undefined}
+          onFoto={
+            backendIngesteld
+              ? (c) => {
+                  if (!metRedactie) return setFotoVoor(c.id)
+                  const heeft = beste.has(c.id) || wachtend.some((w) => w.challengeId === c.id)
+                  if (heeft) setBlad(c.id)
+                  else setFotoVoor(c.id)
+                }
+              : undefined
+          }
+          redactie={metRedactie ? { beste, wachtend } : undefined}
+          opTafel={beheerder && metRedactie ? () => setTafelOpen(true) : undefined}
         />
       ) : (
         <Bingo
@@ -221,19 +273,60 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         />
       )}
 
-      {fotoVoor && (
-        <FotoUpload
-          challenge={fotoVoor}
+      {fotoVoor && challengeInfo.has(fotoVoor) && (
+        <BewijsInsturen
+          challenge={challengeInfo.get(fotoVoor)!}
+          geluid={geluid}
           onSluit={() => setFotoVoor(null)}
-          onGelukt={(later) => {
-            // Bewijs geleverd: dan telt de challenge als gedaan (een extra inzending geeft geen extra punten)
-            const id = fotoVoor.id
-            const extra = gedaanSet.has(id)
-            setGedaan((oud) => (oud.includes(id) ? oud : [...oud, id]))
-            if (!extra) stempelen(id)
-            const waar = later ? 'Foto bewaard. Hij gaat naar de fotomuur zodra er bereik is.' : 'Foto staat op de fotomuur.'
-            setFotoGelukt(extra ? `${waar} Extra inzending voor "${fotoVoor.titel}".` : `${waar} Stempel erop voor "${fotoVoor.titel}".`)
+          onKlaar={(later) => {
+            const c = challengeInfo.get(fotoVoor)!
+            if (metRedactie) {
+              setFotoGelukt(
+                later
+                  ? `Je kiekje voor "${c.titel}" ligt klaar voor de post en gaat vanzelf zodra er bereik is.`
+                  : `Ter perse. De redactie kijkt vanavond naar "${c.titel}".`,
+              )
+            } else {
+              // Server zonder redactie (migratie 0018 nog niet gedraaid): insturen telt meteen, zoals vroeger
+              const extra = gedaanSet.has(c.id)
+              setGedaan((oud) => (oud.includes(c.id) ? oud : [...oud, c.id]))
+              if (!extra) stempelen(c.id)
+              setFotoGelukt(later ? 'Foto bewaard. Hij gaat naar de fotomuur zodra er bereik is.' : `Stempel erop voor "${c.titel}".`)
+            }
             setFotoVoor(null)
+          }}
+        />
+      )}
+      {blad && challengeInfo.has(blad) && (
+        <InzendingBlad
+          challenge={challengeInfo.get(blad)!}
+          inzending={beste.get(blad)}
+          wachtend={beste.get(blad)?.status === 'goed' ? undefined : wachtend.find((w) => w.challengeId === blad)}
+          onSluit={() => setBlad(null)}
+          onNogEens={() => {
+            const id = blad
+            setBlad(null)
+            setFotoVoor(id)
+          }}
+        />
+      )}
+      {tafelOpen && (
+        <Redactietafel
+          openVan={(id) => challengeInfo.get(id)?.open ?? null}
+          omschrijving={(id) => challengeInfo.get(id)?.omschrijving}
+          geluid={geluid}
+          onSluit={() => setTafelOpen(false)}
+        />
+      )}
+      {teVieren && challengeInfo.has(teVieren.challenge_id) && (
+        <Geplaatst
+          challenge={challengeInfo.get(teVieren.challenge_id)!}
+          inzending={teVieren}
+          totaal={challengePunten + bingo.totaal}
+          geluid={geluid}
+          onSluit={() => {
+            setGevierd([...(gevierd ?? []), teVieren.id])
+            setNetGedaan(teVieren.challenge_id)
           }}
         />
       )}
@@ -255,6 +348,8 @@ function Challenges({
   naam,
   onWissel,
   onFoto,
+  redactie,
+  opTafel,
 }: {
   dagen: ChallengeDag[]
   nu: Date
@@ -263,9 +358,14 @@ function Challenges({
   geluid: boolean
   naam: string | null
   onWissel: (id: string) => void
-  /** Foto als bewijs uploaden (alleen met backend) */
+  /** Foto als bewijs uploaden of je kiekje bekijken (alleen met backend) */
   onFoto?: (c: { id: string; titel: string }) => void
+  /** Met de redactie (migratie 0018): je kiekjes per challenge en wat nog op de post wacht */
+  redactie?: { beste: Map<string, Inzending>; wachtend: WachtendeFoto[] }
+  /** Alleen voor beheerders: de redactietafel openen */
+  opTafel?: () => void
 }) {
+  const aantalOpTafel = useOpTafel(!!opTafel)
   const vandaag = datumISO(nu)
   const gesorteerd = [...dagen].sort((a, b) => a.datum.localeCompare(b.datum))
   const nummer = (d: ChallengeDag) => gesorteerd.indexOf(d) + 1
@@ -302,6 +402,15 @@ function Challenges({
 
   return (
     <>
+      {opTafel && (
+        <button type="button" className="redactieknop" onClick={opTafel}>
+          <span>
+            <b>Redactietafel</b>
+            <small>{aantalOpTafel === null ? 'Kiekjes beoordelen' : aantalOpTafel === 0 ? 'Niets op tafel' : `${aantalOpTafel} kiekje${aantalOpTafel === 1 ? '' : 's'} op tafel`}</small>
+          </span>
+          <Icoon naam="stempel" grootte={28} />
+        </button>
+      )}
       {open.length === 0 && <p className="laadtekst">Nog geen challenges open.</p>}
       {open.map((d) => {
         const nieuw = d === nieuwsteOpen && !gezien.includes(d.datum)
@@ -341,11 +450,52 @@ function Challenges({
             ) : (
               <>
                 <p className="dagkaart__stand spel__caps">
-                  {klaar} van {d.items.length} gestempeld
+                  {klaar} van {d.items.length} {redactie ? 'geplaatst' : 'gestempeld'}
                 </p>
                 <ol className="stempelkaart">
                   {d.items.map((c, j) => {
                     const isKlaar = gedaan.has(c.id)
+                    if (redactie && onFoto) {
+                      const r = redactieStatus(c.id, redactie)
+                      return (
+                        <li key={c.id} style={{ '--i': j } as React.CSSProperties}>
+                          <button
+                            type="button"
+                            className={`ch ch--${r.soort}${r.soort === 'goed' ? ' is-klaar' : ''}${netGedaan === c.id ? ' net-gedaan' : ''}`}
+                            aria-label={`${c.titel}, ${c.punten} punten: ${r.tekst}${r.reden ? `. Van de redactie: ${r.reden}` : ''}`}
+                            onClick={() => onFoto({ id: c.id, titel: c.titel })}
+                          >
+                            <span className="ch__tekst">
+                              <b>{c.titel}</b>
+                              {c.omschrijving && <span>{c.omschrijving}</span>}
+                              {r.reden && <span className="ch__briefje">Van de redactie: {r.reden}</span>}
+                              <em className={`ch__status ch__status--${r.soort}`}>
+                                <Icoon naam={r.icoon} grootte={18} /> {r.tekst}
+                              </em>
+                            </span>
+                            <span className="ch__vak" aria-hidden="true">
+                              {r.klein !== undefined ? (
+                                <>
+                                  <span className="ch__kiekje">
+                                    {r.klein && <img src={r.klein} alt="" loading="lazy" />}
+                                    <Paperclip />
+                                  </span>
+                                  {r.soort === 'goed' && (
+                                    <Stempel nieuw={netGedaan === c.id}>
+                                      Geplaatst
+                                      <b>+{r.punten || c.punten}</b>
+                                    </Stempel>
+                                  )}
+                                  {r.soort === 'af' && <span className="ch__memo">Briefje</span>}
+                                </>
+                              ) : (
+                                `+${c.punten}`
+                              )}
+                            </span>
+                          </button>
+                        </li>
+                      )
+                    }
                     const inhoud = (
                       <>
                         <span className="ch__tekst">
@@ -416,6 +566,29 @@ function Challenges({
       )}
     </>
   )
+}
+
+/**
+ * Hoe een challenge er met de redactie voor staat. Volgorde: geplaatst gaat voor een kiekje dat nog
+ * op de post wacht, dat gaat voor ter perse, dat gaat voor een briefje terug.
+ */
+function redactieStatus(id: string, r: { beste: Map<string, Inzending>; wachtend: WachtendeFoto[] }) {
+  const f = r.beste.get(id)
+  const w = r.wachtend.find((x) => x.challengeId === id)
+  type Uit = { soort: 'open' | 'wacht' | 'ingestuurd' | 'goed' | 'af'; tekst: string; icoon: 'camera' | 'slot' | 'stempel' | 'potlood' | 'herstel'; klein?: string; reden?: string; punten?: number }
+  let uit: Uit
+  if (f?.status === 'goed') uit = { soort: 'goed', tekst: f.jury ? 'Geplaatst · jurykeuze' : 'Geplaatst', icoon: 'stempel', klein: f.klein ?? '', punten: f.punten }
+  else if (w)
+    uit = {
+      soort: 'wacht',
+      tekst: w.vast ? 'Komt niet aan: tik om opnieuw te proberen' : w.bezig ? 'Onderweg naar de redactie' : 'Ligt klaar voor de post',
+      icoon: w.vast ? 'herstel' : 'slot',
+      klein: w.klein,
+    }
+  else if (f?.status === 'ingestuurd') uit = { soort: 'ingestuurd', tekst: 'Ter perse', icoon: 'potlood', klein: f.klein ?? '' }
+  else if (f?.status === 'af') uit = { soort: 'af', tekst: 'Briefje van de redactie: nog een keer?', icoon: 'herstel', klein: f.klein ?? '', reden: f.reden ?? undefined }
+  else uit = { soort: 'open', tekst: 'Foto als bewijs', icoon: 'camera' }
+  return uit
 }
 
 function Bingo({
