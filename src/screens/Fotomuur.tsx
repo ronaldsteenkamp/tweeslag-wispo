@@ -145,14 +145,14 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
   return (
     <div className="scherm fotomuur">
       <SchermKop
-        titel="Fotomuur"
+        titel="Clubblad"
         boven="G.S.B.V. Tweeslag"
         ondertitel={naDeReis ? 'Jaarboek Wispo 2027' : `Wispo-editie${vandaagNr ? ` nr. ${vandaagNr}` : ''} · ${datumLabel(vandaagISO)}`}
         terug={{ label: 'Spel', onClick: terug }}
       />
 
       {backend.status === 'uit' ? (
-        <p className="fotomuur__tekst">Er is geen backend ingesteld, dus er is geen fotomuur.</p>
+        <p className="fotomuur__tekst">Er is geen backend ingesteld, dus er is geen clubblad.</p>
       ) : (
         <>
           <div className="fotomuur__naam">

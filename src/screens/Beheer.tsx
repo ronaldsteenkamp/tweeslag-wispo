@@ -274,7 +274,7 @@ const SCHERMEN = [
   ['#rad', 'Rad'],
   ['#spel', 'Spel'],
   ['#stemmen', 'Stemmen'],
-  ['#fotos', 'Fotomuur'],
+  ['#fotos', 'Clubblad'],
   ['#weer', 'Weer'],
 ] as const
 

@@ -202,7 +202,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
       <div className="spel__balk">
         {backendIngesteld && (
           <button type="button" className="spelknop spelknop--licht" onClick={() => (window.location.hash = '#fotos')}>
-            <Icoon naam="camera" grootte={22} /> Fotomuur
+            <Icoon naam="camera" grootte={22} /> Clubblad
           </button>
         )}
         <GeluidKnop aan={geluid} zet={setGeluid} className="spel__geluid" />
@@ -291,7 +291,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
               const extra = gedaanSet.has(c.id)
               setGedaan((oud) => (oud.includes(c.id) ? oud : [...oud, c.id]))
               if (!extra) stempelen(c.id)
-              setFotoGelukt(later ? 'Foto bewaard. Hij gaat naar de fotomuur zodra er bereik is.' : `Stempel erop voor "${c.titel}".`)
+              setFotoGelukt(later ? 'Foto bewaard. Hij gaat naar het clubblad zodra er bereik is.' : `Stempel erop voor "${c.titel}".`)
             }
             setFotoVoor(null)
           }}
