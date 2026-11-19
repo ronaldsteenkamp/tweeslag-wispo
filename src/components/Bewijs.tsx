@@ -304,7 +304,7 @@ export function BewijsInsturen({
                   {(
                     [
                       ['niemand', 'Nee, alleen ik (of niemand)'],
-                      ['ok', 'Ja, en ze vinden het goed dat ze in het clubblad komen'],
+                      ['ok', 'Ja, en ze vinden het goed dat de foto in het clubblad komt'],
                       ['redactie', 'Ja, maar alleen de redactie mag hem zien'],
                     ] as const
                   ).map(([w, tekst]) => (
