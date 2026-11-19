@@ -24,7 +24,7 @@ const REDENEN = [
   'Net iets te persoonlijk voor het clubblad. Kun je het anders zeggen?',
 ]
 
-type Filter = 'alles' | 'stukjes' | 'redactie' | 'oud'
+type Filter = 'alles' | 'stukjes' | 'kiekjes' | 'redactie'
 
 export function Redactietafel({
   openVan,
@@ -56,7 +56,7 @@ export function Redactietafel({
       (lijst ?? [])
         .filter((f) => !klaar.has(f.id))
         .filter((f) =>
-          filter === 'stukjes' ? f.soort === 'stukje' : filter === 'redactie' ? f.zichtbaar === 'redactie' : filter === 'oud' ? isOud(f) : true,
+          filter === 'stukjes' ? f.soort === 'stukje' : filter === 'kiekjes' ? f.soort !== 'stukje' : filter === 'redactie' ? f.zichtbaar === 'redactie' : true,
         ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lijst, klaar, filter],
@@ -92,8 +92,8 @@ export function Redactietafel({
             [
               ['alles', 'Alles'],
               ['stukjes', 'Stukjes'],
+              ['kiekjes', 'Kiekjes'],
               ['redactie', 'Alleen voor de redactie'],
-              ['oud', 'Oud kiekje'],
             ] as const
           ).map(([f, t]) => (
             <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>
