@@ -409,7 +409,11 @@ export function InzendingBlad({
           {inzending && status !== 'af' && (
             <button type="button" className="spelknop spelknop--licht" onClick={() => void wissel()} disabled={bezig} aria-pressed={inzending.zichtbaar === 'redactie'}>
               <Icoon naam={inzending.zichtbaar === 'redactie' ? 'slot' : 'groep'} grootte={20} />
-              {inzending.zichtbaar === 'redactie' ? 'Alleen de redactie ziet hem' : 'Mag in het clubblad'}
+              {inzending.zichtbaar === 'redactie'
+                ? 'Privé: alleen de redactie ziet hem (druk hier om hem in het clubblad te zetten)'
+                : status === 'goed'
+                  ? 'Staat in het clubblad (druk hier om op privé te zetten)'
+                  : 'Komt in het clubblad (druk hier om op privé te zetten)'}
             </button>
           )}
           <button type="button" className="bewijs__tekstknop bewijs__tekstknop--rood" onClick={() => setBevestig(true)} disabled={bezig}>
