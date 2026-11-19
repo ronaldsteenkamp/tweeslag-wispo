@@ -439,6 +439,11 @@
   font-size: 19px;
 }
 
+/* Lange knoptekst: het icoon niet laten krimpen */
+.bewijs__acties .spelknop svg {
+  flex: none;
+}
+
 /* ---------- Beloning: geplaatst ---------- */
 
 .bewijs-achtergrond--feest {
