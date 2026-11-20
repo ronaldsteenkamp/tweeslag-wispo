@@ -42,7 +42,18 @@ export function Sneeuw({ aantal = 28, maan = false }: { aantal?: number; maan?: 
       // op donkerblauw: wit met een zachte ijsblauwe rand
       rand: 'rgba(150, 200, 235, 0.45)',
       storm: { waas: 0.1 },
-      vervaging: { modus: 'css', onderlaag: false, tekst: '' },
+      // De halfdoorzichtige blokjes in de kop (keuzebalk bij Rad, vakje rechts, je naam, het weer
+      // op Home, de hoogte op Paklijst, de afteltegels) zijn beslagen glas: de sneeuw erachter
+      // tekent de module zelf vaag en zwakker. Lichter dan backdrop-filter, ook op iOS.
+      vervaging: {
+        modus: 'canvas',
+        selector:
+          '.schermkop__keuze .segment, .schermkop__rechts, .ik, .homekop__weer, .pakkop__hoogte, .aftelklok__blok',
+        vaag: 6,
+        doorzicht: 0.55,
+        onderlaag: false,
+        tekst: '',
+      },
     })
     return () => sneeuw.vernietig()
   }, [sneeuwAan])
