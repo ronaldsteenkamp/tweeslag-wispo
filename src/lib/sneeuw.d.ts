@@ -4,6 +4,7 @@ type Diep<T> = { [K in keyof T]?: T[K] extends object ? Diep<T[K]> : T[K] }
 
 export interface SneeuwConfig {
   doel: HTMLElement | null
+  vast: boolean
   dichtheid: number
   maxVlokken: number
   minVlokken: number
