@@ -232,6 +232,18 @@ const cache = new Map<DataNaam, Promise<unknown>>()
 /** Al binnengekomen bestanden, zodat een scherm ze meteen heeft (zonder een leeg moment dat verspringt) */
 const klaar = new Map<DataNaam, unknown>()
 
+/*
+ * De laatst binnengekomen versie van elk bestand, ook na het sluiten van de app. Bij goed bereik
+ * opent de app met de verse versie (zie wachtOp); bij traag bereik na even wachten met deze, en
+ * zodra de verse er is, werkt het scherm zichzelf bij (useData), dus niet pas bij de volgende keer.
+ */
+const BEWAARD = (naam: DataNaam) => `data.${naam}`
+const bewaard = new Map<DataNaam, unknown>()
+for (const naam of ['planning', 'paklijst', 'kamers', 'spel', 'stemmingen', 'rad'] as DataNaam[]) {
+  const b = lees<unknown>(BEWAARD(naam), null)
+  if (b !== null) bewaard.set(naam, b)
+}
+
 // ---------- Kamerverdeling van de server ----------
 // Slaat de reisleiding de kamerverdeling op in de app (zie kamerverdeling.ts), dan gaat die voor op
 // kamers.json. Namen die alleen in kamers.json staan (later toegevoegd) komen onder "Nog geen kamer".
@@ -279,7 +291,11 @@ export function laad<K extends DataNaam>(naam: K, opnieuw = false): Promise<Data
     const belofte = haalOp(naam)
     cache.set(naam, belofte)
     belofte.then(
-      (data) => klaar.set(naam, data),
+      (data) => {
+        klaar.set(naam, data)
+        bewaard.set(naam, data)
+        schrijf(BEWAARD(naam), data)
+      },
       () => {
         if (cache.get(naam) === belofte) cache.delete(naam)
       },
@@ -297,20 +313,33 @@ export function laad<K extends DataNaam>(naam: K, opnieuw = false): Promise<Data
   )
 }
 
-/** Haalt alle bestanden op, zodat ze ook offline klaarstaan als je een tabblad nog niet geopend hebt */
-export function haalAllesVooraf() {
-  for (const naam of DATA_BESTANDEN) laad(naam, true).catch(() => {})
+/**
+ * Haalt alle bestanden op, zodat ze ook offline klaarstaan als je een tabblad nog niet geopend hebt.
+ * opnieuw: ook de bestanden die deze sessie al binnen zijn (als de service worker de pagina overneemt).
+ */
+export function haalAllesVooraf(opnieuw = false) {
+  for (const naam of DATA_BESTANDEN) laad(naam, opnieuw).catch(() => {})
 }
 
 function alKlaar<K extends DataNaam>(naam: K): DataTypes[K] | undefined {
-  const data = klaar.get(naam) as DataTypes[K] | undefined
+  // vers van deze sessie, anders de laatst bewaarde versie
+  const data = (klaar.get(naam) ?? bewaard.get(naam)) as DataTypes[K] | undefined
   if (data === undefined) return naam === 'kamers' ? ((serverKamers ?? undefined) as DataTypes[K] | undefined) : undefined
   return naam === 'kamers' ? (combineer(data as Kamers) as DataTypes[K]) : data
 }
 
-/** Wacht tot deze bestanden er zijn (of mislukt zijn), bijv. voordat de app voor het eerst tekent */
+/** Zo lang mag de eerste tekening op verse gegevens wachten als er al een bewaarde versie is */
+const WACHT_OP_VERS = 300
+
+/**
+ * Wacht tot deze bestanden er zijn (of mislukt zijn), bijv. voordat de app voor het eerst tekent.
+ * Staat van elk bestand al een versie bewaard, dan niet langer dan WACHT_OP_VERS: bij goed bereik
+ * is de verse er dan al, bij traag bereik opent de app met de bewaarde en werkt hij zichzelf bij.
+ */
 export function wachtOp(namen: DataNaam[]): Promise<void> {
-  return Promise.all(namen.map((n) => laad(n).catch(() => {}))).then(() => {})
+  const alles = Promise.all(namen.map((n) => laad(n).catch(() => {}))).then(() => {})
+  if (!namen.every((n) => bewaard.has(n))) return alles
+  return Promise.race([alles, new Promise<void>((r) => setTimeout(r, WACHT_OP_VERS))])
 }
 
 export function useData<K extends DataNaam>(naam: K) {

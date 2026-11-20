@@ -644,6 +644,8 @@ export function startSneeuw(eigen = {}) {
   let storm
   let wind = 0
   let ijsVlakken = []
+  let meetTeller = 0
+  let meetVuil = true
 
   function leesAan() {
     if (cfg.aan !== null && cfg.aan !== undefined) return !!cfg.aan
@@ -1047,7 +1049,14 @@ export function startSneeuw(eigen = {}) {
     laatsteTeken = nu
     const begin = performance.now()
     stap(dt)
-    meetIjs()
+    // De glazen blokken opmeten dwingt de browser de pagina op te maken. In een kop scrollen ze met
+    // de sneeuw mee, dus elke 8e frame is genoeg (en meteen als de kop van maat verandert); als vaste
+    // achtergrond over de pagina schuiven ze bij het scrollen, dan elk frame.
+    if (cfg.vast || meetVuil || ++meetTeller >= 8) {
+      meetTeller = 0
+      meetVuil = false
+      meetIjs()
+    }
     zichtbaar = teken()
     const js = performance.now() - begin
     meetFps(nu, js)
@@ -1156,6 +1165,13 @@ export function startSneeuw(eigen = {}) {
   window.addEventListener('orientationchange', opResize)
   const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(opResize)
   ro?.observe(canvas)
+  // Verandert de kop (of wat erin zit) van maat, dan de glazen blokken meteen opnieuw opmeten
+  const roIjs = typeof ResizeObserver === 'undefined' || cfg.vast ? null : new ResizeObserver(() => (meetVuil = true))
+  const ijsOuder = doel.parentElement
+  if (roIjs && ijsOuder) {
+    roIjs.observe(ijsOuder)
+    for (const el of ijsOuder.querySelectorAll(cfg.vervaging?.selector || ':not(*)')) roIjs.observe(el)
+  }
   rm.addEventListener?.('change', opRm)
   // In een blok: stilzetten zodra het blok uit beeld is (weggescrold), weer verder als het terugkomt
   let inBeeld = true
@@ -1185,10 +1201,17 @@ export function startSneeuw(eigen = {}) {
   }
 
   // De vervaagde versies die de vlokken nodig hebben alvast maken in rustige momenten, één per keer,
-  // zodat er tijdens het vallen geen hapering is als een vlok ze voor het eerst gebruikt.
+  // zodat er tijdens het vallen geen hapering is als een vlok ze voor het eerst gebruikt. Pas een
+  // paar seconden na het openen van de app: het is veel rekenwerk (pixel voor pixel) en anders
+  // concurreert het met het opstarten. Tot dan tekent een vlok gewoon de scherpe versie.
   let warmId = 0
   const taken = new Map()
-  const rust = (f) => (window.requestIdleCallback ? window.requestIdleCallback(f, { timeout: 300 }) : setTimeout(f, 40))
+  const NA_OPENEN = 3000 // ms na het laden van de pagina
+  const rust = (f) => {
+    const stil = () => (window.requestIdleCallback ? window.requestIdleCallback(f, { timeout: 1500 }) : setTimeout(f, 40))
+    const wacht = NA_OPENEN - performance.now()
+    return wacht > 0 ? setTimeout(stil, wacht) : stil()
+  }
   function werk() {
     warmId = 0
     const [sleutel, t] = taken.entries().next().value ?? []
@@ -1319,6 +1342,7 @@ export function startSneeuw(eigen = {}) {
       window.removeEventListener('orientationchange', opResize)
       window.removeEventListener('scroll', opScroll)
       ro?.disconnect()
+      roIjs?.disconnect()
       io?.disconnect()
       rm.removeEventListener?.('change', opRm)
       if (cfg.vast) document.documentElement.classList.remove('ijs-canvas', 'ijs-css', 'sneeuw-aan')
