@@ -2,7 +2,7 @@ import { useOpgeslagen } from '../lib/opslag'
 import { Icoon } from './Icoon'
 
 /**
- * Op Home, onderaan bij Meldingen: de sneeuw op de achtergrond aan of uit (wordt onthouden op
+ * Op Home, onderaan bij Meldingen: de sneeuw in de blauwe koppen aan of uit (wordt onthouden op
  * deze telefoon). Zelfde rij en schakelaar als Meldingen (styles/home.css).
  */
 export function SneeuwRij() {
@@ -15,7 +15,7 @@ export function SneeuwRij() {
         </span>
         <span className="homerij__tekst">
           <b>Sneeuw</b>
-          <small>{aan ? 'Valt achter de schermen, af en toe stormt het' : 'Staat uit op deze telefoon'}</small>
+          <small>{aan ? 'Valt in de blauwe koppen, af en toe stormt het' : 'Staat uit op deze telefoon'}</small>
         </span>
         <span className={`schakelaar${aan ? ' is-aan' : ''}`} aria-hidden="true" />
       </button>

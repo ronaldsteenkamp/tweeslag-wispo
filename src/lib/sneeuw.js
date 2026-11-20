@@ -33,6 +33,11 @@
 export const STANDAARD = {
   /** Waar het canvas komt. Het krijgt position: fixed, z-index -1 en pointer-events: none. */
   doel: null, // null = document.body
+  /**
+   * true = één laag over het hele scherm, achter alle inhoud. false = de laag vult alleen het
+   * doel (bijv. een donkerblauwe kop) en stopt vanzelf als dat blok uit beeld is gescrold.
+   */
+  vast: true,
 
   /** Vlokken per 100.000 css-px² scherm bij volle intensiteit (390×844 ≈ 3,3 × dit getal). */
   dichtheid: 62,
@@ -504,6 +509,35 @@ function maakSprites(cfg, r, dpr) {
   })
 }
 
+/* ------------------------------------- Het weer --------------------------------------- */
+
+/*
+ * Intensiteit en storm zijn gedeeld door alle sneeuwlagen op de pagina. Elke donkere kop heeft
+ * een eigen canvas, maar het sneeuwt overal even hard en een storm loopt gewoon door als je van
+ * tab wisselt. De tijd komt van de klok, zodat het weer ook doorgaat als er niets getekend wordt.
+ */
+let WEER = null
+function maakWeer(seed) {
+  const r = maakToeval(seed)
+  return {
+    seed,
+    r,
+    ruisI: maakRuis(r),
+    ruisD: maakRuis(r),
+    ruisW: maakRuis(r),
+    ruisV: maakRuis(r),
+    ruisT: maakRuis(r),
+    // begin op een willekeurige plek in de ruis
+    t0: performance.now() / 1000 - r() * 1000,
+    storm: { fase: 'rust', tot: -1, kracht: 0, richting: 1, opbouw: 8, duur: 20, afzwakken: 12, start: 0 },
+  }
+}
+const klok = () => performance.now() / 1000 - WEER.t0
+let aantalLagen = 0
+
+/** Sprites zijn per sessie hetzelfde: niet voor elke kop opnieuw tekenen */
+const SPRITES = new Map()
+
 /* ------------------------------------- De motor -------------------------------------- */
 
 export function startSneeuw(eigen = {}) {
@@ -514,11 +548,12 @@ export function startSneeuw(eigen = {}) {
   canvas.className = 'sneeuwlaag'
   canvas.setAttribute('aria-hidden', 'true')
   Object.assign(canvas.style, {
-    position: 'fixed',
+    // vast: over het hele scherm, achter alle inhoud; anders: vult het eigen blok (bijv. een kop)
+    position: cfg.vast ? 'fixed' : 'absolute',
     inset: '0',
     width: '100%',
     height: '100%',
-    zIndex: '-1',
+    zIndex: cfg.vast ? '-1' : '',
     pointerEvents: 'none',
     display: 'block',
     contain: 'strict',
@@ -530,6 +565,7 @@ export function startSneeuw(eigen = {}) {
     /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
   const bepaalModus = () => (cfg.vervaging.modus === 'auto' ? (ios ? 'canvas' : 'css') : cfg.vervaging.modus)
   const zetModusKlasse = () => {
+    if (!cfg.vast) return
     const m = bepaalModus()
     document.documentElement.classList.toggle('ijs-canvas', m === 'canvas')
     document.documentElement.classList.toggle('ijs-css', m === 'css')
@@ -552,8 +588,10 @@ export function startSneeuw(eigen = {}) {
   let vorige = 0
   let laatsteTeken = 0
   const meting = { fps: 0, jsMs: 0, frames: 0, sinds: 0, jsSom: 0, laag: 0, hoog: 0 }
-  // storm: fase 'rust' | 'opbouw' | 'vol' | 'af'
-  const storm = { fase: 'rust', tot: 0, kracht: 0, richting: 1, wind: 0, opbouw: 8, duur: 20, afzwakken: 12, start: 0 }
+  // storm (gedeeld, zie WEER): fase 'rust' | 'opbouw' | 'vol' | 'af'. De wind is per laag, die
+  // volgt de storm met wat vertraging (nawaaien).
+  let storm
+  let wind = 0
   let ijsVlakken = []
 
   function leesAan() {
@@ -567,22 +605,18 @@ export function startSneeuw(eigen = {}) {
   }
 
   function initSeed(s) {
-    seed = s ?? cfg.seed ?? nieuweSeed()
-    r = maakToeval(seed)
-    ruisI = maakRuis(r)
-    ruisD = maakRuis(r)
-    ruisW = maakRuis(r)
-    ruisV = maakRuis(r)
-    ruisT = maakRuis(r)
-    t = r() * 1000 // begin op een willekeurige plek in de ruis
-    storm.fase = 'rust'
-    storm.kracht = 0
-    storm.wind = 0
-    plan(Math.max(cfg.storm.eersteNa, wachtTijd()))
+    const nieuw = s !== undefined || !WEER || (cfg.seed !== null && cfg.seed !== undefined && WEER.seed !== cfg.seed)
+    if (nieuw) WEER = maakWeer(s ?? cfg.seed ?? nieuweSeed())
+    ;({ seed, ruisI, ruisD, ruisW, ruisV, ruisT, storm } = WEER)
+    t = klok()
+    if (storm.tot < 0) plan(Math.max(cfg.storm.eersteNa, wachtTijd()))
+    // eigen vlokken per laag, het weer is gedeeld
+    r = maakToeval(seed ^ Math.imul(++aantalLagen, 0x9e3779b1))
+    wind = storm.kracht * storm.richting
   }
 
   function wachtTijd() {
-    return -Math.log(1 - r()) * cfg.storm.gemiddeldeWacht
+    return -Math.log(1 - WEER.r()) * cfg.storm.gemiddeldeWacht
   }
   function plan(over) {
     storm.fase = 'rust'
@@ -686,10 +720,11 @@ export function startSneeuw(eigen = {}) {
   function startStorm(richting) {
     if (isMinder()) return
     const s = cfg.storm
-    storm.richting = richting === 'links' ? 1 : richting === 'rechts' ? -1 : r() < 0.5 ? 1 : -1 // links = wind van links → naar rechts
-    storm.opbouw = r.tussen(s.opbouw[0], s.opbouw[1])
-    storm.duur = r.tussen(s.duur[0], s.duur[1])
-    storm.afzwakken = r.tussen(s.afzwakken[0], s.afzwakken[1])
+    const wr = WEER.r
+    storm.richting = richting === 'links' ? 1 : richting === 'rechts' ? -1 : wr() < 0.5 ? 1 : -1 // links = wind van links → naar rechts
+    storm.opbouw = wr.tussen(s.opbouw[0], s.opbouw[1])
+    storm.duur = wr.tussen(s.duur[0], s.duur[1])
+    storm.afzwakken = wr.tussen(s.afzwakken[0], s.afzwakken[1])
     storm.fase = 'opbouw'
     // als er al wat storm is, vloeiend verder vanaf de huidige kracht
     storm.start = t - storm.kracht * storm.opbouw
@@ -727,12 +762,12 @@ export function startSneeuw(eigen = {}) {
     }
     // De wind volgt de storm traag (opbouwen ~2,5 s, uitdoven = nawaaien)
     const doelWind = storm.kracht * storm.richting
-    const tau = Math.abs(doelWind) > Math.abs(storm.wind) ? 2.5 : s.nawaaien
-    storm.wind += (doelWind - storm.wind) * (1 - Math.exp(-dt / tau))
+    const tau = Math.abs(doelWind) > Math.abs(wind) ? 2.5 : s.nawaaien
+    wind += (doelWind - wind) * (1 - Math.exp(-dt / tau))
   }
 
   function stap(dt) {
-    t += dt
+    t = klok()
     werkStormBij(dt)
     const sc = cfg.storm
     const traag = isMinder() ? 0.35 : 1
@@ -740,8 +775,8 @@ export function startSneeuw(eigen = {}) {
     // wind: bries + storm met vlagen (twee ruislagen, een snelle en een langzame)
     const vlaag = 1 - sc.vlagen + sc.vlagen * (0.5 + 0.5 * ruisW(t * 0.33)) * (1.2 + 0.5 * ruisV(t * 0.11))
     const bries = cfg.bries * ruisW(t / 23 + 50) * traag
-    const stormWind = storm.wind * sc.wind * vlaag
-    const valFactor = 1 + sc.valFactor * Math.abs(storm.wind)
+    const stormWind = wind * sc.wind * vlaag
+    const valFactor = 1 + sc.valFactor * Math.abs(wind)
     const limiet = Math.ceil(vlokken.length * kwaliteit)
 
     for (const v of vlokken) {
@@ -754,7 +789,7 @@ export function startSneeuw(eigen = {}) {
       v.vx += (doelVx - v.vx) * volg
       v.x += v.vx * dt
       v.y += v.val * valFactor * traag * dt * (L === cfg.lagen.voorgrond ? 1 : 1 - 0.08 * Math.sin(t * v.zwaaiTempo * 2 + v.fase))
-      v.hoek += v.draai * dt * traag * (1 + Math.abs(storm.wind) * 1.5)
+      v.hoek += v.draai * dt * traag * (1 + Math.abs(wind) * 1.5)
 
       const marge = v.grootte
       if (v.y > hoogte + marge) {
@@ -908,11 +943,11 @@ export function startSneeuw(eigen = {}) {
       }
     }
     // witte waas aan de windkant tijdens een storm
-    const w = Math.abs(storm.wind) * cfg.storm.waas
+    const w = Math.abs(wind) * cfg.storm.waas
     if (w > 0.004) {
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.globalAlpha = 1
-      const links = storm.wind > 0
+      const links = wind > 0
       const g = ctx.createLinearGradient(links ? 0 : canvas.width, 0, links ? canvas.width : 0, 0)
       g.addColorStop(0, `rgba(255,255,255,${w.toFixed(3)})`)
       g.addColorStop(0.55, `rgba(255,255,255,${(w * 0.45).toFixed(3)})`)
@@ -974,14 +1009,14 @@ export function startSneeuw(eigen = {}) {
 
   // html.sneeuw-aan: de CSS gebruikt dit om blokken zonder sneeuw (en dus zonder onderlaag) dicht te maken
   let verborgen = false // zetZichtbaar(false): bijv. op een scherm met een kaart over de hele breedte
-  const zetAanKlasse = () => document.documentElement.classList.toggle('sneeuw-aan', aan && !verborgen)
+  const zetAanKlasse = () => cfg.vast && document.documentElement.classList.toggle('sneeuw-aan', aan && !verborgen)
 
   function isStil() {
     return isMinder() && cfg.minderBeweging === 'stil'
   }
   function draai() {
     zetAanKlasse()
-    if (raf || !aan || verborgen || document.hidden) return
+    if (raf || !aan || verborgen || !inBeeld || document.hidden) return
     if (isStil()) {
       canvas.style.display = 'block'
       meetIjs()
@@ -1046,12 +1081,29 @@ export function startSneeuw(eigen = {}) {
   const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(opResize)
   ro?.observe(canvas)
   rm.addEventListener?.('change', opRm)
+  // In een blok: stilzetten zodra het blok uit beeld is (weggescrold), weer verder als het terugkomt
+  let inBeeld = true
+  const io =
+    cfg.vast || typeof IntersectionObserver === 'undefined'
+      ? null
+      : new IntersectionObserver((items) => {
+          inBeeld = items[items.length - 1].isIntersecting
+          if (inBeeld) draai()
+          else pauzeer()
+        })
+  io?.observe(canvas)
 
   // --- start ---
   function opbouw(s) {
     initSeed(s)
     meetScherm()
-    sprites = maakSprites(cfg, r, dpr)
+    const sleutel = [seed, dpr, cfg.kleur, cfg.rand, cfg.randBreedte, cfg.aantalVormen, cfg.spriteGrootte].join('|')
+    sprites = SPRITES.get(sleutel)
+    if (!sprites) {
+      sprites = maakSprites(cfg, maakToeval(seed ^ 0x51ed), dpr)
+      if (SPRITES.size > 6) SPRITES.clear()
+      SPRITES.set(sleutel, sprites)
+    }
     vulPool()
   }
   opbouw()
@@ -1130,7 +1182,7 @@ export function startSneeuw(eigen = {}) {
       if (!waarde) kwaliteit = 1
     },
     nieuweSeed() {
-      opbouw()
+      opbouw(nieuweSeed())
     },
     status() {
       return {
@@ -1143,7 +1195,7 @@ export function startSneeuw(eigen = {}) {
         intensiteit: intensiteit(),
         storm: storm.fase,
         stormKracht: storm.kracht,
-        wind: storm.wind,
+        wind: wind,
         volgendeStorm: storm.fase === 'rust' ? Math.max(0, storm.tot - t) : 0,
         modus: bepaalModus(),
         dpr,
@@ -1164,8 +1216,9 @@ export function startSneeuw(eigen = {}) {
       window.removeEventListener('orientationchange', opResize)
       window.removeEventListener('scroll', opScroll)
       ro?.disconnect()
+      io?.disconnect()
       rm.removeEventListener?.('change', opRm)
-      document.documentElement.classList.remove('ijs-canvas', 'ijs-css', 'sneeuw-aan')
+      if (cfg.vast) document.documentElement.classList.remove('ijs-canvas', 'ijs-css', 'sneeuw-aan')
       canvas.remove()
     },
   }

@@ -541,7 +541,7 @@ button {
   pointer-events: none;
 }
 
-/* Twinkelende sterren (de vallende sneeuw zelf: styles/sneeuw.css) */
+/* Twinkelende sterren (de vallende sneeuw is een canvas, zie components/Sneeuw.tsx) */
 .sneeuw__ster {
   position: absolute;
   width: 2px;
