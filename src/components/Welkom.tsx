@@ -8,7 +8,7 @@ import { profielBestaatVoor, useMijnProfiel } from '../lib/profiel'
 import { NaamKiezer, useAlleNamen } from './NaamKiezer'
 import { BijnaamVeld, ProfielFormulier } from './Profiel'
 import { Sneeuw } from './Sneeuw'
-import { Bergen, MEIJE, rondTop } from './Bergen'
+import { Bergen, MEIJE, cameraVoor } from './Bergen'
 // Ingebakken in de bundel (?inline), zodat het logo er bij de allereerste keer openen meteen staat
 import woordmerk from '../assets/2slag-winter.svg?inline'
 import '../styles/barlow.css'
@@ -54,7 +54,7 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
         {stap === 'naam' && (
           <p className="welkom__zin">Er hangt er een met jouw naam. Daarmee weet de app welke kamer en score bij jou horen.</p>
         )}
-        <Bergen className="welkom__bergen" venster={rondTop(MEIJE, 520, 40)} vlag={MEIJE} lucht={20} diepte={60} dalHoogte={22} parallax={false} />
+        <Bergen className="welkom__bergen" camera={cameraVoor('welkom')} vlag={MEIJE} dalHoogte={22} parallax={false} />
       </header>
 
       <div className="welkom__inhoud">
