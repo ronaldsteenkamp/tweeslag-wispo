@@ -91,11 +91,13 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    // Alle data meteen ophalen, en nogmaals zodra de service worker de pagina overneemt
-    // (bij de allereerste keer openen), zodat alles offline klaarstaat.
+    // Alle data meteen ophalen (wat bij het starten al binnen is niet nog eens), en alles nogmaals
+    // zodra de service worker de pagina overneemt (bij de allereerste keer openen), zodat alles
+    // offline klaarstaat.
     haalAllesVooraf()
-    navigator.serviceWorker?.addEventListener('controllerchange', haalAllesVooraf)
-    return () => navigator.serviceWorker?.removeEventListener('controllerchange', haalAllesVooraf)
+    const opnieuw = () => haalAllesVooraf(true)
+    navigator.serviceWorker?.addEventListener('controllerchange', opnieuw)
+    return () => navigator.serviceWorker?.removeEventListener('controllerchange', opnieuw)
   }, [])
 
   // Tikken op de tabbalk wisselt direct, zonder animatie (zoals Instagram); alleen vegen schuift

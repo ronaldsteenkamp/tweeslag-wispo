@@ -17,6 +17,23 @@ export default defineConfig({
       transformIndexHtml: (html) =>
         html.replace('<!--logo-->', readFileSync(new URL('./public/logo.svg', import.meta.url), 'utf8').trim()),
     },
+    {
+      // De lettertypes meteen meeladen met de pagina. Anders vraagt de browser ze pas aan als de
+      // JavaScript draait (main.tsx wacht erop), en dat kost de eerste keer openen bijna een seconde.
+      name: 'lettertypes-vooraf',
+      apply: 'build',
+      transformIndexHtml: {
+        order: 'post',
+        handler: (_html, ctx) =>
+          Object.keys(ctx.bundle ?? {})
+            .filter((f) => /barlow.*\.woff2$/.test(f))
+            .map((f) => ({
+              tag: 'link',
+              attrs: { rel: 'preload', href: `${base}${f}`, as: 'font', type: 'font/woff2', crossorigin: '' },
+              injectTo: 'head' as const,
+            })),
+      },
+    },
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
