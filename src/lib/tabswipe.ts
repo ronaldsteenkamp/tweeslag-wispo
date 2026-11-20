@@ -37,6 +37,18 @@ export function wisselPaneel(): HTMLElement | null {
 
 const buurPaneel = () => document.querySelector<HTMLElement>('.buurpaneel')
 
+/**
+ * Het doorlopende bergenlandschap (Bergen met camera) schuift trager dan het scherm: per hele veeg
+ * maar één stap. Daarvoor schuiven de bergen-svg's in een paneel een deel (data-veeg) terug.
+ */
+function bergenIn(el: HTMLElement | null): { svg: SVGSVGElement; deel: number }[] {
+  if (!el) return []
+  return [...el.querySelectorAll<HTMLElement>('.bergen-vlak--doorlopend')].flatMap((v) =>
+    [...v.querySelectorAll<SVGSVGElement>('.bergen-vlak__svg')].map((svg) => ({ svg, deel: Number(v.dataset.veeg) || 0 })),
+  )
+}
+const terug = (x: number, deel: number) => `translateX(${(-x * deel).toFixed(1)}px)`
+
 /** Ligt het startpunt in iets dat zelf horizontaal scrollt (zoals de dagkiezer)? */
 function scrolltHorizontaal(el: Element | null): boolean {
   for (let e = el; e && e !== document.body; e = e.parentElement) {
@@ -76,14 +88,22 @@ export function useTabSwipe({ aan, kan, onBuur, onWissel }: Opties) {
     const zet = (x: number) => {
       const b = window.innerWidth
       if (paneel) paneel.style.transform = x ? `translateX(${x}px)` : ''
+      for (const { svg, deel } of bergenIn(paneel)) svg.style.transform = x ? terug(x, deel) : ''
       const bp = buurPaneel()
-      if (bp && buur) bp.style.transform = `translateX(${x + buur * b}px)`
+      if (bp && buur) {
+        bp.style.transform = `translateX(${x + buur * b}px)`
+        for (const { svg, deel } of bergenIn(bp)) svg.style.transform = terug(x + buur * b, deel)
+      }
     }
 
     const opruimen = (el: HTMLElement | null) => {
       if (!el) return
       el.style.transform = ''
       el.style.willChange = ''
+      for (const { svg } of bergenIn(el)) {
+        svg.getAnimations().forEach((a) => a.cancel())
+        svg.style.transform = ''
+      }
     }
 
     const neer = (e: TouchEvent) => {
@@ -167,7 +187,11 @@ export function useTabSwipe({ aan, kan, onBuur, onWissel }: Opties) {
       bezig = true
       const opties2: KeyframeAnimationOptions = { duration: duur, easing: AFLOOP, fill: 'forwards' }
       const anim = el.animate([{ transform: `translateX(${dx}px)` }, { transform: `translateX(${doelX}px)` }], opties2)
-      if (bp && r) bp.animate([{ transform: `translateX(${dx + r * b}px)` }, { transform: `translateX(${doelX + r * b}px)` }], opties2)
+      for (const { svg, deel } of bergenIn(el)) svg.animate([{ transform: terug(dx, deel) }, { transform: terug(doelX, deel) }], opties2)
+      if (bp && r) {
+        bp.animate([{ transform: `translateX(${dx + r * b}px)` }, { transform: `translateX(${doelX + r * b}px)` }], opties2)
+        for (const { svg, deel } of bergenIn(bp)) svg.animate([{ transform: terug(dx + r * b, deel) }, { transform: terug(doelX + r * b, deel) }], opties2)
+      }
       let gedaan = false
       const eenmaal = () => {
         if (gedaan) return

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { PANORAMA as P } from '../lib/bergen-data'
+import { PANORAMA as P } from '../lib/bergen-bijgestuurd'
 import '../styles/bergen.css'
 
 /*
@@ -42,6 +42,11 @@ interface Props {
   style?: CSSProperties
   /** extra tekenwerk in dezelfde coördinaten, vóór de sneeuw (bijv. een route) */
   extra?: (vb: ViewBox) => ReactNode
+  /**
+   * Doorlopend landschap: het midden van het beeld in panorama-px (zie cameraVoor). Dan gelden een
+   * vaste schaal en horizon voor alle schermen, en negeert het venster/lucht/diepte.
+   */
+  camera?: number
 }
 
 const DIEPTE = [0.2, 0.42, 0.7, 1]
@@ -58,6 +63,46 @@ export function getekendeTop(naam: string, lagen: number[] = [0, 1, 2, 3]) {
       for (const [x, y] of P.lagen[i].kam)
         if (Math.abs(x - osm.x) <= 12 && (!top || y < top.y)) top = { x, y, laag: i }
   return top
+}
+
+/*
+ * Doorlopend landschap (mockups/bergen-doorlopend.html): één camera die per tab van de tabbalk een
+ * stap naar rechts schuift. Overal dezelfde schaal (BREED panorama-px over een telefoonbreedte) en
+ * dezelfde horizon, zodat het voelt als kijken langs één bergkam. Bij het vegen tussen tabs schuiven
+ * de bergen trager mee dan het scherm (tabswipe.ts); daarom tekenen we opzij extra panorama.
+ */
+const BREED = 700
+const STAP = 100
+const HORIZON = 225
+const TABS_LANDSCHAP = ['home', 'planning', 'paklijst', 'kamers', 'kaart', 'rad', 'spel']
+/** Bij welke tab een scherm hoort (schermen achter een tab staan op dezelfde plek) */
+const BIJ_TAB: Record<string, string> = { verdelen: 'kamers', beheer: 'kamers', fotos: 'spel', welkom: 'home' }
+
+/** Het midden van het beeld voor een scherm, of undefined (Weer en onbekende schermen: eigen uitzicht) */
+export function cameraVoor(scherm: string): number | undefined {
+  const i = TABS_LANDSCHAP.indexOf(BIJ_TAB[scherm] ?? scherm)
+  return i < 0 ? undefined : 445 + STAP * i
+}
+
+function doorlopend(camera: number, breedtePx: number, verhouding: number, lagen: number[], vlag: boolean) {
+  // op een tablet niet inzoomen maar meer panorama laten zien
+  const b = Math.min(P.breedte, BREED * Math.max(1, breedtePx / 390))
+  const h = b / verhouding
+  // de horizon is overal gelijk, behalve waar de hoogste top dan boven de rand zou vallen
+  let top = P.hoogte
+  for (const i of lagen) for (const [x, y] of P.lagen[i].kam) if (x >= camera - b / 2 && x <= camera + b / 2) top = Math.min(top, y)
+  const yb = Math.min(HORIZON, top - (vlag ? 26 : 6) + h)
+  // opzij: zoveel als het scherm bij een hele veeg méér schuift dan de bergen
+  const opzijPx = b - (STAP * b) / BREED
+  return {
+    x0: camera - b / 2 - opzijPx,
+    x1: camera + b / 2 + opzijPx,
+    y0: yb - h,
+    yb,
+    opzij: opzijPx / b,
+    // deel van de veeg dat de bergen terugschuiven: ze lopen STAP mee per schermbreedte
+    veeg: 1 - STAP / BREED,
+  }
 }
 
 /** Boven- en onderkant van een stuk panorama */
@@ -89,14 +134,16 @@ export function Bergen({
   className = '',
   style,
   extra,
+  camera,
 }: Props) {
   const vak = useRef<HTMLDivElement>(null)
-  const [verhouding, setVerhouding] = useState(0)
+  const [maat, setMaat] = useState({ b: 0, h: 0 })
+  const verhouding = maat.h ? maat.b / maat.h : 0
 
   useLayoutEffect(() => {
     const el = vak.current
     if (!el) return
-    const meet = () => setVerhouding(el.clientWidth / Math.max(1, el.clientHeight))
+    const meet = () => setMaat((m) => (m.b === el.clientWidth && m.h === el.clientHeight ? m : { b: el.clientWidth, h: el.clientHeight }))
     meet()
     if (typeof ResizeObserver === 'undefined') return
     const ro = new ResizeObserver(meet)
@@ -107,7 +154,10 @@ export function Bergen({
   // venster en hoogte; breder maken als het vlak breder is dan het stuk
   let [x0, x1] = venster
   let { y0, yb } = kader([x0, x1], lagen, lucht, diepte, !!vlag)
-  if (verhouding > ((x1 - x0) / (yb - y0)) * 1.02) {
+  // Doorlopend: vaste schaal en horizon, met extra panorama opzij voor het vegen (zie doorlopend())
+  const door = camera !== undefined && verhouding ? doorlopend(camera, maat.b, verhouding, lagen, !!vlag) : null
+  if (door) ({ x0, x1, y0, yb } = door)
+  else if (verhouding > ((x1 - x0) / (yb - y0)) * 1.02) {
     for (let stap = 0; stap < 2; stap++) {
       const nodig = Math.min(P.breedte, (yb - y0) * verhouding)
       const midden = (x0 + x1) / 2
@@ -161,14 +211,38 @@ export function Bergen({
   )
   const w = vb.w
   const yd = yb - dalHoogte
+  const svgStijl: CSSProperties | undefined = door ? { left: `${-door.opzij * 100}%`, width: `${(1 + 2 * door.opzij) * 100}%` } : undefined
   const svg = (soort: string, inhoud: ReactNode) => (
-    <svg className={`bergen-vlak__svg bergen-vlak__svg--${soort}`} viewBox={viewBox} preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+    <svg
+      className={`bergen-vlak__svg bergen-vlak__svg--${soort}`}
+      style={svgStijl}
+      viewBox={viewBox}
+      preserveAspectRatio="xMidYMax slice"
+      aria-hidden="true"
+      focusable="false"
+    >
       {inhoud}
     </svg>
   )
+  // het dal golft op vaste plekken in het panorama, zodat het bij het vegen doorloopt
+  const dalPad = door
+    ? (() => {
+        const golf = (x: number) => yd + 4 * Math.sin(x / 70) + 2.5 * Math.sin(x / 23 + 1)
+        let d = `M${x0} ${yb}`
+        for (let x = Math.floor(x0 / 12) * 12; x <= x1 + 12; x += 12) d += `L${x} ${golf(x).toFixed(1)}`
+        return d + `L${x1 + 12} ${yb}Z`
+      })()
+    : `M${x0} ${yb}V${yd + 6}C${x0 + w * 0.18} ${yd - 4} ${x0 + w * 0.36} ${yd + 8} ${x0 + w * 0.54} ${yd + 2}S${x0 + w * 0.87} ${yd - 6} ${x1} ${yd + 4}V${yb}Z`
 
   return (
-    <div ref={vak} className={`bergen-vlak ${className}`} style={style} data-weer={weer} aria-hidden="true">
+    <div
+      ref={vak}
+      className={`bergen-vlak${door ? ' bergen-vlak--doorlopend' : ''} ${className}`}
+      style={style}
+      data-weer={weer}
+      data-veeg={door ? door.veeg.toFixed(4) : undefined}
+      aria-hidden="true"
+    >
       {svg(
         'achter',
         <>
@@ -181,12 +255,7 @@ export function Bergen({
         <>
           {voor.map(laag)}
           {top && top.laag >= voorVanaf && vlagje}
-          {dal && (
-            <path
-              className="dal"
-              d={`M${x0} ${yb}V${yd + 6}C${x0 + w * 0.18} ${yd - 4} ${x0 + w * 0.36} ${yd + 8} ${x0 + w * 0.54} ${yd + 2}S${x0 + w * 0.87} ${yd - 6} ${x1} ${yd + 4}V${yb}Z`}
-            />
-          )}
+          {dal && <path className="dal" d={dalPad} />}
           {extra?.(vb)}
         </>,
       )}
@@ -204,19 +273,13 @@ export function rondTop(naam: string, breedte: number, verschuif = 0): [number, 
 
 export const MEIJE = 'Grand Pic de la Meije'
 
-/** Per scherm een eigen stuk van de kam voor de strook onder de kop (La Meije zelf staat op Home en Paklijst) */
-const STROOK: Record<string, [number, number]> = {
-  planning: [0, 600],
-  kamers: [700, 1300],
-  verdelen: [700, 1300],
-  beheer: [700, 1300],
-  rad: [900, 1500],
-  spel: [780, 1380],
-  fotos: [780, 1380],
-  weer: [860, 1460],
-}
+/** Weer hoort niet bij de tabbalk: eigen uitzicht op de gletsjer */
+const WEER: [number, number] = [860, 1460]
 
-/** De strook onderaan een donkerblauwe kop (SchermKop, Spel): kiest zelf het stuk bij het scherm */
+/**
+ * De strook onderaan een donkerblauwe kop (SchermKop, Spel): de tabs liggen op één doorlopend
+ * landschap (cameraVoor), Weer en onbekende schermen krijgen een eigen stuk.
+ */
 export function Bergstrook({ weer }: { weer?: Props['weer'] }) {
   const plek = useRef<HTMLSpanElement>(null)
   const [scherm, setScherm] = useState('')
@@ -228,7 +291,17 @@ export function Bergstrook({ weer }: { weer?: Props['weer'] }) {
   return (
     <>
       <span ref={plek} hidden />
-      <Bergen className="bergen-vlak--strook" venster={STROOK[scherm] ?? [300, 900]} lucht={4} diepte={40} dalHoogte={12} weer={weer} />
+      {scherm && (
+        <Bergen
+          className="bergen-vlak--strook"
+          camera={cameraVoor(scherm)}
+          venster={scherm === 'weer' ? WEER : [300, 900]}
+          lucht={4}
+          diepte={40}
+          dalHoogte={12}
+          weer={weer}
+        />
+      )}
     </>
   )
 }

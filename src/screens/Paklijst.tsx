@@ -11,7 +11,7 @@ import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { Sneeuw } from '../components/Sneeuw'
 import { Bergen, MEIJE, getekendeTop, rondTop, type ViewBox } from '../components/Bergen'
-import { PANORAMA } from '../lib/bergen-data'
+import { PANORAMA } from '../lib/bergen-bijgestuurd'
 import { config } from '../config'
 import { useData } from '../lib/data'
 import { nu } from '../lib/nu'
@@ -428,7 +428,7 @@ function Profiel({
       </div>
       <Bergen
         className="pakprofiel__bergen"
-        venster={rondTop(MEIJE, 440, -50)}
+        venster={rondTop(MEIJE, 440, -50)} // ingezoomd op La Meije: hier klim je hem op (geen doorlopende schaal)
         lucht={44}
         diepte={70}
         dalHoogte={18}

@@ -4,7 +4,7 @@ import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
 import { FotoStrip } from '../components/FotoStrip'
 import { MeldingenKaart } from '../components/Meldingen'
-import { Bergen, MEIJE, rondTop } from '../components/Bergen'
+import { Bergen, MEIJE, cameraVoor } from '../components/Bergen'
 import { SneeuwRij } from '../components/SneeuwRij'
 import { openMijnProfiel } from '../components/Profiel'
 import { Sneeuw } from '../components/Sneeuw'
@@ -279,7 +279,7 @@ function KopVoor({ naam, pak }: { naam: string | null; pak: PakStand }) {
         </small>
       </h1>
       <p className="homekop__zin">{zin}</p>
-      <Bergen className="homekop__bergen" venster={rondTop(MEIJE, 520, 40)} vlag={MEIJE} lucht={24} diepte={60} dalHoogte={22} />
+      <Bergen className="homekop__bergen" camera={cameraVoor('home')} vlag={MEIJE} dalHoogte={22} />
     </header>
   )
 }
@@ -360,7 +360,7 @@ function KopDag({
           </button>
         )}
       </div>
-      <Bergen className="homekop__bergen homekop__bergen--laag" venster={[860, 1460]} lucht={4} diepte={36} dalHoogte={12} />
+      <Bergen className="homekop__bergen homekop__bergen--laag" camera={cameraVoor('home')} dalHoogte={12} />
 
     </header>
   )

@@ -63,6 +63,12 @@
 }
 
 /* Strook onderaan een kop (SchermKop, Spel): vervangt de oude bergrand van .golf */
+/* Doorlopend: de svg's zijn breder dan het vlak (extra panorama opzij voor het vegen); het vlak knipt.
+   overflow maakt geen eigen stapelvolgorde, de z-index-truc hierboven blijft werken. */
+.bergen-vlak--doorlopend {
+  overflow: hidden;
+}
+
 .bergen-vlak--strook {
   position: absolute;
   left: 0;
