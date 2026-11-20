@@ -825,8 +825,15 @@ export function startSneeuw(eigen = {}) {
       stijlFrame = 0
       stijlCache = new WeakMap()
     }
-    for (const el of document.querySelectorAll(zoek.join(', '))) {
-      const b = el.getBoundingClientRect()
+    // Vaste laag: blokken overal op de pagina, in schermcoördinaten. Laag in een blok (vast:
+    // false): alleen blokken binnen dat blok (bijv. de knoppen in een kop), ten opzichte van het canvas.
+    const bereik = cfg.vast ? document : doel.parentElement || doel
+    const c = cfg.vast ? null : canvas.getBoundingClientRect()
+    const dx = c ? c.left : 0
+    const dy = c ? c.top : 0
+    for (const el of bereik.querySelectorAll(zoek.join(', '))) {
+      const rb = el.getBoundingClientRect()
+      const b = { left: rb.left - dx, top: rb.top - dy, bottom: rb.bottom - dy, width: rb.width, height: rb.height }
       if (b.bottom < 0 || b.top > hoogte || b.width === 0) continue
       let st = stijlCache.get(el)
       if (!st) {
