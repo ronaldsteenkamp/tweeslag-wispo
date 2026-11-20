@@ -305,6 +305,7 @@ export function Bergen({
     : `M${x0} ${yb}V${yd + 6}C${x0 + w * 0.18} ${yd - 4} ${x0 + w * 0.36} ${yd + 8} ${x0 + w * 0.54} ${yd + 2}S${x0 + w * 0.87} ${yd - 6} ${x1} ${yd + 4}V${yb}Z`
 
   return (
+    <>
     <div
       ref={vak}
       className={`bergen-vlak${door ? ' bergen-vlak--doorlopend' : ''} ${className}`}
@@ -331,10 +332,13 @@ export function Bergen({
           {extra?.(vb)}
         </>,
       )}
-      {door && tekstTot > 0 && (
-        <span className="bergen-vlak__waas" style={{ '--tekst-tot': `${tekstTot}px` } as CSSProperties} />
-      )}
     </div>
+    {/* De waas ligt naast het bergvlak (dat knipt alles af op zijn rand), zodat hij vanaf de
+        bovenkant van het scherm doorloopt en er geen rand is waar de bergen beginnen */}
+    {door && tekstTot > 0 && (
+      <span className="bergen-vlak__waas" style={{ '--tekst-tot': `${tekstTot}px` } as CSSProperties} aria-hidden="true" />
+    )}
+    </>
   )
 }
 

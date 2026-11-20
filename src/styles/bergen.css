@@ -105,8 +105,11 @@
 
 /* Waas: waar de tekst van de kop over de bergen valt, een donkerblauwe waas zodat witte tekst
    leesbaar blijft. Loopt tot vlak onder de tekst (--tekst-tot, gemeten in Bergen.tsx) en vloeit
-   dan weg. Ligt boven de bergen en de sneeuw (zelfde z-index, later in de pagina), onder de tekst. */
+   dan weg. Ligt boven de bergen en de sneeuw (zelfde z-index, later in de pagina), onder de tekst.
+   Hij ligt naast het bergvlak in de kop en begint bovenaan het scherm: geen rand waar de bergen
+   beginnen. --tekst-tot is gemeten vanaf de bovenkant van het bergvlak, vandaar de verschuiving. */
 .bergen-vlak__waas {
+  --waas-tot: calc(var(--boven, 0px) + 58px + var(--tekst-tot));
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -114,8 +117,8 @@
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--hero) 74%, transparent) 0,
-    color-mix(in srgb, var(--hero) 74%, transparent) calc(var(--tekst-tot) - 6px),
-    transparent calc(var(--tekst-tot) + 34px)
+    color-mix(in srgb, var(--hero) 74%, transparent) calc(var(--waas-tot) - 6px),
+    transparent calc(var(--waas-tot) + 34px)
   );
 }
 
