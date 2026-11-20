@@ -203,24 +203,31 @@ export default function App() {
           ernaast; na het wisselen wórdt dat vak het huidige scherm (zelfde key, zelfde element),
           zodat er niets opnieuw opgebouwd wordt: geen knipperen, geen opnieuw ladende kaart. */}
       <main>
-        <div key={tab} className={`inhoud inhoud--${tab} huidig`} ref={(el) => el?.removeAttribute('inert')}>
-          {scherm(tab)}
-        </div>
-        {/* De buurschermen, zoals ze eruitzien als je er bovenaan binnenkomt. Niet aan te raken.
-            Klaargezette buren staan onzichtbaar (is-rust) tot je hun kant op veegt. */}
+        {/* Het huidige scherm en de buren staan in één lijst: React herkent een vak alleen aan zijn
+            key binnen dezelfde lijst. Stonden ze apart, dan werd een buur die het huidige scherm wordt
+            weggegooid en opnieuw opgebouwd (foto's en kaart knipperden). De buurschermen zien eruit
+            zoals je er bovenaan binnenkomt en zijn niet aan te raken; klaargezette buren staan
+            onzichtbaar (is-rust) tot je hun kant op veegt. */}
         {[
+          { id: tab as Scherm, r: 0 as const },
           ...klaarBuren,
           ...(buurTab && !klaarBuren.some((b) => b.id === buurTab) ? [{ r: buur!, id: buurTab }] : []),
-        ].map((b) => (
-          <div
-            key={b.id}
-            className={`inhoud inhoud--${b.id} buurpaneel buurpaneel--${b.r > 0 ? 'rechts' : 'links'}${b.r === buur ? '' : ' is-rust'}`}
-            aria-hidden="true"
-            ref={(el) => el?.setAttribute('inert', '')}
-          >
-            {scherm(b.id)}
-          </div>
-        ))}
+        ].map((b) =>
+          b.r === 0 ? (
+            <div key={b.id} className={`inhoud inhoud--${b.id} huidig`} ref={(el) => el?.removeAttribute('inert')}>
+              {scherm(b.id)}
+            </div>
+          ) : (
+            <div
+              key={b.id}
+              className={`inhoud inhoud--${b.id} buurpaneel buurpaneel--${b.r > 0 ? 'rechts' : 'links'}${b.r === buur ? '' : ' is-rust'}`}
+              aria-hidden="true"
+              ref={(el) => el?.setAttribute('inert', '')}
+            >
+              {scherm(b.id)}
+            </div>
+          ),
+        )}
       </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <ProfielVenster />
