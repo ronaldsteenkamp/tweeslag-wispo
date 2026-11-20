@@ -73,8 +73,8 @@ export function getekendeTop(naam: string, lagen: number[] = [0, 1, 2, 3]) {
  */
 const BREED = 700
 const STAP = 100
-/** Onderkant van het beeld in panorama-px: overal gelijk, dus de toppen staan in elke kop even hoog */
-const HORIZON = 232
+/** Ruimte (css-px) tussen de bovenkant van het bergvlak en de hoogste top: daar past de vlag in */
+const MARGE = 38
 /** Hoogte van het dal onderaan, ook overal gelijk */
 const DAL = 14
 const TABS_LANDSCHAP = ['home', 'planning', 'paklijst', 'kamers', 'kaart', 'rad', 'spel']
@@ -93,18 +93,40 @@ export function cameraVoor(scherm: string): number | undefined {
 /** Laatst gemeten maat per soort vlak: een nieuw scherm (bijv. het buurscherm bij vegen) hoeft dan niet twee keer te tekenen */
 const MAAT = new Map<string, { b: number; h: number }>()
 
-function doorlopend(camera: number, breedtePx: number, verhouding: number) {
+/** Hoogste punt (kleinste y) van de kammen tussen a en b, ook waar een lijn van buiten het beeld binnenkomt */
+function hoogsteIn(a: number, b: number, lagen: number[]) {
+  let top = P.hoogte
+  for (const i of lagen) {
+    const kam = P.lagen[i].kam
+    for (let k = 0; k < kam.length; k++) {
+      const [x, y] = kam[k]
+      if (x >= a && x <= b) top = Math.min(top, y)
+      if (k === 0) continue
+      const [px, py] = kam[k - 1]
+      for (const rand of [a, b])
+        if (px < rand && x > rand) top = Math.min(top, py + ((y - py) * (rand - px)) / (x - px))
+    }
+  }
+  return top
+}
+
+function doorlopend(camera: number, breedtePx: number, verhouding: number, lagen: number[]) {
   // op een tablet niet inzoomen maar meer panorama laten zien
   const b = Math.min(P.breedte, BREED * Math.max(1, breedtePx / 390))
   const h = b / verhouding
+  // De hoogste top in beeld staat altijd MARGE px onder de bovenkant van het vlak, en het vlak
+  // begint op elk scherm even ver van de bovenkant (--bergen-top in bergen.css). Zo staat de top
+  // overal op dezelfde hoogte op het scherm; de berg loopt door tot de onderkant van de kop.
+  const top = hoogsteIn(camera - b / 2, camera + b / 2, lagen)
+  const y0 = top - (MARGE * b) / breedtePx
   // opzij: zoveel als het scherm bij een hele veeg méér schuift dan de bergen (Weer veegt niet mee)
   const veeg = camera === WEER_CAMERA ? 0 : 1 - STAP / BREED
   const opzijPx = b * veeg
   return {
     x0: camera - b / 2 - opzijPx,
     x1: camera + b / 2 + opzijPx,
-    y0: HORIZON - h,
-    yb: HORIZON,
+    y0,
+    yb: y0 + h,
     opzij: opzijPx / b,
     // deel van de veeg dat de bergen terugschuiven: ze lopen STAP mee per schermbreedte
     veeg,
@@ -166,7 +188,7 @@ export function Bergen({
   let [x0, x1] = venster
   let { y0, yb } = kader([x0, x1], lagen, lucht, diepte, !!vlag)
   // Doorlopend: vaste schaal en horizon, met extra panorama opzij voor het vegen (zie doorlopend())
-  const door = camera !== undefined && verhouding ? doorlopend(camera, maat.b, verhouding) : null
+  const door = camera !== undefined && verhouding ? doorlopend(camera, maat.b, verhouding, lagen) : null
   if (door) ({ x0, x1, y0, yb } = door)
   else if (verhouding > ((x1 - x0) / (yb - y0)) * 1.02) {
     for (let stap = 0; stap < 2; stap++) {
@@ -179,6 +201,32 @@ export function Bergen({
   }
   const vb: ViewBox = { x: x0, y: y0, w: x1 - x0, h: yb - y0 }
   const viewBox = `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}`
+
+  // Doorlopend: de top staat overal even hoog, dus in een hoge kop ligt de berg achter de tekst. Meet
+  // tot waar de tekst van de kop loopt (gezien vanaf de bovenkant van het bergvlak) voor de waas.
+  const [tekstTot, setTekstTot] = useState(0)
+  const doorlopendAan = camera !== undefined
+  useLayoutEffect(() => {
+    const el = vak.current
+    const kop = el?.offsetParent as HTMLElement | null
+    if (!el || !kop || !doorlopendAan) return
+    const meet = () => {
+      const boven = el.getBoundingClientRect().top
+      let onder = boven
+      for (const c of kop.children) {
+        if (c.contains(el) || c.classList.contains('sneeuw') || (c as HTMLElement).hidden) continue
+        if (getComputedStyle(c).position === 'absolute') continue
+        onder = Math.max(onder, c.getBoundingClientRect().bottom)
+      }
+      const tot = Math.round(onder - boven)
+      setTekstTot((t) => (t === tot ? t : tot))
+    }
+    meet()
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(meet)
+    ro.observe(kop)
+    return () => ro.disconnect()
+  }, [doorlopendAan])
 
   // parallax bij scrollen: verre lagen blijven iets achter
   useEffect(() => {
@@ -265,10 +313,15 @@ export function Bergen({
         'voor',
         <>
           {voor.map(laag)}
+          {/* een hoge kop reikt verder omlaag dan het panorama: daar loopt de voorste berg door */}
+          {door && yb > P.hoogte && <rect className={`l${lagen[lagen.length - 1]}`} x={x0} y={P.hoogte - 1} width={x1 - x0} height={yb - P.hoogte + 1} />}
           {top && top.laag >= voorVanaf && vlagje}
           {dal && <path className="dal" d={dalPad} />}
           {extra?.(vb)}
         </>,
+      )}
+      {door && tekstTot > 0 && (
+        <span className="bergen-vlak__waas" style={{ '--tekst-tot': `${tekstTot}px` } as CSSProperties} />
       )}
     </div>
   )
