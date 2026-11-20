@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -454,62 +453,106 @@ function kamY(x: number) {
   return kam[kam.length - 1][1]
 }
 
+/** Hoe ver een stuk piste heen en weer slingert, naar moeilijkheid: groen krult, zwart gaat recht omhoog */
+const SLINGER: Record<(typeof KLEUREN)[number], number> = { groen: 1, blauw: 0.6, rood: 0.3, zwart: 0 }
+const STAPPEN = 240
+
 /**
- * De route: van het dal in zigzag over de witte linkerflank van La Meije naar de top. Op elke hoogte
- * ligt hij een stukje ín de berg (onder de kam), en hij slingert heen en weer zoals een piste.
+ * De route: van het dal over de witte linkerflank van La Meije naar de top. Op elke hoogte ligt hij een
+ * stukje ín de berg (onder de kam). Elk onderwerp is een stuk piste (t0–t1, naar aantal spullen) en
+ * slingert naar zijn kleur: groen in brede bochten, blauw en rood minder, zwart als één rechte lijn.
  */
-function routePad(vb: ViewBox) {
+function routePad(vb: ViewBox, stukken: { t0: number; t1: number; kleur: (typeof KLEUREN)[number] }[]) {
   const top = getekendeTop(MEIJE)!
   const onder = vb.y + vb.h - 12
-  const n = 7
-  const punten: { x: number; y: number }[] = []
-  for (let i = 0; i <= n; i++) {
-    const t = i / n
-    const x = top.x - 150 * (1 - t) + (i < n ? (i % 2 ? 22 : -22) * (1 - t) : 0)
+  const basis = (t: number, dx = 0) => {
+    const x = top.x - 150 * (1 - t) + dx
     const kam = kamY(x)
-    const y = i === n ? top.y : Math.min(onder, kam + (onder - kam) * (1 - t) * 0.75 + 10 * (1 - t))
-    punten.push({ x, y })
+    return { x, y: t >= 1 ? top.y : Math.min(onder, kam + (onder - kam) * (1 - t) * 0.75 + 10 * (1 - t)) }
   }
-  return (
-    'M' +
-    punten
-      .map((q, i) => {
-        if (!i) return `${q.x.toFixed(1)} ${q.y.toFixed(1)}`
-        const v = punten[i - 1]
-        return `Q${((v.x + q.x) / 2 + (i % 2 ? 18 : -18)).toFixed(1)} ${((v.y + q.y) / 2).toFixed(1)} ${q.x.toFixed(1)} ${q.y.toFixed(1)}`
-      })
-      .join('')
-  )
+  const slinger = (t: number) => {
+    const s = stukken.find((s) => t >= s.t0 && t <= s.t1)
+    return s ? SLINGER[s.kleur] : 1
+  }
+  // de uitslag zacht laten over- en afnemen op de grens van twee stukken, anders knikt de lijn
+  const ts = Array.from({ length: STAPPEN + 1 }, (_, i) => i / STAPPEN)
+  const ruw = ts.map(slinger)
+  // de slinger staat dwars op de looprichting van de ruggengraat (anders schuift hij alleen langs de
+  // helling heen en weer); hoe krulleriger het stuk, hoe vaker het draait
+  const rug = ts.map((t) => basis(t))
+  let fase = 0
+  const pts = ts.map((t, i) => {
+    let som = 0
+    let n = 0
+    for (let j = Math.max(0, i - 6); j <= Math.min(STAPPEN, i + 6); j++, n++) som += ruw[j]
+    const k = som / n
+    if (i) fase += (Math.PI * 2 * (3 + 4 * k)) / STAPPEN
+    const a = k * 16 * (1 - t * 0.4) * Math.min(1, t * 30)
+    const v = rug[Math.max(0, i - 1)]
+    const w = rug[Math.min(STAPPEN, i + 1)]
+    const l = Math.hypot(w.x - v.x, w.y - v.y) || 1
+    const x = rug[i].x + (-(w.y - v.y) / l) * a * Math.sin(fase)
+    const y = rug[i].y + ((w.x - v.x) / l) * a * Math.sin(fase)
+    return { x, y: t >= 1 ? y : Math.min(onder, Math.max(y, kamY(x) + 3)) }
+  })
+  // zwart: één rechte lijn van begin tot eind van het stuk (wel in de berg houden)
+  for (const s of stukken) {
+    if (s.kleur !== 'zwart') continue
+    const i0 = Math.round(s.t0 * STAPPEN)
+    const i1 = Math.round(s.t1 * STAPPEN)
+    for (let i = i0 + 1; i < i1; i++) {
+      const f = (i - i0) / (i1 - i0)
+      const x = pts[i0].x + (pts[i1].x - pts[i0].x) * f
+      const y = pts[i0].y + (pts[i1].y - pts[i0].y) * f
+      pts[i] = { x, y: Math.max(y, Math.min(onder, kamY(x) + 3)) }
+    }
+  }
+  const lang = [0]
+  for (let i = 1; i < pts.length; i++) lang.push(lang[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y))
+  const d = 'M' + pts.map((q) => `${q.x.toFixed(1)} ${q.y.toFixed(1)}`).join('L')
+  return { d, pts, lang }
 }
 
 function Route({ vb, perCat, p, totaal }: { vb: ViewBox; perCat: { klaar: number; totaal: number }[]; p: number; totaal: number }) {
-  const d = useMemo(() => routePad(vb), [vb.x, vb.y, vb.w, vb.h]) // eslint-disable-line react-hooks/exhaustive-deps
-  const route = useRef<SVGPathElement>(null)
-  const [lengte, setLengte] = useState(0)
-  useLayoutEffect(() => {
-    if (route.current) setLengte(route.current.getTotalLength())
-  }, [d])
-  const punt = (l: number) => route.current?.getPointAtLength(l) ?? { x: 0, y: 0 }
-
-  const stukken: { a: number; gedaan: number; klaar: boolean }[] = []
-  let acc = 0
-  for (const c of perCat) {
-    if (!c.totaal || !totaal) {
-      stukken.push({ a: 0, gedaan: 0, klaar: false })
-      continue
-    }
-    const a = (acc / totaal) * lengte
-    acc += c.totaal
-    const b = (acc / totaal) * lengte
-    stukken.push({ a, gedaan: Math.max(0, Math.min(b, p * lengte) - a), klaar: c.klaar === c.totaal })
+  const grenzen = useMemo(() => {
+    const g: { t0: number; t1: number; kleur: (typeof KLEUREN)[number] }[] = []
+    let acc = 0
+    perCat.forEach((c, i) => {
+      const t0 = totaal ? acc / totaal : 0
+      acc += c.totaal
+      g.push({ t0, t1: totaal ? acc / totaal : 0, kleur: kleur(i) })
+    })
+    return g
+  }, [perCat.map((c) => c.totaal).join(','), totaal]) // eslint-disable-line react-hooks/exhaustive-deps
+  const { d, pts, lang } = useMemo(() => routePad(vb, grenzen), [vb.x, vb.y, vb.w, vb.h, grenzen]) // eslint-disable-line react-hooks/exhaustive-deps
+  const lengte = lang[lang.length - 1]
+  // lengte langs de lijn bij een deel t van de spullen, en het punt op een lengte
+  const lengteBij = (t: number) => {
+    const f = Math.max(0, Math.min(1, t)) * STAPPEN
+    const i = Math.min(STAPPEN - 1, Math.floor(f))
+    return lang[i] + (lang[i + 1] - lang[i]) * (f - i)
   }
+  const punt = (l: number) => {
+    let i = 1
+    while (i < STAPPEN && lang[i] < l) i++
+    const f = (l - lang[i - 1]) / Math.max(1e-6, lang[i] - lang[i - 1])
+    const k = Math.max(0, Math.min(1, f))
+    return { x: pts[i - 1].x + (pts[i].x - pts[i - 1].x) * k, y: pts[i - 1].y + (pts[i].y - pts[i - 1].y) * k }
+  }
+
+  const stukken: { a: number; gedaan: number; klaar: boolean }[] = perCat.map((c, i) => {
+    if (!c.totaal || !totaal) return { a: 0, gedaan: 0, klaar: false }
+    const a = lengteBij(grenzen[i].t0)
+    const b = lengteBij(grenzen[i].t1)
+    return { a, gedaan: Math.max(0, Math.min(b, lengteBij(p)) - a), klaar: c.klaar === c.totaal }
+  })
   const veel = perCat.length > 8
-  const skier = punt(p * lengte)
+  const skier = punt(lengteBij(p))
   const start = punt(0)
 
   return (
     <g className="pakprofiel__laag">
-      <path ref={route} className="pakprofiel__route" d={d} />
+      <path className="pakprofiel__route" d={d} />
       {lengte > 0 &&
         stukken.map((s, i) => (
           <path
