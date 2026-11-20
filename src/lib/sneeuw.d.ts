@@ -56,6 +56,7 @@ export interface SneeuwConfig {
     tekst: string
     tekstDoorzicht: number
     vaag: number
+    vaagMaxDeel: number
     doorzicht: number
     onderlaag: boolean
   }
