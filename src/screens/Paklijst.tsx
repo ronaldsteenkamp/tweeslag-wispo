@@ -11,7 +11,7 @@ import {
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { Sneeuw } from '../components/Sneeuw'
-import { Bergen, MEIJE, rondTop, type ViewBox } from '../components/Bergen'
+import { Bergen, MEIJE, getekendeTop, rondTop, type ViewBox } from '../components/Bergen'
 import { PANORAMA } from '../lib/bergen-data'
 import { config } from '../config'
 import { useData } from '../lib/data'
@@ -459,7 +459,7 @@ function kamY(x: number) {
  * ligt hij een stukje ín de berg (onder de kam), en hij slingert heen en weer zoals een piste.
  */
 function routePad(vb: ViewBox) {
-  const top = PANORAMA.toppen.find((t) => t.naam === MEIJE)!
+  const top = getekendeTop(MEIJE)!
   const onder = vb.y + vb.h - 12
   const n = 7
   const punten: { x: number; y: number }[] = []
