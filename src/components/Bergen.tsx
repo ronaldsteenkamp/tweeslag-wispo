@@ -73,35 +73,41 @@ export function getekendeTop(naam: string, lagen: number[] = [0, 1, 2, 3]) {
  */
 const BREED = 700
 const STAP = 100
-const HORIZON = 225
+/** Onderkant van het beeld in panorama-px: overal gelijk, dus de toppen staan in elke kop even hoog */
+const HORIZON = 232
+/** Hoogte van het dal onderaan, ook overal gelijk */
+const DAL = 14
 const TABS_LANDSCHAP = ['home', 'planning', 'paklijst', 'kamers', 'kaart', 'rad', 'spel']
 /** Bij welke tab een scherm hoort (schermen achter een tab staan op dezelfde plek) */
 const BIJ_TAB: Record<string, string> = { verdelen: 'kamers', beheer: 'kamers', fotos: 'spel', welkom: 'home' }
+/** Weer hoort niet bij de tabbalk: een eigen uitzicht op de gletsjer, wel op dezelfde schaal */
+const WEER_CAMERA = 1150
 
-/** Het midden van het beeld voor een scherm, of undefined (Weer en onbekende schermen: eigen uitzicht) */
+/** Het midden van het beeld voor een scherm, of undefined (onbekend scherm: eigen venster) */
 export function cameraVoor(scherm: string): number | undefined {
+  if (scherm === 'weer') return WEER_CAMERA
   const i = TABS_LANDSCHAP.indexOf(BIJ_TAB[scherm] ?? scherm)
   return i < 0 ? undefined : 445 + STAP * i
 }
 
-function doorlopend(camera: number, breedtePx: number, verhouding: number, lagen: number[], vlag: boolean) {
+/** Laatst gemeten maat per soort vlak: een nieuw scherm (bijv. het buurscherm bij vegen) hoeft dan niet twee keer te tekenen */
+const MAAT = new Map<string, { b: number; h: number }>()
+
+function doorlopend(camera: number, breedtePx: number, verhouding: number) {
   // op een tablet niet inzoomen maar meer panorama laten zien
   const b = Math.min(P.breedte, BREED * Math.max(1, breedtePx / 390))
   const h = b / verhouding
-  // de horizon is overal gelijk, behalve waar de hoogste top dan boven de rand zou vallen
-  let top = P.hoogte
-  for (const i of lagen) for (const [x, y] of P.lagen[i].kam) if (x >= camera - b / 2 && x <= camera + b / 2) top = Math.min(top, y)
-  const yb = Math.min(HORIZON, top - (vlag ? 26 : 6) + h)
-  // opzij: zoveel als het scherm bij een hele veeg méér schuift dan de bergen
-  const opzijPx = b - (STAP * b) / BREED
+  // opzij: zoveel als het scherm bij een hele veeg méér schuift dan de bergen (Weer veegt niet mee)
+  const veeg = camera === WEER_CAMERA ? 0 : 1 - STAP / BREED
+  const opzijPx = b * veeg
   return {
     x0: camera - b / 2 - opzijPx,
     x1: camera + b / 2 + opzijPx,
-    y0: yb - h,
-    yb,
+    y0: HORIZON - h,
+    yb: HORIZON,
     opzij: opzijPx / b,
     // deel van de veeg dat de bergen terugschuiven: ze lopen STAP mee per schermbreedte
-    veeg: 1 - STAP / BREED,
+    veeg,
   }
 }
 
@@ -137,25 +143,30 @@ export function Bergen({
   camera,
 }: Props) {
   const vak = useRef<HTMLDivElement>(null)
-  const [maat, setMaat] = useState({ b: 0, h: 0 })
+  const [maat, setMaat] = useState(() => MAAT.get(className) ?? { b: 0, h: 0 })
   const verhouding = maat.h ? maat.b / maat.h : 0
 
   useLayoutEffect(() => {
     const el = vak.current
     if (!el) return
-    const meet = () => setMaat((m) => (m.b === el.clientWidth && m.h === el.clientHeight ? m : { b: el.clientWidth, h: el.clientHeight }))
+    const meet = () => {
+      if (!el.clientWidth || !el.clientHeight) return
+      const nieuw = { b: el.clientWidth, h: el.clientHeight }
+      MAAT.set(className, nieuw)
+      setMaat((m) => (m.b === nieuw.b && m.h === nieuw.h ? m : nieuw))
+    }
     meet()
     if (typeof ResizeObserver === 'undefined') return
     const ro = new ResizeObserver(meet)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [])
+  }, [className])
 
   // venster en hoogte; breder maken als het vlak breder is dan het stuk
   let [x0, x1] = venster
   let { y0, yb } = kader([x0, x1], lagen, lucht, diepte, !!vlag)
   // Doorlopend: vaste schaal en horizon, met extra panorama opzij voor het vegen (zie doorlopend())
-  const door = camera !== undefined && verhouding ? doorlopend(camera, maat.b, verhouding, lagen, !!vlag) : null
+  const door = camera !== undefined && verhouding ? doorlopend(camera, maat.b, verhouding) : null
   if (door) ({ x0, x1, y0, yb } = door)
   else if (verhouding > ((x1 - x0) / (yb - y0)) * 1.02) {
     for (let stap = 0; stap < 2; stap++) {
@@ -210,7 +221,7 @@ export function Bergen({
     </g>
   )
   const w = vb.w
-  const yd = yb - dalHoogte
+  const yd = yb - (door ? DAL : dalHoogte)
   const svgStijl: CSSProperties | undefined = door ? { left: `${-door.opzij * 100}%`, width: `${(1 + 2 * door.opzij) * 100}%` } : undefined
   const svg = (soort: string, inhoud: ReactNode) => (
     <svg
@@ -240,7 +251,7 @@ export function Bergen({
       className={`bergen-vlak${door ? ' bergen-vlak--doorlopend' : ''} ${className}`}
       style={style}
       data-weer={weer}
-      data-veeg={door ? door.veeg.toFixed(4) : undefined}
+      data-veeg={door?.veeg ? door.veeg.toFixed(4) : undefined}
       aria-hidden="true"
     >
       {svg(
@@ -273,12 +284,9 @@ export function rondTop(naam: string, breedte: number, verschuif = 0): [number, 
 
 export const MEIJE = 'Grand Pic de la Meije'
 
-/** Weer hoort niet bij de tabbalk: eigen uitzicht op de gletsjer */
-const WEER: [number, number] = [860, 1460]
-
 /**
  * De strook onderaan een donkerblauwe kop (SchermKop, Spel): de tabs liggen op één doorlopend
- * landschap (cameraVoor), Weer en onbekende schermen krijgen een eigen stuk.
+ * landschap (cameraVoor), Weer heeft een eigen stuk op dezelfde schaal.
  */
 export function Bergstrook({ weer }: { weer?: Props['weer'] }) {
   const plek = useRef<HTMLSpanElement>(null)
@@ -295,7 +303,7 @@ export function Bergstrook({ weer }: { weer?: Props['weer'] }) {
         <Bergen
           className="bergen-vlak--strook"
           camera={cameraVoor(scherm)}
-          venster={scherm === 'weer' ? WEER : [300, 900]}
+          venster={[300, 900]}
           lucht={4}
           diepte={40}
           dalHoogte={12}

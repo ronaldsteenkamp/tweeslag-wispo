@@ -2629,7 +2629,7 @@ body:has(.huidig .kaartbalk) .toast {
   align-items: center;
   text-align: center;
   padding-bottom: 80px;
-  --bergen-hoogte: 74px;
+  --bergen-hoogte: 120px;
   --sneeuwbank: var(--oppervlak);
   background: var(--hero);
   color: var(--hero-tekst);
@@ -3841,9 +3841,9 @@ body:has(.huidig .kaartbalk) .toast {
 
 .schermkop {
   --krimp: 0;
-  --bergen-hoogte: 74px;
+  --bergen-hoogte: 120px;
   margin: 0 -16px;
-  padding: calc(var(--boven) + 16px) 20px 86px;
+  padding: calc(var(--boven) + 16px) 20px 84px;
   display: flex;
   flex-direction: column;
   gap: 12px;
