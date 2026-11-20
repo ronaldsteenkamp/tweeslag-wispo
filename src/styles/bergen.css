@@ -69,6 +69,19 @@
   overflow: hidden;
 }
 
+/* Doorlopend: het vlak begint op elk scherm even ver van de bovenkant en loopt tot de onderkant van
+   de kop. Bergen.tsx legt de hoogste top 38 px onder die bovenkant: overal op 96 px (+ veilige rand). */
+.bergen-vlak.bergen-vlak--doorlopend {
+  position: absolute;
+  top: calc(var(--boven, 0px) + 58px);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
 /* eigen laag op de GPU: schuiven bij het vegen kost dan geen nieuwe tekening */
 .bergen-vlak--doorlopend .bergen-vlak__svg {
   will-change: transform;
@@ -86,4 +99,29 @@
   .bergen-vlak .laag {
     transform: none !important;
   }
+}
+
+/* Waas: waar de tekst van de kop over de bergen valt, een donkerblauwe waas zodat witte tekst
+   leesbaar blijft. Loopt tot vlak onder de tekst (--tekst-tot, gemeten in Bergen.tsx) en vloeit
+   dan weg. Ligt boven de bergen en de sneeuw (zelfde z-index, later in de pagina), onder de tekst. */
+.bergen-vlak__waas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--hero) 74%, transparent) 0,
+    color-mix(in srgb, var(--hero) 74%, transparent) calc(var(--tekst-tot) - 6px),
+    transparent calc(var(--tekst-tot) + 34px)
+  );
+}
+
+/* Home en Welkom: de bergen liggen niet meer in de stroom, dus de kop houdt zelf ruimte vrij */
+.homekop:has(> .bergen-vlak--doorlopend) {
+  padding-bottom: 100px;
+}
+
+.welkom__kop:has(> .bergen-vlak--doorlopend) {
+  padding-bottom: 104px;
 }
