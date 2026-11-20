@@ -154,7 +154,6 @@ button {
   z-index: 10;
   overflow: clip;
   pointer-events: none;
-  will-change: transform;
 }
 .buurpaneel--rechts {
   transform: translateX(100%);
@@ -162,9 +161,15 @@ button {
 .buurpaneel--links {
   transform: translateX(-100%);
 }
-/* klaargezet maar (nog) niet in beeld: wel opgemaakt, niet getekend */
+/* klaargezet maar (nog) niet in beeld: wel opgemaakt, niet getekend. Geen eigen GPU-lagen (ook
+   niet daarbinnen): op een iPhone loopt het laaggeheugen anders vol en gaan foto's en de kaart
+   knipperen. Alleen het buurscherm waar je heen veegt krijgt een laag (tabswipe.ts). */
 .buurpaneel.is-rust {
   visibility: hidden;
+}
+.buurpaneel.is-rust,
+.buurpaneel.is-rust * {
+  will-change: auto !important;
 }
 
 .scherm {
