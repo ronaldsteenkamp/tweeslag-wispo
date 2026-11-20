@@ -69,6 +69,11 @@
   overflow: hidden;
 }
 
+/* eigen laag op de GPU: schuiven bij het vegen kost dan geen nieuwe tekening */
+.bergen-vlak--doorlopend .bergen-vlak__svg {
+  will-change: transform;
+}
+
 .bergen-vlak--strook {
   position: absolute;
   left: 0;

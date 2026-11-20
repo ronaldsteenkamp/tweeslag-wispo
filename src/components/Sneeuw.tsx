@@ -28,34 +28,24 @@ export function Sneeuw({ aantal = 28, maan = false }: { aantal?: number; maan?: 
   useEffect(() => {
     const el = vak.current
     if (!sneeuwAan || !el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const sneeuw = startSneeuw({
-      doel: el,
-      vast: false,
-      aan: true,
-      opslagSleutel: null,
-      // Een kop is klein en heeft witte tekst: minder vlokken, geen grote vlok vooraan en de
-      // dichtste laag wat kleiner, zodat een vlok achter een cijfer de tekst niet wegvaagt
-      dichtheid: 70,
-      minVlokken: 30,
-      maxVlokken: 160,
-      lagen: { dichtbij: { grootte: [13, 22] }, voorgrond: { aan: false } },
-      // op donkerblauw: wit met een zachte ijsblauwe rand
-      rand: 'rgba(150, 200, 235, 0.45)',
-      storm: { waas: 0.1 },
-      // De halfdoorzichtige blokjes in de kop (keuzebalk bij Rad, vakje rechts, je naam, het weer
-      // op Home, de hoogte op Paklijst, de afteltegels) zijn beslagen glas: de sneeuw erachter
-      // tekent de module zelf vaag en zwakker. Lichter dan backdrop-filter, ook op iOS.
-      vervaging: {
-        modus: 'canvas',
-        selector:
-          '.schermkop__keuze .segment, .schermkop__rechts, .ik, .homekop__weer, .pakkop__hoogte, .aftelklok__blok',
-        vaag: 6,
-        doorzicht: 0.55,
-        onderlaag: false,
-        tekst: '',
-      },
+    // In het buurscherm tijdens het vegen nog niet starten (dat laat het vegen haperen), maar pas
+    // als dit vak na het wisselen het huidige scherm is geworden: zelfde element, 'buurpaneel' eraf
+    const buur = el.closest<HTMLElement>('.buurpaneel')
+    if (!buur) return begin(el)
+    let stop: (() => void) | null = null
+    let wacht = 0
+    const mo = new MutationObserver(() => {
+      if (buur.classList.contains('buurpaneel')) return
+      mo.disconnect()
+      // nog even wachten: het opruimen na het inschuiven loopt dan eerst af
+      wacht = window.setTimeout(() => (stop = begin(el)), 120)
     })
-    return () => sneeuw.vernietig()
+    mo.observe(buur, { attributes: true, attributeFilter: ['class'] })
+    return () => {
+      mo.disconnect()
+      clearTimeout(wacht)
+      stop?.()
+    }
   }, [sneeuwAan])
 
   return (
@@ -85,4 +75,36 @@ export function Sneeuw({ aantal = 28, maan = false }: { aantal?: number; maan?: 
       )}
     </div>
   )
+}
+
+/** De sneeuw in een kop starten; geeft de opruimfunctie terug */
+function begin(el: HTMLElement) {
+  const sneeuw = startSneeuw({
+    doel: el,
+    vast: false,
+    aan: true,
+    opslagSleutel: null,
+    // Een kop is klein en heeft witte tekst: minder vlokken, geen grote vlok vooraan en de
+    // dichtste laag wat kleiner, zodat een vlok achter een cijfer de tekst niet wegvaagt
+    dichtheid: 70,
+    minVlokken: 30,
+    maxVlokken: 160,
+    lagen: { dichtbij: { grootte: [13, 22] }, voorgrond: { aan: false } },
+    // op donkerblauw: wit met een zachte ijsblauwe rand
+    rand: 'rgba(150, 200, 235, 0.45)',
+    storm: { waas: 0.1 },
+    // De halfdoorzichtige blokjes in de kop (keuzebalk bij Rad, vakje rechts, je naam, het weer
+    // op Home, de hoogte op Paklijst, de afteltegels) zijn beslagen glas: de sneeuw erachter
+    // tekent de module zelf vaag en zwakker. Lichter dan backdrop-filter, ook op iOS.
+    vervaging: {
+      modus: 'canvas',
+      selector:
+        '.schermkop__keuze .segment, .schermkop__rechts, .ik, .homekop__weer, .pakkop__hoogte, .aftelklok__blok',
+      vaag: 6,
+      doorzicht: 0.55,
+      onderlaag: false,
+      tekst: '',
+    },
+  })
+  return () => sneeuw.vernietig()
 }
