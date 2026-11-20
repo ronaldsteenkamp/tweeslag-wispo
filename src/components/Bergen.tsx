@@ -83,7 +83,12 @@ const TABS_LANDSCHAP = ['home', 'planning', 'paklijst', 'kamers', 'kaart', 'rad'
 /** Bij welke tab een scherm hoort (schermen achter een tab staan op dezelfde plek) */
 const BIJ_TAB: Record<string, string> = { verdelen: 'kamers', beheer: 'kamers', fotos: 'spel', welkom: 'home' }
 /** Weer hoort niet bij de tabbalk: een eigen uitzicht op de gletsjer, wel op dezelfde schaal */
-const WEER_CAMERA = 1150
+const WEER_CAMERA = 1050
+/**
+ * Verder dan hier kijken we niet: rechts daarvan zakken de witte voorkam en de laag erachter weg
+ * (het dal naar het zuiden) en blijft alleen een donkerblauw vlak van de verre ketens over.
+ */
+const EIND = 1400
 
 /** Het midden van het beeld voor een scherm, of undefined (onbekend scherm: eigen venster) */
 export function cameraVoor(scherm: string): number | undefined {
@@ -116,6 +121,9 @@ function doorlopend(camera: number, breedtePx: number, verhouding: number, lagen
   // op een tablet niet inzoomen maar meer panorama laten zien
   const b = Math.min(P.breedte, zoom * Math.max(1, breedtePx / 390))
   const h = b / verhouding
+  // op een breder scherm wordt het stuk breder: binnen het panorama houden, anders zie je aan de rand
+  // alleen lucht (Weer en Spel liggen tegen het einde aan, Home tegen het begin)
+  camera = Math.max(b / 2, Math.min(EIND - b / 2, camera))
   // De hoogste top in beeld staat altijd MARGE px onder de bovenkant van het vlak, en het vlak
   // begint op elk scherm even ver van de bovenkant (--bergen-top in bergen.css). Zo staat de top
   // overal op dezelfde hoogte op het scherm; de berg loopt door tot de onderkant van de kop.
