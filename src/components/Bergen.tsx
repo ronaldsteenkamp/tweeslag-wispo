@@ -46,6 +46,20 @@ interface Props {
 
 const DIEPTE = [0.2, 0.42, 0.7, 1]
 
+/**
+ * Waar een top in de tekening staat. Niet de OSM-hoogte: het DEM is grover en komt lager uit, en een
+ * nabije keten kan de top net overlappen. Dus het hoogste kampunt vlak bij de top, en in welke laag.
+ */
+export function getekendeTop(naam: string, lagen: number[] = [0, 1, 2, 3]) {
+  const osm = P.toppen.find((t) => t.naam === naam)
+  let top: { x: number; y: number; laag: number } | undefined
+  if (osm)
+    for (const i of lagen)
+      for (const [x, y] of P.lagen[i].kam)
+        if (Math.abs(x - osm.x) <= 12 && (!top || y < top.y)) top = { x, y, laag: i }
+  return top
+}
+
 /** Boven- en onderkant van een stuk panorama */
 function kader([x0, x1]: [number, number], lagen: number[], lucht: number, diepte: number, vlag: boolean) {
   let top = P.hoogte
@@ -138,7 +152,13 @@ export function Bergen({
   const mist = (i: number) => <rect key={`m${i}`} className="mist" x={vb.x} y={vb.y} width={vb.w} height={vb.h} opacity={0.35} />
   const achter = lagen.filter((i) => i < voorVanaf)
   const voor = lagen.filter((i) => i >= voorVanaf)
-  const top = vlag ? P.toppen.find((t) => t.naam === vlag) : undefined
+  const top = vlag ? getekendeTop(vlag, lagen) : undefined
+  const vlagje = top && (
+    <g className="laag" data-diepte={DIEPTE[top.laag]}>
+      <path d={`M${top.x} ${top.y + 1}V${top.y - 18}`} stroke="#fff" strokeWidth="1.6" />
+      <path className="vlag" d={`M${top.x} ${top.y - 18}l14 5-14 5Z`} />
+    </g>
+  )
   const w = vb.w
   const yd = yb - dalHoogte
   const svg = (soort: string, inhoud: ReactNode) => (
@@ -153,18 +173,14 @@ export function Bergen({
         'achter',
         <>
           {achter.flatMap((i) => [laag(i), mist(i)])}
-          {top && voorVanaf > 1 && (
-            <g className="laag" data-diepte={DIEPTE[1]}>
-              <path d={`M${top.x} ${top.y}V${top.y - 18}`} stroke="#fff" strokeWidth="1.6" />
-              <path className="vlag" d={`M${top.x} ${top.y - 18}l14 5-14 5Z`} />
-            </g>
-          )}
+          {top && top.laag < voorVanaf && vlagje}
         </>,
       )}
       {svg(
         'voor',
         <>
           {voor.map(laag)}
+          {top && top.laag >= voorVanaf && vlagje}
           {dal && (
             <path
               className="dal"
