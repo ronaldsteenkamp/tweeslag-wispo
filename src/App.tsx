@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { startTransition, useCallback, useEffect, useState } from 'react'
 import { BadgeMelding } from './components/Badges'
 import { ProfielVenster } from './components/Profiel'
 import { TabBalk, TABS, type Tab } from './components/TabBalk'
@@ -135,12 +135,32 @@ export default function App() {
   // Tijdens het vegen: het buurscherm dat naast het huidige ligt (zie tabswipe.ts)
   const [buur, setBuur] = useState<1 | -1 | null>(null)
   const buurTab = buur ? TABS[tabIndex + buur]?.id : undefined
+  // De buurschermen alvast (onzichtbaar) klaarzetten zodra de tab rustig in beeld is: dan hoeft er
+  // bij het begin van een veeg niets opgebouwd of opgemaakt te worden (dat gaf een hapering). Niet
+  // de kaart: die zou op de achtergrond kaartdata laden.
+  const [klaarVoor, setKlaarVoor] = useState<string | null>(null)
+  useEffect(() => {
+    if (!welkomGehad) return
+    // Safari kent requestIdleCallback pas sinds kort: anders na een halve seconde
+    const ric = typeof window.requestIdleCallback === 'function'
+    // startTransition: React bouwt de buren in kleine stukjes op, tussen de frames door
+    const zet = () => startTransition(() => setKlaarVoor(tab))
+    const wacht = ric ? window.requestIdleCallback(zet, { timeout: 1200 }) : setTimeout(zet, 500)
+    return () => (ric ? window.cancelIdleCallback(wacht) : clearTimeout(wacht))
+  }, [tab, welkomGehad])
+  // Het scherm waar je net vandaan veegde is nu een buur: dat blijft gewoon staan (zelfde key), in
+  // plaats van weg te gaan en meteen weer opgebouwd te worden
+  const [vorigeTab, setVorigeTab] = useState<string | null>(null)
+  const klaarBuren = ([-1, 1] as const)
+    .map((r) => ({ r, id: TABS[tabIndex + r]?.id }))
+    .filter((b): b is { r: -1 | 1; id: Tab } => !!b.id && b.id !== 'kaart' && (klaarVoor === tab || b.id === vorigeTab))
   useTabSwipe({
     aan: welkomGehad,
     kan: (richting) => !!TABS[tabIndex + richting],
     onBuur: setBuur,
     onWissel: (richting) => {
       setBuur(null)
+      setVorigeTab(tab)
       const volgende = TABS[tabIndex + richting]
       if (volgende) kies(volgende.id)
     },
@@ -186,17 +206,21 @@ export default function App() {
         <div key={tab} className={`inhoud inhoud--${tab} huidig`} ref={(el) => el?.removeAttribute('inert')}>
           {scherm(tab)}
         </div>
-        {buurTab && (
-          // Het buurscherm, zoals het eruitziet als je er bovenaan binnenkomt. Niet aan te raken.
+        {/* De buurschermen, zoals ze eruitzien als je er bovenaan binnenkomt. Niet aan te raken.
+            Klaargezette buren staan onzichtbaar (is-rust) tot je hun kant op veegt. */}
+        {[
+          ...klaarBuren,
+          ...(buurTab && !klaarBuren.some((b) => b.id === buurTab) ? [{ r: buur!, id: buurTab }] : []),
+        ].map((b) => (
           <div
-            key={buurTab}
-            className={`inhoud inhoud--${buurTab} buurpaneel buurpaneel--${buur! > 0 ? 'rechts' : 'links'}`}
+            key={b.id}
+            className={`inhoud inhoud--${b.id} buurpaneel buurpaneel--${b.r > 0 ? 'rechts' : 'links'}${b.r === buur ? '' : ' is-rust'}`}
             aria-hidden="true"
             ref={(el) => el?.setAttribute('inert', '')}
           >
-            {scherm(buurTab)}
+            {scherm(b.id)}
           </div>
-        )}
+        ))}
       </main>
       {!welkomGehad && <Welkom onKlaar={welkomKlaar} />}
       <ProfielVenster />
