@@ -135,6 +135,11 @@ export const STANDAARD = {
     tekstDoorzicht: 0.4,
     /** Vervaging in px achter een blok (modus canvas; voor css staat hij in --ijs-vaag). */
     vaag: 7,
+    /**
+     * …maar nooit meer dan dit deel van de vlokgrootte: dan blijft een vage vlok een zesarmige vlok
+     * (zacht) en wordt hij geen vlek. 0,12 = een vlok van 20 px vervaagt hooguit 2,4 px.
+     */
+    vaagMaxDeel: 0.12,
     /** Extra dimmen van vlokken achter een blok (modus canvas, 1 = alleen vervagen, net als css). */
     doorzicht: 1,
     /**
@@ -455,30 +460,66 @@ function kanFilter() {
   return filterSteun
 }
 
-/** Een vervaagde kopie van een sprite. Zonder ctx.filter: verkleinen en weer vergroten. */
+/**
+ * Een vervaagde kopie van een sprite, met een eigen vervaging op de pixels (drie keer een box-blur,
+ * dat benadert een gaussische vervaging). Op elk toestel hetzelfde: Safari kent ctx.filter niet, en de
+ * oude terugval (klein tekenen en weer vergroten) maakte van kleine vlokken vierkante blokjes.
+ */
 function vervaag(bron, px, uitGrootte) {
   const doel = maakCanvas(uitGrootte, uitGrootte)
-  const ctx = doel.getContext('2d')
-  const schaal = uitGrootte / bron.width
-  if (px <= 0.01) {
-    ctx.drawImage(bron, 0, 0, uitGrootte, uitGrootte)
-    return doel
-  }
-  if (kanFilter()) {
-    ctx.filter = `blur(${px * schaal}px)`
-    ctx.drawImage(bron, 0, 0, uitGrootte, uitGrootte)
-    ctx.filter = 'none'
-    return doel
-  }
-  // Terugval (bijv. Safari < 18): via een klein tussencanvas, twee keer, voor een zachte rand
-  const klein = Math.max(4, Math.round(bron.width / Math.max(1.5, px * 0.9)))
-  const tmp = maakCanvas(klein, klein)
-  const t = tmp.getContext('2d')
-  t.imageSmoothingQuality = 'high'
-  t.drawImage(bron, 0, 0, klein, klein)
+  const ctx = doel.getContext('2d', { willReadFrequently: true })
   ctx.imageSmoothingQuality = 'high'
-  ctx.drawImage(tmp, 0, 0, uitGrootte, uitGrootte)
+  ctx.drawImage(bron, 0, 0, uitGrootte, uitGrootte)
+  const straal = Math.round((px * uitGrootte) / bron.width * 0.75)
+  if (straal < 1) return doel
+  const beeld = ctx.getImageData(0, 0, uitGrootte, uitGrootte)
+  boxVervaging(beeld.data, uitGrootte, uitGrootte, straal)
+  ctx.putImageData(beeld, 0, 0)
   return doel
+}
+
+/**
+ * Drie keer horizontaal + verticaal een glijdend gemiddelde, op 'voorvermenigvuldigde' kleuren (anders
+ * krijgen de witte armen een donkere rand van de doorzichtige pixels eromheen).
+ */
+function boxVervaging(d, w, h, r) {
+  const n = w * h
+  const kan = [new Float32Array(n), new Float32Array(n), new Float32Array(n), new Float32Array(n)]
+  for (let i = 0; i < n; i++) {
+    const a = d[i * 4 + 3] / 255
+    kan[0][i] = d[i * 4] * a
+    kan[1][i] = d[i * 4 + 1] * a
+    kan[2][i] = d[i * 4 + 2] * a
+    kan[3][i] = d[i * 4 + 3]
+  }
+  const tmp = new Float32Array(n)
+  const breed = 2 * r + 1
+  const lijn = (bron, uit, start, stap, lengte) => {
+    // glijdend gemiddelde langs één rij of kolom; buiten de rand telt als doorzichtig
+    let som = 0
+    for (let k = 0; k <= r && k < lengte; k++) som += bron[start + k * stap]
+    for (let k = 0; k < lengte; k++) {
+      uit[start + k * stap] = som / breed
+      const erbij = k + r + 1
+      const eraf = k - r
+      if (erbij < lengte) som += bron[start + erbij * stap]
+      if (eraf >= 0) som -= bron[start + eraf * stap]
+    }
+  }
+  for (const c of kan) {
+    for (let keer = 0; keer < 3; keer++) {
+      for (let y = 0; y < h; y++) lijn(c, tmp, y * w, 1, w)
+      for (let x = 0; x < w; x++) lijn(tmp, c, x, w, h)
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    const a = kan[3][i]
+    d[i * 4 + 3] = a
+    const f = a > 0.5 ? 255 / a : 0
+    d[i * 4] = Math.min(255, kan[0][i] * f)
+    d[i * 4 + 1] = Math.min(255, kan[1][i] * f)
+    d[i * 4 + 2] = Math.min(255, kan[2][i] * f)
+  }
 }
 
 /*
@@ -503,9 +544,19 @@ function maakSprites(cfg, r, dpr) {
     ctx.translate(S / 2, S / 2)
     ctx.rotate(r() * Math.PI) // ieder kristal begint in een andere stand
     tekenKristal(ctx, soort, R, p, cfg.kleur, cfg.rand, randBreedte, lijnDikte)
-    // vervaagde versies; vanaf niveau 3 op halve resolutie (er is toch geen detail meer)
-    const niveaus = VAAG_NIVEAUS.map((px, i) => (i === 0 ? scherp : vervaag(scherp, (px * S) / 128, i >= 3 ? S / 2 : S)))
-    return { soort, niveaus, straalDeel: 0.31 }
+    // Vervaagde versies pas maken als een vlok ze voor het eerst nodig heeft (spreidt het rekenwerk;
+    // veel niveaus worden nooit gebruikt), en op een kleiner canvas: na het vervagen is er toch geen
+    // fijn detail meer, en vergroten van iets vaags valt niet op.
+    const niveaus = [scherp]
+    const niveau = (i) => {
+      if (!niveaus[i]) {
+        const px = (VAAG_NIVEAUS[i] * S) / 128
+        const kleiner = Math.min(2, Math.max(1, px / 8)) // hooguit de helft: anders verdwijnen de armen
+        niveaus[i] = vervaag(scherp, px, Math.max(24, Math.round(S / kleiner)))
+      }
+      return niveaus[i]
+    }
+    return { soort, niveaus, niveau, straalDeel: 0.31 }
   })
 }
 
@@ -660,8 +711,13 @@ export function startSneeuw(eigen = {}) {
     }
     // vaagniveau uit de gewenste vervaging op het scherm
     v.niveau = kiesNiveau(L.vaag, grootte)
-    v.ijsNiveau = kiesNiveau(Math.hypot(L.vaag, cfg.vervaging.vaag), grootte)
+    v.ijsNiveau = kiesNiveau(Math.hypot(L.vaag, ijsVaag(grootte)), grootte)
     return v
+  }
+
+  /** Vervaging achter een blok: nooit meer dan een deel van de vlok zelf, zodat de vorm herkenbaar blijft */
+  function ijsVaag(grootte) {
+    return Math.min(cfg.vervaging.vaag, grootte * cfg.vervaging.vaagMaxDeel)
   }
 
   function kiesNiveau(schermPx, grootte) {
@@ -877,7 +933,12 @@ export function startSneeuw(eigen = {}) {
 
   function tekenVlok(v, niveau, alpha) {
     const spr = sprites[v.sprite]
-    const img = spr.niveaus[niveau]
+    // Nog niet klaar? Dan heel even de scherpe versie; de vage wordt in een rustig moment gemaakt
+    let img = spr.niveaus[niveau]
+    if (!img) {
+      vraagAan(v.sprite, niveau)
+      img = spr.niveaus[0]
+    }
     const k = 1 - v.kantel * (0.5 + 0.5 * Math.sin(t * v.kantelTempo + v.kantelFase))
     const cos = Math.cos(v.hoek)
     const sin = Math.sin(v.hoek)
@@ -1120,6 +1181,33 @@ export function startSneeuw(eigen = {}) {
       SPRITES.set(sleutel, sprites)
     }
     vulPool()
+    voorverwarm()
+  }
+
+  // De vervaagde versies die de vlokken nodig hebben alvast maken in rustige momenten, één per keer,
+  // zodat er tijdens het vallen geen hapering is als een vlok ze voor het eerst gebruikt.
+  let warmId = 0
+  const taken = new Map()
+  const rust = (f) => (window.requestIdleCallback ? window.requestIdleCallback(f, { timeout: 300 }) : setTimeout(f, 40))
+  function werk() {
+    warmId = 0
+    const [sleutel, t] = taken.entries().next().value ?? []
+    if (!sleutel) return
+    taken.delete(sleutel)
+    sprites[t[0]]?.niveau(t[1])
+    if (taken.size) warmId = rust(werk)
+  }
+  function vraagAan(sprite, niveau) {
+    const sleutel = `${sprite}:${niveau}`
+    if (taken.has(sleutel) || sprites[sprite]?.niveaus[niveau]) return
+    taken.set(sleutel, [sprite, niveau])
+    if (!warmId) warmId = rust(werk)
+  }
+  function voorverwarm() {
+    for (const v of vlokken) {
+      if (v.niveau) vraagAan(v.sprite, v.niveau)
+      if (v.ijsNiveau) vraagAan(v.sprite, v.ijsNiveau)
+    }
   }
   opbouw()
   zetModusKlasse()
@@ -1178,7 +1266,7 @@ export function startSneeuw(eigen = {}) {
       if (doorzicht !== undefined) cfg.vervaging.doorzicht = doorzicht
       if (vaag !== undefined) {
         cfg.vervaging.vaag = vaag
-        for (const v of vlokken) v.ijsNiveau = kiesNiveau(Math.hypot(v.L.vaag, vaag), v.grootte)
+        for (const v of vlokken) v.ijsNiveau = kiesNiveau(Math.hypot(v.L.vaag, ijsVaag(v.grootte)), v.grootte)
       }
       zetModusKlasse()
     },
