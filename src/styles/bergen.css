@@ -84,10 +84,8 @@
   margin: 0;
 }
 
-/* eigen laag op de GPU: schuiven bij het vegen kost dan geen nieuwe tekening */
-.bergen-vlak--doorlopend .bergen-vlak__svg {
-  will-change: transform;
-}
+/* Een eigen GPU-laag voor de (brede) bergen-svg's alleen tijdens het vegen: dat zet tabswipe.ts.
+   Altijd een laag kost op een iPhone te veel geheugen (dan gaan foto's knipperen). */
 
 .bergen-vlak--strook {
   position: absolute;

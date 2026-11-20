@@ -92,6 +92,11 @@ export function useTabSwipe({ aan, kan, onBuur, onWissel }: Opties) {
       for (const { svg, deel } of bergenIn(paneel)) svg.style.transform = x ? terug(x, deel) : ''
       const bp = buurPaneel()
       if (bp && buur) {
+        if (!bp.style.willChange) {
+          // pas nu een eigen GPU-laag (zie app.css .is-rust): voor het scherm en zijn bergen
+          bp.style.willChange = 'transform'
+          for (const { svg } of bergenIn(bp)) svg.style.willChange = 'transform'
+        }
         bp.style.transform = `translateX(${x + buur * b}px)`
         for (const { svg, deel } of bergenIn(bp)) svg.style.transform = terug(x + buur * b, deel)
       }
@@ -104,6 +109,7 @@ export function useTabSwipe({ aan, kan, onBuur, onWissel }: Opties) {
       for (const { svg } of bergenIn(el)) {
         svg.getAnimations().forEach((a) => a.cancel())
         svg.style.transform = ''
+        svg.style.willChange = ''
       }
     }
 
@@ -140,6 +146,7 @@ export function useTabSwipe({ aan, kan, onBuur, onWissel }: Opties) {
         paneel = wisselPaneel()
         paneel?.getAnimations().forEach((a) => a.cancel())
         if (paneel) paneel.style.willChange = 'transform'
+        for (const { svg } of bergenIn(paneel)) svg.style.willChange = 'transform'
       }
       // Horizontaal: de pagina niet ook laten scrollen
       if (e.cancelable) e.preventDefault()
