@@ -1,0 +1,78 @@
+/*
+ * Bergen (components/Bergen.tsx). Kleuren staan in theme.css (--berg-*).
+ *
+ * Het vlak zelf maakt geen eigen stapelvolgorde (geen z-index, geen transform), zodat de twee lagen
+ * erin meedoen met de kop eromheen: de verre ketens (z -2) liggen áchter de sneeuw van <Sneeuw>
+ * (z -1), de witte voorste kam en het dal (z -1, later in de pagina) ervóór. Zo verdwijnen
+ * vlokken achter de dichtbije berg. Tekst in de kop ligt altijd bovenop.
+ */
+.bergen-vlak {
+  position: relative;
+  display: block;
+  pointer-events: none;
+}
+
+.bergen-vlak__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+}
+
+.bergen-vlak__svg--achter {
+  z-index: -2;
+}
+
+.bergen-vlak__svg--voor {
+  z-index: -1;
+}
+
+.bergen-vlak .l0 { fill: var(--berg-0); }
+.bergen-vlak .s0 { fill: var(--berg-0-schaduw); }
+.bergen-vlak .l1 { fill: var(--berg-1); }
+.bergen-vlak .s1 { fill: var(--berg-1-schaduw); }
+.bergen-vlak .l2 { fill: var(--berg-2); }
+.bergen-vlak .s2 { fill: var(--berg-2-schaduw); }
+.bergen-vlak .l3 { fill: var(--berg-3); }
+.bergen-vlak .s3 { fill: var(--berg-3-schaduw); }
+.bergen-vlak .dal { fill: var(--berg-dal, var(--sneeuwbank, var(--achtergrond))); }
+.bergen-vlak .vlag { fill: var(--berg-vlag); }
+.bergen-vlak .mist { fill: var(--berg-mist); }
+
+/* Weer (Weer-scherm): alleen de bergen veranderen, de kop blijft donkerblauw zodat de tekst leesbaar blijft */
+.bergen-vlak[data-weer='bewolkt'] {
+  --berg-0: #5b6190; --berg-0-schaduw: #50567f;
+  --berg-1: #8a8fb0; --berg-1-schaduw: #7d82a3;
+  --berg-2: #b9bfd3; --berg-2-schaduw: #a6adc4;
+  --berg-3: #e3e7ee; --berg-3-schaduw: #cdd3de;
+}
+.bergen-vlak[data-weer='mist'] {
+  --berg-mist: rgba(220, 224, 238, 0.55);
+  --berg-0: #6f7598; --berg-0-schaduw: #686e90;
+  --berg-1: #9599b6; --berg-1-schaduw: #8b8fad;
+  --berg-2: #c3c7d8; --berg-2-schaduw: #b5b9cd;
+  --berg-3: #e8ebf1; --berg-3-schaduw: #d8dce5;
+}
+.bergen-vlak[data-weer='storm'] {
+  --berg-0: #3c3f66; --berg-0-schaduw: #34375b;
+  --berg-1: #5c6088; --berg-1-schaduw: #50547b;
+  --berg-2: #9499b8; --berg-2-schaduw: #8186a8;
+  --berg-3: #d9dde8; --berg-3-schaduw: #bcc2d4;
+}
+
+/* Strook onderaan een kop (SchermKop, Spel): vervangt de oude bergrand van .golf */
+.bergen-vlak--strook {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bergen-hoogte, 72px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bergen-vlak .laag {
+    transform: none !important;
+  }
+}

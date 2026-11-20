@@ -11,3 +11,7 @@ dev-dist
 
 # Cache van tsc -b
 tsconfig.tsbuildinfo
+
+# Tussenbestanden van scripts/bergen (hoogtedata ophalen)
+scripts/bergen/punten.json
+scripts/bergen/stukken/

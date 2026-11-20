@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { Bergstrook } from './Bergen'
 import { Sneeuw } from './Sneeuw'
 
 /*
@@ -23,9 +24,11 @@ interface Props {
   terug?: { label: string; onClick: () => void }
   /** Klein extraatje onderin de kop, bijvoorbeeld een voortgangsbalk */
   children?: ReactNode
+  /** De bergen onderaan in het weer van vandaag (alleen op het Weer-scherm) */
+  bergWeer?: 'bewolkt' | 'mist' | 'storm'
 }
 
-export function SchermKop({ titel, boven, ondertitel, rechts, terug, children }: Props) {
+export function SchermKop({ titel, boven, ondertitel, rechts, terug, children, bergWeer }: Props) {
   const kop = useRef<HTMLElement>(null)
   const balk = useRef<HTMLDivElement>(null)
 
@@ -76,6 +79,7 @@ export function SchermKop({ titel, boven, ondertitel, rechts, terug, children }:
       </div>
       <header ref={kop} className="schermkop golf">
         <Sneeuw aantal={8} />
+        <Bergstrook weer={bergWeer} />
         <div className="schermkop__rij">
           <div className="schermkop__tekst">
             {terug && (

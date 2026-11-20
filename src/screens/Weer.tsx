@@ -74,10 +74,20 @@ export default function Weer({ terug }: { terug: () => void }) {
   const reisInBeeld = reisdagen.some((d) => gletsjer?.dagen.some((x) => x.datum === d))
   const alleenNu = nu < vertrek && !reisInBeeld
   const dagTitel = `${avond ? 'Morgen' : 'Vandaag'} · ${datumLabel(datum)}`
+  // De bergen in de kop in het weer van nu op de gletsjer (helder = de gewone nachtkleuren)
+  const soortNu = gletsjer && bruikbaar ? weerSoort(gletsjer.nu.code, gletsjer.nu.isDag) : null
+  const bergWeer =
+    soortNu === 'mist'
+      ? 'mist'
+      : soortNu === 'zwaresneeuw' || soortNu === 'onweer'
+        ? 'storm'
+        : soortNu && !['zon', 'maan', 'halfzon', 'halfmaan'].includes(soortNu)
+          ? 'bewolkt'
+          : undefined
 
   return (
     <div className="scherm weer" data-niveau={oordeel?.niveau}>
-      <SchermKop titel="Weer en sneeuw" boven={dagTitel} terug={{ label: 'Terug', onClick: terug }}>
+      <SchermKop titel="Weer en sneeuw" boven={dagTitel} terug={{ label: 'Terug', onClick: terug }} bergWeer={bergWeer}>
         <div className="weerkop">
           <Lucht avond={avond} soort={oordeel?.soort} />
           <p className="weerkop__vraag">

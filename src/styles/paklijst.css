@@ -38,7 +38,7 @@
 /* ---------- Kop ---------- */
 
 /* Donkerblauw zoals de SchermKop van de andere schermen (zelfde lettertypes en maten), met het
-   hoogteprofiel als besneeuwde berg; het dal onderaan loopt over in het papier van de lijst.
+   panorama met La Meije (Route naar de top); het dal onderaan loopt over in het papier van de lijst.
    De balkplek erboven trekt de kop helemaal naar boven (zoals bij SchermKop); hier de ruimte terug. */
 .pakkop {
   position: relative;
@@ -129,23 +129,23 @@
   margin: 6px -20px 0;
 }
 
-.pakprofiel svg {
-  display: block;
-  width: 100%;
-  height: auto;
+/* Het panorama met La Meije (components/Bergen.tsx); de route ligt op de witte flank */
+.pakprofiel__bergen {
+  height: 230px;
+  --berg-dal: var(--pak-papier);
+  --berg-vlag: var(--pak-rood);
 }
 
-.pakprofiel__berg { fill: #e9f1f5; }
-.pakprofiel__dal { fill: var(--pak-papier); }
-.pakprofiel__dorp { fill: var(--pak-zacht); }
+.pakprofiel__dorp { fill: var(--pak-inkt); }
 
+/* nog te gaan: navy stippels op de sneeuw */
 .pakprofiel__route {
   fill: none;
-  stroke: var(--pak-zacht);
-  stroke-width: 2;
-  stroke-dasharray: 2 5;
+  stroke: var(--pak-inkt);
+  stroke-width: 2.2;
+  stroke-dasharray: 1 6;
   stroke-linecap: round;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .pakprofiel__stuk {
@@ -178,22 +178,6 @@
   fill: none;
 }
 
-.pakprofiel__label {
-  font: 600 11px var(--pak-smal);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  fill: var(--pak-zacht);
-}
-
-/* "3600 · Glacier" staat deels in de lucht en deels op de sneeuw: licht met een blauwe rand */
-.pakprofiel__label:not([text-anchor='end']) {
-  fill: #9fe3f4;
-  paint-order: stroke;
-  stroke: var(--hero);
-  stroke-width: 4px;
-  stroke-linejoin: round;
-}
-
 .pakprofiel__skier {
   transition: transform 0.25s ease-out;
 }
@@ -209,10 +193,11 @@
 .paklijst.is-vol .pakprofiel__skier { display: none; }
 
 /* Alles ingepakt: een groot stempel op de kaart */
+/* links van de top, zodat de vlag erop zichtbaar blijft */
 .pakprofiel__stempel {
   position: absolute;
-  left: 50%;
-  top: 30%;
+  left: 30%;
+  top: 42%;
   padding: 7px 12px 6px;
   border: 3px solid var(--pak-stempel);
   border-radius: 4px;

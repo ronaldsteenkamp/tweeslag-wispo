@@ -149,6 +149,20 @@
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* Het panorama met La Meije (components/Bergen.tsx); het dal loopt over in het papier */
+.homekop__bergen {
+  width: calc(100% + 40px);
+  height: 150px;
+  margin: 6px -20px -1px;
+  --berg-dal: var(--h-papier);
+  --berg-vlag: var(--h-rood);
+}
+
+.homekop__bergen--laag {
+  height: 64px;
+}
+
+/* Alleen nog het dal (Home op de vertrekdag) */
 .homekop__berg {
   display: block;
   width: calc(100% + 40px);
@@ -160,21 +174,9 @@
   height: 44px;
 }
 
-.homekop__berg .berg {
-  fill: var(--h-sneeuw);
-}
-
-.homekop__berg .schaduw {
-  fill: var(--h-schaduw);
-}
-
 .homekop__berg .dal,
 .affiche .dal {
   fill: var(--h-papier);
-}
-
-.homekop__berg .vlag {
-  fill: var(--h-rood);
 }
 
 /* Tijdens: dag links, weer rechts */
