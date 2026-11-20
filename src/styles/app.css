@@ -162,6 +162,10 @@ button {
 .buurpaneel--links {
   transform: translateX(-100%);
 }
+/* klaargezet maar (nog) niet in beeld: wel opgemaakt, niet getekend */
+.buurpaneel.is-rust {
+  visibility: hidden;
+}
 
 .scherm {
   display: flex;

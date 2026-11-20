@@ -35,7 +35,8 @@ export function wisselPaneel(): HTMLElement | null {
   return document.querySelector<HTMLElement>('.huidig .kaartscherm') ?? document.querySelector<HTMLElement>('.huidig')
 }
 
-const buurPaneel = () => document.querySelector<HTMLElement>('.buurpaneel')
+/** Het buurscherm waar je nu heen veegt (klaargezette buren in rust tellen niet mee) */
+const buurPaneel = () => document.querySelector<HTMLElement>('.buurpaneel:not(.is-rust)')
 
 /**
  * Het doorlopende bergenlandschap (Bergen met camera) schuift trager dan het scherm: per hele veeg
