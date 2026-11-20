@@ -872,13 +872,16 @@ export function startSneeuw(eigen = {}) {
     return null
   }
 
+  /** Waar de vlok nu echt staat (met het heen-en-weer zwaaien erbij) */
+  const zwaaiX = (v) => v.x + Math.sin(t * v.zwaaiTempo * Math.PI * 2 * 0.5 + v.fase) * v.zwaai
+
   function tekenVlok(v, niveau, alpha) {
     const spr = sprites[v.sprite]
     const img = spr.niveaus[niveau]
     const k = 1 - v.kantel * (0.5 + 0.5 * Math.sin(t * v.kantelTempo + v.kantelFase))
     const cos = Math.cos(v.hoek)
     const sin = Math.sin(v.hoek)
-    const x = v.x + Math.sin(t * v.zwaaiTempo * Math.PI * 2 * 0.5 + v.fase) * v.zwaai
+    const x = zwaaiX(v)
     // de sprite is S breed en de vlok heeft straal 0.31 S → schaal zo dat de vlok 'grootte' breed is
     const s = v.grootte / (2 * 0.31 * img.width) * dpr
     ctx.globalAlpha = alpha
@@ -918,11 +921,16 @@ export function startSneeuw(eigen = {}) {
     for (const v of vlokken) {
       if (!v.actief || !v.L.aan) continue
       n++
-      const h = v.grootte * 0.6 + v.zwaai
-      const xm = v.x
-      const raak = canvasIjs ? overlaptIjs(xm, v.y, h) : null
+      // Test op de plek waar de vlok echt getekend wordt, met zijn echte straal. Alleen een vlok die
+      // er met marge helemaal achter zit (ook de vage rand) wordt in z'n geheel vaag; steekt hij er
+      // ook maar een beetje uit, dan is alleen het deel achter het blok vaag en de rest scherp.
+      // (Eerder werd hier met grootte − zwaai gerekend; dat is vaak negatief, waardoor een vlok die
+      // nog half buiten het blok zat al in één keer vaag werd.)
+      const xm = zwaaiX(v)
+      const straal = v.grootte * 0.5 + 2
+      const raak = canvasIjs ? overlaptIjs(xm, v.y, straal) : null
       if (raak) {
-        const binnen = geheelInIjs(xm, v.y, v.grootte * 0.6 - v.zwaai)
+        const binnen = geheelInIjs(xm, v.y, straal + cfg.vervaging.vaag)
         if (binnen) {
           tekenVlok(v, v.ijsNiveau, v.dekking * binnen.doorzicht)
         } else {
