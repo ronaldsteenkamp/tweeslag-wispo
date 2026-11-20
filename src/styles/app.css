@@ -541,28 +541,7 @@ button {
   pointer-events: none;
 }
 
-.sneeuw span {
-  position: absolute;
-  top: -20px;
-  line-height: 0;
-  animation-name: vallen;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-/* Kleine stipjes (sneeuw verder weg); de grote vlokken zijn een svg */
-.sneeuw .sneeuw__stip {
-  border-radius: 50%;
-  background: #ffffff;
-}
-
-.sneeuw span svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-/* Twinkelende sterren */
+/* Twinkelende sterren (de vallende sneeuw zelf: styles/sneeuw.css) */
 .sneeuw__ster {
   position: absolute;
   width: 2px;
@@ -594,18 +573,6 @@ button {
   right: 22px;
   width: 34px;
   height: 34px;
-}
-
-@keyframes vallen {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  50% {
-    transform: translate(var(--drift), 300px) rotate(calc(var(--draai, 0deg) / 2));
-  }
-  100% {
-    transform: translate(0, 620px) rotate(var(--draai, 0deg));
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

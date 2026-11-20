@@ -814,11 +814,13 @@
   transition: transform 0.2s;
 }
 
-.schakelaar.is-bezig {
+.schakelaar.is-bezig,
+.schakelaar.is-aan {
   background: var(--h-groen);
 }
 
-.schakelaar.is-bezig::after {
+.schakelaar.is-bezig::after,
+.schakelaar.is-aan::after {
   transform: translateX(18px);
 }
 

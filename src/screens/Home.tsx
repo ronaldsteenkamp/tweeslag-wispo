@@ -4,6 +4,7 @@ import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
 import { FotoStrip } from '../components/FotoStrip'
 import { MeldingenKaart } from '../components/Meldingen'
+import { SneeuwRij } from '../components/SneeuwRij'
 import { openMijnProfiel } from '../components/Profiel'
 import { Sneeuw } from '../components/Sneeuw'
 import { StemmingOpHome } from '../components/Stemmen'
@@ -186,6 +187,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
 
         {/* Helemaal onderaan */}
         {fase !== 'na' && <MeldingenKaart />}
+        <SneeuwRij />
 
         <footer className="home__voet">
           <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" width={68} height={68} loading="lazy" />

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BadgeMelding } from './components/Badges'
 import { ProfielVenster } from './components/Profiel'
+import { SneeuwAchtergrond } from './components/SneeuwAchtergrond'
 import { TabBalk, TABS, type Tab } from './components/TabBalk'
 import { UpdateMelding } from './components/UpdateMelding'
 import { Welkom } from './components/Welkom'
@@ -179,6 +180,7 @@ export default function App() {
 
   return (
     <>
+      <SneeuwAchtergrond scherm={tab} />
       {/* Elk scherm in een eigen vak met de tab als key. Tijdens het vegen staat het buurscherm
           ernaast; na het wisselen wórdt dat vak het huidige scherm (zelfde key, zelfde element),
           zodat er niets opnieuw opgebouwd wordt: geen knipperen, geen opnieuw ladende kaart. */}
