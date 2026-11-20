@@ -1,3 +1,4 @@
+import { Bergen, MEIJE, rondTop } from '../components/Bergen'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { kijkNaarPlek } from '../lib/badgesTelefoon'
 import { BevestigDialoog } from '../components/BevestigDialoog'
@@ -411,7 +412,11 @@ function WieIsWaar({
     <>
       <BladKop titel="Wie is waar" onSluit={onSluit} />
       {anderen.length === 0 && !mijnPlek ? (
-        <p className="kaartblad__leeg">Er deelt nu niemand een plek.</p>
+        <div className="kaartblad__leeg">
+          {/* Lege staat: de kleine bergvariant (La Meije), zelfde vorm als overal in de app */}
+          <Bergen className="kaartblad__bergen" venster={rondTop(MEIJE, 220)} lagen={[1, 3]} lucht={12} diepte={30} dalHoogte={10} parallax={false} />
+          <p>Er deelt nu niemand een plek.</p>
+        </div>
       ) : (
         <ul className="wieiswaar">
           {mijnPlek && (

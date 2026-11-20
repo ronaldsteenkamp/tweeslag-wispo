@@ -59,24 +59,13 @@
   color: rgba(255, 255, 255, 0.92);
 }
 
-.welkom__berg {
-  display: block;
+/* Het panorama met La Meije (components/Bergen.tsx); het dal loopt over in het papier */
+.welkom__bergen {
   width: calc(100% + 40px);
-  height: 84px;
+  height: 112px;
   margin: 10px -20px -1px;
-}
-
-.welkom__berg .berg {
-  fill: #e9f1f5;
-}
-.welkom__berg .schaduw {
-  fill: #cfdee8;
-}
-.welkom__berg .dal {
-  fill: var(--w-papier);
-}
-.welkom__berg .vlag {
-  fill: var(--w-rood);
+  --berg-dal: var(--w-papier);
+  --berg-vlag: var(--w-rood);
 }
 
 /* ---------- Inhoud ---------- */

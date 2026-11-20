@@ -1,0 +1,1843 @@
+﻿[
+    {
+        "naam":  "Barre des Ãcrins",
+        "ele":  "4102",
+        "lat":  44.9221600,
+        "lon":  6.3595470,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Grand Pic de la Meije",
+        "ele":  "3982",
+        "lat":  45.0048261,
+        "lon":  6.3084272,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Ouest de Combeynot",
+        "ele":  "3155",
+        "lat":  45.0125800,
+        "lon":  6.4111137,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pied Moutet",
+        "ele":  "2338",
+        "lat":  45.0071269,
+        "lon":  6.0958559,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Est du RÃ¢teau",
+        "ele":  "3809",
+        "lat":  45.0008085,
+        "lon":  6.2829415,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Thuit CrÃªtes",
+        "ele":  null,
+        "lat":  45.0089581,
+        "lon":  6.1455787,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "DÃ´me de Neige des Ãcrins",
+        "ele":  "4015",
+        "lat":  44.9243102,
+        "lon":  6.3535413,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Petite Aiguille",
+        "ele":  null,
+        "lat":  45.0238637,
+        "lon":  6.1331800,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Grande SÃ»re",
+        "ele":  "2486",
+        "lat":  45.0207020,
+        "lon":  6.1746597,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Aiguille de VÃ©nosc",
+        "ele":  "2830",
+        "lat":  44.9675779,
+        "lon":  6.0870415,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche RuinÃ©e",
+        "ele":  "2574",
+        "lat":  44.9556255,
+        "lon":  6.1509704,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Signal de l\u0027Homme",
+        "ele":  "2176",
+        "lat":  45.0662360,
+        "lon":  6.0860524,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Croix de Cassini",
+        "ele":  "2373",
+        "lat":  45.0732088,
+        "lon":  6.1344966,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Envers",
+        "ele":  null,
+        "lat":  44.9925705,
+        "lon":  6.1725213,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "FÃ©e",
+        "ele":  null,
+        "lat":  45.0188813,
+        "lon":  6.1624423,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "FÃ©e",
+        "ele":  null,
+        "lat":  45.0043194,
+        "lon":  6.1675922,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Super Diable",
+        "ele":  null,
+        "lat":  44.9914962,
+        "lon":  6.1578365,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Super Diable",
+        "ele":  null,
+        "lat":  44.9968613,
+        "lon":  6.1473495,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Village 1800",
+        "ele":  null,
+        "lat":  45.0183480,
+        "lon":  6.1304209,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Village 1800",
+        "ele":  null,
+        "lat":  45.0095850,
+        "lon":  6.1438961,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Petite Aiguille",
+        "ele":  null,
+        "lat":  45.0234808,
+        "lon":  6.1230276,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "CÃ´te",
+        "ele":  null,
+        "lat":  45.0232946,
+        "lon":  6.1231594,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "CÃ´te",
+        "ele":  null,
+        "lat":  45.0166591,
+        "lon":  6.1189162,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Mont-de-Lans",
+        "ele":  null,
+        "lat":  45.0235805,
+        "lon":  6.1244702,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "VallÃ©e Blanche",
+        "ele":  null,
+        "lat":  45.0180712,
+        "lon":  6.1239411,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Venosc",
+        "ele":  null,
+        "lat":  44.9876097,
+        "lon":  6.1160682,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Grande Aiguille de la BÃ©rarde",
+        "ele":  "3417",
+        "lat":  44.9168928,
+        "lon":  6.2780427,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Plaret",
+        "ele":  "3563",
+        "lat":  44.9684719,
+        "lon":  6.2592473,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Bourcet",
+        "ele":  "3697",
+        "lat":  44.9620130,
+        "lon":  6.3230041,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de la Maye",
+        "ele":  "2516",
+        "lat":  44.9438441,
+        "lon":  6.2891211,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Blanc du Galibier",
+        "ele":  "2954",
+        "lat":  45.0640977,
+        "lon":  6.3838498,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Bec de l\u0027Homme",
+        "ele":  "3454",
+        "lat":  45.0163178,
+        "lon":  6.3299734,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Doigt de Dieu",
+        "ele":  "3973",
+        "lat":  45.0041641,
+        "lon":  6.3136876,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Rocher de l\u0027Encoula",
+        "ele":  "3538",
+        "lat":  44.9067020,
+        "lon":  6.2817764,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de l\u0027Ours",
+        "ele":  "3045",
+        "lat":  44.9193473,
+        "lon":  6.2342261,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Jeanne",
+        "ele":  "3245",
+        "lat":  44.9082007,
+        "lon":  6.2363503,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Aiguille de LanchÃ¢tra",
+        "ele":  null,
+        "lat":  44.9574279,
+        "lon":  6.1513137,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Pierroux",
+        "ele":  "2875",
+        "lat":  44.9370002,
+        "lon":  6.1490821,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Peigne",
+        "ele":  "2739",
+        "lat":  44.9394030,
+        "lon":  6.1514854,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de Lauranoure",
+        "ele":  "3341",
+        "lat":  44.9261398,
+        "lon":  6.1510908,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte du Salude",
+        "ele":  "3231",
+        "lat":  44.9157832,
+        "lon":  6.1481686,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de la Marsare",
+        "ele":  "3118",
+        "lat":  44.9511728,
+        "lon":  6.2145819,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte du Graou",
+        "ele":  "3168",
+        "lat":  44.9566935,
+        "lon":  6.2149683,
+        "soort":  "top"
+    },
+    {
+        "naam":  "L\u0027Aiguille des Etages",
+        "ele":  "2774",
+        "lat":  44.9249308,
+        "lon":  6.2459635,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de la GandoliÃ¨re",
+        "ele":  "3542",
+        "lat":  44.9742415,
+        "lon":  6.2710489,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic de la Grave",
+        "ele":  "3669",
+        "lat":  44.9952379,
+        "lon":  6.2541959,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Jandri",
+        "ele":  "3292",
+        "lat":  44.9927481,
+        "lon":  6.2044788,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte Sud du Replat",
+        "ele":  "3428",
+        "lat":  44.9837595,
+        "lon":  6.2791448,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Pave",
+        "ele":  "3831",
+        "lat":  44.9986700,
+        "lon":  6.3245200,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Gaspard",
+        "ele":  "3882",
+        "lat":  44.9978931,
+        "lon":  6.3305818,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe NÃ©rot",
+        "ele":  "3537",
+        "lat":  44.9997419,
+        "lon":  6.3523292,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roc Noir de Combeynot",
+        "ele":  "3118",
+        "lat":  45.0113503,
+        "lon":  6.4016875,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Grande Ruine",
+        "ele":  "3765",
+        "lat":  44.9676421,
+        "lon":  6.3290693,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche MÃ©ane",
+        "ele":  "3712",
+        "lat":  44.9702923,
+        "lon":  6.3351629,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pics des Cavales",
+        "ele":  "3309",
+        "lat":  44.9712470,
+        "lon":  6.3236617,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Emma",
+        "ele":  "3300",
+        "lat":  44.9848649,
+        "lon":  6.3169240,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de CharriÃ¨re",
+        "ele":  "3442",
+        "lat":  44.9546248,
+        "lon":  6.3231039,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Sommet Sud-Est de la Roche d\u0027Alveau",
+        "ele":  "3628",
+        "lat":  44.9445011,
+        "lon":  6.3435047,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic de Neige Cordier",
+        "ele":  "3613",
+        "lat":  44.9562934,
+        "lon":  6.3892109,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic d\u0027Arsine",
+        "ele":  "3272",
+        "lat":  44.9643255,
+        "lon":  6.3874809,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic du Dragon",
+        "ele":  "3229",
+        "lat":  44.9677340,
+        "lon":  6.3872264,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Caneton",
+        "ele":  "2968",
+        "lat":  44.9085688,
+        "lon":  6.1809090,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de la Caborne",
+        "ele":  "2845",
+        "lat":  44.9125001,
+        "lon":  6.1861876,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte du Pouget",
+        "ele":  "2765",
+        "lat":  44.9168300,
+        "lon":  6.1860751,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe de la Mariande",
+        "ele":  "3151",
+        "lat":  44.9011691,
+        "lon":  6.1477088,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Swan",
+        "ele":  "3300",
+        "lat":  44.9080753,
+        "lon":  6.1148357,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Marguerite",
+        "ele":  "3251",
+        "lat":  44.9148560,
+        "lon":  6.1121749,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Petit Roux",
+        "ele":  "3034",
+        "lat":  44.9410206,
+        "lon":  6.1167257,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Sommet du Soreiller",
+        "ele":  "2264",
+        "lat":  44.9675797,
+        "lon":  6.1351122,
+        "soort":  "top"
+    },
+    {
+        "naam":  "CÃ®me du Montagnon",
+        "ele":  "3263",
+        "lat":  44.9097989,
+        "lon":  6.1454557,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Coolidge",
+        "ele":  "3775",
+        "lat":  44.9099462,
+        "lon":  6.3570573,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Fifre",
+        "ele":  "3680",
+        "lat":  44.9163760,
+        "lon":  6.3563295,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Petite Sagne",
+        "ele":  "3611",
+        "lat":  44.9344197,
+        "lon":  6.3831477,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe de Balme Rousse",
+        "ele":  "3224",
+        "lat":  44.9143410,
+        "lon":  6.3277816,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe de PiÃ© BÃ©rarde",
+        "ele":  "3192",
+        "lat":  44.9261310,
+        "lon":  6.3286399,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Rochaille",
+        "ele":  "2740",
+        "lat":  44.9338418,
+        "lon":  6.3118470,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de la Toura",
+        "ele":  "2918",
+        "lat":  44.9837845,
+        "lon":  6.1829892,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte Moute",
+        "ele":  "2816",
+        "lat":  44.9910949,
+        "lon":  6.1592530,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic du Diable",
+        "ele":  "2872",
+        "lat":  44.9896958,
+        "lon":  6.1644559,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte du Lac Noir",
+        "ele":  "3071",
+        "lat":  44.9998219,
+        "lon":  6.1914932,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche Mantel",
+        "ele":  "3052",
+        "lat":  45.0099016,
+        "lon":  6.1969756,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Diable",
+        "ele":  null,
+        "lat":  45.0043608,
+        "lon":  6.1247679,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Thuit CrÃªtes",
+        "ele":  null,
+        "lat":  45.0112006,
+        "lon":  6.1516491,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Bellecombe",
+        "ele":  null,
+        "lat":  45.0023958,
+        "lon":  6.1584111,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Alpette",
+        "ele":  null,
+        "lat":  45.0121985,
+        "lon":  6.1268138,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Alpette",
+        "ele":  null,
+        "lat":  45.0119685,
+        "lon":  6.1317853,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "CÃ´te Brune",
+        "ele":  null,
+        "lat":  45.0066219,
+        "lon":  6.1273067,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Lutins",
+        "ele":  null,
+        "lat":  45.0107322,
+        "lon":  6.1263679,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Lutins",
+        "ele":  null,
+        "lat":  45.0105815,
+        "lon":  6.1315459,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Bellecombe",
+        "ele":  null,
+        "lat":  44.9922123,
+        "lon":  6.1619125,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Aiguille Occidentale du Soreiller",
+        "ele":  "3208",
+        "lat":  44.9665951,
+        "lon":  6.2384263,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointes de Burlan",
+        "ele":  "3299",
+        "lat":  44.9685324,
+        "lon":  6.2342911,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Aiguille Dibona",
+        "ele":  "3131",
+        "lat":  44.9628986,
+        "lon":  6.2430795,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Clochetons Gunneng",
+        "ele":  "3108",
+        "lat":  44.9635859,
+        "lon":  6.2428312,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Tour Rouge de l\u0027Aiguille Orientale",
+        "ele":  "3167",
+        "lat":  44.9655067,
+        "lon":  6.2495629,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Aiguille Orientale du Soreiller",
+        "ele":  "3380",
+        "lat":  44.9679582,
+        "lon":  6.2485786,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Aiguille Centrale du Soreiller",
+        "ele":  "3338",
+        "lat":  44.9671885,
+        "lon":  6.2417382,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe d\u0027Amont",
+        "ele":  "3338",
+        "lat":  44.9681405,
+        "lon":  6.2436107,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic GÃ©ny",
+        "ele":  "3435",
+        "lat":  44.9574950,
+        "lon":  6.2636665,
+        "soort":  "top"
+    },
+    {
+        "naam":  "DÃ´me de la GandoliÃ¨re",
+        "ele":  "3495",
+        "lat":  44.9734211,
+        "lon":  6.2672297,
+        "soort":  "top"
+    },
+    {
+        "naam":  "DÃ´me de la Lauze",
+        "ele":  "3568",
+        "lat":  44.9971305,
+        "lon":  6.2460457,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte Nord du Replat",
+        "ele":  "3442",
+        "lat":  44.9873545,
+        "lon":  6.2832789,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Thorant",
+        "ele":  "3583",
+        "lat":  44.9960243,
+        "lon":  6.2634663,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Dosia",
+        "ele":  "3611",
+        "lat":  44.9984281,
+        "lon":  6.2670759,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Ouest du RÃ¢teau",
+        "ele":  "3769",
+        "lat":  45.0006975,
+        "lon":  6.2766828,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Gros Ane",
+        "ele":  "2505",
+        "lat":  45.0244556,
+        "lon":  6.4166967,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pyramide de Laurichard",
+        "ele":  "2772",
+        "lat":  45.0187302,
+        "lon":  6.3914377,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic du Lac de Combeynot",
+        "ele":  "3088",
+        "lat":  44.9969494,
+        "lon":  6.4158124,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche Ãmile Pic",
+        "ele":  "3586",
+        "lat":  44.9549401,
+        "lon":  6.3841214,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Toura",
+        "ele":  null,
+        "lat":  44.9938232,
+        "lon":  6.1733260,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "TÃªte Nord de la Somme",
+        "ele":  "3352",
+        "lat":  44.9527349,
+        "lon":  6.3239445,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Tour Choisy",
+        "ele":  "3671",
+        "lat":  44.9640787,
+        "lon":  6.3278726,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe des Aigles",
+        "ele":  "3336",
+        "lat":  44.9902691,
+        "lon":  6.3159399,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Bonnet des Cavales",
+        "ele":  "3285",
+        "lat":  44.9756383,
+        "lon":  6.3180279,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe des Chamois",
+        "ele":  "3315",
+        "lat":  44.9884181,
+        "lon":  6.3172006,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Les Trois Hommes",
+        "ele":  "2933",
+        "lat":  45.0173394,
+        "lon":  6.3465085,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche Paillon",
+        "ele":  "3636",
+        "lat":  44.9523357,
+        "lon":  6.3801179,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic du Glacier Blanc",
+        "ele":  "3525",
+        "lat":  44.9545063,
+        "lon":  6.3925413,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Lory",
+        "ele":  "4086",
+        "lat":  44.9222662,
+        "lon":  6.3576641,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic du Clapier du Peyron",
+        "ele":  "3169",
+        "lat":  44.9361978,
+        "lon":  6.0752448,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Grande Sure",
+        "ele":  "2114",
+        "lat":  45.0998590,
+        "lon":  6.0590757,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic des Trois ÃvÃªchÃ©s",
+        "ele":  "3116",
+        "lat":  45.0700090,
+        "lon":  6.3649601,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de Malacombe",
+        "ele":  "3124",
+        "lat":  44.9147659,
+        "lon":  6.2393331,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Lemercier",
+        "ele":  "3170",
+        "lat":  44.9123513,
+        "lon":  6.2349760,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Trifide",
+        "ele":  "3450",
+        "lat":  45.0060976,
+        "lon":  6.2720964,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Marie-Louise",
+        "ele":  "3545",
+        "lat":  44.9969454,
+        "lon":  6.2576160,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Madeleine",
+        "ele":  "3627",
+        "lat":  44.9972199,
+        "lon":  6.2635847,
+        "soort":  "top"
+    },
+    {
+        "naam":  "AntÃ©cime Est du RÃ¢teau",
+        "ele":  null,
+        "lat":  45.0003157,
+        "lon":  6.2854348,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Claire",
+        "ele":  "3368",
+        "lat":  44.9936062,
+        "lon":  6.3452939,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe des Pichettes",
+        "ele":  "3534",
+        "lat":  45.0000248,
+        "lon":  6.3487028,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Gravelotte",
+        "ele":  "3387",
+        "lat":  44.9969591,
+        "lon":  6.3573931,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Piaget",
+        "ele":  "3569",
+        "lat":  44.9987048,
+        "lon":  6.3453339,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de la Martelat",
+        "ele":  "2985",
+        "lat":  45.0028006,
+        "lon":  6.3641094,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La CathÃ©drale",
+        "ele":  "2931",
+        "lat":  45.0066047,
+        "lon":  6.3587075,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic de l\u0027Homme",
+        "ele":  "2884",
+        "lat":  45.0274365,
+        "lon":  6.3282100,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte des Corridors",
+        "ele":  "3734",
+        "lat":  45.0068198,
+        "lon":  6.3173272,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Bec de l\u0027Aigle",
+        "ele":  "3411",
+        "lat":  45.0140210,
+        "lon":  6.3266973,
+        "soort":  "top"
+    },
+    {
+        "naam":  "L\u0027Ãne",
+        "ele":  "2375",
+        "lat":  45.0284526,
+        "lon":  6.3430158,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Nord de la Selle",
+        "ele":  "3295",
+        "lat":  44.9812557,
+        "lon":  6.2764096,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Grand Gendarme du Rouget",
+        "ele":  null,
+        "lat":  44.9527751,
+        "lon":  6.2681269,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Aiguille de la GandoliÃ¨re",
+        "ele":  "3324",
+        "lat":  44.9714804,
+        "lon":  6.2782549,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Nord des Cavales",
+        "ele":  "3362",
+        "lat":  44.9804794,
+        "lon":  6.3151846,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Castelnau",
+        "ele":  "3458",
+        "lat":  44.9940349,
+        "lon":  6.3192871,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Corne des Chamois",
+        "ele":  "3305",
+        "lat":  44.9870295,
+        "lon":  6.3165279,
+        "soort":  "top"
+    },
+    {
+        "naam":  "L\u0027Ourson",
+        "ele":  "3735",
+        "lat":  44.9988343,
+        "lon":  6.3265792,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Chalonge",
+        "ele":  "3344",
+        "lat":  44.9751221,
+        "lon":  6.3211284,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic Sud des Cavales",
+        "ele":  "3360",
+        "lat":  44.9746211,
+        "lon":  6.3223944,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Clochers de l\u0027Alpe",
+        "ele":  "3504",
+        "lat":  44.9722827,
+        "lon":  6.3439605,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic MaÃ®tre",
+        "ele":  "3728",
+        "lat":  44.9694509,
+        "lon":  6.3297848,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Les Clochetons",
+        "ele":  "3263",
+        "lat":  44.9755000,
+        "lon":  6.3493463,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte Sud de la Somme",
+        "ele":  "3389",
+        "lat":  44.9470657,
+        "lon":  6.3301310,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Sommet Nord-Ouest de la Roche d\u0027Alvau",
+        "ele":  "3538",
+        "lat":  44.9474953,
+        "lon":  6.3385151,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Xavier Blanc",
+        "ele":  "3677",
+        "lat":  44.9423532,
+        "lon":  6.3617403,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Jumeaux des Ãcrins",
+        "ele":  "3730",
+        "lat":  44.9276123,
+        "lon":  6.3540244,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Clocher des Ãcrins",
+        "ele":  "3808",
+        "lat":  44.9235663,
+        "lon":  6.3487613,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Flambeau des Ãcrins",
+        "ele":  "3551",
+        "lat":  44.9220404,
+        "lon":  6.3394680,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Tour de Bonne Pierre",
+        "ele":  "3692",
+        "lat":  44.9287495,
+        "lon":  6.3556973,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe de Bonne Pierre",
+        "ele":  "3683",
+        "lat":  44.9297764,
+        "lon":  6.3555181,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Cornes de PiÃ© BÃ©rarde",
+        "ele":  "3012",
+        "lat":  44.9298162,
+        "lon":  6.3198304,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte Bessone",
+        "ele":  null,
+        "lat":  44.9185800,
+        "lon":  6.2337115,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte du Grand Bois",
+        "ele":  "2773",
+        "lat":  44.9257453,
+        "lon":  6.2367982,
+        "soort":  "top"
+    },
+    {
+        "naam":  "BrÃ¨che de l\u0027IrelÃ¨ve",
+        "ele":  "2859",
+        "lat":  44.9223944,
+        "lon":  6.2389665,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Cime de l\u0027Encoula",
+        "ele":  "3536",
+        "lat":  44.9051314,
+        "lon":  6.2826994,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte du Serre",
+        "ele":  "2316",
+        "lat":  45.0861508,
+        "lon":  6.1172417,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Sautet",
+        "ele":  null,
+        "lat":  45.0041831,
+        "lon":  6.1667606,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Barre Noire",
+        "ele":  "3751",
+        "lat":  44.9282196,
+        "lon":  6.3686177,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Grande Aiguille",
+        "ele":  "2181",
+        "lat":  45.0201522,
+        "lon":  6.1419459,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Petite Aiguille",
+        "ele":  "1993",
+        "lat":  45.0229286,
+        "lon":  6.1370929,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Montagne de Rachas",
+        "ele":  "2748",
+        "lat":  44.9947217,
+        "lon":  6.1563880,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Mais",
+        "ele":  "2106",
+        "lat":  45.0089316,
+        "lon":  6.1053607,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Belle Etoile",
+        "ele":  "2649",
+        "lat":  45.0040798,
+        "lon":  6.1677327,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Cairn",
+        "ele":  "3178",
+        "lat":  45.0003352,
+        "lon":  6.2003849,
+        "soort":  "top"
+    },
+    {
+        "naam":  "DÃ´me de Puy SaliÃ©",
+        "ele":  "3417",
+        "lat":  44.9971601,
+        "lon":  6.2225990,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Les Perrons",
+        "ele":  "1842",
+        "lat":  44.9931201,
+        "lon":  6.1291586,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Moutet",
+        "ele":  "1175",
+        "lat":  45.0375950,
+        "lon":  6.0983454,
+        "soort":  "top"
+    },
+    {
+        "naam":  "CrÃªte du Fioc",
+        "ele":  "2076",
+        "lat":  45.0144065,
+        "lon":  6.1097318,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Sure",
+        "ele":  "2451",
+        "lat":  45.0240229,
+        "lon":  6.1728173,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Aiguilles Rouges de la Toura",
+        "ele":  "2710",
+        "lat":  44.9791072,
+        "lon":  6.1790885,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Tallias",
+        "ele":  "1591",
+        "lat":  45.0308308,
+        "lon":  6.1325138,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Grandes Buffes",
+        "ele":  "2164",
+        "lat":  45.0708479,
+        "lon":  6.1144794,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Coche",
+        "ele":  "2328",
+        "lat":  44.9661848,
+        "lon":  6.1358091,
+        "soort":  "top"
+    },
+    {
+        "naam":  "CÃ´te Brune",
+        "ele":  null,
+        "lat":  45.0063590,
+        "lon":  6.1332453,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "ChampamÃ©",
+        "ele":  null,
+        "lat":  45.0150280,
+        "lon":  6.1317806,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "ChampamÃ©",
+        "ele":  null,
+        "lat":  45.0154845,
+        "lon":  6.1270773,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Sautet",
+        "ele":  null,
+        "lat":  45.0002350,
+        "lon":  6.1673983,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Grand Viking",
+        "ele":  null,
+        "lat":  45.0056049,
+        "lon":  6.1287761,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Venosc",
+        "ele":  null,
+        "lat":  45.0026533,
+        "lon":  6.1195344,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Cornes de PiÃ© BÃ©rarde",
+        "ele":  "2974",
+        "lat":  44.9289431,
+        "lon":  6.3216033,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Montagne de Chaillol",
+        "ele":  "2739",
+        "lat":  45.0475665,
+        "lon":  6.3817848,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de la Muraillette",
+        "ele":  "3019",
+        "lat":  44.9465983,
+        "lon":  6.0803462,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Grande Roche de la Muzelle",
+        "ele":  "3465",
+        "lat":  44.9306737,
+        "lon":  6.1061251,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Sommet de la Quarlie",
+        "ele":  "2322",
+        "lat":  45.0994310,
+        "lon":  6.1977640,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Sommet du Santin - Serre Orel",
+        "ele":  "2137",
+        "lat":  45.0316689,
+        "lon":  6.4062976,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Meije Orientale",
+        "ele":  "3891",
+        "lat":  45.0036757,
+        "lon":  6.3189377,
+        "soort":  "top"
+    },
+    {
+        "naam":  "BrÃ¨che du Grand Creux",
+        "ele":  "2804",
+        "lat":  44.9849219,
+        "lon":  6.1767342,
+        "soort":  "top"
+    },
+    {
+        "naam":  "VallÃ©e Blanche",
+        "ele":  null,
+        "lat":  45.0094381,
+        "lon":  6.1061361,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Toura",
+        "ele":  null,
+        "lat":  44.9858255,
+        "lon":  6.1786533,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Roche OlvÃ©ra, sommet sud",
+        "ele":  "2651",
+        "lat":  45.0893106,
+        "lon":  6.4190725,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Rabel",
+        "ele":  "2539",
+        "lat":  45.0825034,
+        "lon":  6.4137459,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Petit Galibier",
+        "ele":  "2765",
+        "lat":  45.0631246,
+        "lon":  6.4150043,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe des Lauzettes",
+        "ele":  "3053",
+        "lat":  45.0831678,
+        "lon":  6.3747836,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche OlvÃ©ra, sommet nord",
+        "ele":  "2662",
+        "lat":  45.0904263,
+        "lon":  6.4177355,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pierre Grosse",
+        "ele":  null,
+        "lat":  45.0141472,
+        "lon":  6.1746677,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "La Tour Rouge",
+        "ele":  "2920",
+        "lat":  44.9162689,
+        "lon":  6.1560288,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe CÃ©zanne",
+        "ele":  "3365",
+        "lat":  44.9502893,
+        "lon":  6.4108978,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic du Glacier d\u0027Arsine",
+        "ele":  "3364",
+        "lat":  44.9520073,
+        "lon":  6.4045502,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Petit Galibier Ouest",
+        "ele":  "2826",
+        "lat":  45.0609471,
+        "lon":  6.3964360,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Les Berches",
+        "ele":  "3050",
+        "lat":  44.9084292,
+        "lon":  6.1304354,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Super Venosc",
+        "ele":  null,
+        "lat":  45.0083178,
+        "lon":  6.1055619,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "TÃªte du Vallon",
+        "ele":  "3059",
+        "lat":  45.0076160,
+        "lon":  6.4135692,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Pare",
+        "ele":  null,
+        "lat":  45.0647900,
+        "lon":  6.3617943,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Serret des Morts",
+        "ele":  null,
+        "lat":  45.0859422,
+        "lon":  6.3601849,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Diable",
+        "ele":  null,
+        "lat":  44.9980729,
+        "lon":  6.1480048,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "CrÃªtes",
+        "ele":  null,
+        "lat":  45.0103824,
+        "lon":  6.1408088,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "CrÃªtes",
+        "ele":  null,
+        "lat":  44.9986067,
+        "lon":  6.1483385,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Petit Viking",
+        "ele":  null,
+        "lat":  45.0060684,
+        "lon":  6.1245798,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Petit Viking",
+        "ele":  null,
+        "lat":  45.0060009,
+        "lon":  6.1260914,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Grand Viking",
+        "ele":  null,
+        "lat":  45.0057706,
+        "lon":  6.1260100,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Envers",
+        "ele":  null,
+        "lat":  44.9922876,
+        "lon":  6.1704566,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Pointe de la Grande Sagne",
+        "ele":  "3660",
+        "lat":  44.9325571,
+        "lon":  6.3831425,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche Hippolyte Pic",
+        "ele":  "3586",
+        "lat":  44.9487026,
+        "lon":  6.3750797,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe Louise",
+        "ele":  "3668",
+        "lat":  44.9444189,
+        "lon":  6.3665678,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Pyramide",
+        "ele":  "3348",
+        "lat":  44.9508882,
+        "lon":  6.4180895,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Belle Ãtoile",
+        "ele":  null,
+        "lat":  45.0150079,
+        "lon":  6.1269982,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Belle Ãtoile",
+        "ele":  null,
+        "lat":  45.0094489,
+        "lon":  6.1436764,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Bosse Coolidge",
+        "ele":  "3343",
+        "lat":  44.9093327,
+        "lon":  6.3685538,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Jandri 3S",
+        "ele":  null,
+        "lat":  45.0098494,
+        "lon":  6.1264823,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Jandri",
+        "ele":  "2600",
+        "lat":  44.9976312,
+        "lon":  6.1721473,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Le Serret Blanc",
+        "ele":  "2894",
+        "lat":  45.0975914,
+        "lon":  6.3214632,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche Faurio",
+        "ele":  "3730",
+        "lat":  44.9418237,
+        "lon":  6.3574411,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte du Rouget",
+        "ele":  "3418",
+        "lat":  44.9551459,
+        "lon":  6.2633151,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Aiguille du Plat de la Selle",
+        "ele":  "3595",
+        "lat":  44.9644543,
+        "lon":  6.2229748,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pics de ChamoissiÃ¨re",
+        "ele":  "3208",
+        "lat":  44.9735926,
+        "lon":  6.3853742,
+        "soort":  "top"
+    },
+    {
+        "naam":  "L\u0027Aiguillon",
+        "ele":  "2095",
+        "lat":  45.0542505,
+        "lon":  6.3282964,
+        "soort":  "top"
+    },
+    {
+        "naam":  "La Petite Buffe",
+        "ele":  "2683",
+        "lat":  45.0902753,
+        "lon":  6.2917202,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Gros TÃªt",
+        "ele":  "2613",
+        "lat":  45.0745529,
+        "lon":  6.2396838,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Signal de la Grave",
+        "ele":  "2446",
+        "lat":  45.0706101,
+        "lon":  6.3117387,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche Blanche",
+        "ele":  "2420",
+        "lat":  44.9446779,
+        "lon":  6.2819081,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe du Souchet",
+        "ele":  "2622",
+        "lat":  45.0854725,
+        "lon":  6.3308130,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche du Vallon",
+        "ele":  "2812",
+        "lat":  45.0879388,
+        "lon":  6.3397966,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Bosquet (aval)",
+        "ele":  null,
+        "lat":  45.0144686,
+        "lon":  6.1269114,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Bosquet (amont)",
+        "ele":  null,
+        "lat":  45.0144781,
+        "lon":  6.1283137,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Gentianes (aval)",
+        "ele":  null,
+        "lat":  45.0050750,
+        "lon":  6.1252212,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Gentianes (amont)",
+        "ele":  null,
+        "lat":  45.0050357,
+        "lon":  6.1285039,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "OrÃ©e des pistes (aval)",
+        "ele":  null,
+        "lat":  45.0085958,
+        "lon":  6.1258540,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "OrÃ©e des pistes (amont)",
+        "ele":  null,
+        "lat":  45.0085663,
+        "lon":  6.1295697,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "SÃ©a (aval)",
+        "ele":  null,
+        "lat":  45.0128137,
+        "lon":  6.1412000,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "SÃ©a (amont)",
+        "ele":  null,
+        "lat":  45.0125886,
+        "lon":  6.1434812,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "VoÃ»te (aval)",
+        "ele":  null,
+        "lat":  45.0112556,
+        "lon":  6.1417220,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "VoÃ»te (amont)",
+        "ele":  null,
+        "lat":  45.0099717,
+        "lon":  6.1438062,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Pointe d\u0027AdÃ¨le",
+        "ele":  "3029",
+        "lat":  45.0780170,
+        "lon":  6.3718937,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pointe de Serre Soubeyran",
+        "ele":  "3472",
+        "lat":  44.9376822,
+        "lon":  6.3896900,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Roche de Casse",
+        "ele":  "2772",
+        "lat":  45.0834644,
+        "lon":  6.3449791,
+        "soort":  "top"
+    },
+    {
+        "naam":  "TÃªte de Pradieu",
+        "ele":  "2879",
+        "lat":  44.9973266,
+        "lon":  6.4030916,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Super Venosc",
+        "ele":  null,
+        "lat":  45.0063408,
+        "lon":  6.1193923,
+        "soort":  "lift"
+    },
+    {
+        "naam":  "Le Peigne",
+        "ele":  "2733",
+        "lat":  45.0078580,
+        "lon":  6.3631986,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Rocher des bergers",
+        "ele":  "2947",
+        "lat":  45.0925950,
+        "lon":  6.3383373,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Rochers du vallon",
+        "ele":  "3058",
+        "lat":  45.0971873,
+        "lon":  6.3365366,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Grand Doigt",
+        "ele":  "3764",
+        "lat":  45.0037289,
+        "lon":  6.3029812,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Pic du Glacier CarrÃ©",
+        "ele":  "3862",
+        "lat":  45.0043463,
+        "lon":  6.3061462,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Le Grand Roux",
+        "ele":  "3271",
+        "lat":  44.9343294,
+        "lon":  6.1095802,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Cime du Pied de Barry",
+        "ele":  "2637",
+        "lat":  44.9511070,
+        "lon":  6.1178894,
+        "soort":  "top"
+    },
+    {
+        "naam":  "Soratet",
+        "ele":  "2729",
+        "lat":  44.9544553,
+        "lon":  6.2361565,
+        "soort":  "top"
+    }
+]

@@ -8,6 +8,7 @@ import { profielBestaatVoor, useMijnProfiel } from '../lib/profiel'
 import { NaamKiezer, useAlleNamen } from './NaamKiezer'
 import { BijnaamVeld, ProfielFormulier } from './Profiel'
 import { Sneeuw } from './Sneeuw'
+import { Bergen, MEIJE, rondTop } from './Bergen'
 // Ingebakken in de bundel (?inline), zodat het logo er bij de allereerste keer openen meteen staat
 import woordmerk from '../assets/2slag-winter.svg?inline'
 import '../styles/barlow.css'
@@ -16,7 +17,7 @@ import '../styles/welkom.css'
 /**
  * Welkomstscherm bij de allereerste keer openen (bijvoorbeeld via de QR-code):
  * eerst je naam kiezen (je skipas pakken), daarna je plaatje en de app op je beginscherm zetten.
- * Kop zoals Home (donkerblauw, berg met vlag), papier eronder. Opmaak in styles/welkom.css.
+ * Kop zoals Home (donkerblauw, het bergpanorama met La Meije en een vlag), papier eronder. Opmaak in styles/welkom.css.
  */
 export function Welkom({ onKlaar }: { onKlaar: () => void }) {
   const { data, fout } = useData('kamers')
@@ -53,13 +54,7 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
         {stap === 'naam' && (
           <p className="welkom__zin">Er hangt er een met jouw naam. Daarmee weet de app welke kamer en score bij jou horen.</p>
         )}
-        <svg className="welkom__berg" viewBox="0 0 390 120" preserveAspectRatio="none" aria-hidden="true">
-          <path className="berg" d="M0 120V96L40 78 70 86 110 52 140 64 175 24 205 40 235 30 262 54 300 70 340 66 390 92V120Z" />
-          <path className="schaduw" d="M175 24 205 40 196 74 168 70ZM110 52 140 64 128 86ZM235 30 262 54 246 70Z" />
-          <path className="dal" d="M0 120V110C70 100 140 112 210 106S340 98 390 108V120Z" />
-          <path d="M175 24V6" stroke="#fff" strokeWidth="1.6" />
-          <path className="vlag" d="M175 6l14 5-14 5Z" />
-        </svg>
+        <Bergen className="welkom__bergen" venster={rondTop(MEIJE, 520, 40)} vlag={MEIJE} lucht={20} diepte={60} dalHoogte={22} parallax={false} />
       </header>
 
       <div className="welkom__inhoud">

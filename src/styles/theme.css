@@ -50,11 +50,22 @@
   --tabbalk: #fff;
   --schaduw: 0 2px 12px rgba(13, 0, 88, 0.08);
 
-  /* Winterdecoratie: bergen met sneeuwtoppen onder de donkerblauwe koppen,
-     en een zacht sneeuwvlokpatroon op de achtergrond */
-  /* Drie lagen: verre bergen in de nevel, Alpentoppen met sneeuw en schaduwkant, besneeuwde heuvels
-     met dennen. Links en rechts even hoog, zodat de tekening naadloos herhaalt (niet uitrekken). */
-  --bergen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 90'%3E%3Cpath d='M0 90V52L40 38L70 46L110 20L140 34L175 26L215 44L260 14L300 36L335 30L380 48L420 22L455 34L490 28L530 46L570 30L600 52V90Z' fill='%23099fc4' fill-opacity='.28'/%3E%3Cpath d='M110 20L102 25L107 25L111 28L115 24ZM260 14L251 20L257 19L261 23L266 19ZM420 22L412 27L417 27L421 30L425 26Z' fill='%23ffffff' fill-opacity='.35'/%3E%3Cpath d='M0 90V66L60 40L95 52L150 18L200 50L235 44L290 12L345 54L380 40L440 24L500 56L545 42L600 66V90Z' fill='%23087f9e'/%3E%3Cpath d='M60 40L95 52L80 70ZM150 18L200 50L172 74ZM290 12L345 54L312 76ZM440 24L500 56L470 76ZM545 42L600 66L575 78Z' fill='%230d0058' fill-opacity='.22'/%3E%3Cpath d='M60 40L77 46L71 45L66 48L60 45L53 48L48 46L42 48ZM150 18L169 30L162 27L157 32L150 28L144 33L138 28L131 30ZM290 12L308 26L301 23L296 28L289 24L282 29L276 24L269 24ZM440 24L458 34L451 30L446 34L440 30L434 33L428 29L416 30Z' fill='%23ffffff'/%3E%3Cpath d='M0 90V74C60 64 120 70 170 76S300 64 360 72S520 82 600 74V90Z' fill='%23dff1f8'/%3E%3Cpath d='M28 55L23 64H26L22 70H34L30 64H33ZM40 57L35 66H38L34 72H46L42 66H45ZM226 55L221 64H224L220 70H232L228 64H231ZM238 53L233 62H236L232 68H244L240 62H243ZM250 56L245 65H248L244 71H256L252 65H255ZM468 63L463 72H466L462 78H474L470 72H473ZM481 61L476 70H479L475 76H487L483 70H486Z' fill='%230b5a70'/%3E%3Cpath d='M28 55L25.5 59.5H30.5ZM40 57L37.5 61.5H42.5ZM226 55L223.5 59.5H228.5ZM238 53L235.5 57.5H240.5ZM250 56L247.5 60.5H252.5ZM468 63L465.5 67.5H470.5ZM481 61L478.5 65.5H483.5Z' fill='%23ffffff'/%3E%3C/svg%3E");
+  /* ---- Bergstijl (components/Bergen.tsx, styles/bergen.css) ----
+     Eén panorama voor de hele app: het uitzicht vanaf Le Jandri met La Meije, gebaseerd op de witte
+     bergen van Home. Lagen van achter (0) naar voor (3); elke laag verder weg schuift richting de
+     luchtkleur. Licht van linksboven: één schaduwvlak rechts van elke top. Geen contouren. */
+  --berg-0: #5f6aa8;
+  --berg-0-schaduw: #4f5893;
+  --berg-1: #8e97c4;
+  --berg-1-schaduw: #7881b3;
+  --berg-2: #c3cbe0;
+  --berg-2-schaduw: #a9b4d0;
+  --berg-3: #e9f1f5; /* de witte Home-sneeuw */
+  --berg-3-schaduw: #cfdee8;
+  --berg-vlag: #c4212f;
+  --berg-mist: rgba(236, 238, 245, 0);
+
+  /* Zacht sneeuwvlokpatroon op de achtergrond (de bergen onder de koppen: components/Bergen.tsx) */
   --sneeuwpatroon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'%3E%3Cg stroke='%230d0058' stroke-opacity='.06' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M30 20v20M21 25l18 10M21 35l18-10'/%3E%3Cpath d='M150 50v14M144 53l12 8M144 61l12-8'/%3E%3Cpath d='M90 120v24M79 126l22 12M79 138l22-12'/%3E%3Cpath d='M190 150v16M183 154l14 8M183 162l14-8'/%3E%3Cpath d='M40 180v12M35 183l10 6M35 189l10-6'/%3E%3C/g%3E%3C/svg%3E");
 }
 

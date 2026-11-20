@@ -10,6 +10,7 @@ import { useStukjesWachtrij, type StukjeIn } from '../lib/stukjes'
 import { Klassement } from '../components/Klassement'
 import { Stemmen } from '../components/Stemmen'
 import { Sneeuw } from '../components/Sneeuw'
+import { Bergstrook } from '../components/Bergen'
 import { GeluidKnop } from '../components/rad/basis'
 import { InktFilter, Stempel } from '../components/Stempelkaart'
 import { config } from '../config'
@@ -46,6 +47,7 @@ export default function Spel() {
       <div className="scherm">
         <section className="slot golf">
           <Sneeuw />
+          <Bergstrook />
           <div className="slot__icoon">
             <Icoon naam="slot" grootte={56} />
           </div>

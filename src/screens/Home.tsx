@@ -4,6 +4,7 @@ import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
 import { FotoStrip } from '../components/FotoStrip'
 import { MeldingenKaart } from '../components/Meldingen'
+import { Bergen, MEIJE, rondTop } from '../components/Bergen'
 import { SneeuwRij } from '../components/SneeuwRij'
 import { openMijnProfiel } from '../components/Profiel'
 import { Sneeuw } from '../components/Sneeuw'
@@ -226,23 +227,6 @@ function KopRij({ boven, naam }: { boven: ReactNode; naam: string | null }) {
   )
 }
 
-/** De berg onderaan de kop; het dal heeft de kleur van het papier eronder */
-function Berg({ vlag = false }: { vlag?: boolean }) {
-  return (
-    <svg className="homekop__berg" viewBox="0 0 390 120" preserveAspectRatio="none" aria-hidden="true">
-      <path className="berg" d="M0 120V96L40 78 70 86 110 52 140 64 175 24 205 40 235 30 262 54 300 70 340 66 390 92V120Z" />
-      <path className="schaduw" d="M175 24 205 40 196 74 168 70ZM110 52 140 64 128 86ZM235 30 262 54 246 70Z" />
-      <path className="dal" d="M0 120V110C70 100 140 112 210 106S340 98 390 108V120Z" />
-      {vlag && (
-        <>
-          <path d="M175 24V6" stroke="#fff" strokeWidth="1.6" />
-          <path className="vlag" d="M175 6l14 5-14 5Z" />
-        </>
-      )}
-    </svg>
-  )
-}
-
 const tweeCijfers = (n: number) => String(n).padStart(2, '0')
 
 /**
@@ -295,7 +279,7 @@ function KopVoor({ naam, pak }: { naam: string | null; pak: PakStand }) {
         </small>
       </h1>
       <p className="homekop__zin">{zin}</p>
-      <Berg vlag />
+      <Bergen className="homekop__bergen" venster={rondTop(MEIJE, 520, 40)} vlag={MEIJE} lucht={24} diepte={60} dalHoogte={22} />
     </header>
   )
 }
@@ -376,10 +360,8 @@ function KopDag({
           </button>
         )}
       </div>
-      <svg className="homekop__berg homekop__berg--laag" viewBox="0 0 390 56" preserveAspectRatio="none" aria-hidden="true">
-        <path className="berg" d="M0 56V40L50 30 90 36 140 14 180 26 230 8 270 24 320 20 390 38V56Z" />
-        <path className="dal" d="M0 56V48C70 42 140 50 210 46S340 40 390 47V56Z" />
-      </svg>
+      <Bergen className="homekop__bergen homekop__bergen--laag" venster={[860, 1460]} lucht={4} diepte={36} dalHoogte={12} />
+
     </header>
   )
 }
