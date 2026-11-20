@@ -63,6 +63,7 @@
   --berg-3: #e9f1f5; /* de witte Home-sneeuw */
   --berg-3-schaduw: #cfdee8;
   --berg-vlag: #c4212f;
+  --berg-sneeuwrand: #f3f7fa; /* het witte dal onder de bergen, boven het papier */
   --berg-mist: rgba(236, 238, 245, 0);
 
   /* Zacht sneeuwvlokpatroon op de achtergrond (de bergen onder de koppen: components/Bergen.tsx) */

@@ -38,6 +38,8 @@
 .bergen-vlak .l3 { fill: var(--berg-3); }
 .bergen-vlak .s3 { fill: var(--berg-3-schaduw); }
 .bergen-vlak .dal { fill: var(--berg-dal, var(--sneeuwbank, var(--achtergrond))); }
+/* doorlopend: op elke tab een witte sneeuwrand tussen de bergen en het papier (zoals Planning) */
+.bergen-vlak--doorlopend .dal { fill: var(--berg-sneeuwrand); }
 .bergen-vlak .vlag { fill: var(--berg-vlag); }
 .bergen-vlak .mist { fill: var(--berg-mist); }
 
@@ -119,7 +121,7 @@
 
 /* Home en Welkom: de bergen liggen niet meer in de stroom, dus de kop houdt zelf ruimte vrij */
 .homekop:has(> .bergen-vlak--doorlopend) {
-  padding-bottom: 100px;
+  padding-bottom: 60px;
 }
 
 .welkom__kop:has(> .bergen-vlak--doorlopend) {

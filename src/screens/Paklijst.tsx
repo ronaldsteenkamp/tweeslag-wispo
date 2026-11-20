@@ -10,7 +10,7 @@ import {
 import { DataStatus } from '../components/DataStatus'
 import { Icoon } from '../components/Icoon'
 import { Sneeuw } from '../components/Sneeuw'
-import { Bergen, MEIJE, getekendeTop, rondTop, type ViewBox } from '../components/Bergen'
+import { Bergen, MEIJE, getekendeTop, type ViewBox } from '../components/Bergen'
 import { PANORAMA } from '../lib/bergen-bijgestuurd'
 import { config } from '../config'
 import { useData } from '../lib/data'
@@ -428,10 +428,9 @@ function Profiel({
       </div>
       <Bergen
         className="pakprofiel__bergen"
-        venster={rondTop(MEIJE, 440, -50)} // ingezoomd op La Meije: hier klim je hem op (geen doorlopende schaal)
-        lucht={44}
-        diepte={70}
-        dalHoogte={18}
+        // ingezoomd op La Meije: hier klim je hem op. Top op dezelfde hoogte als de andere tabs.
+        camera={(PANORAMA.toppen.find((t) => t.naam === MEIJE)?.x ?? 645) - 50}
+        zoom={440}
         vlag={vol ? MEIJE : undefined}
         parallax={false}
         extra={(vb) => <Route vb={vb} perCat={perCat} p={p} totaal={totaal} />}

@@ -47,6 +47,8 @@ interface Props {
    * vaste schaal en horizon voor alle schermen, en negeert het venster/lucht/diepte.
    */
   camera?: number
+  /** Doorlopend, maar ingezoomd: zoveel panorama-px over een telefoonbreedte (Paklijst). Schuift dan niet mee bij vegen. */
+  zoom?: number
 }
 
 const DIEPTE = [0.2, 0.42, 0.7, 1]
@@ -75,8 +77,8 @@ const BREED = 700
 const STAP = 100
 /** Ruimte (css-px) tussen de bovenkant van het bergvlak en de hoogste top: daar past de vlag in */
 const MARGE = 38
-/** Hoogte van het dal onderaan, ook overal gelijk */
-const DAL = 14
+/** Hoogte van het dal onderaan (de witte sneeuwrand boven het papier), ook overal gelijk */
+const DAL = 18
 const TABS_LANDSCHAP = ['home', 'planning', 'paklijst', 'kamers', 'kaart', 'rad', 'spel']
 /** Bij welke tab een scherm hoort (schermen achter een tab staan op dezelfde plek) */
 const BIJ_TAB: Record<string, string> = { verdelen: 'kamers', beheer: 'kamers', fotos: 'spel', welkom: 'home' }
@@ -110,9 +112,9 @@ function hoogsteIn(a: number, b: number, lagen: number[]) {
   return top
 }
 
-function doorlopend(camera: number, breedtePx: number, verhouding: number, lagen: number[]) {
+function doorlopend(camera: number, breedtePx: number, verhouding: number, lagen: number[], zoom: number) {
   // op een tablet niet inzoomen maar meer panorama laten zien
-  const b = Math.min(P.breedte, BREED * Math.max(1, breedtePx / 390))
+  const b = Math.min(P.breedte, zoom * Math.max(1, breedtePx / 390))
   const h = b / verhouding
   // De hoogste top in beeld staat altijd MARGE px onder de bovenkant van het vlak, en het vlak
   // begint op elk scherm even ver van de bovenkant (--bergen-top in bergen.css). Zo staat de top
@@ -120,7 +122,7 @@ function doorlopend(camera: number, breedtePx: number, verhouding: number, lagen
   const top = hoogsteIn(camera - b / 2, camera + b / 2, lagen)
   const y0 = top - (MARGE * b) / breedtePx
   // opzij: zoveel als het scherm bij een hele veeg méér schuift dan de bergen (Weer veegt niet mee)
-  const veeg = camera === WEER_CAMERA ? 0 : 1 - STAP / BREED
+  const veeg = camera === WEER_CAMERA || zoom !== BREED ? 0 : 1 - STAP / BREED
   const opzijPx = b * veeg
   return {
     x0: camera - b / 2 - opzijPx,
@@ -163,6 +165,7 @@ export function Bergen({
   style,
   extra,
   camera,
+  zoom = BREED,
 }: Props) {
   const vak = useRef<HTMLDivElement>(null)
   const [maat, setMaat] = useState(() => MAAT.get(className) ?? { b: 0, h: 0 })
@@ -188,7 +191,7 @@ export function Bergen({
   let [x0, x1] = venster
   let { y0, yb } = kader([x0, x1], lagen, lucht, diepte, !!vlag)
   // Doorlopend: vaste schaal en horizon, met extra panorama opzij voor het vegen (zie doorlopend())
-  const door = camera !== undefined && verhouding ? doorlopend(camera, maat.b, verhouding, lagen) : null
+  const door = camera !== undefined && verhouding ? doorlopend(camera, maat.b, verhouding, lagen, zoom) : null
   if (door) ({ x0, x1, y0, yb } = door)
   else if (verhouding > ((x1 - x0) / (yb - y0)) * 1.02) {
     for (let stap = 0; stap < 2; stap++) {
