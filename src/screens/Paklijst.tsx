@@ -524,8 +524,13 @@ function Route({ vb, perCat, p, totaal }: { vb: ViewBox; perCat: { klaar: number
           if (!perCat[i].totaal) return null
           const pt = punt(s.a + 2)
           const r = veel ? 4 : 7
+          // vlak onder de top ligt de kam rechts van de route hoger dan het bordje: dan zakt het bordje
+          // tot het helemaal op de berg staat, anders steekt het in de lucht uit
+          const bx = pt.x + 13
+          const rand = s.klaar && !veel ? 9 : r
+          const by = Math.max(pt.y - 3, Math.max(kamY(bx - rand), kamY(bx), kamY(bx + rand)) + rand + 2)
           return (
-            <g key={i} className={`pakprofiel__bord pak--${kleur(i)}`} transform={`translate(${(pt.x + 13).toFixed(1)} ${(pt.y - 3).toFixed(1)})`}>
+            <g key={i} className={`pakprofiel__bord pak--${kleur(i)}`} transform={`translate(${bx.toFixed(1)} ${by.toFixed(1)})`}>
               {s.klaar && !veel ? (
                 <g className="pakprofiel__stempeltje" transform="rotate(-14)">
                   <circle r="8.5" strokeWidth="1.8" strokeDasharray="20 1.4 14 1 19" />
