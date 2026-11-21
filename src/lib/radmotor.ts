@@ -233,22 +233,37 @@ export function tril(patroon: number | number[], kort = false) {
  */
 export function koppelVegen(
   el: HTMLElement,
-  o: { hoekVan: (e: PointerEvent) => number; onSleep: (delta: number) => void; onLos: (snelheid: number) => void; uit: () => boolean },
+  o: {
+    hoekVan: (e: PointerEvent) => number
+    onSleep: (delta: number) => void
+    onLos: (snelheid: number) => void
+    uit: () => boolean
+    /** Vinger neer (bijv. een lopend terugklikken stoppen, anders vecht dat met de vinger) */
+    onNeer?: () => void
+  },
 ) {
   let actief = false
   let laatste = 0
   let som = 0
   let monsters: { t: number; h: number }[] = []
+  // Alleen de eerste vinger telt (een tweede vinger liet het rad springen of halverwege stoppen)
+  let vinger = -1
   const neer = (e: PointerEvent) => {
-    if (o.uit()) return
+    if (o.uit() || actief) return
+    o.onNeer?.()
     actief = true
-    el.setPointerCapture(e.pointerId)
+    vinger = e.pointerId
+    try {
+      el.setPointerCapture(e.pointerId)
+    } catch {
+      // Vinger al weg
+    }
     laatste = o.hoekVan(e)
     som = 0
     monsters = [{ t: e.timeStamp, h: 0 }]
   }
   const beweeg = (e: PointerEvent) => {
-    if (!actief) return
+    if (!actief || e.pointerId !== vinger) return
     const h = o.hoekVan(e)
     let d = h - laatste
     if (d > 180) d -= 360
@@ -260,7 +275,7 @@ export function koppelVegen(
     o.onSleep(d)
   }
   const los = (e: PointerEvent) => {
-    if (!actief) return
+    if (!actief || e.pointerId !== vinger) return
     actief = false
     const a = monsters[0]
     const b = monsters[monsters.length - 1]
