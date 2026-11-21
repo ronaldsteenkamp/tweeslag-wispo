@@ -564,6 +564,11 @@
   cursor: grab;
 }
 
+/* Ook op de bordjes zelf: Safari leest touch-action per laag, en elk bordje is een eigen 3D-laag */
+.liftbord__venster * {
+  touch-action: none;
+}
+
 .liftbord__trommel {
   position: absolute;
   left: 0;
