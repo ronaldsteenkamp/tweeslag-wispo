@@ -84,10 +84,15 @@ export function Trommel(p: MachineProps) {
     const i = m.props.current.kies(l) // de uitslag ligt vast vóór er iets beweegt
     const j = willekeurig(totaal / l.length) * l.length + i // welk exemplaar (maakt voor de kans niets uit)
     const minder = minderBeweging()
-    const kracht = veeg ? Math.min(1, Math.abs(veeg) / 1400) : 0.45 + fractie() * 0.25
+    // Omhoog geveegd (of de knop) rolt vooruit, omlaag geveegd rolt terug
+    const r = veeg && veeg < 0 ? -1 : 1
+    const kracht = veeg ? Math.min(1, Math.abs(veeg) / 1000) : 0.45 + fractie() * 0.25
     const rondjes = minder ? 1 : Math.round(2 + kracht * 3)
     // Het bordje klikt precies in het midden vast (palletje), dus geen speling binnen het vak nodig
-    const naar = theta.current + 360 * rondjes + rond(j * hoek - theta.current)
+    const naar =
+      r > 0
+        ? theta.current + 360 * rondjes + rond(j * hoek - theta.current)
+        : theta.current - 360 * rondjes - rond(theta.current - j * hoek)
     m.setUitslag(null)
     setWinnaar(null)
     setBericht('wacht')
@@ -98,7 +103,7 @@ export function Trommel(p: MachineProps) {
       duur: minder ? 1600 : 4200 + kracht * 1800,
       macht: minder ? 2.3 : 3.1,
       aanloop: minder || veeg ? 0 : 5,
-      nagolf: minder ? 0 : hoek * 0.34,
+      nagolf: minder ? 0 : r * hoek * 0.34,
       vak: hoek,
       onTik: tikje,
       onFrame: (h) => {
@@ -131,8 +136,14 @@ export function Trommel(p: MachineProps) {
   useEffect(() => {
     const el = venster.current
     if (!el) return
-    return koppelVegen(el, {
+    // Het terugklikken na zacht loslaten; stoppen zodra de vinger weer neerkomt
+    let klik: { stop: () => void } | null = null
+    const ontkoppel = koppelVegen(el, {
       uit: () => m.bezigRef.current || lijstRef.current.length < 2,
+      onNeer: () => {
+        klik?.stop()
+        klik = null
+      },
       hoekVan: (e) => (-e.clientY / (maat.current.straal * Math.PI)) * 180,
       onSleep: (d) => {
         const { a: hoek } = maat.current
@@ -147,15 +158,20 @@ export function Trommel(p: MachineProps) {
         if (Math.floor((theta.current + hoek / 2) / hoek) !== oud) tikje(200)
       },
       onLos: (v) => {
-        if (v > 160) void rolRef.current(v)
+        // ~60°/s is zo'n 250 px/s: elke veeg die nog beweegt bij het loslaten laat de trommel rollen
+        if (Math.abs(v) > 60) void rolRef.current(v)
         else {
-          // Te zacht of naar beneden: terug in het dichtstbijzijnde palletje klikken
+          // Stil losgelaten: terug in het dichtstbijzijnde palletje klikken
           const { a: hoek } = maat.current
           const doel = Math.round(theta.current / hoek) * hoek
-          draai({ van: theta.current, naar: doel, duur: 220, macht: 2, onFrame: (h) => { theta.current = h; zet(h) } })
+          klik = draai({ van: theta.current, naar: doel, duur: 220, macht: 2, onFrame: (h) => { theta.current = h; zet(h) } })
         }
       },
     })
+    return () => {
+      klik?.stop()
+      ontkoppel()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -168,7 +184,7 @@ export function Trommel(p: MachineProps) {
       ? { label: uitslag.u.label, tekst: uitslag.u.tekst, zin: uitslag.u.zin ?? '' }
       : bericht === 'wacht'
         ? { label: 'Een ogenblik geduld', tekst: '· · ·', zin: '' }
-        : { label: 'Vertrekbord', tekst: 'Welke piste?', zin: 'Veeg de trommel omhoog of druk op de knop.' }
+        : { label: 'Vertrekbord', tekst: 'Welke piste?', zin: 'Veeg de trommel of druk op de knop.' }
 
   return (
     <section className="radm radm--liftbord" aria-label="Piste-rad">
