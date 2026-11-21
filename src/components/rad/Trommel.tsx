@@ -114,20 +114,29 @@ export function Trommel(p: MachineProps) {
     lopend.current = d
     await d.klaar
     lopend.current = null
-    theta.current = rond(theta.current)
-    zet(theta.current)
-    const voor = Math.round(theta.current / hoek) % totaal
-    if (voor % l.length !== i) console.error('Trommel stopte niet op de uitslag', i)
-    const pr = m.props.current
-    if (pr.geluid) {
-      uitslagGeluid('klep')
-      tril([30, 50, 90])
+    // Wat er hierna ook misgaat: de trommel komt altijd weer vrij
+    try {
+      theta.current = rond(j * hoek)
+      zet(theta.current)
+      const pr = m.props.current
+      if (pr.geluid) {
+        try {
+          uitslagGeluid('klep')
+          tril([30, 50, 90])
+        } catch {
+          // Geen geluid, wel een uitslag
+        }
+      }
+      setWinnaar(j)
+      setBericht('uitslag')
+      m.setUitslag({ i, u: pr.uitslag(l[i]) })
+      pr.naUitslag?.(l[i])
+    } catch (e) {
+      console.error(e)
+      setBericht('klaar')
+    } finally {
+      m.zetBezig(false)
     }
-    setWinnaar(voor)
-    setBericht('uitslag')
-    m.setUitslag({ i, u: pr.uitslag(l[i]) })
-    m.zetBezig(false)
-    pr.naUitslag?.(l[i])
   }
   const rolRef = useRef(rol)
   rolRef.current = rol
