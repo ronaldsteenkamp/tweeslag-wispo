@@ -282,11 +282,21 @@ export function koppelVegen(
     const dt = (b.t - a.t) / 1000
     o.onLos(dt > 0.01 && e.timeStamp - b.t < 90 ? (b.h - a.h) / dt : 0)
   }
+  // Safari op de iPhone houdt zich niet altijd aan touch-action: none (zeker niet op de 3D-gedraaide
+  // bordjes van de trommel). Bij rustig slepen nam hij het gebaar dan over als scrollen, met een
+  // pointercancel: het rad bleef staan. Zolang de vinger het rad vasthoudt, mag de pagina niet bewegen.
+  const geenScroll = (e: TouchEvent) => {
+    if (actief && e.cancelable) e.preventDefault()
+  }
+  el.addEventListener('touchmove', geenScroll, { passive: false })
   el.addEventListener('pointerdown', neer)
   el.addEventListener('pointermove', beweeg)
   el.addEventListener('pointerup', los)
   el.addEventListener('pointercancel', los)
+  el.addEventListener('lostpointercapture', los)
   return () => {
+    el.removeEventListener('touchmove', geenScroll)
+    el.removeEventListener('lostpointercapture', los)
     el.removeEventListener('pointerdown', neer)
     el.removeEventListener('pointermove', beweeg)
     el.removeEventListener('pointerup', los)
