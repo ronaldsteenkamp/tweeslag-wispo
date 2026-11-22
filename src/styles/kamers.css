@@ -1,21 +1,21 @@
 /* ---------- Kamers als smoelenboek (richting D, zie mockups/kamers-d.html) ----------
-   Per appartement een bladzijde: de naam als kop (Georgia, schuin), het nummer klein erboven, de
+   Per appartement een bladzijde: de naam als kop (Barlow Condensed), het nummer klein erboven, de
    portretten in clubkleuren met een bergrand. Alleen licht, zoals de rest van de app.
    Contrast kleine tekst >= 4,5 : 1 op het papier. */
 
 .inhoud--kamers,
 .ks-blad {
-  --ks-papier: #f5f2ea;
-  --ks-inkt: #0d0058;
-  --ks-zacht: #4b4e6b;
-  --ks-navy: #0d0058;
-  --ks-accent: #066f8a;
-  --ks-gletsjer: #c8dbe5;
-  --ks-vlak: #fffdf8;
-  --ks-lijn: #d9d3c4;
-  --ks-focus: #0a7d9c;
-  --ks-serif: Georgia, 'Times New Roman', serif;
-  --ks-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
+  --ks-papier: var(--papier);
+  --ks-inkt: var(--inkt);
+  --ks-zacht: var(--inkt-zacht);
+  --ks-navy: var(--lucht);
+  --ks-accent: var(--ijsblauw-inkt);
+  --ks-gletsjer: var(--berg-3-schaduw);
+  --ks-vlak: var(--papier-vlak);
+  --ks-lijn: var(--lijn);
+  --ks-focus: var(--ijsblauw-inkt);
+  --ks-serif: var(--font);
+  --ks-smal: var(--font-smal);
 }
 
 .inhoud--kamers {
@@ -57,13 +57,11 @@
 }
 
 .ks-lead {
-  font-style: italic;
   color: var(--ks-zacht);
 }
 
 .ks-stil {
   margin-top: 16px !important;
-  font-style: italic;
   color: var(--ks-zacht);
 }
 
@@ -118,7 +116,7 @@
   border: 0;
   border-radius: 22px;
   background: transparent;
-  font: 700 1rem/1 var(--ks-serif);
+  font: 700 1rem/1 var(--font-smal);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
@@ -180,7 +178,7 @@
 }
 
 .ks-nr b {
-  font: 700 1.05rem/1 var(--ks-serif);
+  font: 700 1.05rem/1 var(--font-smal);
   letter-spacing: 0;
   color: var(--ks-inkt);
   font-variant-numeric: tabular-nums;
@@ -189,7 +187,7 @@
 .ks-naam {
   display: block;
   margin-top: 2px;
-  font: italic 700 1.9rem/1.05 var(--ks-serif);
+  font: 700 1.9rem/1.05 var(--font-smal);
   overflow-wrap: break-word;
   hyphens: auto;
 }
@@ -217,7 +215,7 @@
   margin: 0 0 12px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--ks-lijn);
-  font: italic 700 1.6rem/1 var(--ks-serif);
+  font: 700 1.6rem/1 var(--font-smal);
 }
 
 /* ---------- Portretten: vier op een rij; jouw appartement en het onderblad 2 × 2 ---------- */
@@ -280,7 +278,7 @@
   display: grid;
   place-items: center;
   color: #fff;
-  font: 700 1.7rem/1 var(--ks-serif);
+  font: 700 1.7rem/1 var(--font-smal);
 }
 
 .ks-blz--jouw .ks-beeld b,
@@ -298,7 +296,7 @@
 }
 
 .ks-smoel__naam {
-  font: 700 0.84rem/1.15 var(--ks-serif);
+  font: 700 0.84rem/1.15 var(--font-smal);
   overflow-wrap: break-word;
   hyphens: auto;
 }
@@ -340,7 +338,6 @@
 }
 
 .ks-smoel.is-vrij .ks-smoel__naam {
-  font-style: italic;
   font-weight: 400;
   color: var(--ks-zacht);
 }
@@ -353,12 +350,11 @@
 
 .ks-wit h2 {
   margin: 0;
-  font: italic 700 1.9rem/1.1 var(--ks-serif);
+  font: 700 1.9rem/1.1 var(--font-smal);
 }
 
 .ks-wit p {
   margin-top: 6px;
-  font-style: italic;
   color: var(--ks-zacht);
 }
 
@@ -367,7 +363,6 @@
   align-items: center;
   gap: 8px;
   font-size: 0.85rem;
-  font-style: italic;
   color: var(--ks-zacht);
 }
 
@@ -378,7 +373,7 @@
 .ks-reisleiding {
   display: grid;
   gap: 10px;
-  font-family: Barlow, 'Trebuchet MS', sans-serif;
+  font-family: var(--font);
 }
 
 .ks-reisleiding .knop {

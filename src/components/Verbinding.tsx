@@ -1,7 +1,7 @@
 import { useBackend, type BackendStatus } from '../lib/backend'
 
 const TEKST: Record<BackendStatus, string> = {
-  uit: 'Geen verbinding (niet ingesteld)',
+  uit: 'Niet gekoppeld',
   verbinden: 'Verbinden…',
   verbonden: 'Verbonden',
   offline: 'Geen verbinding',

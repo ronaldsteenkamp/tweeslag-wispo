@@ -25,7 +25,7 @@ import '../styles/kamers.css'
  * appartement staat bovenaan en groter (2 × 2); de andere appartementen zijn één rij van vier.
  */
 
-export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () => void; naarBeheer: () => void }) {
+export default function Kamers({ naarVerdelen, naarBeheer, keuze }: { naarVerdelen: () => void; naarBeheer: () => void; keuze?: ReactNode }) {
   const { data, fout } = useData('kamers')
   const [naam, setNaam] = useOpgeslagen<string | null>('naam', null)
   const nieuweKop = useNieuweKoppen()
@@ -51,7 +51,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   if (!data) {
     return (
       <div className="scherm">
-        {nieuweKop ? <SchermKop titel="Kamers" /> : <h1>Kamers</h1>}
+        {nieuweKop ? <SchermKop titel="Appartementen">{keuze}</SchermKop> : <h1>Kamers</h1>}
         <DataStatus fout={fout} />
       </div>
     )
@@ -62,7 +62,7 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
   if (!naamBekend) {
     return (
       <div className="scherm">
-        {nieuweKop ? <SchermKop titel="Wie ben jij?" boven="Kamers" /> : <h1>Wie ben jij?</h1>}
+        {nieuweKop ? <SchermKop titel="Wie ben jij?" boven="Groep">{keuze}</SchermKop> : <h1>Wie ben jij?</h1>}
         <p>
           {naam !== null
             ? 'Je naam staat niet meer in de kamerlijst. Kies hem opnieuw.'
@@ -98,7 +98,9 @@ export default function Kamers({ naarVerdelen, naarBeheer }: { naarVerdelen: () 
     <div className="scherm ks">
       <Duotoon />
       {nieuweKop ? (
-        <SchermKop titel="Kamers" boven={config.bestemming} ondertitel={kopZin} />
+        <SchermKop titel="Appartementen" boven={config.bestemming} ondertitel={kopZin}>
+          {keuze}
+        </SchermKop>
       ) : (
         <>
           <h1>Kamers</h1>

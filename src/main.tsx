@@ -68,12 +68,16 @@ const klaarVoorHome = Promise.all([
  */
 function verbergLaadscherm() {
   const laden = document.getElementById('laden')
-  if (!laden) return
+  if (!laden) return void document.documentElement.classList.add('is-geladen')
   requestAnimationFrame(() =>
     requestAnimationFrame(() =>
       window.setTimeout(() => {
         laden.classList.add('weg')
-        const weg = () => laden.remove()
+        const weg = () => {
+          laden.remove()
+          // Pas nu glas (backdrop-filter) op de tabbalk: tijdens het opstarten tekent iOS dat soms zwart
+          document.documentElement.classList.add('is-geladen')
+        }
         laden.addEventListener('transitionend', weg, { once: true })
         window.setTimeout(weg, 600)
       }, 80),

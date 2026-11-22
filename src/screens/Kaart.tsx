@@ -49,7 +49,7 @@ const googleMaps = (l: { lat: number; lon: number }) => `https://www.google.com/
 
 type Open = { soort: 'jij' } | { soort: 'persoon'; id: string } | { soort: 'lijst' } | null
 
-export default function Kaart() {
+export default function Kaart({ terug }: { terug?: () => void } = {}) {
   const backend = useBackend()
   const delen = useDelen()
   const nu = useNu(15_000).getTime()
@@ -224,6 +224,11 @@ export default function Kaart() {
   return (
     <div className="kaartscherm">
       <h1 className="verborgen">Pistekaart</h1>
+      {terug && (
+        <button type="button" className="kaartscherm__terug" onClick={terug} aria-label="Terug naar Home">
+          <Icoon naam="links" grootte={26} />
+        </button>
+      )}
       <div className="kaartscherm__kaart">
         <ZoomKaart
           src={KAART}

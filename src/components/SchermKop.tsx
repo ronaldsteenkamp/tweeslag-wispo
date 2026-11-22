@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { Bergstrook } from './Bergen'
+import { Icoon } from './Icoon'
 import { Sneeuw } from './Sneeuw'
 
 /*
@@ -84,7 +85,8 @@ export function SchermKop({ titel, boven, ondertitel, rechts, terug, children, b
           <div className="schermkop__tekst">
             {terug && (
               <button type="button" className="schermkop__terug" onClick={terug.onClick}>
-                ← {terug.label}
+                <Icoon naam="links" grootte={26} />
+                {terug.label}
               </button>
             )}
             {boven && <p className="schermkop__boven">{boven}</p>}

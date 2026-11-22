@@ -3,13 +3,11 @@ import { DataStatus } from '../components/DataStatus'
 import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
 import { FotoStrip } from '../components/FotoStrip'
-import { MeldingenKaart } from '../components/Meldingen'
 import { Bergen, MEIJE, cameraVoor } from '../components/Bergen'
-import { SneeuwRij } from '../components/SneeuwRij'
 import { openMijnProfiel } from '../components/Profiel'
 import { Sneeuw } from '../components/Sneeuw'
 import { StemmingOpHome } from '../components/Stemmen'
-import type { Tab } from '../components/TabBalk'
+import type { Tab } from '../lib/navigatie'
 import { config } from '../config'
 import { NAAM_OVERGENOMEN, useBackend } from '../lib/backend'
 import { useToonNaam } from '../lib/bijnamen'
@@ -71,7 +69,7 @@ function Bord({ kleur, icoon, vierkant = false }: { kleur: Kleur; icoon: IcoonNa
   )
 }
 
-export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void; naarWeer: () => void }) {
+export default function Home({ naarTab, naarWeer, naarInstellingen }: { naarTab: (t: Tab) => void; naarWeer: () => void; naarInstellingen: () => void }) {
   const nu = useNu(10_000)
   const { data: planning, fout } = useData('planning')
   const [naam] = useOpgeslagen<string | null>('naam', null)
@@ -88,7 +86,7 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
   const dag = index >= 0 ? dagen[index] : undefined
 
   const naarStemmen = () => {
-    schrijf('spel.onderdeel', 'stemmen')
+    schrijf('spel.onderdeel', 'stand')
     naarTab('spel')
   }
   // Alleen zolang er nog helemaal niets op je plaatje staat (niets is verplicht)
@@ -186,9 +184,19 @@ export default function Home({ naarTab, naarWeer }: { naarTab: (t: Tab) => void;
 
         {!planning && <DataStatus fout={fout} />}
 
-        {/* Helemaal onderaan */}
-        {fase !== 'na' && <MeldingenKaart />}
-        <SneeuwRij />
+        {/* Helemaal onderaan: thema, sneeuw, meldingen en privacy staan in Instellingen */}
+        <section aria-label="Instellingen">
+          <button type="button" className="homerij" onClick={naarInstellingen}>
+            <span className="bord bord--zwart" aria-hidden="true">
+              <Icoon naam="instellingen" grootte={19} />
+            </span>
+            <span className="homerij__tekst">
+              <b>Instellingen</b>
+              <small>Thema, sneeuw, meldingen en wie wat ziet</small>
+            </span>
+            <Icoon naam="pijl" grootte={18} className="homerij__pijl" />
+          </button>
+        </section>
 
         <footer className="home__voet">
           <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" width={68} height={68} loading="lazy" />

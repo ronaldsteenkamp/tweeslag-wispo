@@ -1,19 +1,19 @@
 /*
  * Planning — "Programmaboekje" (zie screens/Planning.tsx). Elke dag een bladzijde, de hele reis als
- * inhoudsopgave. Georgia (huisstijltekst) voor wat je leest; Barlow Condensed voor tijden, omdat de
- * cijfers van Georgia niet onder elkaar uitlijnen. Lichtblauw alleen als streep, nooit als tekst.
+ * inhoudsopgave. Barlow voor wat je leest; Barlow Condensed voor koppen en tijden (cijfers lijnen uit).
+ * Lichtblauw alleen als streep, nooit als tekst.
  * Contrast op het papier: inkt 17:1, zacht 6,5:1, rood 6,2:1, lichtblauwe streep 4:1.
  */
 
 .inhoud--planning {
-  --boek-papier: #fbf8f1;
-  --boek-inkt: #0d0058;
-  --boek-zacht: #555872;
-  --boek-lijn: #ddd6c6;
-  --boek-streep: #0a80a0;
-  --boek-rood: #b3261e;
-  --boek-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
-  --boek-tekst: Georgia, Cambria, 'Times New Roman', serif;
+  --boek-papier: var(--papier);
+  --boek-inkt: var(--inkt);
+  --boek-zacht: var(--inkt-zacht);
+  --boek-lijn: var(--lijn);
+  --boek-streep: var(--ijsblauw-inkt);
+  --boek-rood: var(--piste-rood);
+  --boek-smal: var(--font-smal);
+  --boek-tekst: var(--font);
   min-height: 100dvh;
   background: var(--boek-papier);
   color: var(--boek-inkt);
@@ -75,7 +75,6 @@
 
 .blad__intro {
   margin: 10px 0 0;
-  font-style: italic;
   color: var(--boek-zacht);
 }
 
@@ -201,7 +200,6 @@
 }
 
 .punt__noot {
-  font-style: italic;
   font-size: 0.95rem;
   color: var(--boek-inkt);
 }
@@ -279,7 +277,6 @@
 }
 
 .punt--optioneel h3 {
-  font-style: italic;
   font-size: 1.15rem;
 }
 
@@ -404,7 +401,7 @@
 
 .inhoudsopgave h2 {
   margin: 20px 0 4px;
-  font: italic 400 1.9rem/1.1 var(--boek-tekst);
+  font: 700 2rem/1 var(--font-smal);
 }
 
 .inhoudsopgave__intro {
@@ -468,7 +465,6 @@
 
 .toc__kern {
   grid-column: 2 / -1;
-  font-style: italic;
   font-size: 0.95rem;
   color: var(--boek-zacht);
 }

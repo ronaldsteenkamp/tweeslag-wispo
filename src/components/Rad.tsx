@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { Icoon } from './Icoon'
 import { PISTE_KLEUREN, useData, type Kamers, type PisteKleur, type Rad as RadData } from '../lib/data'
 import { useToonNaam } from '../lib/bijnamen'
 import { lees, useOpgeslagen } from '../lib/opslag'
@@ -307,7 +308,7 @@ function DrankKiezer({
                   setUit((oud) => oud.filter((x) => x !== d))
                 }}
               >
-                ✕
+                <Icoon naam="kruis" grootte={16} />
               </button>
             </span>
           ) : (
@@ -403,7 +404,7 @@ function EigenLijsten({
             disabled={lijsten.length <= 1}
             onClick={() => setWeghalen(true)}
           >
-            🗑
+            <Icoon naam="prullenbak" grootte={20} />
           </button>
         </div>
       </fieldset>
@@ -447,7 +448,7 @@ function EigenOpties({ opties, onWijzig }: { opties: string[]; onWijzig: (o: str
               disabled={opties.length <= 2}
               onClick={() => onWijzig(opties.filter((_, j) => j !== i))}
             >
-              ✕
+              <Icoon naam="kruis" grootte={16} />
             </button>
           </div>
         ))}

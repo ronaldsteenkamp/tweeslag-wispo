@@ -59,7 +59,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
   if (!concept) {
     return (
       <div className="scherm">
-        {nieuweKop ? <SchermKop titel="Kamerverdeling" boven="Reisleiding" terug={{ label: 'Kamers', onClick: terug }} /> : <h1>Kamerverdeling</h1>}
+        {nieuweKop ? <SchermKop titel="Kamerverdeling" boven="Reisleiding" terug={{ label: 'Groep', onClick: terug }} /> : <h1>Kamerverdeling</h1>}
         <DataStatus fout={fout} />
       </div>
     )
@@ -187,10 +187,10 @@ export default function Verdelen({ terug }: { terug: () => void }) {
     <div className="scherm verdelen">
       {!nieuweKop && (
         <button type="button" className="tekstknop" onClick={terug}>
-          ← Terug naar Kamers
+          <Icoon naam="links" grootte={20} /> Terug naar Groep
         </button>
       )}
-      {nieuweKop ? <SchermKop titel="Kamerverdeling" boven="Reisleiding" terug={{ label: 'Kamers', onClick: terug }} /> : <h1>Kamerverdeling</h1>}
+      {nieuweKop ? <SchermKop titel="Kamerverdeling" boven="Reisleiding" terug={{ label: 'Groep', onClick: terug }} /> : <h1>Kamerverdeling</h1>}
       <p>
         Voor de reisleiding. Tik op een naam en daarna op een kamer. Je werk wordt op deze telefoon bewaard; de groep
         ziet het pas als je onderaan op <strong>Opslaan in de app</strong> tikt.
@@ -365,7 +365,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
               {k.bewoners.map((b) => (
                 <span key={b} className={`verdelen__naam is-ingedeeld${gekozen === b ? ' is-gekozen' : ''}`}>
                   <button type="button" onClick={() => kies(b)} aria-pressed={gekozen === b}>
-                    🛏️ {b}
+                    <Icoon naam="kamers" grootte={18} /> {b}
                   </button>
                   <button type="button" className="verdelen__weg" aria-label={`${b} terug naar de lijst`} onClick={() => naarLijst(b)}>
                     <Icoon naam="kruis" grootte={16} />
@@ -417,7 +417,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
                 onClick={() => void opslaan()}
                 disabled={opslaanBezig || backend.status !== 'verbonden'}
               >
-                {opslaanBezig ? 'Bezig…' : '💾 Opslaan in de app'}
+                {opslaanBezig ? 'Bezig…' : 'Sla op in de app'}
               </button>
               <p className="klein">
                 {backend.status === 'verbonden'
@@ -433,11 +433,11 @@ export default function Verdelen({ terug }: { terug: () => void }) {
                 className="knop knop--secundair knop--breed"
                 onClick={() => (window.location.hash = '#beheer')}
               >
-                ⚙️ Inloggen als beheerder
+                <Icoon naam="instellingen" grootte={20} /> Inloggen als beheerder
               </button>
             </>
           ))}
-        {opgeslagen && <p className="melding">✓ {opgeslagen}</p>}
+        {opgeslagen && <p className="melding">{opgeslagen}</p>}
         {opslaanFout && <p className="melding melding--fout">{opslaanFout}</p>}
 
         <details className="verdelen__github" open={!backendIngesteld}>
@@ -455,7 +455,7 @@ export default function Verdelen({ terug }: { terug: () => void }) {
           </ol>
           <div className="knoppenrij">
             <button type="button" className="knop knop--primair" onClick={kopieer}>
-              {gekopieerd ? '✓ Gekopieerd' : 'Kopieer kamers.json'}
+              {gekopieerd ? 'Gekopieerd' : 'Kopieer kamers.json'}
             </button>
             <a className="knop knop--accent" href={config.kamersBewerkenOpGithub} target="_blank" rel="noopener">
               kamers.json op GitHub

@@ -8,8 +8,6 @@
 
 .inhoud--spel,
 .inhoud--fotos {
-  --memo: #fff1a8;
-  --memo-inkt: #3a3000;
   --foto-rand: #fffdf7;
 }
 
@@ -42,7 +40,7 @@
   min-height: 100%;
   margin: 0 auto;
   padding: calc(8px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font);
 }
 
 .bewijs p,
@@ -254,8 +252,8 @@
   align-items: center;
   gap: 10px;
   min-height: 46px;
-  color: #0d0058;
-  font: italic 15px/1.2 Georgia, serif;
+  color: var(--inkt);
+  font: 15px/1.2 var(--font);
 }
 
 .kiekje figcaption span {
@@ -396,7 +394,6 @@
 }
 
 .bewijs__onderweg span {
-  font-style: italic;
   color: var(--inkt-zacht);
 }
 
@@ -422,7 +419,6 @@
 }
 
 .briefje small {
-  font-style: italic;
   font-size: 0.92rem;
 }
 
@@ -460,7 +456,7 @@
   width: min(380px, 100%);
   padding: 32px 16px calc(28px + env(safe-area-inset-bottom));
   text-align: center;
-  font-family: Georgia, serif;
+  font-family: var(--font);
 }
 
 .geplaatst p,
@@ -591,7 +587,6 @@
   padding: 6px 8px;
   background: var(--memo);
   color: var(--memo-inkt);
-  font-style: italic;
 }
 
 .ch__status--ingestuurd {
@@ -648,7 +643,6 @@
 }
 
 .redactie__uitleg {
-  font-style: italic;
   color: var(--inkt-zacht);
 }
 
@@ -674,8 +668,8 @@
 
 .redactie__filters button[aria-pressed='true'] {
   border-color: var(--inkt);
-  background: var(--inkt);
-  color: var(--papier);
+  background: var(--knop);
+  color: var(--op-knop);
 }
 
 .redactie__rooster {
@@ -827,7 +821,7 @@
   overflow-y: auto;
   background: var(--foto-rand);
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.3);
-  font-family: Georgia, serif;
+  font-family: var(--font);
   animation: bewijs-blad 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -858,7 +852,7 @@
   border: 2px solid var(--lijn);
   background: none;
   color: var(--inkt);
-  font: 1rem/1.35 Georgia, serif;
+  font: 1rem/1.35 var(--font);
   text-align: left;
 }
 
@@ -875,7 +869,7 @@
   border: 2px solid var(--lijn);
   background: var(--papier);
   color: var(--inkt);
-  font: 1rem/1.4 Georgia, serif;
+  font: 1rem/1.4 var(--font);
   resize: vertical;
 }
 
@@ -889,7 +883,7 @@
 }
 
 .bewijs__veld small {
-  font: italic 400 15px/1.3 Georgia, serif;
+  font: 400 15px/1.3 var(--font);
   text-transform: none;
   color: var(--inkt-zacht);
 }
@@ -903,7 +897,7 @@
   border-radius: 0;
   background: var(--foto-rand);
   color: var(--inkt);
-  font: italic 1.05rem/1.45 Georgia, serif;
+  font: 1.05rem/1.45 var(--font);
   text-transform: none;
 }
 
@@ -933,7 +927,7 @@
 .bewijs__onderschrift {
   /* Ruim onder het (scheve) kiekje, zodat de rand van de foto er niet overheen valt */
   margin: 14px 8px 0;
-  font: italic 1.08rem/1.4 Georgia, serif;
+  font: 1.08rem/1.4 var(--font);
   color: var(--inkt);
 }
 
@@ -955,15 +949,15 @@
   margin: 0;
   padding-right: 90px;
   min-height: 120px;
-  font: italic 1.15rem/1.5 Georgia, serif;
-  color: #0d0058;
+  font: 1.15rem/1.5 var(--font);
+  color: var(--inkt);
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
 
 .briefkaart figcaption {
   font: 600 13px/1 ui-monospace, 'Cascadia Mono', Consolas, monospace;
-  color: #4b4e6b;
+  color: var(--inkt-zacht);
 }
 
 .briefkaart .redactiestempel {
@@ -981,7 +975,7 @@
   background: var(--foto-rand);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   color: var(--inkt);
-  font: italic 11px/1.35 Georgia, serif;
+  font: 11px/1.35 var(--font);
   transform: rotate(-3deg);
   -webkit-mask: linear-gradient(#000 70%, transparent);
   mask: linear-gradient(#000 70%, transparent);
@@ -991,7 +985,7 @@
   display: block;
   overflow: hidden;
   padding: 12px;
-  font: italic 0.95rem/1.4 Georgia, serif;
+  font: 0.95rem/1.4 var(--font);
   color: var(--inkt);
   -webkit-mask: linear-gradient(#000 75%, transparent);
   mask: linear-gradient(#000 75%, transparent);
@@ -1014,7 +1008,7 @@
   color: var(--inkt);
   box-shadow: 0 14px 34px rgba(13, 0, 88, 0.3);
   transform: rotate(-0.8deg);
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font);
 }
 
 /* Plakband bovenop */

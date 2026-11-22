@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { PANORAMA as P } from '../lib/bergen-bijgestuurd'
+import { tabsVoor } from '../lib/navigatie'
 import '../styles/bergen.css'
 
 /*
@@ -79,9 +80,8 @@ const STAP = 100
 const MARGE = 38
 /** Hoogte van het dal onderaan (de witte sneeuwrand boven het papier), ook overal gelijk */
 const DAL = 18
-const TABS_LANDSCHAP = ['home', 'planning', 'paklijst', 'kamers', 'kaart', 'rad', 'spel']
 /** Bij welke tab een scherm hoort (schermen achter een tab staan op dezelfde plek) */
-const BIJ_TAB: Record<string, string> = { verdelen: 'kamers', beheer: 'kamers', fotos: 'spel', welkom: 'home' }
+const BIJ_TAB: Record<string, string> = { verdelen: 'groep', beheer: 'groep', kamers: 'groep', rad: 'spel', welkom: 'home', instellingen: 'home' }
 /** Weer hoort niet bij de tabbalk: een eigen uitzicht op de gletsjer, wel op dezelfde schaal */
 const WEER_CAMERA = 1050
 /**
@@ -93,8 +93,10 @@ const EIND = 1400
 /** Het midden van het beeld voor een scherm, of undefined (onbekend scherm: eigen venster) */
 export function cameraVoor(scherm: string): number | undefined {
   if (scherm === 'weer') return WEER_CAMERA
-  const i = TABS_LANDSCHAP.indexOf(BIJ_TAB[scherm] ?? scherm)
-  return i < 0 ? undefined : 445 + STAP * i
+  // De tabs van nu (de middelste schuift mee met de reis); wat er niet in staat, hoort bij Home
+  const tabs = tabsVoor().map((t) => t.id as string)
+  const i = tabs.indexOf(BIJ_TAB[scherm] ?? scherm)
+  return 445 + STAP * Math.max(0, i)
 }
 
 /** Laatst gemeten maat per soort vlak: een nieuw scherm (bijv. het buurscherm bij vegen) hoeft dan niet twee keer te tekenen */

@@ -1,19 +1,15 @@
 /*
  * Fotomuur in de stijl "clubblad" (gekozen uit mockups/fotomuur-c.html): de Wispo-editie van het
  * clubblad, in hetzelfde drukwerk als het Spel. Papier, navy inkt, lichtblauw en stempelrood;
- * Barlow Condensed voor koppen en bijschriften, Georgia voor lopende tekst. Contrast tekst/vlak
+ * Barlow Condensed voor koppen en bijschriften, Barlow voor lopende tekst. Contrast tekst/vlak
  * minstens 4,5 : 1. Foto's houden een vaste maat (breedte/hoogte), zodat niets verspringt.
  */
 
 .inhoud--fotos {
-  --papier: #f5f2ea;
-  --papier-2: #ebe5d6;
-  --inkt: #0d0058;
-  --inkt-zacht: #4b4e6b;
-  --lijn: #cfc6b2;
-  --blauw: #099fc4;
-  --blauw-tekst: #05607a;
-  --rood: #b3202c;
+  --papier-2: var(--papier-diep);
+  --blauw: var(--ijsblauw);
+  --blauw-tekst: var(--ijsblauw-inkt);
+  --rood: var(--piste-rood);
   min-height: 100dvh;
   background: var(--papier);
   color: var(--inkt);
@@ -24,7 +20,7 @@
 }
 
 .fotomuur {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font);
 }
 
 .fotomuur p,
@@ -47,7 +43,6 @@
 
 .fotomuur__klein {
   font-size: 0.9rem;
-  font-style: italic;
   color: var(--inkt-zacht);
 }
 
@@ -79,8 +74,8 @@
   padding: 0 16px;
   border: 2px solid var(--inkt);
   border-radius: 4px;
-  background: var(--inkt);
-  color: var(--papier);
+  background: var(--knop);
+  color: var(--op-knop);
   font: 700 19px/1 'Barlow Condensed', sans-serif;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -540,7 +535,7 @@
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
-  font: italic 400 15px/1.35 Georgia, 'Times New Roman', serif;
+  font: 400 15px/1.35 var(--font);
   letter-spacing: 0;
   text-transform: none;
   color: var(--inkt);
@@ -585,7 +580,7 @@
 
 .ingezonden__stuk blockquote {
   margin: 4px 0 0;
-  font: italic 1.08rem/1.5 Georgia, 'Times New Roman', serif;
+  font: 1.08rem/1.5 var(--font);
   white-space: pre-line;
   overflow-wrap: anywhere;
 }

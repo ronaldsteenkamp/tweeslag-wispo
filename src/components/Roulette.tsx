@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Icoon } from './Icoon'
 import { useToonNaam } from '../lib/bijnamen'
 import type { Kamers } from '../lib/data'
 import { useDialoogFocus } from '../lib/dialoogFocus'
@@ -326,7 +327,7 @@ export function Roulette({
               <CasinoLogo />
             </h2>
             <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
-              <span aria-hidden="true">🪙</span> {fiches(saldo)}
+              <span className="casino__fiche" aria-hidden="true" /> {fiches(saldo)}
             </p>
           </div>
           {/* Onder de fiche van het logo, in de lege hoek naast het ronde wiel */}
@@ -338,7 +339,7 @@ export function Roulette({
             aria-label={geluidAan ? 'Geluid en trillen uitzetten' : 'Geluid en trillen aanzetten'}
             title={geluidAan ? 'Geluid en trillen aan' : 'Geluid en trillen uit'}
           >
-            {geluidAan ? '🔊' : '🔇'}
+            <Icoon naam={geluidAan ? 'geluid' : 'stil'} grootte={20} />
           </button>
 
           {/* Het wiel vult de ruimte die de tafel over heeft, zodat de tafel tot de tabbalk reikt */}
@@ -410,7 +411,7 @@ export function Roulette({
                   setGeleend(geleend + 1)
                 }}
               >
-                🍺 Trek een bak voor {fiches(LENING)} nieuwe fiches
+                <Icoon naam="bier" grootte={20} /> Trek een bak voor {fiches(LENING)} nieuwe fiches
               </button>
             </div>
           ) : (
@@ -469,7 +470,7 @@ export function Roulette({
         </fieldset>
       </details>
       <p className="klein casino__bakken">
-        🍺 {geleend} {geleend === 1 ? 'bak' : 'bakken'} getrokken
+        <Icoon naam="bier" grootte={18} /> {geleend} {geleend === 1 ? 'bak' : 'bakken'} getrokken
       </p>
 
       {uitslag && toonPopup && (
@@ -487,10 +488,10 @@ export function Roulette({
               <span className={`casino__bol casino__bol--${kleurVan(uitslag.getal, n)}`}>{uitslag.getal}</span>
               {kleurVan(uitslag.getal, n)}
             </p>
-            <p className="casino__klos">{uitslag.naam ? `${uitslag.naam} neemt een slok!` : '🍻 Iedereen drinkt!'}</p>
+            <p className="casino__klos">{uitslag.naam ? `${uitslag.naam} neemt een slok!` : 'Iedereen drinkt!'}</p>
             <p>
               {uitslag.uitbetaald > uitslag.ingezet
-                ? `Je wint ${fiches(uitslag.uitbetaald - uitslag.ingezet)} fiches 🎉`
+                ? `Je wint ${fiches(uitslag.uitbetaald - uitslag.ingezet)} fiches!`
                 : uitslag.uitbetaald === uitslag.ingezet
                   ? 'Quitte: je krijgt je inzet terug.'
                   : `Je verliest ${fiches(uitslag.ingezet - uitslag.uitbetaald)} fiches.`}

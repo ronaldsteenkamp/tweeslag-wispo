@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Icoon } from '../components/Icoon'
 import { SchermKop } from '../components/SchermKop'
 import { config } from '../config'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
@@ -48,10 +49,10 @@ export default function Beheer({ terug }: { terug: () => void }) {
     <div className="scherm beheer">
       {!nieuweKop && (
         <button type="button" className="tekstknop" onClick={terug}>
-          ← Terug naar Kamers
+          <Icoon naam="links" grootte={20} /> Terug naar Groep
         </button>
       )}
-      {nieuweKop ? <SchermKop titel="Beheer" boven="Reisleiding" terug={{ label: 'Kamers', onClick: terug }} /> : <h1>Beheer</h1>}
+      {nieuweKop ? <SchermKop titel="Beheer" boven="Reisleiding" terug={{ label: 'Groep', onClick: terug }} /> : <h1>Beheer</h1>}
 
       <section className="kaartje">
         <div className="kaartje__kop">
@@ -94,7 +95,7 @@ export default function Beheer({ terug }: { terug: () => void }) {
             </div>
             <div>
               <dt>Beheerder</dt>
-              <dd>{b.beheerder ? 'Ja ✓' : 'Nee'}</dd>
+              <dd>{b.beheerder ? 'Ja' : 'Nee'}</dd>
             </div>
           </dl>
           {b.status === 'verbonden' && !b.gekoppeld && (
@@ -299,7 +300,7 @@ function MeldingBeheer() {
     setBezig(false)
     if (fout) setMelding(`Versturen lukte niet: ${fout}`)
     else {
-      setMelding(`Verstuurd naar ${data?.gelukt ?? 0} apparaat/apparaten${data?.mislukt ? ` (${data.mislukt} mislukt)` : ''} ✓`)
+      setMelding(`Verstuurd naar ${data?.gelukt ?? 0} apparaat/apparaten${data?.mislukt ? ` (${data.mislukt} mislukt)` : ''}`)
       setTitel('')
       setTekst('')
       laadLog()

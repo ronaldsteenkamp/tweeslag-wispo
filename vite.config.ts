@@ -9,6 +9,8 @@ const base = process.env.BASE_PATH ?? '/tweeslag-wispo/'
 
 export default defineConfig({
   base,
+  // Versie in Instellingen: de dag van de build
+  define: { __BOUWDATUM__: JSON.stringify(new Date().toISOString().slice(0, 10)) },
   plugins: [
     react(),
     {
@@ -46,7 +48,7 @@ export default defineConfig({
         lang: 'nl',
         dir: 'ltr',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'any',
         start_url: base,
         scope: base,
         background_color: '#0d0058',

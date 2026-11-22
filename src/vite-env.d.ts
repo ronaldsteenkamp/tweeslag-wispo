@@ -11,3 +11,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+/** Dag van de build (vite.config.ts) */
+declare const __BOUWDATUM__: string

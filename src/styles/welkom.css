@@ -4,15 +4,15 @@
  */
 
 .welkom {
-  --w-papier: #f5f2ea;
-  --w-kaart: #fffdf8;
-  --w-inkt: #0d0058;
-  --w-zacht: #4b4e6b;
-  --w-lijn: #d9d3c4;
-  --w-blauw: #1d5fc4;
-  --w-rood: #c4212f;
-  --w-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
-  --w-tekst: Barlow, 'Trebuchet MS', sans-serif;
+  --w-papier: var(--papier);
+  --w-kaart: var(--papier-vlak);
+  --w-inkt: var(--inkt);
+  --w-zacht: var(--inkt-zacht);
+  --w-lijn: var(--lijn);
+  --w-blauw: var(--piste-blauw);
+  --w-rood: var(--piste-rood);
+  --w-smal: var(--font-smal);
+  --w-tekst: var(--font);
   position: fixed;
   inset: 0;
   z-index: 60;

@@ -14,7 +14,7 @@ import { Icoon } from './Icoon'
 import { Verbinding } from './Verbinding'
 
 const SYNC_TEKST = {
-  uit: 'Geen backend: je score staat alleen op deze telefoon.',
+  uit: 'Niet gekoppeld: je score staat alleen op deze telefoon.',
   wacht: 'Je score wordt verstuurd zodra er verbinding is.',
   bezig: 'Score versturen…',
   verstuurd: 'Je score is verstuurd.',
@@ -50,7 +50,7 @@ export function Klassement() {
 
   if (backend.status === 'uit') {
     return (
-      <p className="spel__voetnoot">Er is geen backend ingesteld, dus er is geen gedeeld klassement. Je eigen score staat hierboven.</p>
+      <p className="spel__voetnoot">Het klassement is in deze versie niet gekoppeld. Je eigen score staat hierboven.</p>
     )
   }
 
@@ -347,7 +347,7 @@ function BonusFormulier({
     setBezig(false)
     if (fout) setMelding(`Lukte niet: ${fout}`)
     else {
-      setMelding(`${getal > 0 ? '+' : ''}${getal} voor ${soort === 'kamer' ? `kamer ${kamerLabel(doel)}` : toon(doel)} ✓`)
+      setMelding(`${getal > 0 ? '+' : ''}${getal} voor ${soort === 'kamer' ? `kamer ${kamerLabel(doel)}` : toon(doel)}`)
       setReden('')
     }
   }

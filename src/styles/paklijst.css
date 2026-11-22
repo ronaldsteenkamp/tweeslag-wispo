@@ -5,19 +5,19 @@
  */
 
 .inhoud--paklijst {
-  --pak-papier: #f5f2ea;
-  --pak-inkt: #0d0058;
-  --pak-zacht: #4b4e6b;
-  --pak-lijn: #d9d3c4;
-  --pak-gletsjer: #dfeaf0;
-  --pak-gletsjer-2: #c8dbe5;
-  --pak-zwart: #17171c;
-  --pak-rood: #c4212f;
-  --pak-blauw: #1d5fc4;
-  --pak-groen: #1e7a4c;
-  --pak-stempel: #0a7d9c;
-  --pak-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
-  --pak-tekst: Barlow, 'Trebuchet MS', sans-serif;
+  --pak-papier: var(--papier);
+  --pak-inkt: var(--inkt);
+  --pak-zacht: var(--inkt-zacht);
+  --pak-lijn: var(--lijn);
+  --pak-gletsjer: var(--berg-3);
+  --pak-gletsjer-2: var(--berg-3-schaduw);
+  --pak-zwart: var(--piste-zwart);
+  --pak-rood: var(--piste-rood);
+  --pak-blauw: var(--piste-blauw);
+  --pak-groen: var(--piste-groen);
+  --pak-stempel: var(--ijsblauw-inkt);
+  --pak-smal: var(--font-smal);
+  --pak-tekst: var(--font);
   /* Rond stempel met een iets versleten buitenrand, een binnenring en een vinkje */
   --pak-stempel-vorm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='20' cy='20' r='17.5' stroke-width='2.4' stroke-dasharray='26 1.6 17 1.2 30 2 34'/%3E%3Ccircle cx='20' cy='20' r='13.6' stroke-width='1.1'/%3E%3Cpath d='M13.2 20.6l4.6 4.6 9-9.6' stroke-width='3.2'/%3E%3C/svg%3E");
   min-height: 100dvh;
@@ -603,8 +603,8 @@
   height: 48px;
   border: 0;
   border-radius: 6px;
-  background: var(--pak-inkt);
-  color: #fff;
+  background: var(--knop);
+  color: var(--op-knop);
 }
 
 .pak-toevoegen button:disabled {
@@ -630,8 +630,8 @@
   flex-wrap: nowrap;
   padding: 6px 6px 6px 16px;
   border-radius: 6px;
-  background: var(--pak-inkt);
-  color: #fff;
+  background: var(--knop);
+  color: var(--op-knop);
   font-family: var(--pak-tekst);
 }
 

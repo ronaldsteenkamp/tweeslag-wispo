@@ -68,7 +68,7 @@ export function Programma({ dag, nuTijd, metIconen = false }: { dag: Dag; nuTijd
                 {item.titel}
                 {item.melding === true && (
                   <span className="tijdlijn__bel" title="Je krijgt 30 minuten van tevoren een melding" aria-label="met melding">
-                    🔔
+                    <Icoon naam="bel" grootte={16} />
                   </span>
                 )}
                 {bezig &&<span className="label label--accent">Nu</span>}

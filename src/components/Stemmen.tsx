@@ -32,7 +32,7 @@ export function Stemmen() {
   const alleNamen = useMemo(() => alleDeelnemers(kamers), [kamers])
 
   if (backend.status === 'uit') {
-    return <p className="spel__voetnoot">Er is geen backend ingesteld, dus stemmen kan niet.</p>
+    return <p className="spel__voetnoot">Stemmen is in deze versie niet gekoppeld.</p>
   }
 
   const t = nu.getTime()
@@ -405,7 +405,7 @@ export function StemmingOpHome({ naarStemmen }: { naarStemmen: () => void }) {
     <>
       {teStemmen.length > 0 && naam && (
         <section className="kaartje stemming stemming--home">
-          <h2>🗳️ Stemmen maar!</h2>
+          <h2>Stemmen maar</h2>
           <p>
             {teStemmen.map((s) => s.vraag).join(' · ')}
             <br />
@@ -420,7 +420,7 @@ export function StemmingOpHome({ naarStemmen }: { naarStemmen: () => void }) {
       {vanDieDag.length > 0 && (
         <section className="kaartje">
           <div className="kaartje__kop">
-            <h2>🏆 Winnaars {datumISO(nu) === laatsteDag ? 'van vandaag' : `van ${datumLabel(laatsteDag!)}`}</h2>
+            <h2>Winnaars {datumISO(nu) === laatsteDag ? 'van vandaag' : `van ${datumLabel(laatsteDag!)}`}</h2>
             <button type="button" className="tekstknop" onClick={naarStemmen}>
               Uitslagen <Icoon naam="pijl" grootte={18} />
             </button>

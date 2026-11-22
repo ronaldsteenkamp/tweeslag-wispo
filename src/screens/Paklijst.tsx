@@ -62,7 +62,7 @@ const tril = (patroon: number | number[]) => {
   }
 }
 
-export default function Paklijst() {
+export default function Paklijst({ terug }: { terug?: () => void } = {}) {
   const { data, fout } = useData('paklijst')
   const [vinkjes, setVinkjes] = useOpgeslagen<string[]>('paklijst.vinkjes', [])
   const [eigen, setEigen] = useOpgeslagen<EigenItem[]>('paklijst.eigen', [])
@@ -243,6 +243,12 @@ export default function Paklijst() {
       <header className="pakkop" ref={setKopEl}>
         {/* Sterren en sneeuw zoals in de andere koppen; de berg ligt ervoor */}
         <Sneeuw aantal={8} />
+        {terug && (
+          <button type="button" className="schermkop__terug" onClick={terug}>
+            <Icoon naam="links" grootte={26} />
+            Home
+          </button>
+        )}
         <div className="pakkop__rij">
           <div>
             <p className="pakkop__boven">Wispo 2027 · Les Deux Alpes</p>

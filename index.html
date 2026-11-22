@@ -2,9 +2,9 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="color-scheme" content="light only" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="description" content="App voor de wintersport van Tweeslag naar Les Deux Alpes." />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -12,6 +12,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
     <title>Tweeslag Wispo</title>
+    <script>
+      // Thema uit Instellingen (licht, donker of de telefoon volgen) vóór het tekenen, zodat er niets omslaat
+      try {
+        var t = JSON.parse(localStorage.getItem('tweeslag-wispo.thema') || '"auto"')
+        if (t === 'licht' || t === 'donker') document.documentElement.dataset.thema = t
+      } catch (e) {}
+    </script>
     <style>
       /* Voorkomt een wit flitsje voordat de app geladen is */
       html { background: #0d0058; }

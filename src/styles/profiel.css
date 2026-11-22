@@ -5,18 +5,18 @@
  */
 
 :root {
-  --pl-papier: #f5f2ea;
-  --pl-inkt: #0d0058;
-  --pl-zacht: #4b4e6b;
-  --pl-ijs: #9fe3f4;
+  --pl-papier: var(--papier);
+  --pl-inkt: var(--inkt);
+  --pl-zacht: var(--inkt-zacht);
+  --pl-ijs: var(--op-lucht-zacht);
   --pl-zand: #e8d9b5;
   --pl-zand-inkt: #5b4a22;
   --pl-veld: #6f7391;
   --pl-slot: #8f89b0;
-  --pl-lijn: #d9d3c4;
-  --pl-focus: #0a7d9c;
-  --pl-smal: 'Barlow Condensed', 'Trebuchet MS', sans-serif;
-  --pl-tekst: Barlow, 'Trebuchet MS', sans-serif;
+  --pl-lijn: var(--lijn);
+  --pl-focus: var(--ijsblauw-inkt);
+  --pl-smal: var(--font-smal);
+  --pl-tekst: var(--font);
 }
 
 /* ---------- Venster ---------- */
@@ -43,7 +43,7 @@
 
 .plaatjekop__titel {
   margin: 4px 0 0;
-  font: italic 700 2.1rem/1 var(--pl-smal);
+  font: 700 2.1rem/1 var(--pl-smal);
   text-transform: uppercase;
   letter-spacing: 0.01em;
   overflow-wrap: anywhere;
@@ -157,8 +157,8 @@
   height: 30px;
   padding: 0 8px;
   border-radius: 6px;
-  background: var(--pl-inkt);
-  color: #fff;
+  background: var(--knop);
+  color: var(--op-knop);
   font: 700 1rem/1 var(--pl-smal);
   letter-spacing: 0.04em;
 }
@@ -208,10 +208,10 @@
 .plaatje__naam {
   margin: 0;
   padding: 7cqw 16px 8px;
-  background: var(--pl-inkt);
+  background: var(--tweeslag-donkerblauw);
   color: #fff;
   clip-path: polygon(0 18%, 100% 0, 100% 100%, 0 100%);
-  font: italic 700 clamp(1.3rem, 10cqw, 2rem)/0.95 var(--pl-smal);
+  font: 700 clamp(1.3rem, 10cqw, 2rem)/0.95 var(--pl-smal);
   text-transform: uppercase;
   letter-spacing: 0.01em;
   overflow-wrap: anywhere;
@@ -280,7 +280,7 @@
 }
 
 .achter__naam {
-  font: italic 700 1.6rem/1 var(--pl-smal);
+  font: 700 1.6rem/1 var(--pl-smal);
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
@@ -331,7 +331,7 @@
 
 .achter__niveau {
   margin-top: -4px !important;
-  font: italic 0.92rem/1.2 var(--font-tekst);
+  font: 0.92rem/1.2 var(--font-tekst);
   color: #c9d3f5;
 }
 
@@ -368,7 +368,7 @@
 }
 
 .achter__blanco p {
-  font: italic 1rem/1.4 var(--font-tekst);
+  font: 1rem/1.4 var(--font-tekst);
   color: #c9d3f5;
 }
 
@@ -433,8 +433,8 @@
 .plaatjeknop--hoofd {
   width: 100%;
   border-color: var(--pl-inkt);
-  background: var(--pl-inkt);
-  color: #fff;
+  background: var(--knop);
+  color: var(--op-knop);
 }
 
 .plaatjeknop:disabled {
@@ -494,7 +494,7 @@ fieldset.plaatjeform__blok > legend {
 
 .plaatjeform__label {
   margin: 0;
-  font: italic 700 1.2rem/1.1 var(--pl-smal);
+  font: 700 1.2rem/1.1 var(--pl-smal);
   text-transform: uppercase;
   letter-spacing: 0.01em;
   color: var(--pl-inkt);
@@ -530,7 +530,7 @@ fieldset.plaatjeform__blok > legend {
   padding: 10px 14px;
   border: 2px solid var(--pl-veld);
   border-radius: 12px;
-  background: #fff;
+  background: var(--papier-vlak);
   color: var(--pl-inkt);
   font: 1.05rem/1.4 var(--pl-tekst); /* ≥ 16px: geen zoom op iOS */
 }
@@ -610,7 +610,7 @@ textarea.plaatjeform__invoer {
   padding: 8px 14px;
   border: 2px solid var(--pl-veld);
   border-radius: 12px;
-  background: #fff;
+  background: var(--papier-vlak);
   font-weight: 600;
 }
 
@@ -628,8 +628,8 @@ textarea.plaatjeform__invoer {
 
 .plaatjekeuze input:checked + .plaatjekeuze__vak {
   border-color: var(--pl-inkt);
-  background: var(--pl-inkt);
-  color: #fff;
+  background: var(--knop);
+  color: var(--op-knop);
 }
 
 .plaatjekeuze input:checked + .plaatjekeuze__vak > svg,

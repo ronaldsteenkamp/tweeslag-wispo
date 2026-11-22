@@ -22,16 +22,25 @@ import { testOntgrendeld, useNu } from '../lib/nu'
 import { lees, useOpgeslagen } from '../lib/opslag'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { KLASSEMENT_CACHE, type Klassement as KlassementData } from '../lib/scorebord'
+import { RadOnderdeel } from '../components/Rad'
 import { SchermKop } from '../components/SchermKop'
+import { Segmenten } from '../components/Segmenten'
 import { klank, minderBeweging, trilSpel, useSpelGeluid } from '../lib/spelgeluid'
-import { tabToetsen } from '../lib/tabbladen'
 import { datumISO, datumLabel, lokaalNaarDate } from '../lib/tijd'
 import '../styles/barlow.css'
 import '../styles/spel.css'
 import '../styles/bewijs.css'
 
 const spelOpen = lokaalNaarDate(config.spelOpen)
-const ONDERDELEN = ['challenges', 'bingo', 'stemmen', 'klassement'] as const
+const ONDERDELEN = [
+  ['challenges', 'Challenges'],
+  ['bingo', 'Busbingo'],
+  ['rad', 'Rad'],
+  ['stand', 'Stand'],
+] as const
+type Onderdeel = (typeof ONDERDELEN)[number][0]
+/** Oude bewaarde keuzes (Stemmen en Klassement staan nu samen onder Stand) */
+const naarOnderdeel = (w: string): Onderdeel => (w === 'stemmen' || w === 'klassement' ? 'stand' : ONDERDELEN.some(([o]) => o === w) ? (w as Onderdeel) : 'challenges')
 const openMoment = (d: ChallengeDag) => lokaalNaarDate(`${d.datum}T${d.openOm ?? config.challengesOpenOm}`)
 /** Emoji vooraan een tekst (uit spel.json) weglaten: het Spel praat in drukwerk, niet in emoji */
 const zonderEmoji = (t: string) => t.replace(/^[\p{Extended_Pictographic}\p{Regional_Indicator}][\p{Extended_Pictographic}️‍\p{Regional_Indicator}]*\s*/u, '')
@@ -76,12 +85,9 @@ export default function Spel() {
 }
 
 function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
-  const [onderdeel, setOnderdeel] = useOpgeslagen<'challenges' | 'bingo' | 'stemmen' | 'klassement'>('spel.onderdeel', 'challenges')
+  const [bewaard, setOnderdeel] = useOpgeslagen<string>('spel.onderdeel', 'challenges')
+  const onderdeel = naarOnderdeel(bewaard)
   const [gedaan, setGedaan] = useOpgeslagen<string[]>('spel.challenges', [])
-  // Het rad stond eerst hier; het is nu een eigen tabblad
-  useEffect(() => {
-    if ((onderdeel as string) === 'rad') setOnderdeel('challenges')
-  }, [onderdeel, setOnderdeel])
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
   const toon = useToonNaam()
@@ -192,6 +198,15 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
             </span>
           }
         >
+          <Segmenten
+            label="Onderdeel"
+            opties={ONDERDELEN}
+            waarde={onderdeel}
+            kies={(o) => {
+              if (o !== onderdeel) klank('tik', geluid)
+              setOnderdeel(o)
+            }}
+          />
           <p className="schermkop__notitie">
             {mijnPlek
               ? `${mijnPlek.plek}e plek van ${mijnPlek.van} in het klassement`
@@ -205,42 +220,24 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
       )}
       {testOntgrendeld && <p className="melding melding--test">Testmodus: alles is open (?unlock=1)</p>}
 
-      <div className="spel__balk">
-        {backendIngesteld && (
-          <button type="button" className="spelknop spelknop--licht" onClick={() => (window.location.hash = '#fotos')}>
-            <Icoon naam="camera" grootte={22} /> Clubblad
-          </button>
-        )}
-        <GeluidKnop aan={geluid} zet={setGeluid} className="spel__geluid" />
-      </div>
+      {onderdeel === 'challenges' && (
+        <div className="spel__balk">
+          {backendIngesteld && (
+            <button type="button" className="spelknop spelknop--licht" onClick={() => (window.location.hash = '#fotos')}>
+              <Icoon naam="clubblad" grootte={22} /> Clubblad
+            </button>
+          )}
+          <GeluidKnop aan={geluid} zet={setGeluid} className="spel__geluid" />
+        </div>
+      )}
 
-      <div
-        className="spel__tabs"
-        role="tablist"
-        aria-label="Onderdeel"
-        onKeyDown={tabToetsen(ONDERDELEN, onderdeel, setOnderdeel)}
-      >
-        {ONDERDELEN.map((o) => (
-          <button
-            key={o}
-            type="button"
-            role="tab"
-            aria-selected={onderdeel === o}
-            tabIndex={onderdeel === o ? 0 : -1}
-            onClick={() => {
-              if (o !== onderdeel) klank('tik', geluid)
-              setOnderdeel(o)
-            }}
-          >
-            {o === 'challenges' ? 'Challenges' : o === 'bingo' ? 'Busbingo' : o === 'stemmen' ? 'Stemmen' : 'Klassement'}
-          </button>
-        ))}
-      </div>
-
-      {onderdeel === 'klassement' ? (
-        <Klassement />
-      ) : onderdeel === 'stemmen' ? (
-        <Stemmen />
+      {onderdeel === 'stand' ? (
+        <>
+          <Klassement />
+          <Stemmen />
+        </>
+      ) : onderdeel === 'rad' ? (
+        <RadOnderdeel />
       ) : onderdeel === 'challenges' ? (
         <Challenges
           dagen={data.challenges}

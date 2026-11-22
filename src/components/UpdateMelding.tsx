@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Icoon } from './Icoon'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
 /** Meldt dat de app offline klaarstaat, of dat er een nieuwe versie is */
@@ -26,13 +27,14 @@ export function UpdateMelding() {
   if (nieuweVersie) {
     return (
       <div className="toast" role="status">
-        <span>Er is een nieuwe versie van de app.</span>
+        <Icoon naam="draai" grootte={20} />
+        <span>Nieuwe versie klaar. Je vinkjes en je plaatje blijven bewaard.</span>
         <div className="toast__knoppen">
           <button type="button" className="knop knop--klein knop--secundair" onClick={() => setNieuweVersie(false)}>
             Later
           </button>
           <button type="button" className="knop knop--klein knop--primair" onClick={() => updateServiceWorker(true)}>
-            Vernieuwen
+            Vernieuw
           </button>
         </div>
       </div>
@@ -41,7 +43,8 @@ export function UpdateMelding() {
   if (offlineKlaar) {
     return (
       <div className="toast toast--succes" role="status">
-        <span>✓ De app werkt nu ook zonder internet.</span>
+        <Icoon naam="vink" grootte={20} />
+        <span>Wispo werkt nu ook zonder bereik.</span>
       </div>
     )
   }

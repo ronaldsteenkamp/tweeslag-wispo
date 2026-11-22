@@ -102,7 +102,7 @@ function zetwerk(fotos: Foto[]): { soort: 'a' | 'b' | 'c' | 'enkel' | 'panorama'
   return uit
 }
 
-export default function Fotomuur({ terug }: { terug: () => void }) {
+export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => void; naarSpel: () => void; keuze?: ReactNode }) {
   const backend = useBackend()
   const { fotos, mislukt, meer, laadMeer } = useFotos(30, backend.status !== 'uit')
   const { data: planning } = useData('planning')
@@ -162,7 +162,7 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
   // Inzenden gaat altijd bij een challenge: naar de challenges in het Spel
   const naarChallenges = () => {
     schrijfEnMeld('spel.onderdeel', 'challenges')
-    terug()
+    naarSpel()
   }
 
   const verbonden = backend.status === 'verbonden' && !!backend.gekoppeld
@@ -178,11 +178,13 @@ export default function Fotomuur({ terug }: { terug: () => void }) {
         titel="Clubblad"
         boven="G.S.B.V. Tweeslag"
         ondertitel={naDeReis ? 'Jaarboek Wispo 2027' : `Wispo-editie${vandaagNr ? ` nr. ${vandaagNr}` : ''} · ${datumLabel(vandaagISO)}`}
-        terug={{ label: 'Spel', onClick: terug }}
-      />
+        terug={terug ? { label: 'Terug', onClick: terug } : undefined}
+      >
+        {keuze}
+      </SchermKop>
 
       {backend.status === 'uit' ? (
-        <p className="fotomuur__tekst">Er is geen backend ingesteld, dus er is geen clubblad.</p>
+        <p className="fotomuur__tekst">Het clubblad is in deze versie niet gekoppeld.</p>
       ) : (
         <>
           <div className="fotomuur__naam">

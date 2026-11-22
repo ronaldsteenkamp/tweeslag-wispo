@@ -15,6 +15,12 @@ Web-app (PWA) voor de wintersport van G.S.B.V. Tweeslag: aftelklok, planning, pa
 >
 > Pas een bestand aan, zet het op GitHub en de app haalt de nieuwe versie op zodra iemand internet heeft. Zonder internet ziet iedereen de laatst bewaarde versie.
 
+## Navigatie en stijl
+
+Onderin staan vijf tabs: **Home · Planning · (Paklijst / Kaart / Clubblad) · Spel · Groep**. De middelste schuift mee met de reis: vóór vertrek Paklijst, tijdens de reis Kaart, na thuiskomst Clubblad (`src/lib/navigatie.ts`). Wat niet in de balk staat, blijft bereikbaar: Paklijst en Kaart via Home, het clubblad onder *Groep*, het rad (met het casino) onder *Spel*. *Instellingen* (thema, sneeuw, meldingen, wie wat ziet) staat onderaan Home.
+
+Alle kleuren, letters en maten staan één keer in `src/styles/theme.css` (licht en donker); de app volgt de stand van de telefoon, of wat je in Instellingen kiest. Het ontwerp staat in `mockups/` (open `mockups/index.html` via `npm run dev`).
+
 ## ⚠️ Privacy
 
 De app staat op een **openbare** website. Zoekmachines worden geweerd (`noindex` en `robots.txt`), maar iedereen met de link kan hem openen. Zet daarom in de JSON-bestanden **alleen voornamen**: geen achternamen, telefoonnummers, adressen, geboortedata of andere persoonsgegevens. Hebben twee mensen dezelfde voornaam, schrijf dan bijvoorbeeld `"Lisa"` en `"Lisa 2"`.
@@ -86,7 +92,7 @@ Bij het eerste gebruik kiest iedereen zijn naam uit de lijst. Daarna staat zijn 
 - **Testperiode:** zolang `spelTestperiode` in `src/config.ts` op `true` staat, is het spel daarvoor al open om uit te proberen, met bovenaan de melding *Testperiode*. Op het moment dat het echte spel begint, wist elke telefoon wat er in de testperiode is gedaan: afgevinkte challenges, busbingovinkjes (met een nieuwe kaart) en de casinofiches en bakken. De telefoon stuurt dan meteen een lege stand, zodat ook het klassement weer op 0 begint. Niet gewist worden profielen, stemmen, foto's op de fotomuur en bonuspunten van beheerders; haal die zo nodig zelf weg. Zet `spelTestperiode` op `false` om het spel tot de start op slot te houden.
 
 ### rad.json
-Inhoud van het tabblad *Rad* (onderin, tussen Kaart en Spel). Het rad staat altijd open, ook vóór de reis, geeft geen punten en werkt helemaal zonder internet: de uitslag wordt op de telefoon zelf bepaald (met `crypto.getRandomValues`).
+Inhoud van *Spel → Rad*. Het rad staat altijd open, ook vóór de reis, geeft geen punten en werkt helemaal zonder internet: de uitslag wordt op de telefoon zelf bepaald (met `crypto.getRandomValues`).
 ```json
 { "pistes": [ { "naam": "Mantel", "kleur": "rood" } ],
   "drankjes": ["Glühwein", "Génépi"],

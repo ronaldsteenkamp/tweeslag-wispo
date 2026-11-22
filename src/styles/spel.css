@@ -7,15 +7,11 @@
  */
 
 .inhoud--spel {
-  --papier: #f5f2ea;
-  --papier-2: #ebe5d6;
-  --inkt: #0d0058;
-  --inkt-zacht: #4b4e6b;
-  --lijn: #cfc6b2;
-  --blauw: #099fc4;
-  --blauw-tekst: #05607a;
-  --rood: #b3202c;
-  --markeer: #fff1a8;
+  --papier-2: var(--papier-diep);
+  --blauw: var(--ijsblauw);
+  --blauw-tekst: var(--ijsblauw-inkt);
+  --rood: var(--piste-rood);
+  --markeer: var(--memo);
   min-height: 100dvh;
   background: var(--papier);
   color: var(--inkt);
@@ -26,7 +22,7 @@
 }
 
 .spel {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font);
 }
 
 /* Namen nooit met een afbreekstreepje; alleen als het echt niet past midden in een woord verder */
@@ -46,7 +42,6 @@
 .spel__voetnoot {
   margin: 0;
   font-size: 0.92rem;
-  font-style: italic;
   color: var(--inkt-zacht);
 }
 
@@ -86,8 +81,8 @@
   padding: 0 20px;
   border: 2px solid var(--inkt);
   border-radius: 4px;
-  background: var(--inkt);
-  color: var(--papier);
+  background: var(--knop);
+  color: var(--op-knop);
   font: 700 22px/1 'Barlow Condensed', sans-serif;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -292,8 +287,8 @@
   margin: -10px -16px 0;
   padding: 16px;
   border: 0;
-  background: var(--inkt);
-  color: var(--papier);
+  background: var(--knop);
+  color: var(--op-knop);
   text-align: left;
   transform-origin: 20% 0;
   transition: transform 0.48s cubic-bezier(0.5, 0, 0.7, 0.4), opacity 0.42s;
@@ -325,7 +320,6 @@
   padding: 26px 0 10px;
   text-align: center;
   font-size: 1.15rem;
-  font-style: italic;
   color: var(--inkt-zacht);
 }
 
@@ -522,8 +516,8 @@
 }
 
 .lotto__vak--vrij {
-  background: var(--inkt);
-  color: var(--papier);
+  background: var(--knop);
+  color: var(--op-knop);
   font: 700 19px/0.9 'Barlow Condensed', sans-serif;
 }
 
@@ -645,7 +639,6 @@
   align-items: center;
   gap: 6px 12px;
   font-size: 0.92rem;
-  font-style: italic;
   color: var(--inkt-zacht);
 }
 
@@ -683,7 +676,7 @@
   border: 0;
   background: none;
   color: var(--inkt);
-  font: 18px Georgia, serif;
+  font: 18px var(--font);
   outline: none;
 }
 
@@ -714,7 +707,7 @@
 }
 
 .biljet__naam small {
-  font: italic 14px Georgia, serif;
+  font: 14px var(--font);
 }
 
 .biljet__hokje {
@@ -783,7 +776,6 @@
 
 .biljet__gestemd p {
   margin: 0;
-  font-style: italic;
   font-size: 1.05rem;
 }
 
@@ -888,7 +880,6 @@
 .uitslag__extra {
   margin: 4px 0 0;
   font-size: 0.92rem;
-  font-style: italic;
   color: var(--inkt-zacht);
 }
 
@@ -1044,7 +1035,7 @@
 
 .r__naam small {
   display: block;
-  font: italic 14px/1.2 Georgia, serif;
+  font: 14px/1.2 var(--font);
   color: var(--inkt-zacht);
   overflow: hidden;
   white-space: nowrap;

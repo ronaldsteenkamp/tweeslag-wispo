@@ -1,46 +1,54 @@
-import { startTransition, useCallback, useEffect, useState } from 'react'
+import { lazy, startTransition, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BadgeMelding } from './components/Badges'
 import { ProfielVenster } from './components/Profiel'
-import { TabBalk, TABS, type Tab } from './components/TabBalk'
+import { TabBalk } from './components/TabBalk'
 import { UpdateMelding } from './components/UpdateMelding'
 import { Welkom } from './components/Welkom'
 import { config } from './config'
 import { haalAllesVooraf } from './lib/data'
+import { reisFase, tabsVoor, type Tab } from './lib/navigatie'
 import { verwerkKopSchakelaar } from './lib/nieuweKoppen'
+import { useNu } from './lib/nu'
 import { lees, schrijf, useOpgeslagen } from './lib/opslag'
 import { useSchermWakker } from './lib/wakker'
 import { useTabSwipe } from './lib/tabswipe'
+import { useToetsenbord } from './lib/toetsenbord'
 import Home from './screens/Home'
 import Planning from './screens/Planning'
 import Paklijst from './screens/Paklijst'
-import Kamers from './screens/Kamers'
-import Kaart from './screens/Kaart'
+import Groep from './screens/Groep'
+import Fotomuur, { GEZIEN } from './screens/Fotomuur'
+import { useBackend } from './lib/backend'
+import { useFotos } from './lib/fotos'
 import Spel from './screens/Spel'
-import Rad from './screens/Rad'
-import Verdelen from './screens/Verdelen'
 import Weer from './screens/Weer'
-import Beheer from './screens/Beheer'
-import Fotomuur from './screens/Fotomuur'
+import Instellingen from './screens/Instellingen'
 
-/** Schermen die niet in de tabbalk staan */
-type Scherm = Tab | 'verdelen' | 'weer' | 'beheer' | 'fotos'
+// Wat niet bij het openen nodig is, laadt pas als je erheen gaat (kleinere eerste bundel)
+const Kaart = lazy(() => import('./screens/Kaart'))
+const Verdelen = lazy(() => import('./screens/Verdelen'))
+const Beheer = lazy(() => import('./screens/Beheer'))
 
-/** De tab in de tabbalk waar een scherm onder valt */
-function hoofdTab(s: Scherm): Tab {
-  if (s === 'verdelen' || s === 'beheer') return 'kamers'
-  if (s === 'weer') return 'home'
-  if (s === 'fotos') return 'spel'
-  return s
-}
+/** Alle schermen: de tabs van de balk en de subschermen daaronder */
+type Scherm = Tab | 'verdelen' | 'weer' | 'beheer' | 'instellingen'
+const SCHERMEN: Scherm[] = ['home', 'planning', 'paklijst', 'kaart', 'fotos', 'spel', 'groep', 'verdelen', 'weer', 'beheer', 'instellingen']
 
-const isSubscherm = (s: Scherm) => s !== hoofdTab(s)
-type Stap = { subscherm?: boolean; van?: Tab } | null
+type Stap = { subscherm?: boolean; tabStap?: boolean; van?: Tab } | null
 /** Staat er een geschiedenis-stap onder dit subscherm (gezet door kies of bij het opstarten)? */
 const isSubschermStap = () => (window.history.state as Stap)?.subscherm === true
+/** Staat er Home onder deze tab in de geschiedenis? */
+const isTabStap = () => (window.history.state as Stap)?.tabStap === true
 /** Vanaf welke tab het subscherm geopend is (Weer kan vanaf Home én Planning) */
 const subschermVan = () => (window.history.state as Stap)?.van
 
-function tabUitAdres(): Scherm {
+/** De tab in de balk waar een scherm onder valt (dat licht op, en daar gaat terug heen) */
+function hoofdTab(s: Scherm, tabs: Tab[]): Tab {
+  if ((tabs as string[]).includes(s)) return s as Tab
+  if (s === 'verdelen' || s === 'beheer') return 'groep'
+  return 'home' // weer, instellingen, en paklijst/kaart als ze niet in de balk staan
+}
+
+function tabUitAdres(tabs: Tab[]): Scherm {
   const h = window.location.hash.slice(1)
   // #nieuwekop / #oudekop: schakelaar voor de nieuwe schermkoppen (zie lib/nieuweKoppen.ts)
   if (verwerkKopSchakelaar(h)) {
@@ -48,20 +56,39 @@ function tabUitAdres(): Scherm {
     window.history.replaceState(null, '', `${pathname}${search}#home`)
     return 'home'
   }
-  // Vanuit een melding over de uitslag: meteen naar Spel → Stemmen
-  if (h === 'stemmen') {
-    schrijf('spel.onderdeel', 'stemmen')
+  // Vanuit een melding over de uitslag: meteen naar Spel → Stand
+  if (h === 'stemmen' || h === 'klassement') {
+    schrijf('spel.onderdeel', 'stand')
     return 'spel'
   }
-  if (h === 'verdelen' || h === 'weer' || h === 'beheer' || h === 'fotos') return h
-  return TABS.some((t) => t.id === h) ? (h as Tab) : 'home'
+  // Oude adressen (van voor de tabbalk met vijf tabs)
+  if (h === 'rad') {
+    schrijf('spel.onderdeel', 'rad')
+    return 'spel'
+  }
+  if (h === 'kamers') {
+    schrijf('groep.onderdeel', 'kamers')
+    return 'groep'
+  }
+  // Het clubblad: een eigen tab na de reis, anders onder Groep
+  if (h === 'fotos' && !tabs.includes('fotos')) {
+    schrijf('groep.onderdeel', 'clubblad')
+    return 'groep'
+  }
+  return (SCHERMEN as string[]).includes(h) ? (h as Scherm) : 'home'
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Scherm>(tabUitAdres)
+  // De middelste tab schuift mee met de reis (Paklijst → Kaart → Clubblad); eens per minuut kijken
+  const fase = reisFase(useNu(60_000))
+  const tabInfo = useMemo(() => tabsVoor(fase), [fase])
+  const TABS = useMemo(() => tabInfo.map((t) => t.id), [tabInfo])
+
+  const [tab, setTab] = useState<Scherm>(() => tabUitAdres(TABS))
   // De tab waar het huidige subscherm bij hoort: Weer vanaf Planning hoort bij Planning
   const [van, setVan] = useState<Tab | undefined>(subschermVan)
-  const basisTab = (s: Scherm): Tab => (s === 'weer' && van ? van : hoofdTab(s))
+  const basisTab = (s: Scherm): Tab => (s === 'weer' && van && TABS.includes(van) ? van : hoofdTab(s, TABS))
+  const isSubscherm = (s: Scherm) => s !== hoofdTab(s, TABS)
   // Wie al een naam heeft gekozen (van voor het welkomstscherm bestond) hoeft het niet te zien
   const [welkomGehad, setWelkomGehad] = useOpgeslagen('welkom.gehad', lees<string | null>('naam', null) !== null)
   const welkomKlaar = useCallback(() => setWelkomGehad(true), [setWelkomGehad])
@@ -70,22 +97,35 @@ export default function App() {
   const magVerdelen = naam !== null && config.reisleiding.includes(naam)
   // Op de kaart, bij het rad en bij de busbingo gaat het scherm niet op slot (elders wel, voor de batterij)
   const [spelOnderdeel] = useOpgeslagen<string>('spel.onderdeel', 'challenges')
-  useSchermWakker(tab === 'kaart' || tab === 'rad' || (tab === 'spel' && spelOnderdeel === 'bingo'))
+  const [groepOnderdeel] = useOpgeslagen<string>('groep.onderdeel', 'kamers')
+  useSchermWakker(tab === 'kaart' || (tab === 'spel' && (spelOnderdeel === 'bingo' || spelOnderdeel === 'rad')))
+  useToetsenbord()
+
+  // Badge op de tabbalk: nieuwe kiekjes in het clubblad (nog niet geopend, en niet van jezelf)
+  const backend = useBackend()
+  const { fotos } = useFotos(6, backend.status !== 'uit')
+  const [gezien] = useOpgeslagen<string[]>(GEZIEN, [])
+  const nieuweFotos = fotos?.filter((f) => f.user_id !== backend.userId && !gezien.includes(f.id)).length ?? 0
+  const badges = nieuweFotos ? { [TABS.includes('fotos') ? 'fotos' : 'groep']: nieuweFotos } : {}
 
   useEffect(() => {
     const opHash = () => {
-      setTab(tabUitAdres())
+      setTab(tabUitAdres(tabsVoor().map((t) => t.id)))
       setVan(subschermVan())
       window.scrollTo(0, 0)
     }
     window.addEventListener('hashchange', opHash)
-    // Direct op een subscherm geopend (bijv. #weer): de tab eronder als stap in de geschiedenis
-    // zetten, zodat de terugknop van de telefoon daar uitkomt in plaats van de app te sluiten.
-    const begin = tabUitAdres()
-    if (isSubscherm(begin) && !isSubschermStap()) {
-      const { pathname, search } = window.location
-      window.history.replaceState(null, '', `${pathname}${search}#${hoofdTab(begin)}`)
+    // Direct geopend op een subscherm of een andere tab dan Home: Home (of de tab eronder) als stap in
+    // de geschiedenis, zodat terug daar uitkomt in plaats van de app te sluiten.
+    const begin = tabUitAdres(tabsVoor().map((t) => t.id))
+    const { pathname, search } = window.location
+    const tabs = tabsVoor().map((t) => t.id)
+    if (begin !== hoofdTab(begin, tabs) && !isSubschermStap()) {
+      window.history.replaceState(null, '', `${pathname}${search}#${hoofdTab(begin, tabs)}`)
       window.history.pushState({ subscherm: true }, '', `${pathname}${search}#${begin}`)
+    } else if (begin !== 'home' && begin === hoofdTab(begin, tabs) && !isTabStap()) {
+      window.history.replaceState(null, '', `${pathname}${search}#home`)
+      window.history.pushState({ tabStap: true }, '', `${pathname}${search}#${begin}`)
     }
     return () => window.removeEventListener('hashchange', opHash)
   }, [])
@@ -100,46 +140,60 @@ export default function App() {
     return () => navigator.serviceWorker?.removeEventListener('controllerchange', opnieuw)
   }, [])
 
-  // Tikken op de tabbalk wisselt direct, zonder animatie (zoals Instagram); alleen vegen schuift
+  /*
+   * Wisselen. Tikken op de tabbalk wisselt direct (zoals Instagram); alleen vegen schuift.
+   * Geschiedenis: Home ← tab ← subscherm. Terug gaat dus eerst naar de tab, dan naar Home, en pas
+   * vanaf Home sluit terug de app (zoals Android-apps dat doen).
+   */
   const kies = useCallback(
     (t: Scherm) => {
       if (t === tab) {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
-      // Terug van een subscherm naar zijn tab: een stap terug in de geschiedenis (dan komt
-      // de terugknop van de telefoon daarna niet nog eens op het subscherm uit). De hashchange
-      // zet de tab.
+      const { pathname, search } = window.location
+      const adres = `${pathname}${search}#${t}`
+      // Terug van een subscherm naar zijn tab: een stap terug (de hashchange zet de tab)
       if (isSubscherm(tab) && t === basisTab(tab) && isSubschermStap()) {
         window.history.back()
         return
       }
-      const { pathname, search } = window.location
-      // Naar een subscherm (Weer, Fotomuur, ...): een nieuwe stap, zodat de terugknop van de
-      // telefoon terug naar de tab gaat. Tussen tabs: geen stappen (terug sluit dan de app).
       if (isSubscherm(t) && !isSubscherm(tab)) {
+        // Naar een subscherm (Weer, Instellingen, ...): een nieuwe stap
         const stap: Stap = { subscherm: true, van: tab as Tab }
-        window.history.pushState(stap, '', `${pathname}${search}#${t}`)
+        window.history.pushState(stap, '', adres)
         setVan(stap.van)
+      } else if (!isSubscherm(t)) {
+        const huidig = basisTab(tab)
+        if (isSubscherm(tab) && isSubschermStap()) {
+          // Vanuit een subscherm naar een andere tab: de subscherm-stap vervangen
+          window.history.replaceState(t === 'home' ? null : { tabStap: true }, '', adres)
+        } else if (t === 'home' && isTabStap()) {
+          window.history.back()
+          return
+        } else if (huidig === 'home' && t !== 'home') {
+          window.history.pushState({ tabStap: true }, '', adres)
+        } else {
+          window.history.replaceState(window.history.state, '', adres)
+        }
+        setVan(undefined)
       } else {
-        window.history.replaceState(isSubscherm(t) ? window.history.state : null, '', `${pathname}${search}#${t}`)
-        if (!isSubscherm(t)) setVan(undefined)
+        window.history.replaceState(window.history.state, '', adres)
       }
       setTab(t)
       window.scrollTo(0, 0)
     },
-    [tab, van],
+    [tab, van, TABS],
   )
 
   // Vegen tussen de tabs van de tabbalk (niet tijdens het welkomstscherm). Vanuit een
-  // subscherm (bijv. de fotomuur) ga je naar de buren van de tab waar het onder valt.
-  const tabIndex = TABS.findIndex((t) => t.id === basisTab(tab))
+  // subscherm ga je naar de buren van de tab waar het onder valt.
+  const tabIndex = TABS.indexOf(basisTab(tab))
   // Tijdens het vegen: het buurscherm dat naast het huidige ligt (zie tabswipe.ts)
   const [buur, setBuur] = useState<1 | -1 | null>(null)
-  const buurTab = buur ? TABS[tabIndex + buur]?.id : undefined
+  const buurTab = buur ? TABS[tabIndex + buur] : undefined
   // De buurschermen alvast (onzichtbaar) klaarzetten zodra de tab rustig in beeld is: dan hoeft er
-  // bij het begin van een veeg niets opgebouwd of opgemaakt te worden (dat gaf een hapering). Niet
-  // de kaart: die zou op de achtergrond kaartdata laden.
+  // bij het begin van een veeg niets opgebouwd te worden. Niet de kaart: die laadt kaartdata.
   const [klaarVoor, setKlaarVoor] = useState<string | null>(null)
   useEffect(() => {
     if (!welkomGehad) return
@@ -150,11 +204,10 @@ export default function App() {
     const wacht = ric ? window.requestIdleCallback(zet, { timeout: 1200 }) : setTimeout(zet, 500)
     return () => (ric ? window.cancelIdleCallback(wacht) : clearTimeout(wacht))
   }, [tab, welkomGehad])
-  // Het scherm waar je net vandaan veegde is nu een buur: dat blijft gewoon staan (zelfde key), in
-  // plaats van weg te gaan en meteen weer opgebouwd te worden
+  // Het scherm waar je net vandaan veegde is nu een buur: dat blijft gewoon staan (zelfde key)
   const [vorigeTab, setVorigeTab] = useState<string | null>(null)
   const klaarBuren = ([-1, 1] as const)
-    .map((r) => ({ r, id: TABS[tabIndex + r]?.id }))
+    .map((r) => ({ r, id: TABS[tabIndex + r] }))
     .filter((b): b is { r: -1 | 1; id: Tab } => !!b.id && b.id !== 'kaart' && (klaarVoor === tab || b.id === vorigeTab))
   useTabSwipe({
     aan: welkomGehad,
@@ -164,40 +217,47 @@ export default function App() {
       setBuur(null)
       setVorigeTab(tab)
       const volgende = TABS[tabIndex + richting]
-      if (volgende) kies(volgende.id)
+      if (volgende) kies(volgende)
     },
   })
 
   const scherm = (s: Scherm) => {
     switch (s) {
       case 'home':
-        return <Home naarTab={kies} naarWeer={() => kies('weer')} />
+        return <Home naarTab={kies} naarWeer={() => kies('weer')} naarInstellingen={() => kies('instellingen')} />
       case 'weer':
         return <Weer terug={() => kies(basisTab('weer'))} />
+      case 'instellingen':
+        return <Instellingen terug={() => kies('home')} />
       case 'beheer':
-        return <Beheer terug={() => kies('kamers')} />
+        return <Beheer terug={() => kies('groep')} />
       case 'planning':
         return <Planning naarWeer={() => kies('weer')} />
       case 'paklijst':
-        return <Paklijst />
-      case 'kamers':
-        return <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />
+        return <Paklijst terug={TABS.includes('paklijst') ? undefined : () => kies('home')} />
+      case 'groep':
+        return <Groep naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />
       case 'kaart':
-        return <Kaart />
-      case 'rad':
-        return <Rad />
+        return <Kaart terug={TABS.includes('kaart') ? undefined : () => kies('home')} />
       case 'spel':
         return <Spel />
       case 'fotos':
-        return <Fotomuur terug={() => kies('spel')} />
+        return <Fotomuur naarSpel={() => kies('spel')} />
       case 'verdelen':
         return magVerdelen ? (
-          <Verdelen terug={() => kies('kamers')} />
+          <Verdelen terug={() => kies('groep')} />
         ) : (
-          <Kamers naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />
+          <Groep naarVerdelen={() => kies('verdelen')} naarBeheer={() => kies('beheer')} />
         )
     }
   }
+  /** Extra class voor de stijl van wat er in een tab staat (Groep toont Kamers of het clubblad, Spel het rad) */
+  const extraKlasse = (s: Scherm) =>
+    s === 'groep'
+      ? ` inhoud--${groepOnderdeel === 'clubblad' ? 'fotos' : 'kamers'}`
+      : s === 'spel' && spelOnderdeel === 'rad'
+        ? ' inhoud--rad'
+        : ''
 
   return (
     <>
@@ -205,28 +265,27 @@ export default function App() {
           ernaast; na het wisselen wórdt dat vak het huidige scherm (zelfde key, zelfde element),
           zodat er niets opnieuw opgebouwd wordt: geen knipperen, geen opnieuw ladende kaart. */}
       <main>
-        {/* Het huidige scherm en de buren staan in één lijst: React herkent een vak alleen aan zijn
-            key binnen dezelfde lijst. Stonden ze apart, dan werd een buur die het huidige scherm wordt
-            weggegooid en opnieuw opgebouwd (foto's en kaart knipperden). De buurschermen zien eruit
-            zoals je er bovenaan binnenkomt en zijn niet aan te raken; klaargezette buren staan
-            onzichtbaar (is-rust) tot je hun kant op veegt. */}
         {[
           { id: tab as Scherm, r: 0 as const },
           ...klaarBuren,
           ...(buurTab && !klaarBuren.some((b) => b.id === buurTab) ? [{ r: buur!, id: buurTab }] : []),
         ].map((b) =>
           b.r === 0 ? (
-            <div key={b.id} className={`inhoud inhoud--${b.id} huidig`} ref={(el) => el?.removeAttribute('inert')}>
-              {scherm(b.id)}
+            <div
+              key={b.id}
+              className={`inhoud inhoud--${b.id}${extraKlasse(b.id)} huidig`}
+              ref={(el) => el?.removeAttribute('inert')}
+            >
+              <Suspense fallback={<div className="scherm" />}>{scherm(b.id)}</Suspense>
             </div>
           ) : (
             <div
               key={b.id}
-              className={`inhoud inhoud--${b.id} buurpaneel buurpaneel--${b.r > 0 ? 'rechts' : 'links'}${b.r === buur ? '' : ' is-rust'}`}
+              className={`inhoud inhoud--${b.id}${extraKlasse(b.id)} buurpaneel buurpaneel--${b.r > 0 ? 'rechts' : 'links'}${b.r === buur ? '' : ' is-rust'}`}
               aria-hidden="true"
               ref={(el) => el?.setAttribute('inert', '')}
             >
-              {scherm(b.id)}
+              <Suspense fallback={null}>{scherm(b.id)}</Suspense>
             </div>
           ),
         )}
@@ -235,10 +294,7 @@ export default function App() {
       <ProfielVenster />
       <BadgeMelding />
       <UpdateMelding />
-      <TabBalk
-        actief={basisTab(tab)}
-        onKies={kies}
-      />
+      <TabBalk tabs={tabInfo} actief={basisTab(tab)} onKies={kies} badges={badges} />
     </>
   )
 }

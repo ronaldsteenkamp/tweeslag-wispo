@@ -81,7 +81,7 @@ export function InstallatieBanner() {
       >
         <Icoon naam="kruis" />
       </button>
-      <h2 id="installatie-titel">📲 Zet de app op je beginscherm</h2>
+      <h2 id="installatie-titel">Zet Wispo op je beginscherm</h2>
       <p>Dan opent hij schermvullend en werkt hij ook op de berg zonder bereik.</p>
       <InstallatieUitleg />
     </section>

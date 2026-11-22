@@ -9,10 +9,10 @@
 
 /* Geen sneeuwpatroon meer achter de raderen; de sneeuwrand onder de kop loopt over in het papier */
 .inhoud--rad {
-  --rad-papier: #f5f2ea;
+  --rad-papier: var(--papier);
   min-height: 100dvh;
   background: var(--rad-papier);
-  color: #0d0058;
+  color: var(--inkt);
 }
 
 .inhoud--rad .schermkop {
@@ -22,30 +22,30 @@
 /* Instellingen onder het rad (wie doen mee, kleuren, drankjes, eigen lijsten) in dezelfde stijl:
    crème vakjes met een papieren rand, gekozen = donkerblauw. Contrast tekst minstens 7 : 1. */
 .inhoud--rad .radinstellingen {
-  --oppervlak: #fffdf8;
-  --rand: #c9c1ae;
-  --tekst: #0d0058;
-  --tekst-zacht: #4b4e6b;
-  font-family: Barlow, 'Trebuchet MS', sans-serif;
+  --oppervlak: var(--papier-vlak);
+  --rand: var(--lijn);
+  --tekst: var(--inkt);
+  --tekst-zacht: var(--inkt-zacht);
+  font-family: var(--font);
 }
 
 .inhoud--rad .radinstellingen .veld legend {
   font: 700 15px/1.2 'Barlow Condensed', sans-serif;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #4b4e6b;
+  color: var(--inkt-zacht);
 }
 
 .inhoud--rad .radinstellingen .keuze,
 .inhoud--rad .radinstellingen .drankkeuze button {
-  font-family: Barlow, 'Trebuchet MS', sans-serif;
+  font-family: var(--font);
   font-weight: 600;
 }
 
 .inhoud--rad .radinstellingen .keuze.is-actief,
 .inhoud--rad .radinstellingen .drankkeuze.is-actief {
-  border-color: #0d0058;
-  background: #0d0058;
+  border-color: var(--inkt);
+  background: var(--lucht);
   color: #fff;
 }
 
@@ -120,7 +120,7 @@
 }
 
 .radm__start span {
-  font: 15px/1.2 Georgia, serif;
+  font: 15px/1.2 var(--font);
 }
 
 .radm__start:focus-visible,
@@ -248,7 +248,7 @@
 .radm__vraag {
   align-self: flex-start;
   margin: 0;
-  font: italic 700 17px/1.2 Georgia, serif;
+  font: 700 17px/1.2 var(--font);
   color: #fff1c4;
 }
 
@@ -266,8 +266,7 @@
 }
 
 .radm--apres .radm__vaktekst {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-style: italic;
+  font-family: var(--font);
 }
 
 .radm--apres .radm__sluier path {
@@ -358,7 +357,7 @@
 
 .radm--apres .radm__uitslag b {
   margin: 8px 12px 0;
-  font: italic 700 42px/1.02 Georgia, serif;
+  font: 700 42px/1.02 var(--font);
 }
 
 .radm--apres .radm__uitslag b.is-lang {
@@ -368,7 +367,7 @@
 
 .radm--apres .radm__uitslag p {
   margin: 6px 14px 0;
-  font: 16px/1.35 Georgia, serif;
+  font: 16px/1.35 var(--font);
 }
 
 /* Starter: een rood bierviltje */
@@ -387,7 +386,7 @@
 }
 
 .radm--apres .radm__start b {
-  font: italic 700 24px/1.05 Georgia, serif;
+  font: 700 24px/1.05 var(--font);
   letter-spacing: 0;
   text-transform: none;
 }
@@ -484,7 +483,7 @@
 
 .radm--pisteboord .radm__uitslag p {
   margin-top: 4px;
-  font: 16px/1.35 Georgia, serif;
+  font: 16px/1.35 var(--font);
 }
 
 /* Starter: een geëmailleerd bordje */
@@ -742,7 +741,7 @@
 
 .liftbord__omroep p {
   margin: 6px 0 0;
-  font: 16px/1.35 Georgia, serif;
+  font: 16px/1.35 var(--font);
   color: rgba(255, 253, 248, 0.92);
 }
 
@@ -931,7 +930,7 @@
 
 .kompas__koers p {
   margin: 4px 0 0;
-  font: 15px/1.35 Georgia, serif;
+  font: 15px/1.35 var(--font);
   color: rgba(255, 255, 255, 0.88);
 }
 
