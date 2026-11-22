@@ -40,7 +40,7 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: false,
       // Iconen en iOS-splashscreens worden gemaakt uit public/logo.svg (zie pwa-assets.config.ts)
-      pwaAssets: { config: true, overrideManifestIcons: true },
+      pwaAssets: { config: true, overrideManifestIcons: false },
       manifest: {
         name: 'Tweeslag Wispo – Les Deux Alpes',
         short_name: 'Tweeslag Wispo',
@@ -53,6 +53,14 @@ export default defineConfig({
         scope: base,
         background_color: '#0d0058',
         theme_color: '#0d0058',
+        // Icoon: het 2slag-winterlogo (public/logo.svg, gemaakt via mockups/icoon.html, richting A)
+        icons: [
+          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'maskable-wispo-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: 'maskable-wispo-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
       },
       workbox: {
         // Cache-first voor de app zelf, de pistekaart en de iconen (precache)

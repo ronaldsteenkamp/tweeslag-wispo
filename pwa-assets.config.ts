@@ -19,8 +19,11 @@ const preset: Preset = {
   // padding: 0 = logo vult het hele icoon. Gebruik je een logo met transparante
   // achtergrond, zet dan bijvoorbeeld padding: 0.1.
   transparent: { sizes: [64, 192, 512], favicons: [[48, 'favicon.ico']], padding: 0 },
-  maskable: { sizes: [512], padding: 0.1, resizeOptions: { background: ACHTERGROND } },
-  apple: { sizes: [180], padding: 0.1, resizeOptions: { background: ACHTERGROND } },
+  // Maskable staat als eigen bestand in public/ (maskable-wispo-*.png): het woordmerk moet binnen de
+  // veilige cirkel blijven en de sneeuw moet tot de rand doorlopen, en dat kan de generator niet
+  maskable: { sizes: [], padding: 0 },
+  // iOS rondt de hoeken zelf af: het icoon vult het hele vlak
+  apple: { sizes: [180], padding: 0, resizeOptions: { background: ACHTERGROND } },
   appleSplashScreens: splash,
 }
 
