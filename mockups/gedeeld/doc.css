@@ -1,0 +1,71 @@
+/* Opmaak van de documentatiepagina's in /mockups (gebruikt de tokens uit stijlbasis.css) */
+html { background: var(--papier); }
+body.wispo { margin: 0; min-height: 100vh; }
+.doc { max-width: 1180px; margin: 0 auto; padding: 0 20px 80px; }
+.doc-kop { position: relative; isolation: isolate; overflow: hidden; background: var(--lucht); color: var(--op-lucht); padding: 28px 20px 0; }
+.doc-kop__binnen { max-width: 1180px; margin: 0 auto; position: relative; z-index: 2; padding-bottom: 8px; }
+.doc-kop h1 { font: 700 clamp(2.2rem, 6vw, 3.4rem)/0.95 var(--font-smal); margin: 6px 0 10px; }
+.doc-kop p { max-width: 62ch; color: rgba(255, 255, 255, 0.88); }
+.doc-kop .kop__boven a { color: inherit; }
+.doc-kop__bergen { position: relative; height: 170px; margin: -50px -20px 0; z-index: 1; }
+.doc-kop__binnen { text-shadow: 0 1px 10px rgba(13, 0, 88, 0.6); }
+.doc-kop__bergen svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.doc-nav { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 14px 0 0; padding: 0; list-style: none; }
+.doc-nav a { color: var(--op-lucht-zacht); font: var(--t-label); letter-spacing: var(--spatie-label); text-transform: uppercase; text-decoration: none; padding: 10px 0; display: inline-block; }
+.doc-nav a:hover { color: #fff; }
+.doc h2 { font: 700 2rem/1 var(--font-smal); margin: 56px 0 6px; padding-bottom: 10px; border-bottom: 2px solid var(--lijn-sterk); }
+.doc h3 { font: 700 1.35rem/1.1 var(--font-smal); margin: 28px 0 8px; }
+.doc p, .doc li { max-width: 72ch; }
+.doc p + p { margin-top: 10px; }
+.doc ul, .doc ol { padding-left: 1.2em; }
+.doc li + li { margin-top: 4px; }
+.doc code { font: 0.9em/1.3 ui-monospace, Consolas, monospace; background: var(--papier-diep); padding: 1px 5px; border-radius: 4px; }
+.doc a { color: var(--ijs-inkt); text-underline-offset: 3px; }
+.intro { font-size: 1.15rem; max-width: 64ch; margin-top: 28px; }
+.raster { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.raster--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.raster--3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.tabel-wrap { overflow-x: auto; border: 1.5px solid var(--lijn); border-radius: var(--rond-blok); background: var(--papier-vlak); }
+table.tabel { border-collapse: collapse; width: 100%; font: var(--t-klein); }
+.tabel th, .tabel td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--lijn); }
+.tabel thead th { font: var(--t-label); letter-spacing: var(--spatie-label); text-transform: uppercase; color: var(--inkt-zacht); background: var(--papier-diep); position: sticky; top: 0; }
+.tabel tbody th { font: 700 1.05rem/1.1 var(--font-smal); white-space: nowrap; }
+.tabel tr:last-child td, .tabel tr:last-child th { border-bottom: 0; }
+.cel { display: block; padding-left: 8px; border-left: 4px solid var(--lijn); min-width: 150px; }
+.cel--ok { border-color: var(--groen); }
+.cel--half { border-color: #d39b00; }
+.cel--af { border-color: var(--rood); background: color-mix(in srgb, var(--rood) 7%, transparent); }
+.legenda { display: flex; gap: 16px; flex-wrap: wrap; margin: 10px 0 14px; font: var(--t-klein); }
+.legenda span { display: inline-flex; gap: 6px; align-items: center; }
+.legenda i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.top10 { counter-reset: top; list-style: none; padding: 0 !important; display: grid; gap: 10px; }
+.top10 li { counter-increment: top; display: grid; grid-template-columns: 44px 1fr; gap: 12px; max-width: none !important; padding: 12px 0; border-bottom: 1px solid var(--lijn); }
+.top10 li::before { content: counter(top); display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--rond-bord); background: var(--zwart); color: #fff; font: 700 1.3rem/1 var(--font-smal); }
+.top10 b { font: var(--t-3); display: block; }
+.telefoon { width: 100%; max-width: 390px; aspect-ratio: 390 / 844; border-radius: 34px; border: 8px solid #111; background: #111; overflow: hidden; position: relative; box-shadow: var(--schaduw-zweef); }
+.telefoon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scherm-kaart { display: grid; gap: 10px; align-content: start; }
+.scherm-kaart__beelden { display: grid; grid-template-columns: repeat(var(--n, 2), 1fr); gap: 8px; }
+.scherm-kaart__beelden figure { margin: 0; }
+.scherm-kaart__beelden img { width: 100%; aspect-ratio: 390/844; object-fit: cover; border-radius: 14px; border: 1px solid var(--lijn); display: block; background: var(--papier-diep); cursor: zoom-in; }
+.scherm-kaart__beelden figcaption { font: var(--t-label); letter-spacing: var(--spatie-label); text-transform: uppercase; color: var(--inkt-zacht); margin-top: 4px; }
+.scherm-kaart h3 { margin: 0; }
+.scherm-kaart p { font: var(--t-klein); }
+.kader { border: 1.5px solid var(--lijn); border-radius: var(--rond-blok); background: var(--papier-vlak); padding: 16px; }
+.kader--nadruk { border: 2px solid var(--lijn-sterk); }
+.aanbeveling { border-left: 6px solid var(--groen); background: var(--papier-vlak); padding: 16px 18px; border-radius: 0 var(--rond-blok) var(--rond-blok) 0; margin: 18px 0; }
+.aanbeveling .label { color: var(--groen); }
+.cijfers { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.cijfer { border-top: 3px solid var(--lijn-sterk); padding-top: 8px; }
+.cijfer b { font: 700 2.2rem/1 var(--font-smal); display: block; }
+.cijfer span { font: var(--t-klein); color: var(--inkt-zacht); }
+.lichtbak { position: fixed; inset: 0; background: rgba(8, 0, 40, 0.86); display: none; place-items: center; z-index: 99; padding: 20px; cursor: zoom-out; }
+.lichtbak img { max-height: 100%; max-width: 100%; border-radius: 18px; }
+.lichtbak.open { display: grid; }
+.themaknop { position: fixed; right: 14px; bottom: 14px; z-index: 90; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--papier-vlak); border: 1.5px solid var(--lijn); box-shadow: var(--schaduw-zweef); }
+.themaknop button { min-height: 40px; min-width: 40px; border: 0; border-radius: 999px; background: none; color: var(--inkt); cursor: pointer; display: grid; place-items: center; padding: 0 10px; font: 600 0.85rem/1 var(--font); }
+.themaknop button[aria-pressed='true'] { background: var(--lucht); color: #fff; }
+.paar { display: grid; grid-template-columns: 1fr 1fr; }
+.paar > div { padding: 18px; }
+.paar > div:first-child { background: #f5f2ea; }
+@media (max-width: 640px) { .paar { grid-template-columns: 1fr; } }

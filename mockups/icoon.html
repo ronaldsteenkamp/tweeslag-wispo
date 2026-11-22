@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App-icoon en installeren</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<style>
+  .richtingen { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+  .richtingkaart { display: grid; gap: 12px; align-content: start; }
+  .richtingkaart > img { width: 180px; height: 180px; border-radius: 40px; box-shadow: var(--schaduw-zweef); }
+  .maten { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+  .maten figure { margin: 0; display: grid; justify-items: center; gap: 4px; }
+  .maten figcaption { font: var(--t-label); letter-spacing: .06em; text-transform: uppercase; color: var(--inkt-zacht); }
+  .veilig { position: relative; width: 96px; height: 96px; }
+  .veilig img { width: 100%; height: 100%; display: block; }
+  .veilig::after { content: ''; position: absolute; inset: 9.6px; border-radius: 50%; border: 2px dashed #ff3b6b; }
+  .rondje { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; }
+  .rondje img { width: 100%; height: 100%; }
+  .tabje { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px 8px 0 0; background: #dee1e6; color: #222; font: 12px/1 system-ui; }
+  .tabje--donker { background: #35363a; color: #eee; }
+  .keuzebalk { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+  .keuzebalk .knop[aria-pressed='true'] { background: var(--lucht); color: #fff; }
+  .startschermen { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); justify-items: center; }
+  .start { width: 100%; max-width: 280px; aspect-ratio: 9 / 19.5; border-radius: 34px; border: 7px solid #111; overflow: hidden; position: relative; padding: 46px 16px 0; display: grid; align-content: start; }
+  .start--ios-licht { background: linear-gradient(160deg, #e9e4f5, #c9dcef 55%, #f4e9de); }
+  .start--ios-donker { background: linear-gradient(160deg, #1c1c2e, #0b1220 60%, #241a2a); }
+  .start--and-licht { background: linear-gradient(170deg, #f1efe6, #dfe9df); }
+  .start--and-donker { background: linear-gradient(170deg, #121614, #1d2320); }
+  .start__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px 10px; }
+  .start--and-licht .start__grid, .start--and-donker .start__grid { grid-template-columns: repeat(4, 1fr); gap: 20px 8px; }
+  .app { display: grid; justify-items: center; gap: 5px; min-width: 0; }
+  .app__ik { width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; color: #fff; overflow: hidden; }
+  .start--and-licht .app__ik, .start--and-donker .app__ik { border-radius: 50%; }
+  .app__ik img { width: 100%; height: 100%; display: block; }
+  .start--and-licht .app__ik img, .start--and-donker .app__ik img { transform: scale(1.25); }
+  .app__ik--and-mask img { transform: none !important; }
+  .app__naam { font: 500 11px/1.1 -apple-system, system-ui, sans-serif; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.5); width: 64px; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .start--ios-licht .app__naam, .start--and-licht .app__naam { color: #1a1a1a; text-shadow: none; }
+  .start__dock { position: absolute; left: 10px; right: 10px; bottom: 14px; display: flex; justify-content: space-around; padding: 10px; border-radius: 26px; background: rgba(255,255,255,.28); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .start--and-licht .start__dock, .start--and-donker .start__dock { background: none; }
+  .start__label { position: absolute; top: 12px; left: 0; right: 0; text-align: center; font: 600 11px/1 system-ui; opacity: .7; }
+  .start--ios-donker .start__label, .start--and-donker .start__label { color: #fff; }
+  .namen { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+  .naamtest { display: grid; justify-items: center; gap: 6px; padding: 14px 8px; border-radius: 14px; background: linear-gradient(160deg, #2b2a5a, #0b1220); }
+  .naamtest .app__naam { font-size: 12px; width: 70px; }
+  .naamtest small { color: #cfd3ea; font: 12px/1.3 var(--font); text-align: center; }
+  .splashrij { display: flex; gap: 18px; flex-wrap: wrap; }
+  .splashrij figure { margin: 0; display: grid; gap: 6px; justify-items: center; }
+  .splashrij img { width: 150px; border-radius: 22px; border: 5px solid #111; }
+  /* opstartdemo */
+  .demo { position: relative; width: 280px; aspect-ratio: 9/19.5; border-radius: 34px; border: 7px solid #111; overflow: hidden; background: linear-gradient(160deg, #1c1c2e, #0b1220 60%, #241a2a); }
+  .demo__ik { position: absolute; left: 112px; top: 210px; width: 52px; height: 52px; border-radius: 12px; overflow: hidden; transition: all 420ms var(--gemak); z-index: 2; }
+  .demo__ik img { width: 100%; height: 100%; }
+  .demo__splash { position: absolute; inset: 0; opacity: 0; transition: opacity 200ms 300ms; z-index: 3; }
+  .demo__splash img { width: 100%; height: 100%; object-fit: cover; }
+  .demo__app { position: absolute; inset: 0; opacity: 0; transition: opacity 300ms var(--gemak); z-index: 4; background: var(--papier); }
+  .demo.speelt .demo__ik { left: 0; top: 0; width: 100%; height: 100%; border-radius: 0; }
+  .demo.speelt .demo__splash { opacity: 1; }
+  .demo.klaar .demo__app { opacity: 1; }
+  .demo__app .kop { padding-top: 40px; }
+  .demo__app .kop__bergen { height: 100px; margin-top: -20px; }
+  /* installatiehulp */
+  .mini { position: relative; width: 100%; max-width: 300px; aspect-ratio: 9/19.5; border-radius: 34px; border: 7px solid #111; overflow: hidden; background: var(--papier); --onder: 18px; }
+  .mini .kop { padding-top: 40px; }
+  .mini .kop__bergen { height: 90px; margin-top: -16px; }
+  .mini .blad { transform: none; position: absolute; }
+  .mini .blad-scherm { opacity: 1; }
+  .stap { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--lijn); font: var(--t-klein); }
+  .stap .bord { width: 34px; height: 34px; }
+  .stap b { font-weight: 600; }
+  .safari { position: absolute; left: 0; right: 0; bottom: 0; height: 44px; background: rgba(245,245,245,.96); display: flex; justify-content: space-around; align-items: center; color: #0a84ff; z-index: 60; border-top: 1px solid #ddd; }
+  .safari svg { width: 20px; height: 20px; }
+  .wijzer { position: absolute; bottom: 48px; left: 50%; translate: -50% 0; z-index: 61; color: var(--rood); animation: wijs 1.2s var(--gemak) infinite alternate; }
+  @keyframes wijs { to { transform: translateY(6px); } }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="30" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven"><a href="index.html">Tweeslag Wispo · ontwerpvoorstel</a> · stap 4</p>
+    <h1>App-icoon en installeren</h1>
+    <p>Drie nieuwe richtingen, alle drie met het 2slag-winterlogo (woordmerk met sneeuwkapjes) in de clubkleuren. Alle formaten staan in <code>mockups/icoon/&lt;richting&gt;/</code>. Kies er een, dan bouw ik hem in, met de naam eronder.</p>
+    <ul class="doc-nav"><li><a href="#richtingen">Richtingen</a></li><li><a href="#startscherm">Startscherm</a></li><li><a href="#naam">Naam</a></li><li><a href="#splash">Splash</a></li><li><a href="#installeren">Installatiehulp</a></li></ul>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="645" data-vlag></div>
+</header>
+
+<main class="doc">
+  <h2 id="richtingen">Drie richtingen</h2>
+  <div class="richtingen" id="richting-lijst"></div>
+  <div class="aanbeveling"><p class="label">Aanbeveling</p><p><b>A · Winterlogo.</b> Het is het logo dat de groep al kent van Home en de flyer, alleen opnieuw opgebouwd voor een icoon: het woordmerk zo groot als het kan, minder sterren, de bergen lager. Op het startscherm lees je ‘2slag’ tot ongeveer 40 px; als favicon blijft het een wit-blauw blokje. B valt het meest op tussen andere apps (lichtblauw), maar het woordmerk in donkerblauw verliest de bekende kleuren. C sluit naadloos aan op de kop en de splash van de app, maar het woordmerk moet kleiner om het panorama ruimte te geven.</p></div>
+
+  <h2 id="startscherm">Op het startscherm</h2>
+  <p>Iconen van de buren zijn neutrale voorbeelden. Op Android wordt het maskable-icoon rond gesneden (Pixel, Samsung); op iOS krijgt het afgeronde hoeken van het systeem.</p>
+  <div class="keuzebalk" role="group" aria-label="Richting">
+    <button class="knop knop--secundair knop--klein" data-r="winterlogo" aria-pressed="true">A · Winterlogo</button>
+    <button class="knop knop--secundair knop--klein" data-r="lichtblauw">B · Lichtblauw</button>
+    <button class="knop knop--secundair knop--klein" data-r="panorama">C · Panorama</button>
+    <button class="knop knop--secundair knop--klein" data-r="nu">Huidig icoon</button>
+  </div>
+  <div class="startschermen" id="startschermen"></div>
+
+  <h2 id="naam">De naam onder het icoon</h2>
+  <p>iOS toont ongeveer 12 tekens, Android 12–14 (afhankelijk van het lettertype). De huidige <code>short_name</code> ‘Tweeslag Wispo’ wordt afgekapt.</p>
+  <div class="namen" id="namen" style="margin-top:12px"></div>
+  <div class="aanbeveling"><p class="label">Aanbeveling</p><p><b>short_name: ‘Wispo’</b>. Het icoon zegt al ‘2slag’, dus de naam eronder hoeft dat niet te herhalen; ‘Wispo’ is hoe iedereen de reis noemt en wordt nergens afgekapt. Alternatieven: ‘2slag Wispo’ (11 tekens, past net) of ‘Wispo 2027’ (past, maar veroudert). <b>name</b> blijft ‘Tweeslag Wispo – Les Deux Alpes’.</p></div>
+
+  <h2 id="splash">Opstarten: icoon → splash → app</h2>
+  <div class="raster raster--2">
+    <div>
+      <p>De splash is de kop van Home zonder tekst: donkerblauwe lucht, het panorama, en daaronder het papier. Het icoon staat in het midden. Als de app geladen is, vervaagt alleen het icoon en verschijnt de tekst van Home in dezelfde lucht: er verspringt niets. Dat doet het laadscherm in <code>index.html</code> nu al met het logo; het panorama erbij maakt de overgang naar de kop af.</p>
+      <table class="tabel" style="margin-top:12px">
+        <tr><th>theme_color</th><td>#0d0058 (statusbalk Android, taakwisselaar), ook in donker</td></tr>
+        <tr><th>background_color</th><td>#0d0058 (Android-splash: icoon op donkerblauw)</td></tr>
+        <tr><th>iOS-statusbalk</th><td>black-translucent: de kop loopt onder de klok door</td></tr>
+        <tr><th>iOS-splash</th><td>30 formaten zoals nu, plus 1206×2622 en 1320×2868 (iPhone 16 Pro / Pro Max en nieuwer) en hun liggende varianten</td></tr>
+        <tr><th>orientation</th><td><code>any</code> in plaats van <code>portrait</code>, zodat een tablet liggend kan; de schermen zijn er op gemaakt (stap 7)</td></tr>
+      </table>
+      <div class="splashrij" style="margin-top:16px">
+        <figure><img src="icoon/winterlogo/splash-voorbeeld-1179x2556.webp" alt="Splash richting A"><figcaption class="label">A</figcaption></figure>
+        <figure><img src="icoon/lichtblauw/splash-voorbeeld-1179x2556.webp" alt="Splash richting B"><figcaption class="label">B</figcaption></figure>
+        <figure><img src="icoon/panorama/splash-voorbeeld-1179x2556.webp" alt="Splash richting C"><figcaption class="label">C</figcaption></figure>
+      </div>
+    </div>
+    <div style="display:grid; justify-items:center; gap:12px">
+      <div class="demo" id="demo">
+        <div class="demo__ik"><img id="demo-ik" src="icoon/winterlogo/pwa-192x192.png" alt=""></div>
+        <div class="demo__splash"><img id="demo-splash" src="icoon/winterlogo/splash-voorbeeld-1179x2556.webp" alt=""></div>
+        <div class="demo__app wispo">
+          <header class="kop"><canvas class="sneeuwveld" data-aantal="12" style="color:var(--vlok)"></canvas>
+            <p class="kop__boven">Wispo 2027 · Les Deux Alpes</p><p class="kop__titel" style="font:var(--t-reus)">Nog 103 dagen</p><p class="kop__onder">tot de bus vertrekt · vr 5 maart, 19:30</p>
+            <div class="kop__bergen" data-bergen="445" data-vlag></div></header>
+          <div style="padding:12px 16px" class="klein zacht">Home…</div>
+        </div>
+      </div>
+      <button class="knop knop--primair" id="speel">Opstarten afspelen</button>
+    </div>
+  </div>
+
+  <h2 id="installeren">Installatiehulp na de QR-code</h2>
+  <p>De QR-code opent de app in de browser. Wie hem nog niet geïnstalleerd heeft, krijgt bij Welkom (na het kiezen van de naam) een blad in dezelfde stijl. Drie situaties:</p>
+  <div class="startschermen" id="installatie" style="margin-top:14px"></div>
+  <div class="raster raster--3" style="margin-top:16px">
+    <div class="kader"><h3 style="margin-top:0">Android (Chrome, Samsung)</h3><p class="klein">De app vangt <code>beforeinstallprompt</code> al op. De knop ‘Zet op beginscherm’ opent de echte prompt. Daarna: ‘Gelukt. Je vindt Wispo nu tussen je apps.’ en het blad verdwijnt voorgoed.</p></div>
+    <div class="kader"><h3 style="margin-top:0">iPhone (Safari)</h3><p class="klein">Geen prompt mogelijk, dus drie stappen met dezelfde iconen als in Safari, en een wijzer naar de deelknop onderin. Na installatie herkent de app <code>display-mode: standalone</code> en vraagt het nooit meer.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Geopend vanuit WhatsApp of Instagram</h3><p class="klein">In zo’n ingebouwde browser kun je niet installeren en is opslag tijdelijk. De app herkent dat (user agent) en zegt het eerlijk: ‘Open deze pagina in Safari’ met de knop ‘Kopieer de link’.</p></div>
+  </div>
+</main>
+
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script>
+const W = window.Wispo
+const R = {
+  winterlogo: ['A · Winterlogo', 'Het 2slag-winterlogo van Home, opnieuw opgebouwd voor een icoon: woordmerk met sneeuwkapjes zo groot als het kan, lichtblauwe bergen, minder sterren.', 'Herkenbaar voor iedereen in de club. Leesbaar tot ±40 px; als favicon wordt het een wit-blauw blokje.'],
+  lichtblauw: ['B · Lichtblauw', 'Het woordmerk in clubdonkerblauw op een lichtblauwe lucht, met witte bergen eronder. De omgekeerde kleuren van het logo.', 'Valt het meest op tussen andere apps, op een licht én een donker startscherm. Wel: het logo in andere kleuren dan iedereen gewend is.'],
+  panorama: ['C · Panorama', 'Het woordmerk in de lucht boven het echte panorama van de app, met het rode vlaggetje op La Meije.', 'Sluit naadloos aan op de splash en de kop van Home. Het woordmerk is iets kleiner, dus op 40 px minder goed leesbaar.'],
+}
+document.getElementById("richting-lijst").innerHTML = Object.entries(R).map(([k, [t, idee, oordeel]]) => `<div class="kader richtingkaart">
+  <h3 style="margin:0">${t}</h3>
+  <img src="icoon/${k}/pwa-512x512.png" alt="${t}">
+  <p class="klein">${idee}</p>
+  <div class="maten">
+    <figure><img src="icoon/${k}/pwa-192x192.png" width="64" height="64" style="border-radius:14px" alt=""><figcaption>192</figcaption></figure>
+    <figure><img src="icoon/${k}/apple-touch-icon-180x180.png" width="60" height="60" style="border-radius:13px" alt=""><figcaption>apple 180</figcaption></figure>
+    <figure><div class="veilig"><img src="icoon/${k}/maskable-icon-512x512.png" alt=""></div><figcaption>maskable + veilige zone</figcaption></figure>
+    <figure><div class="rondje"><img src="icoon/${k}/maskable-icon-512x512.png" alt=""></div><figcaption>Android rond</figcaption></figure>
+  </div>
+  <div class="maten">
+    <figure><span class="tabje"><img src="icoon/${k}/favicon-48.png" width="16" height="16" alt="">2slag Wispo</span><figcaption>favicon licht</figcaption></figure>
+    <figure><span class="tabje tabje--donker"><img src="icoon/${k}/favicon-48.png" width="16" height="16" alt="">2slag Wispo</span><figcaption>favicon donker</figcaption></figure>
+    <figure><img src="icoon/${k}/favicon-48.png" width="32" height="32" alt=""><figcaption>32</figcaption></figure>
+  </div>
+  <p class="klein zacht">${oordeel}</p>
+  <p class="klein"><a href="icoon/${k}/icoon.svg">SVG</a> · <a href="icoon/${k}/maskable.svg">maskable SVG</a> · <a href="icoon/${k}/pwa-512x512.png">512</a> · <a href="icoon/${k}/pwa-192x192.png">192</a> · <a href="icoon/${k}/maskable-icon-512x512.png">maskable 512</a> · <a href="icoon/${k}/apple-touch-icon-180x180.png">apple 180</a> · <a href="icoon/${k}/favicon.ico">favicon.ico</a></p>
+</div>`).join('')
+
+// Startschermen
+const BUREN = [['Telefoon', '#30b158', 'bel'], ['Berichten', '#34c759', 'meer'], ['Camera', '#5b5b60', 'camera'], ['Foto’s', '#f2a33a', 'zon'], ['Kaarten', '#3d8bfd', 'kaart'], ['Weer', '#2f7de1', 'weer'], ['Klok', '#1c1c1e', 'update'], ['Agenda', '#ff5e57', 'planning'], ['Notities', '#f5c400', 'paklijst'], ['Muziek', '#fa3c55', 'muziek'], ['Instellingen', '#8e8e93', 'instellingen']]
+let keuze = 'winterlogo'
+function icoonSrc(r, android) {
+  if (r === 'nu') return android ? '../public/logo.svg' : '../public/logo.svg'
+  return android ? `icoon/${r}/maskable-icon-512x512.png` : `icoon/${r}/apple-touch-icon-180x180.png`
+}
+function start(soort, label) {
+  const android = soort.startsWith('and')
+  const apps = BUREN.slice(0, 7).map(([n, k, i]) => `<div class="app"><span class="app__ik" style="background:${k}">${W.icoon(i, 26)}</span><span class="app__naam">${n}</span></div>`)
+  apps.splice(5, 0, `<div class="app"><span class="app__ik${android ? ' app__ik--and-mask' : ''}"><img src="${icoonSrc(keuze, android)}" alt=""></span><span class="app__naam">${keuze === 'nu' ? 'Tweeslag Wispo' : 'Wispo'}</span></div>`)
+  const dock = BUREN.slice(7, 11).map(([n, k, i]) => `<span class="app__ik" style="background:${k}">${W.icoon(i, 26)}</span>`).join('')
+  return `<div class="start start--${soort}"><span class="start__label">${label}</span><div class="start__grid">${apps.join('')}</div><div class="start__dock">${dock}</div></div>`
+}
+function tekenStart() {
+  document.getElementById('startschermen').innerHTML = start('ios-licht', 'iPhone · licht') + start('ios-donker', 'iPhone · donker') + start('and-licht', 'Android · licht') + start('and-donker', 'Android · donker')
+}
+document.querySelectorAll('[data-r]').forEach((b) => (b.onclick = () => {
+  keuze = b.dataset.r
+  document.querySelectorAll('[data-r]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+  tekenStart()
+  if (keuze !== 'nu') { document.getElementById('demo-ik').src = `icoon/${keuze}/pwa-192x192.png`; document.getElementById('demo-splash').src = `icoon/${keuze}/splash-voorbeeld-1179x2556.webp` }
+}))
+tekenStart()
+
+// Namen
+const NAMEN = [['Tweeslag Wispo', 'nu: wordt afgekapt'], ['Wispo', 'aanbevolen: het icoon zegt al 2slag'], ['2slag Wispo', '11 tekens, past net'], ['Wispo 2027', 'past, maar veroudert']]
+document.getElementById('namen').innerHTML = NAMEN.map(([n, o]) => `<div class="naamtest"><span class="app__ik"><img src="icoon/winterlogo/apple-touch-icon-180x180.png" alt=""></span><span class="app__naam">${n}</span><small>${o}</small></div>`).join('')
+
+// Opstartdemo
+document.getElementById('speel').onclick = () => {
+  const d = document.getElementById('demo')
+  d.classList.remove('speelt', 'klaar'); void d.offsetWidth
+  d.classList.add('speelt')
+  setTimeout(() => d.classList.add('klaar'), 1500)
+}
+
+// Installatiehulp
+const kop = (titel, onder) => `<header class="kop"><canvas class="sneeuwveld" data-aantal="10" style="color:var(--vlok)"></canvas><p class="kop__boven">Welkom</p><p class="kop__titel">${titel}</p><p class="kop__onder">${onder}</p><div class="kop__bergen" data-bergen="445"></div></header>`
+const stap = (n, icoon, tekst) => `<div class="stap"><span class="bord bord--nummer">${n}</span><span>${icoon ? `<span style="display:inline-flex;vertical-align:-5px;margin-right:4px">${W.icoon(icoon, 20)}</span>` : ''}${tekst}</span></div>`
+document.getElementById('installatie').innerHTML = `
+  <div class="mini wispo">${kop('Hoi Ronald', 'Nog één ding.')}
+    <div class="blad-scherm"></div><div class="blad"><p class="label">Android</p><h3 style="font:var(--t-2);margin:4px 0 8px">Zet Wispo op je beginscherm</h3>
+      <p class="klein zacht">Dan opent hij als een app en werkt hij ook boven op de berg, zonder bereik.</p>
+      <div style="display:flex;gap:12px;align-items:center;margin:14px 0"><img src="icoon/winterlogo/pwa-192x192.png" width="52" height="52" style="border-radius:50%" alt=""><span><b>Wispo</b><br><span class="klein zacht">ronaldsteenkamp.github.io</span></span></div>
+      <button class="knop knop--primair knop--breed">${W.icoon('plusVierkant', 22)}Zet op beginscherm</button>
+      <button class="knop knop--tekst knop--breed" style="margin-top:4px">Later</button></div></div>
+  <div class="mini wispo">${kop('Hoi Ronald', 'Nog één ding.')}
+    <div class="blad-scherm"></div><div class="blad" style="bottom:44px;padding-bottom:16px"><p class="label">iPhone</p><h3 style="font:var(--t-2);margin:4px 0 6px">Zet Wispo op je beginscherm</h3>
+      ${stap(1, 'deelIos', 'Tik onderin op <b>Deel</b>.')}${stap(2, 'plusVierkant', 'Kies <b>Zet op beginscherm</b>. Staat het er niet, scroll dan omlaag.')}${stap(3, '', 'Tik rechtsboven op <b>Voeg toe</b>.')}
+      <button class="knop knop--tekst knop--breed" style="margin-top:4px">Dat doe ik straks</button></div>
+    <span class="wijzer">${W.icoon('pijl', 28, 'style="transform:rotate(90deg)"')}</span>
+    <div class="safari">${W.icoon('links', 20)}${W.icoon('rechts', 20)}${W.icoon('deelIos', 20)}${W.icoon('clubblad', 20)}${W.icoon('meer', 20)}</div></div>
+  <div class="mini wispo">${kop('Hoi Ronald', 'Je zit in de browser van WhatsApp.')}
+    <div style="padding:16px" class="wispo"><div class="melding"><span>${W.icoon('info', 22)}</span><div><p class="melding__titel">Open Wispo in Safari</p><p class="klein zacht" style="margin-top:4px">Hier kun je hem niet installeren, en je vinkjes blijven niet bewaard. Tik rechtsboven op ··· en kies <b>Open in Safari</b>.</p></div></div>
+    <button class="knop knop--secundair knop--breed" style="margin-top:14px">${W.icoon('deel', 20)}Kopieer de link</button></div></div>`
+document.querySelectorAll('[data-bergen]').forEach((el) => { const r = el.getBoundingClientRect(); el.innerHTML = W.bergen({ camera: Number(el.dataset.bergen), verhouding: (r.width || 280) / (r.height || 90), vlag: el.hasAttribute('data-vlag') }) })
+</script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

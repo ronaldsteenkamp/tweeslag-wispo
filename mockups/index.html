@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ontwerpvoorstel Wispo</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<style>
+  .opleveringen { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); }
+  .oplevering { display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: start; text-decoration: none; color: inherit; }
+  .oplevering:hover { border-color: var(--lijn-sterk); }
+  .oplevering b { font: var(--t-3); display: block; }
+  .oplevering p { font: var(--t-klein); color: var(--inkt-zacht); margin-top: 2px; }
+  .keuze { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--lijn); }
+  .keuze b { font: var(--t-3); }
+  .stappen td:nth-child(4) { white-space: nowrap; font: 700 1.1rem/1 var(--font-smal); }
+  .moeite { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: var(--rond-bord); color: #fff; }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="34" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven">Tweeslag Wispo · Les Deux Alpes · 5 – 14 maart 2027</p>
+    <h1>Eén app, één stijl</h1>
+    <p>Analyse en prototypes om de hele app als één geheel te laten voelen. Er is niets aan de app zelf veranderd: alles staat in <code>/mockups</code>. Na jouw keuzes bouwen we het stap voor stap in.</p>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="445" data-vlag></div>
+</header>
+<main class="doc">
+  <h2>Oplevering</h2>
+  <div class="opleveringen">
+    <a class="kader oplevering" href="app-overzicht.html"><span class="bord bord--groen bord--nummer">1</span><span><b>App-overzicht en consistentie</b><p>Alle schermen in licht en donker, navigatie en installeren nu, de consistentietabel, de 10 grootste inconsistenties en de AI-default-kenmerken.</p></span></a>
+    <a class="kader oplevering" href="navigatie.html"><span class="bord bord--nummer">2</span><span><b>Indeling en navigatiebalk</b><p>Gebruik per fase, drie indelingen, drie balken (klikbaar), overgangen, terug, safe area en toetsenbord.</p></span></a>
+    <a class="kader oplevering" href="icoon.html"><span class="bord bord--rood bord--nummer">3</span><span><b>App-icoon en installeren</b><p>Drie richtingen in alle formaten, startschermen iOS en Android, naam, splash en de installatiehulp na de QR-code.</p></span></a>
+    <a class="kader oplevering" href="stijlbasis.html"><span class="bord bord--zwart bord--nummer">4</span><span><b>Stijlbasis</b><p>Tokens en componenten in licht en donker, bergen en sneeuw als onderdelen, schrijfregels.</p></span></a>
+    <a class="kader oplevering" href="app-prototype.html"><span class="bord bord--groen bord--nummer">5</span><span><b>Klikbaar prototype</b><p>De hele app vereenvoudigd, met de nieuwe navigatie. Wissel indeling, balk, fase, thema, bereik. Op je telefoon: knop ‘Ontwerp’ links.</p></span></a>
+    <a class="kader oplevering" href="privacy.html"><span class="bord bord--nummer">6</span><span><b>Wie ziet wat?</b><p>Privacy over de hele app in vier kringen, met een tekst voor in de app en vier aandachtspunten.</p></span></a>
+    <a class="kader oplevering" href="kwaliteit.html"><span class="bord bord--rood bord--nummer">7</span><span><b>Kwaliteit</b><p>Lighthouse en bundelgrootte nu, en hoe tikvlak, contrast, dark mode, offline, updates en schermformaten geregeld worden.</p></span></a>
+    <a class="kader oplevering" href="#stappenplan"><span class="bord bord--zwart bord--nummer">8</span><span><b>Stappenplan</b><p>Hieronder: in welke volgorde, welke bestanden en hoeveel moeite.</p></span></a>
+  </div>
+
+  <h2>Mijn aanbevelingen, en wat jij kiest</h2>
+  <div class="kader">
+    <div class="keuze"><span><b>Indeling</b><br><span class="klein zacht">B · Meeschuivend: Home · Planning · Paklijst → Kaart → Clubblad · Spel · Groep. Alternatief: A · Vaste vijf.</span></span><span class="etiket etiket--ijs">B</span></div>
+    <div class="keuze"><span><b>Navigatiebalk</b><br><span class="klein zacht">Zwevend glas met het pistebord als actieve tab. Alternatieven: Papier (vast) of Bergkam.</span></span><span class="etiket etiket--ijs">Glas</span></div>
+    <div class="keuze"><span><b>App-icoon</b><br><span class="klein zacht">Drie nieuwe richtingen met het 2slag-winterlogo; aanbevolen A · Winterlogo.</span></span><span class="etiket etiket--ijs">Nog kiezen</span></div>
+    <div class="keuze"><span><b>Naam onder het icoon</b><br><span class="klein zacht">Aanbevolen ‘Wispo’ (het icoon zegt al 2slag). Nu ‘Tweeslag Wispo’, wordt afgekapt.</span></span><span class="etiket etiket--ijs">Nog kiezen</span></div>
+    <div class="keuze"><span><b>Letter</b><br><span class="klein zacht">Alleen Barlow en Barlow Condensed; Georgia en Trebuchet eruit, ook in Planning, Kamers en Clubblad.</span></span><span class="etiket etiket--ijs">Barlow</span></div>
+    <div class="keuze"><span><b>Dark mode</b><br><span class="klein zacht">Volgt de telefoon, met een keuze in Instellingen. Alternatief: standaard licht, donker alleen als je het kiest.</span></span><span class="etiket etiket--ijs">Volgt telefoon</span></div>
+    <div class="keuze"><span><b>Privacy</b><br><span class="klein zacht">Een reiscode bij Welkom, zodat niet iedereen met de link een naam kan claimen.</span></span><span class="etiket etiket--ijs">Ja</span></div>
+  </div>
+
+  <h2 id="stappenplan">Stappenplan</h2>
+  <p>De app blijft na elke stap bruikbaar en wordt na elke stap gepusht (= live). Eerst de basis die niets zichtbaar verandert, dan navigatie, dan scherm voor scherm. S = een paar uur, M = een dagdeel tot een dag, L = meerdere dagen.</p>
+  <div class="tabel-wrap" style="margin-top:12px"><table class="tabel stappen" id="stappen"></table></div>
+  <p class="klein zacht" style="margin-top:10px">Na stap 3, 9 en 16 meten we Lighthouse en de bundelgrootte opnieuw en vullen we ‘na’ in op <a href="kwaliteit.html">Kwaliteit</a>.</p>
+</main>
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script>
+const M = { S: 'var(--groen)', M: 'var(--blauw)', L: 'var(--rood)' }
+const STAPPEN = [
+  ['Stijlbasis als tokens', 'Nieuwe tokens (licht en donker) naast de oude; de oude namen in theme.css verwijzen ernaar. Niets verandert zichtbaar.', 'src/styles/basis.css (nieuw), src/styles/theme.css, src/main.tsx', 'M'],
+  ['Paletten per scherm opruimen', 'De negen kopieën (--h-, --pak-, --w-, --ks-, --pl-, --boek-, --rad-, en zonder voorvoegsel) vervangen door de tokens. Kleine kleurverschillen verdwijnen.', 'src/styles/home, paklijst, weer, welkom, kamers, profiel, planning, spel, fotomuur, rad, bewijs.css', 'M'],
+  ['Componenten', 'Knop, bord, blok, rij, vinkje, schakelaar, veld, segmenten, badge, toast, lege staat, laden, melding, blad als gedeelde klassen; app.css slinkt.', 'src/styles/componenten.css (nieuw), src/styles/app.css', 'M'],
+  ['Iconen aanvullen, emoji eruit', 'Nieuwe iconen in de set; emoji en tekens (←, ✓, ✕) in de interface vervangen.', 'src/components/Icoon.tsx, InstallatieBanner, UpdateMelding, Klassement, Stemmen, Roulette, Rad, Verdelen, Beheer', 'S'],
+  ['Navigatie: vijf tabs', 'TabBalk met fase-tab en zwevend glas; Groep (Appartementen · Clubblad · Mensen) als nieuw scherm; Rad wordt een segment van Spel; terug gaat eerst naar Home; balk weg bij toetsenbord; badges.', 'src/components/TabBalk.tsx, src/App.tsx, src/screens/Groep.tsx (nieuw), Spel.tsx, Rad.tsx, src/lib/tabswipe.ts, src/components/Bergen.tsx (TABS_LANDSCHAP)', 'L'],
+  ['Kop van het scherm', 'SchermKop met chevron-terugknop, acties en segmenten in de kop; de schakelaar nieuweKoppen en de oude h1-koppen weg; Kaart krijgt een kleine glazen kop.', 'src/components/SchermKop.tsx, src/config.ts, src/lib/nieuweKoppen.ts, alle schermen (één regel), Kaart.tsx', 'M'],
+  ['Subschermen en bladen', 'Schuiven van rechts, vegen vanaf de rand terug, blad van onder met dezelfde regels voor terug.', 'src/App.tsx, src/components/BevestigDialoog.tsx, src/lib/dialoogFocus.ts', 'M'],
+  ['Instellingen', 'Nieuw subscherm: thema, sneeuw, meldingen, wie ziet wat, versie. De sneeuwschakelaar gaat van Home hierheen.', 'src/screens/Instellingen.tsx (nieuw), Home.tsx, Meldingen.tsx', 'S'],
+  ['Dark mode', 'only light eruit, donkere tokens aan, per scherm nalopen (Kaart, Rad, Casino, Clubblad).', 'index.html, src/styles/theme.css, rad.css, spel.css, fotomuur.css, ZoomKaart.tsx', 'M'],
+  ['Home en Welkom', 'Kop met aftelklok zoals in het prototype, rijen per fase, installatiehulp als blad.', 'src/screens/Home.tsx, src/styles/home.css, src/components/Welkom.tsx, InstallatieBanner.tsx', 'M'],
+  ['Planning, Paklijst, Weer', 'Georgia eruit, inhoudsopgave en dagpagina in Barlow; Paklijst en Weer vooral tokens.', 'src/screens/Planning.tsx, Paklijst.tsx, Weer.tsx en hun CSS', 'M'],
+  ['Spel, Rad en Casino', 'Segmenten Challenges · Busbingo · Rad · Stand; rode glansknop en turquoise blok worden knop--primair; Casino blijft een eigen wereld binnen hetzelfde kader.', 'src/screens/Spel.tsx, src/components/Rad.tsx, Roulette.tsx, Klassement.tsx, Stemmen.tsx, rad.css, spel.css', 'M'],
+  ['Groep, Clubblad, Bewijs, Profiel', 'Kamers in Groep, clubblad zonder Georgia-titel maar met kiekjes en geeltjes, lege staten met beeld.', 'src/screens/Kamers.tsx, Fotomuur.tsx, src/components/Bewijs.tsx, Profiel.tsx, Redactietafel.tsx en hun CSS', 'M'],
+  ['Kamerverdeling en Beheer', 'Naar de stijlbasis (weg met lichtblauw patroon, schaduwkaarten, paarse knop, ‘backend’).', 'src/screens/Verdelen.tsx, Beheer.tsx, kamers.css, app.css', 'M'],
+  ['Icoon, splash en installeren', 'Nieuw icoon, splash met panorama, iPhone 16/17-formaten, short_name, orientation any, laadscherm in index.html.', 'public/logo.svg (of public/icoon.svg), pwa-assets.config.ts, vite.config.ts, index.html', 'S'],
+  ['Snelheid, updates, offline', 'React.lazy per tab, viewport zonder user-scalable=no, nieuwe updatetoast, één offline-melding; Lighthouse na.', 'src/App.tsx, index.html, src/components/UpdateMelding.tsx, src/components/Verbinding.tsx', 'M'],
+  ['Privacy', 'Reiscode bij Welkom, tekst ‘Wie ziet wat?’ in Instellingen, opruimdatum.', 'supabase/migrations/0020_reiscode.sql (nieuw), src/components/Welkom.tsx, src/lib/backend.ts, Instellingen.tsx, README.md', 'M'],
+]
+document.getElementById('stappen').innerHTML = `<thead><tr><th>#</th><th>Stap</th><th>Bestanden</th><th>Moeite</th></tr></thead><tbody>${STAPPEN.map(([t, o, f, m], n) => `<tr><th>${n + 1}</th><td><b style="font:var(--t-3)">${t}</b><br><span class="zacht">${o}</span></td><td><code style="white-space:normal;background:none;padding:0">${f}</code></td><td><span class="moeite" style="background:${M[m]}">${m}</span></td></tr>`).join('')}</tbody>`
+</script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

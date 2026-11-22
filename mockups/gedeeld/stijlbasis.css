@@ -1,0 +1,397 @@
+/*
+ * STIJLBASIS – Tweeslag Wispo (voorstel, mockup)
+ *
+ * Eén set tokens en componenten voor alle schermen. Gebouwd op wat de app al deed: het papier
+ * (#f5f2ea), de donkerblauwe lucht met witte bergen, Barlow / Barlow Condensed en de pisteborden
+ * (groen, blauw, rood, zwart). Die stonden nu negen keer los gedefinieerd (--h-, --pak-, --w-, --ks-,
+ * --pl-, --boek-, --rad-, en twee keer zonder voorvoegsel). Hier staan ze één keer.
+ *
+ * Licht = dag op de berg (fel sneeuwlicht, veel contrast). Donker = nacht op de berg (maanlicht).
+ * Thema: volgt de telefoon, of vast via <html data-thema="licht|donker">.
+ * Sneeuw uit: <html data-sneeuw="uit">.
+ */
+
+@font-face { font-family: 'Barlow'; font-weight: 400; font-display: swap; src: url('../../src/assets/fonts/barlow-400.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow'; font-weight: 600; font-display: swap; src: url('../../src/assets/fonts/barlow-600.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 600; font-display: swap; src: url('../../src/assets/fonts/barlow-condensed-600.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 700; font-display: swap; src: url('../../src/assets/fonts/barlow-condensed-700.woff2') format('woff2'); }
+
+/* ============================================================ TOKENS */
+
+:root,
+.thema-licht {
+  /* -- Clubkleuren (Tweeslag-stijlgids) -- */
+  --club-donkerblauw: #0d0058; /* PMS Reflex Blue C */
+  --club-lichtblauw: #099fc4; /* PMS 2925 C */
+
+  /* -- Licht: dag op de berg -- */
+  --lucht: #0d0058;            /* koppen, splash, statusbalk */
+  --lucht-diep: #08003f;       /* onderste rand van de kop, tabbalk richting C */
+  --op-lucht: #ffffff;         /* tekst op de lucht */
+  --op-lucht-zacht: #9fe3f4;   /* bovenregels op de lucht (AA op #0d0058: 12,8) */
+  --papier: #f5f2ea;           /* achtergrond van elk scherm */
+  --papier-vlak: #fffdf8;      /* blok, invoerveld, blad */
+  --papier-diep: #ebe5d6;      /* ingedrukt, segmentbalk, skelet */
+  --inkt: #0d0058;             /* tekst */
+  --inkt-zacht: #4b4e6b;       /* bijschrift (AA op papier: 7,2) */
+  --lijn: #d9d3c4;             /* scheidingslijnen, randen */
+  --lijn-sterk: #0d0058;       /* lijn onder een kop, actieve rand */
+  --ijs: #099fc4;              /* accent op de lucht en voor vlakken */
+  --ijs-inkt: #05607a;         /* lichtblauw als tekst op papier (AA: 6,4) */
+  --ijs-zacht: #d3eff7;        /* 'nu', geselecteerd */
+  --sneeuw: #e9f1f5;           /* de witte voorste kam en de sneeuwrand */
+  --memo: #fff1a8;             /* geeltje: alleen in het clubblad */
+  --memo-inkt: #3a3000;
+
+  /* pisteborden: betekenis = moeilijkheid / soort, nooit als decoratie */
+  --groen: #1e7a4c;
+  --blauw: #1d5fc4;
+  --rood: #c4212f;             /* ook: fout, badge, vlag */
+  --zwart: #17171c;
+  --op-bord: #ffffff;
+
+  --knop: var(--lucht);        /* primaire knop, actief tab (B) */
+  --op-knop: #ffffff;
+  --succes: var(--groen);
+  --fout: var(--rood);
+  --let-op: #9a5b00;
+
+  /* bergen (gelijk aan theme.css) */
+  --berg-0: #5f6aa8; --berg-0-schaduw: #4f5893;
+  --berg-1: #8e97c4; --berg-1-schaduw: #7881b3;
+  --berg-2: #c3cbe0; --berg-2-schaduw: #a9b4d0;
+  --berg-3: #e9f1f5; --berg-3-schaduw: #cfdee8;
+  --berg-dal: var(--sneeuw);
+  --vlok: #ffffff;
+
+  /* -- Typografie -- */
+  --font: 'Barlow', 'Trebuchet MS', system-ui, sans-serif;
+  --font-smal: 'Barlow Condensed', 'Trebuchet MS', system-ui, sans-serif;
+  --t-reus: 700 clamp(2.6rem, 11vw, 3.4rem)/0.92 var(--font-smal);   /* aftelklok, 'Les 2 Alpes' */
+  --t-1: 700 2rem/1 var(--font-smal);                                /* titel in de kop */
+  --t-2: 700 1.5rem/1.05 var(--font-smal);                           /* sectiekop */
+  --t-3: 600 1.125rem/1.25 var(--font);                              /* titel van een rij of blok */
+  --t-tekst: 400 1.0625rem/1.45 var(--font);                         /* lopende tekst, 17 px */
+  --t-klein: 400 0.9375rem/1.4 var(--font);                          /* bijschrift, 15 px */
+  --t-label: 600 0.8125rem/1.2 var(--font-smal);                     /* BOVENREGEL, 13 px, hoofdletters */
+  --t-knop: 700 1.125rem/1 var(--font-smal);
+  --spatie-label: 0.1em;
+
+  /* -- Ruimte (4-punts raster) -- */
+  --r-1: 4px; --r-2: 8px; --r-3: 12px; --r-4: 16px; --r-5: 24px; --r-6: 32px; --r-7: 48px;
+  --rand-x: 16px;              /* zijmarge van elk scherm (20 px vanaf 400 px breed) */
+  --max-breed: 560px;          /* inhoud op tablet en liggend */
+
+  /* -- Vormen -- */
+  --rond-bord: 6px;            /* pistebord, badge, vinkje-hoek */
+  --rond-blok: 14px;           /* blok, invoerveld, knop */
+  --rond-blad: 22px;           /* bottom sheet, zwevende tabbalk */
+  --rond-pil: 999px;
+  --rand: 1.5px;
+
+  /* -- Diepte: papier ligt plat. Alleen wat zweeft krijgt schaduw. -- */
+  --schaduw-zweef: 0 10px 30px rgba(13, 0, 88, 0.18), 0 2px 6px rgba(13, 0, 88, 0.08);
+  --schaduw-blad: 0 -8px 30px rgba(13, 0, 88, 0.16);
+  --glas: rgba(255, 253, 248, 0.72);
+  --glas-op-lucht: rgba(255, 255, 255, 0.1);
+  --vaag: blur(14px) saturate(1.2);
+
+  /* -- Beweging -- */
+  --duur-tik: 120ms;           /* indrukken, vinkje */
+  --duur-wissel: 240ms;        /* subscherm in/uit, segment */
+  --duur-blad: 320ms;          /* bottom sheet, toast */
+  --duur-feest: 900ms;         /* confetti, stempel */
+  --gemak: cubic-bezier(0.2, 0.8, 0.2, 1);       /* alles wat binnenkomt */
+  --gemak-uit: cubic-bezier(0.4, 0, 1, 1);       /* alles wat weggaat */
+  --gemak-veer: cubic-bezier(0.34, 1.4, 0.64, 1); /* stempel, badge */
+
+  /* -- Maten -- */
+  --tik: 44px;                 /* minimaal tikvlak */
+  --knop-hoogte: 52px;
+  --tabbalk-hoogte: 64px;
+  --onder: env(safe-area-inset-bottom, 0px);
+  --boven: env(safe-area-inset-top, 0px);
+
+  color-scheme: light dark;
+}
+
+/* -- Donker: nacht op de berg -- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-thema='licht']) {
+    --lucht: #0d0058;
+    --lucht-diep: #070030;
+    --papier: #0c0a2c;
+    --papier-vlak: #16133d;
+    --papier-diep: #211d52;
+    --inkt: #eef0fa;
+    --inkt-zacht: #b4b7d4;
+    --lijn: #2f2b66;
+    --lijn-sterk: #c9cdf0;
+    --ijs-inkt: #6fd6ef;
+    --ijs-zacht: #123a55;
+    --sneeuw: #c7d0e6;
+    --groen: #2f9e66; --blauw: #3f7ff0; --rood: #e0444f; --zwart: #000000;
+    --let-op: #f0b04a;
+    --berg-0: #262a63; --berg-0-schaduw: #1f2255;
+    --berg-1: #3a3f7e; --berg-1-schaduw: #313671;
+    --berg-2: #6b72a8; --berg-2-schaduw: #5b6197;
+    --berg-3: #c7d0e6; --berg-3-schaduw: #a7b2cf;
+    --berg-dal: var(--papier);
+    --vlok: #dfe6ff;
+    --glas: rgba(22, 19, 61, 0.7);
+    --schaduw-zweef: 0 10px 30px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+    --schaduw-blad: 0 -8px 30px rgba(0, 0, 0, 0.5);
+    --knop: var(--ijs); --op-knop: #04203a;
+  }
+}
+:root[data-thema='donker'],
+.thema-donker {
+  --lucht: #0d0058;
+  --lucht-diep: #070030;
+  --papier: #0c0a2c;
+  --papier-vlak: #16133d;
+  --papier-diep: #211d52;
+  --inkt: #eef0fa;
+  --inkt-zacht: #b4b7d4;
+  --lijn: #2f2b66;
+  --lijn-sterk: #c9cdf0;
+  --ijs-inkt: #6fd6ef;
+  --ijs-zacht: #123a55;
+  --sneeuw: #c7d0e6;
+  --groen: #2f9e66; --blauw: #3f7ff0; --rood: #e0444f; --zwart: #000000;
+  --let-op: #f0b04a;
+  --berg-0: #262a63; --berg-0-schaduw: #1f2255;
+  --berg-1: #3a3f7e; --berg-1-schaduw: #313671;
+  --berg-2: #6b72a8; --berg-2-schaduw: #5b6197;
+  --berg-3: #c7d0e6; --berg-3-schaduw: #a7b2cf;
+  --berg-dal: var(--papier);
+  --vlok: #dfe6ff;
+  --glas: rgba(22, 19, 61, 0.7);
+  --schaduw-zweef: 0 10px 30px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --schaduw-blad: 0 -8px 30px rgba(0, 0, 0, 0.5);
+  --knop: var(--ijs); --op-knop: #04203a;
+  color-scheme: dark;
+}
+.thema-licht, .thema-donker { background: var(--papier); color: var(--inkt); }
+:root[data-thema='licht'], .thema-licht { color-scheme: light; }
+
+@media (min-width: 400px) { :root { --rand-x: 20px; } }
+
+/* ============================================================ BASIS */
+
+*, *::before, *::after { box-sizing: border-box; }
+.wispo {
+  font: var(--t-tekst);
+  color: var(--inkt);
+  background: var(--papier);
+  -webkit-font-smoothing: antialiased;
+}
+:where(.wispo) :where(h1, h2, h3, p) { margin: 0; }
+:where(.wispo) :where(button, input, textarea) { font: inherit; color: inherit; }
+.wispo :focus-visible { outline: 3px solid var(--ijs); outline-offset: 2px; border-radius: 6px; }
+
+.label {
+  font: var(--t-label);
+  letter-spacing: var(--spatie-label);
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+.sectiekop {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--r-3);
+  padding-bottom: var(--r-2);
+  border-bottom: 2px solid var(--lijn-sterk);
+  font: var(--t-2);
+}
+.sectiekop a, .sectiekop button {
+  font: var(--t-label); letter-spacing: var(--spatie-label); text-transform: uppercase;
+  color: var(--inkt); background: none; border: 0; padding: 12px 0; min-height: var(--tik); text-decoration: none;
+}
+.zacht { color: var(--inkt-zacht); }
+.klein { font: var(--t-klein); }
+
+/* ============================================================ COMPONENTEN */
+
+/* --- Knop --- */
+.knop {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--r-2);
+  min-height: var(--knop-hoogte); padding: 0 var(--r-5);
+  border-radius: var(--rond-blok); border: var(--rand) solid transparent;
+  font: var(--t-knop); letter-spacing: 0.02em; text-decoration: none; cursor: pointer;
+  transition: transform var(--duur-tik) var(--gemak), background-color var(--duur-tik);
+}
+.knop:active { transform: scale(0.97); }
+.knop svg { width: 22px; height: 22px; flex: none; }
+.knop--primair { background: var(--knop); color: var(--op-knop); }
+.knop--secundair { background: transparent; color: var(--inkt); border-color: var(--inkt); }
+.knop--tekst { background: none; color: var(--inkt); min-height: var(--tik); padding: 0 var(--r-2); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+.knop--gevaar { background: var(--rood); color: #fff; }
+.knop--breed { width: 100%; }
+.knop--klein { min-height: var(--tik); padding: 0 var(--r-4); font-size: 1rem; }
+.knop[disabled] { opacity: 0.45; pointer-events: none; }
+
+/* --- Pistebord: gekleurd vierkantje met icoon (de vaste 'icoonhouder' van de app) --- */
+.bord {
+  display: inline-grid; place-items: center; flex: none;
+  width: 40px; height: 40px; border-radius: var(--rond-bord);
+  background: var(--blauw); color: var(--op-bord);
+}
+.bord svg { width: 22px; height: 22px; }
+.bord--groen { background: var(--groen); }
+.bord--rood { background: var(--rood); }
+.bord--zwart { background: var(--zwart); }
+.bord--ijs { background: var(--ijs); color: #04203a; }
+.bord--klein { width: 28px; height: 28px; border-radius: 5px; }
+.bord--klein svg { width: 17px; height: 17px; }
+.bord--nummer { font: 700 1.1rem/1 var(--font-smal); }
+
+/* --- Blok (kaart): papier op papier, rand in plaats van schaduw --- */
+.blok {
+  background: var(--papier-vlak);
+  border: var(--rand) solid var(--lijn);
+  border-radius: var(--rond-blok);
+  padding: var(--r-4);
+}
+.blok--nadruk { border-color: var(--lijn-sterk); border-width: 2px; }
+.blok--nu { border-color: var(--ijs); box-shadow: inset 4px 0 0 var(--ijs); }
+.blok--glas { background: var(--glas); -webkit-backdrop-filter: var(--vaag); backdrop-filter: var(--vaag); border-color: color-mix(in srgb, var(--lijn) 60%, transparent); }
+
+/* --- Lijstitem (de Home-rij) --- */
+.rij {
+  display: flex; align-items: center; gap: var(--r-3);
+  min-height: 64px; padding: var(--r-3) 0;
+  border-bottom: 1px solid var(--lijn);
+  color: inherit; text-decoration: none; background: none; border-left: 0; border-right: 0; border-top: 0; width: 100%; text-align: left; cursor: pointer;
+}
+.rij__tekst { flex: 1; min-width: 0; }
+.rij__titel { font: var(--t-3); }
+.rij__onder { font: var(--t-klein); color: var(--inkt-zacht); }
+.rij__pijl { color: var(--inkt-zacht); flex: none; }
+
+/* --- Vinkje (paklijst, challenge) --- */
+.vink { display: flex; align-items: center; gap: var(--r-3); min-height: 52px; cursor: pointer; border-bottom: 1px solid var(--lijn); }
+.vink input { appearance: none; -webkit-appearance: none; margin: 0; flex: none; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--kleur, var(--inkt)); display: grid; place-items: center; transition: background-color var(--duur-tik); cursor: pointer; }
+.vink input::after { content: ''; width: 12px; height: 7px; border: solid var(--papier-vlak); border-width: 0 0 3px 3px; transform: translateY(-2px) rotate(-45deg) scale(0); transition: transform var(--duur-tik) var(--gemak-veer); }
+.vink input:checked { background: var(--kleur, var(--inkt)); }
+.vink input:checked::after { transform: translateY(-2px) rotate(-45deg) scale(1); }
+.vink input:checked + span { color: var(--inkt-zacht); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+
+/* --- Schakelaar --- */
+.schakelaar { display: flex; align-items: center; gap: var(--r-3); min-height: 56px; cursor: pointer; }
+.schakelaar__tekst { flex: 1; }
+.schakelaar input { appearance: none; -webkit-appearance: none; margin: 0; flex: none; width: 52px; height: 32px; border-radius: var(--rond-pil); background: var(--papier-diep); border: 2px solid var(--inkt-zacht); position: relative; cursor: pointer; transition: background-color var(--duur-tik); }
+.schakelaar input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--inkt-zacht); transition: transform var(--duur-wissel) var(--gemak), background-color var(--duur-tik); }
+.schakelaar input:checked { background: var(--groen); border-color: var(--groen); }
+.schakelaar input:checked::after { transform: translateX(20px); background: #fff; }
+
+/* --- Invoerveld --- */
+.veld { display: grid; gap: var(--r-1); }
+.veld__label { font: var(--t-label); letter-spacing: var(--spatie-label); text-transform: uppercase; color: var(--inkt-zacht); }
+.veld input, .veld textarea {
+  min-height: var(--knop-hoogte); padding: 0 var(--r-4);
+  border-radius: var(--rond-blok); border: var(--rand) solid var(--inkt-zacht);
+  background: var(--papier-vlak); color: var(--inkt); font: var(--t-tekst);
+}
+.veld textarea { padding: var(--r-3) var(--r-4); min-height: 96px; resize: vertical; }
+.veld input:focus, .veld textarea:focus { outline: none; border-color: var(--inkt); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ijs) 45%, transparent); }
+.veld__hulp { font: var(--t-klein); color: var(--inkt-zacht); }
+.veld--fout input { border-color: var(--rood); }
+.veld--fout .veld__hulp { color: var(--rood); }
+
+/* --- Segmenten (subtabs binnen een tab: één patroon overal) --- */
+.segmenten { display: flex; gap: 2px; padding: 3px; border-radius: var(--rond-blok); background: var(--glas-op-lucht); border: 1px solid rgba(255, 255, 255, 0.18); }
+.segmenten button { flex: 1; min-height: 40px; border: 0; border-radius: 11px; background: none; color: var(--op-lucht); font: 600 0.95rem/1 var(--font); cursor: pointer; padding: 0 6px; white-space: nowrap; }
+.segmenten button[aria-selected='true'] { background: var(--papier-vlak); color: var(--inkt); }
+.segmenten--papier { background: var(--papier-diep); border-color: transparent; }
+.segmenten--papier button { color: var(--inkt); }
+
+/* --- Badge --- */
+.badge { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--rond-pil); background: var(--rood); color: #fff; font: 700 0.75rem/1 var(--font); box-shadow: 0 0 0 2px var(--papier-vlak); }
+.badge--stip { min-width: 10px; width: 10px; height: 10px; padding: 0; }
+.etiket { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--rond-bord); font: 700 0.75rem/1 var(--font-smal); letter-spacing: 0.08em; text-transform: uppercase; background: var(--rood); color: #fff; }
+.etiket--ijs { background: var(--ijs-zacht); color: var(--ijs-inkt); }
+.etiket--rand { background: none; border: 1.5px solid currentColor; color: var(--inkt-zacht); }
+
+/* --- Toast (melding onderin, boven de tabbalk) --- */
+.toast {
+  display: flex; align-items: center; gap: var(--r-3);
+  padding: var(--r-3) var(--r-3) var(--r-3) var(--r-4);
+  border-radius: var(--rond-blok); background: var(--lucht); color: var(--op-lucht);
+  box-shadow: var(--schaduw-zweef); font: var(--t-klein);
+}
+.toast__tekst { flex: 1; }
+.toast .knop { min-height: 40px; padding: 0 var(--r-3); font-size: 1rem; background: var(--ijs); color: #04203a; }
+.toast svg { flex: none; }
+
+/* --- Lege staat --- */
+.leeg { display: grid; justify-items: center; text-align: center; gap: var(--r-3); padding: var(--r-6) var(--r-4); }
+.leeg__beeld { width: 120px; height: 64px; }
+.leeg__titel { font: var(--t-2); }
+.leeg p { color: var(--inkt-zacht); max-width: 30ch; }
+
+/* --- Laden: skelet in papierkleur + kleine vlok --- */
+.skelet { border-radius: var(--rond-bord); background: linear-gradient(90deg, var(--papier-diep) 0 40%, color-mix(in srgb, var(--papier-diep) 50%, var(--papier-vlak)) 50%, var(--papier-diep) 60% 100%); background-size: 300% 100%; animation: skelet 1.4s linear infinite; }
+@keyframes skelet { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.vlokspinner { width: 28px; height: 28px; color: var(--ijs-inkt); animation: draai 2.4s linear infinite; }
+@keyframes draai { to { transform: rotate(360deg); } }
+
+/* --- Foutmelding / melding in de pagina --- */
+.melding { display: flex; gap: var(--r-3); align-items: flex-start; padding: var(--r-3) var(--r-4); border-radius: var(--rond-blok); border: var(--rand) solid var(--lijn); background: var(--papier-vlak); }
+.melding svg { flex: none; width: 22px; height: 22px; margin-top: 1px; }
+.melding--fout { border-color: var(--rood); }
+.melding--fout svg { color: var(--rood); }
+.melding--offline { border-style: dashed; border-color: var(--inkt-zacht); }
+.melding__titel { font: var(--t-3); }
+
+/* --- Bottom sheet --- */
+.blad-scherm { position: absolute; inset: 0; background: rgba(8, 0, 50, 0.45); opacity: 0; transition: opacity var(--duur-blad) var(--gemak); pointer-events: none; z-index: 40; }
+.blad { position: absolute; left: 0; right: 0; bottom: 0; z-index: 41; max-height: 88%; overflow: auto; background: var(--papier); border-radius: var(--rond-blad) var(--rond-blad) 0 0; box-shadow: var(--schaduw-blad); padding: var(--r-2) var(--rand-x) calc(var(--r-5) + var(--onder)); transform: translateY(105%); transition: transform var(--duur-blad) var(--gemak); }
+.blad::before { content: ''; display: block; width: 40px; height: 5px; border-radius: 3px; background: var(--lijn); margin: 0 auto var(--r-4); }
+.blad-open .blad-scherm { opacity: 1; pointer-events: auto; }
+.blad-open .blad { transform: none; }
+
+/* --- Kop van het scherm --- */
+.kop {
+  position: relative; isolation: isolate; overflow: hidden;
+  background: var(--lucht); color: var(--op-lucht);
+  padding: calc(var(--boven) + 14px) var(--rand-x) 0;
+}
+.kop__balk { display: flex; align-items: center; min-height: var(--tik); gap: var(--r-2); }
+.kop__terug { display: inline-flex; align-items: center; gap: 2px; min-height: var(--tik); min-width: var(--tik); margin-left: -10px; padding: 0 10px 0 4px; border: 0; background: none; color: var(--op-lucht); font: 600 1rem/1 var(--font); cursor: pointer; border-radius: var(--rond-pil); }
+.kop__terug svg { width: 26px; height: 26px; }
+.kop__acties { margin-left: auto; display: flex; gap: var(--r-1); }
+.kop__actie { width: var(--tik); height: var(--tik); display: grid; place-items: center; border-radius: 50%; border: 0; background: var(--glas-op-lucht); color: var(--op-lucht); cursor: pointer; }
+.kop__boven { font: var(--t-label); letter-spacing: var(--spatie-label); text-transform: uppercase; color: var(--op-lucht-zacht); }
+.kop__titel { font: var(--t-1); margin-top: 2px; }
+.kop__onder { font: var(--t-klein); color: rgba(255, 255, 255, 0.86); margin-top: 6px; max-width: 34ch; }
+.kop__extra { margin-top: var(--r-4); position: relative; z-index: 2; }
+.kop__bergen { position: relative; height: 96px; margin: 0 calc(-1 * var(--rand-x)); margin-top: -6px; z-index: -1; }
+.kop__bergen svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* waas: tekst blijft leesbaar waar een top achter de ondertitel komt (zoals in de app) */
+.kop__bergen::after { content: ''; position: absolute; inset: 0; background: linear-gradient(var(--lucht) 0%, color-mix(in srgb, var(--lucht) 55%, transparent) 22%, transparent 50%); }
+.kop__titel, .kop__onder { text-shadow: 0 1px 10px color-mix(in srgb, var(--lucht) 80%, transparent); }
+.kop--groot .kop__bergen { height: 150px; margin-top: -60px; }
+.kop .sneeuwveld { z-index: -1; }
+
+/* --- Sneeuw (gedeeld: canvas over de lucht, achter tekst en bergen) --- */
+.sneeuwveld { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+:root[data-sneeuw='uit'] .sneeuwveld { display: none; }
+@media (prefers-reduced-motion: reduce) { .sneeuwveld { display: none; } }
+
+/* --- Navigatiebalk (richting A: papier met sneeuwrand; B en C staan in navigatie.html) --- */
+.tabbalk {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  padding: 6px 4px calc(4px + var(--onder));
+  background: var(--papier-vlak);
+  border-top: 1px solid var(--lijn);
+}
+.tab { position: relative; display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 56px; border: 0; background: none; color: var(--inkt-zacht); font: 600 0.75rem/1 var(--font); cursor: pointer; padding: 0; }
+.tab__icoon { position: relative; display: grid; place-items: center; width: 56px; height: 32px; border-radius: var(--rond-pil); transition: background-color var(--duur-wissel) var(--gemak); }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-current='page'] { color: var(--inkt); }
+.tab[aria-current='page'] .tab__icoon { background: var(--ijs-zacht); }
+.tab .badge { position: absolute; top: -2px; right: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wispo *, .wispo *::before, .wispo *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

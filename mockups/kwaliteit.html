@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kwaliteit</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="30" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven"><a href="index.html">Tweeslag Wispo · ontwerpvoorstel</a> · stap 7</p>
+    <h1>Kwaliteit voor de hele app</h1>
+    <p>Wat er nu gemeten is, wat de stijlbasis regelt, en wat er bij het inbouwen bij moet. ‘Na’ wordt gemeten na elke stap van het stappenplan.</p>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="1045"></div>
+</header>
+<main class="doc">
+  <h2>Metingen nu (live site, 21 november 2026)</h2>
+  <div class="cijfers">
+    <div class="cijfer"><b>79</b><span>Lighthouse prestaties (mobiel)</span></div>
+    <div class="cijfer"><b>94</b><span>toegankelijkheid</span></div>
+    <div class="cijfer"><b>100</b><span>best practices</span></div>
+    <div class="cijfer"><b>63</b><span>SEO (bewust laag: noindex)</span></div>
+    <div class="cijfer"><b>3,8 s</b><span>grootste inhoud in beeld (LCP)</span></div>
+    <div class="cijfer"><b>6,4 s</b><span>speed index</span></div>
+    <div class="cijfer"><b>0,03</b><span>verspringen (CLS)</span></div>
+    <div class="cijfer"><b>522 kB</b><span>eerste keer laden</span></div>
+  </div>
+  <p style="margin-top:12px">Volledig rapport: <a href="metingen/lighthouse-voor.html">metingen/lighthouse-voor.html</a>. Lighthouse 12 heeft geen aparte PWA-score meer; de PWA-punten staan hieronder als lijst. Het enige toegankelijkheidspunt dat faalt is <code>user-scalable=no</code> in de viewport (inzoomen uit).</p>
+  <div class="tabel-wrap" style="margin-top:14px"><table class="tabel">
+    <thead><tr><th>Bundel (build van main)</th><th>Grootte</th><th>gzip</th><th>Opmerking</th></tr></thead>
+    <tbody>
+      <tr><th>JavaScript, hoofdbundel</th><td>621 kB</td><td>210 kB</td><td>Alle schermen in één bestand (ook Casino, Redactietafel, Verdelen)</td></tr>
+      <tr><th>JavaScript, Supabase</th><td>228 kB</td><td>59 kB</td><td>Al apart geladen, goed</td></tr>
+      <tr><th>CSS</th><td>180 kB</td><td>36 kB</td><td>15 bestanden in één; met de stijlbasis naar schatting −40 %</td></tr>
+      <tr><th>Lettertypen</th><td>88 kB</td><td>–</td><td>4 × woff2, lokaal, vooraf geladen</td></tr>
+      <tr><th>Pistekaart</th><td>1,1 MB</td><td>–</td><td>WebP, in de precache (offline)</td></tr>
+      <tr><th>Precache totaal</th><td>2,2 MB</td><td>–</td><td>21 bestanden</td></tr>
+    </tbody></table></div>
+
+  <h2>Eisen en hoe de stijlbasis ze regelt</h2>
+  <div class="raster raster--2">
+    <div class="kader"><h3 style="margin-top:0">Tikvlak ≥ 44 × 44</h3><p class="klein">Nu goed op bijna alles (gemeten op 8 schermen); uitzondering: de terugknop op Weer (69 × 35) en twee tekstlinks. In de stijlbasis is <code>--tik: 44px</code> het minimum voor knop, kopactie, terugknop, segment (40 + 2 × 2 rand), tab (72 × 56) en rij (≥ 64).</p></div>
+    <div class="kader"><h3 style="margin-top:0">Contrast, ook in de zon</h3><p class="klein">Alle tekstkleuren halen AA op papier, inkt en inkt-zacht ook AAA (≥ 7). Lichtblauw is nooit tekst op papier; daarvoor is <code>--ijs-inkt</code> (#05607a, 6,4). De stijlbasis-pagina rekent het live uit. In donker: tekst #eef0fa op #0c0a2c = 16,9. Buiten in fel licht helpt vooral: geen dunne grijze tekst, geen tekst op foto’s, gewicht 400 minimaal.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Dark mode, per scherm</h3><p class="klein">‘Nacht op de berg’: alle kleuren via tokens, dus elk scherm gaat in één keer mee. Per scherm na te lopen: Kaart (pistekaart blijft licht, kop en knoppen donker), Rad en Casino (zijn al donker: vlak niet nog eens donkerder), Clubblad (kiekjes blijven wit papier, als echte foto’s), Paklijst (vinkjes in pistekleur, iets lichter). Instelling: Telefoon / Licht / Donker. <code>color-scheme: only light</code> en de meta eruit.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Minder beweging en sneeuw uit</h3><p class="klein">Bestaat al (<code>sneeuw.aan</code> en <code>prefers-reduced-motion</code> in <code>Sneeuw.tsx</code>). De schakelaar verhuist van onderaan Home naar Instellingen. Bij minder beweging: geen schuiven tussen schermen, rad meteen de uitslag (doet het al), geen confetti, bergen springen.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Offline</h3><p class="klein">Werkt offline: planning, paklijst, kamers, kaart, rad, casino, busbingo, je eigen score (precache + NetworkFirst voor JSON). Heeft internet nodig: klassement, stemmen, clubblad (nieuw), insturen (gaat in de wachtrij), locaties, weer (laatst bekende blijft). Eén component <code>melding--offline</code> met ‘X heeft internet nodig’ en de tijd van de laatste stand; plus het pilletje ‘Geen bereik · stand van 14:20’ in de kop.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Snel opstarten</h3><p class="klein">Grootste winst: de hoofdbundel opsplitsen per tab (<code>React.lazy</code> voor Casino, Redactietafel, Verdelen, Beheer, Kaart), want die hoeft niemand bij het openen. Speed index 6,4 s komt vooral door het laadscherm dat pas na de lettertypes en data vervaagt (max 1,5 s): de splash met panorama maakt dat wachten deel van het beeld. Doel: LCP &lt; 2,5 s, prestaties ≥ 90.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Updates</h3><p class="klein">Nu: toast ‘Er is een nieuwe versie van de app.’ met twee kleine knoppen. Voorstel: toast boven de balk ‘Nieuwe versie klaar. Je vinkjes en je plaatje blijven bewaard.’ met <b>Vernieuw</b>; niet tijdens het invullen van een veld of een open blad; na 24 uur vanzelf bij de volgende keer openen. Bewaarde gegevens staan in <code>localStorage</code> (<code>tweeslag-wispo.*</code>) en <code>persoonsdata</code>; een update raakt die niet. Een sleutel die van vorm verandert krijgt een omzetter, zoals nu al bij de bingo.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Klein, groot, liggend, tablet</h3><p class="klein">360 px: vijf tabs van 72 px, labels passen (langste: ‘Planning’). Grote telefoon: inhoud max 560 px, kop loopt door. Liggend: <code>orientation: any</code>; de kop krimpt tot de smalle balk, de zwevende tabbalk blijft onderin, de pistekaart krijgt het hele scherm. Tablet: inhoud gecentreerd, panorama breder (doet <code>Bergen.tsx</code> al), Rad en Casino naast elkaar met de uitleg.</p></div>
+  </div>
+</main>
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

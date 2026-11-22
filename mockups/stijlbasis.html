@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stijlbasis</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<link rel="stylesheet" href="gedeeld/tabbalken.css">
+<style>
+  .panelen { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: var(--rond-blok); overflow: hidden; border: 1.5px solid var(--lijn); }
+  @media (max-width: 760px) { .panelen { grid-template-columns: 1fr; } }
+  .paneel { padding: 20px 16px 28px; display: grid; gap: 22px; align-content: start; min-width: 0; }
+  .paneel > .label:first-child { justify-self: start; }
+  .groep { display: grid; gap: 10px; }
+  .groep > .label { border-bottom: 1px dashed var(--lijn); padding-bottom: 4px; }
+  .knoprij { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .staal { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--lijn); }
+  .staal i { width: 44px; height: 32px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--inkt) 15%, transparent); }
+  .staal code { font-size: 0.8rem; background: none; padding: 0; }
+  .staal small { font: 600 0.8rem/1.2 var(--font); white-space: nowrap; }
+  .aa { color: var(--groen); } .nee { color: var(--rood); }
+  .typo > div { display: grid; grid-template-columns: 90px 1fr; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--lijn); }
+  .typo code { font-size: 0.78rem; color: var(--inkt-zacht); background: none; }
+  .maatrij { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+  .maatrij figure { margin: 0; display: grid; gap: 6px; justify-items: center; font: var(--t-label); color: var(--inkt-zacht); }
+  .beweeg { width: 54px; height: 54px; border-radius: var(--rond-bord); background: var(--blauw); }
+  .op-lucht { background: var(--lucht); color: var(--op-lucht); padding: 14px; border-radius: var(--rond-blok); position: relative; overflow: hidden; isolation: isolate; }
+  .bladdemo { position: relative; height: 290px; overflow: hidden; border-radius: var(--rond-blok); border: 1px solid var(--lijn); background: var(--papier); }
+  .bladdemo .blad-scherm { opacity: 1; }
+  .bladdemo .blad { transform: none; }
+  .tbdemo { position: relative; height: 150px; overflow: hidden; border-radius: var(--rond-blok); border: 1px solid var(--lijn); background: var(--papier); --onder: 14px; }
+  .bergvarianten { display: grid; gap: 12px; }
+  .bergstrook { position: relative; height: 110px; background: var(--lucht); border-radius: 12px; overflow: hidden; isolation: isolate; }
+  .bergstrook svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .bergstrook span { position: absolute; left: 10px; top: 8px; z-index: 3; color: #fff; font: var(--t-label); letter-spacing: .08em; text-transform: uppercase; }
+  .glasdemo { position: relative; height: 230px; border-radius: 14px; overflow: hidden; background: var(--lucht); isolation: isolate; }
+  .glasdemo .blok--glas { position: absolute; left: 16px; right: 16px; top: 22px; z-index: 2; color: var(--inkt); }
+  .glasdemo .bergstrook { position: absolute; inset: auto 0 0 0; height: 140px; border-radius: 0; }
+  .regels td, .regels th { vertical-align: top; }
+  .goed { color: var(--groen); font-weight: 600; }
+  .fout { color: var(--rood); font-weight: 600; }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="30" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven"><a href="index.html">Tweeslag Wispo · ontwerpvoorstel</a> · stap 5</p>
+    <h1>Stijlbasis</h1>
+    <p>Eén set tokens en componenten voor alle schermen, in licht (dag op de berg) en donker (nacht op de berg). Alles staat in <code>mockups/gedeeld/stijlbasis.css</code>; dat bestand wordt bij het inbouwen <code>src/styles/basis.css</code>.</p>
+    <ul class="doc-nav"><li><a href="#principes">Principes</a></li><li><a href="#kleuren">Kleuren</a></li><li><a href="#typografie">Typografie</a></li><li><a href="#maten">Ruimte, vorm, beweging</a></li><li><a href="#componenten">Componenten</a></li><li><a href="#bergen">Bergen en sneeuw</a></li><li><a href="#schrijven">Schrijfregels</a></li></ul>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="745" data-vlag></div>
+</header>
+
+<main class="doc">
+  <h2 id="principes">Vijf principes</h2>
+  <ol>
+    <li><b>Papier ligt plat.</b> Inhoud staat op papier (#f5f2ea), gescheiden door lijnen en ruimte. Geen witte kaart met schaduw; alleen wat echt zweeft (toast, blad, zwevende balk) krijgt schaduw.</li>
+    <li><b>De lucht is donkerblauw, de bergen zijn wit.</b> Elke kop is een stuk van hetzelfde panorama vanaf Le Jandri. Sneeuw valt alleen in de lucht.</li>
+    <li><b>Kleur betekent iets.</b> Groen, blauw, rood en zwart zijn pistekleuren: moeilijkheid, soort of status. Lichtblauw is ‘nu’ en ‘actief’. Rood is ook fout en badge. Nooit kleur als versiering.</li>
+    <li><b>Eén letterfamilie.</b> Barlow Condensed voor koppen, cijfers en bovenregels; Barlow voor tekst. Geen Georgia, Trebuchet of systeemfont meer.</li>
+    <li><b>Glas alleen boven sneeuw.</b> Vervaging is voor blokken die over de lucht of de sneeuw liggen (Rad, zwevende balk, segmenten in de kop). Op papier is er niets om te vervagen, dus daar geen glas.</li>
+  </ol>
+
+  <h2 id="kleuren">Kleuren</h2>
+  <p>Contrast is gemeten tegen het papier (of tegen de lucht voor tekst op de kop), live in deze pagina. AA = minstens 4,5 voor tekst, 3 voor grote tekst en iconen. Voor fel zonlicht houden we tekst op minstens 7 (AAA) waar het kan.</p>
+  <div class="panelen" style="margin-top:12px">
+    <div class="paneel thema-licht" id="kleur-licht"><span class="label">Licht · dag op de berg</span></div>
+    <div class="paneel thema-donker" id="kleur-donker"><span class="label">Donker · nacht op de berg</span></div>
+  </div>
+
+  <h2 id="typografie">Typografie</h2>
+  <div class="kader typo" id="typo"></div>
+  <p class="klein zacht" style="margin-top:8px">Vier woff2-bestanden (Barlow 400/600, Barlow Condensed 600/700), samen 88 kB, lokaal en in de precache. Cijfers in tabellen en de aftelklok met <code>font-variant-numeric: tabular-nums</code>.</p>
+
+  <h2 id="maten">Ruimte, vorm, diepte en beweging</h2>
+  <div class="raster raster--2">
+    <div class="kader"><h3 style="margin-top:0">Ruimte (4-punts raster)</h3><div class="maatrij" id="ruimte"></div>
+      <p class="klein" style="margin-top:10px">Zijmarge 16 px (20 px vanaf 400 px breed). Inhoud maximaal 560 px breed, gecentreerd op tablet en liggend. Tussen secties 32 px, tussen rijen 0 (de lijn scheidt).</p></div>
+    <div class="kader"><h3 style="margin-top:0">Vormen</h3><div class="maatrij">
+      <figure><span class="bord" style="width:54px;height:54px"></span>bord 6</figure>
+      <figure><span style="width:80px;height:54px;border:1.5px solid var(--lijn);border-radius:var(--rond-blok);background:var(--papier-vlak)"></span>blok 14</figure>
+      <figure><span style="width:80px;height:54px;border-radius:var(--rond-blad) var(--rond-blad) 0 0;background:var(--papier-vlak);border:1.5px solid var(--lijn)"></span>blad 22</figure>
+      <figure><span class="badge">3</span>pil</figure></div>
+      <p class="klein" style="margin-top:10px">Drie afrondingen in plaats van 25. Randen 1,5 px; een nadruklijn 2 px in inkt.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Diepte en vervaging</h3>
+      <p class="klein">Twee schaduwen: <code>--schaduw-zweef</code> (toast, zwevende balk) en <code>--schaduw-blad</code> (bottom sheet). Vervaging: <code>blur(14px) saturate(1.2)</code> op 72 % papier. Zonder <code>backdrop-filter</code>: effen papier.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Beweging</h3>
+      <div class="maatrij" id="beweging"></div>
+      <p class="klein" style="margin-top:10px">Tik 120 ms, wissel 240 ms, blad 320 ms, feest 900 ms. Binnenkomen met <code>--gemak</code>, weggaan sneller met <code>--gemak-uit</code>, stempels en badges met een kleine veer. Bij ‘minder beweging’: alles direct, geen sneeuw.</p></div>
+  </div>
+
+  <h2 id="componenten">Componenten</h2>
+  <p>Dezelfde opmaak links in licht en rechts in donker. Alles is aan te tikken.</p>
+  <div class="panelen" style="margin-top:12px">
+    <div class="paneel thema-licht" id="comp-licht"></div>
+    <div class="paneel thema-donker" id="comp-donker"></div>
+  </div>
+
+  <h2 id="bergen">Bergen en sneeuw als gedeelde onderdelen</h2>
+  <div class="raster raster--2">
+    <div class="bergvarianten" id="bergvarianten"></div>
+    <div class="grid" style="display:grid;gap:12px;align-content:start">
+      <div class="glasdemo"><canvas class="sneeuwveld" data-aantal="40" style="color:var(--vlok)"></canvas>
+        <div class="blok blok--glas"><p class="label">Glas boven sneeuw</p><p class="klein" style="margin-top:4px">Alleen het stuk van een vlok achter het blok wordt vaag; de rest blijft scherp. Zo blijft tekst leesbaar en voelt het als één ruimte.</p></div>
+        <div class="bergstrook" data-camera="745"></div></div>
+      <div class="kader"><h3 style="margin-top:0">Eén component, vier standen</h3>
+        <ul class="klein">
+          <li><code>&lt;Bergen camera={tab} /&gt;</code>: de kop van elke tab, vaste schaal en horizon (zoals nu).</li>
+          <li><code>groot</code>: Home en Welkom, met vlag op La Meije.</li>
+          <li><code>kam</code>: alleen de bovenrand als strook (scheiding, tabbalk C, lege staat).</li>
+          <li><code>weer</code>: bewolkt, mist, storm, en <b>nacht</b> (nieuw, voor donker).</li>
+        </ul>
+        <h3>Sneeuw</h3>
+        <ul class="klein">
+          <li>Eén canvas per kop, kristallen in drie dieptes, af en toe een windvlaag (zoals nu).</li>
+          <li>Uit bij ‘minder beweging’ en met de schakelaar ‘Sneeuw’ in Instellingen.</li>
+          <li>Stopt buiten beeld (IntersectionObserver) en als de app op de achtergrond staat.</li>
+        </ul></div>
+    </div>
+  </div>
+
+  <h2 id="schrijven">Schrijfregels</h2>
+  <div class="raster raster--2">
+    <div class="kader">
+      <ul>
+        <li><b>Je en jij</b>, nooit u. Zeg ‘je kamer’, ‘jullie’ voor de kamer.</li>
+        <li><b>Kort en droog.</b> Eén gedachte per zin. Humor mag, in de ondertitels en lege staten, niet in knoppen of fouten.</li>
+        <li><b>Uitroepteken alleen bij feest</b>: een volle kaart, een goedgekeurde challenge, 100 % ingepakt. Hooguit één per scherm.</li>
+        <li><b>Geen emoji in de interface.</b> Iconen komen uit de eigen set. In wat mensen zelf schrijven (stukjes, bijnamen) mag alles.</li>
+        <li><b>Knoppen zijn werkwoorden</b>, 1 tot 3 woorden: ‘Stuur in’, ‘Draai’, ‘Zet op beginscherm’.</li>
+        <li><b>Geen techniek.</b> Niet ‘backend’, ‘server’, ‘sync’; wel ‘bereik’, ‘opgeslagen op je telefoon’.</li>
+        <li><b>Notatie:</b> vr 5 maart · 19:30 · 1.650 m · −5° · 2 cm · dag 4 van 10.</li>
+        <li><b>Vaste woorden:</b> Clubblad (niet Fotomuur), kiekje, Busbingo, appartement, reisleiding, beginscherm.</li>
+      </ul>
+    </div>
+    <div class="tabel-wrap"><table class="tabel regels">
+      <thead><tr><th>Situatie</th><th>Wel</th><th>Niet</th></tr></thead>
+      <tbody>
+        <tr><th>Clubblad leeg</th><td class="goed">Nog geen kiekjes. De eerste foto uit de bus is voor jou.</td><td class="fout">Er zijn nog geen foto’s.</td></tr>
+        <tr><th>Geen bereik</th><td class="goed">Geen bereik. Je ziet de stand van 14:20; de rest komt als je weer bereik hebt.</td><td class="fout">Geen verbinding (niet ingesteld)</td></tr>
+        <tr><th>Nieuwe versie</th><td class="goed">Er staat een nieuwe versie klaar. Je vinkjes en je plaatje blijven bewaard. <b>Vernieuw</b></td><td class="fout">Er is een nieuwe versie van de app.</td></tr>
+        <tr><th>Versturen mislukt</th><td class="goed">Je kiekje is nog niet verstuurd. Het staat klaar en gaat vanzelf als je bereik hebt.</td><td class="fout">Fout bij uploaden. Probeer het later opnieuw.</td></tr>
+        <tr><th>Bevestigen</th><td class="goed">Kiekje weghalen? Het verdwijnt ook uit het clubblad. <b>Haal weg</b> · Laat staan</td><td class="fout">Weet je het zeker? OK · Annuleren</td></tr>
+        <tr><th>Feest</th><td class="goed">Volle kaart! 50 punten voor jullie appartement.</td><td class="fout">🎉 Gefeliciteerd!!! Je hebt de bingo gewonnen! 🎉</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</main>
+
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script>
+const W = window.Wispo
+// ---------- Kleuren + contrast
+const KLEUREN = [
+  ['--lucht', 'lucht: koppen, splash', '--op-lucht'], ['--papier', 'papier: achtergrond'], ['--papier-vlak', 'vlak: blok, veld, blad'], ['--papier-diep', 'diep: segment, skelet'],
+  ['--inkt', 'inkt: tekst', null, true], ['--inkt-zacht', 'inkt zacht: bijschrift', null, true], ['--lijn', 'lijn'], ['--ijs', 'lichtblauw (club)'], ['--ijs-inkt', 'lichtblauw als tekst', null, true], ['--ijs-zacht', 'nu / actief vlak'],
+  ['--groen', 'groene piste · gelukt', null, true], ['--blauw', 'blauwe piste', null, true], ['--rood', 'rode piste · fout · badge', null, true], ['--zwart', 'zwarte piste'], ['--memo', 'geeltje (clubblad)'], ['--sneeuw', 'sneeuwrand'],
+]
+function rgb(c) { const m = c.match(/\d+(\.\d+)?/g).map(Number); return m.slice(0, 3) }
+function lum([r, g, b]) { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b) }
+function contrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05) }
+function hex(c) { return '#' + rgb(c).map((v) => v.toString(16).padStart(2, '0')).join('') }
+for (const id of ['kleur-licht', 'kleur-donker']) {
+  const el = document.getElementById(id)
+  const probe = document.createElement('span'); el.append(probe)
+  const kleur = (v) => { probe.style.color = `var(${v})`; return getComputedStyle(probe).color }
+  const papier = rgb(kleur('--papier')), lucht = rgb(kleur('--lucht'))
+  el.insertAdjacentHTML('beforeend', KLEUREN.map(([v, n, tegen, tekst]) => {
+    const c = kleur(v)
+    let cr = ''
+    if (tekst) { const r = contrast(rgb(c), papier); cr = `<small class="${r >= 4.5 ? 'aa' : 'nee'}">${r.toFixed(1)} op papier</small>` }
+    if (v === '--lucht') { const r = contrast(rgb(kleur('--op-lucht')), lucht), r2 = contrast(rgb(kleur('--op-lucht-zacht')), lucht); cr = `<small class="aa">wit ${r.toFixed(1)} · ijs ${r2.toFixed(1)}</small>` }
+    return `<div class="staal"><i style="background:var(${v})"></i><span><code>${v}</code><br><span class="klein zacht">${n} · ${hex(c)}</span></span>${cr}</div>`
+  }).join(''))
+  probe.remove()
+}
+
+// ---------- Typografie
+const TYPO = [['--t-reus', 'Nog 103 dagen'], ['--t-1', 'Planning'], ['--t-2', 'Zo begint het'], ['--t-3', 'Vertrek bus'], ['--t-tekst', 'Bagage inladen. Skischoenen in de handbagage, dan heb je ze zeker bij aankomst.'], ['--t-klein', 'Parkeerplaats bij de sporthal · 19:30'], ['--t-label', 'VOOR DE BUS'], ['--t-knop', 'Zet op beginscherm']]
+document.getElementById('typo').innerHTML = TYPO.map(([t, v]) => `<div><code>${t}</code><span style="font:var(${t});${t === '--t-label' ? 'letter-spacing:var(--spatie-label);color:var(--inkt-zacht)' : ''}">${v}</span></div>`).join('')
+document.getElementById('ruimte').innerHTML = [4, 8, 12, 16, 24, 32, 48].map((n, i) => `<figure><span style="width:${n}px;height:${n}px;background:var(--ijs)"></span>r-${i + 1} · ${n}</figure>`).join('')
+document.getElementById('beweging').innerHTML = [['tik', '--duur-tik', '--gemak'], ['wissel', '--duur-wissel', '--gemak'], ['blad', '--duur-blad', '--gemak'], ['feest', '--duur-feest', '--gemak-veer']].map(([n, d, e]) => `<figure><button class="beweeg" aria-label="Speel ${n}" style="transition:transform var(${d}) var(${e});border:0;cursor:pointer" onclick="this.style.transform=this.style.transform?'':'translateY(-18px) rotate(8deg)'"></button>${n}</figure>`).join('')
+
+// ---------- Componenten (zelfde opmaak in beide panelen)
+const i = W.icoon
+const COMP = (p) => `
+  <div class="groep"><span class="label">Knoppen</span>
+    <div class="knoprij"><button class="knop knop--primair">${i('camera', 22)}Stuur in</button><button class="knop knop--secundair">Later</button><button class="knop knop--tekst">Andere naam</button></div>
+    <div class="knoprij"><button class="knop knop--gevaar knop--klein">Haal weg</button><button class="knop knop--primair knop--klein" disabled>Bewaar</button></div></div>
+  <div class="groep"><span class="label">Pistebord (icoonhouder)</span>
+    <div class="knoprij"><span class="bord bord--groen">${i('paklijst', 22)}</span><span class="bord">${i('sneeuwvlok', 22)}</span><span class="bord bord--rood">${i('glas', 22)}</span><span class="bord bord--zwart">${i('bus', 22)}</span><span class="bord bord--ijs">${i('ski', 22)}</span><span class="bord bord--nummer bord--groen">1</span><span class="bord bord--klein bord--rood">${i('vlag', 17)}</span></div></div>
+  <div class="groep"><span class="label">Kop van het scherm</span>
+    <div class="kop" style="border-radius:var(--rond-blok);padding-top:10px"><canvas class="sneeuwveld" data-aantal="10" style="color:var(--vlok)"></canvas>
+      <div class="kop__balk"><button class="kop__terug">${i('links', 26)}Groep</button><div class="kop__acties"><button class="kop__actie" aria-label="Delen">${i('deel', 20)}</button></div></div>
+      <p class="kop__boven">Reisleiding</p><p class="kop__titel">Kamerverdeling</p><p class="kop__onder">25 mensen, 28 bedden, 0 nog in te delen.</p>
+      <div class="kop__extra"><div class="segmenten" role="tablist"><button role="tab" aria-selected="true">Indeling</button><button role="tab" aria-selected="false">Mensen</button><button role="tab" aria-selected="false">Bedden</button></div></div>
+      <div class="kop__bergen" data-bergen="745"></div></div></div>
+  <div class="groep"><span class="label">Rij</span>
+    <div><button class="rij"><span class="bord bord--groen">${i('paklijst', 22)}</span><span class="rij__tekst"><span class="rij__titel" style="display:block">Paklijst</span><span class="rij__onder">12 van 46 ingepakt</span></span><span class="rij__pijl">${i('rechts', 20)}</span></button>
+    <button class="rij"><span class="bord bord--rood">${i('persoon', 22)}</span><span class="rij__tekst"><span class="rij__titel" style="display:block">Je plaatje is nog niet geplakt</span><span class="rij__onder">Foto, ski of board, je piste</span></span><span class="badge">1</span></button></div></div>
+  <div class="groep"><span class="label">Blok</span>
+    <div class="blok"><p class="label">Vaste tijden</p><p style="margin-top:4px"><b>19:30</b> Diner (kookploeg appartement 102)</p></div>
+    <div class="blok blok--nu"><span class="etiket">Nu</span> <b style="font:var(--t-3)">Naar de gletsjer</b><p class="klein zacht" style="margin-top:4px">Warme laag aan, het kan koud zijn op 3200 m.</p></div></div>
+  <div class="groep"><span class="label">Vinkje en schakelaar</span>
+    <div><label class="vink"><input type="checkbox" checked style="--kleur:var(--groen)"><span>Paspoort of ID-kaart</span></label><label class="vink"><input type="checkbox" style="--kleur:var(--groen)"><span>Zorgpas en EHIC-kaart</span></label><label class="vink"><input type="checkbox" style="--kleur:var(--rood)"><span>Helm</span></label></div>
+    <label class="schakelaar"><span class="schakelaar__tekst"><b style="font:var(--t-3)">Sneeuw</b><br><span class="klein zacht">Valt in de blauwe koppen</span></span><input type="checkbox" checked role="switch"></label></div>
+  <div class="groep"><span class="label">Invoerveld</span>
+    <label class="veld"><span class="veld__label">Bijnaam</span><input placeholder="Mag leeg" maxlength="30"><span class="veld__hulp">Staat overal in de app in plaats van je naam.</span></label>
+    <label class="veld veld--fout"><span class="veld__label">Voornaam</span><input value="Lisa"><span class="veld__hulp">Lisa staat er al. Maak er bijvoorbeeld ‘Lisa 2’ van.</span></label></div>
+  <div class="groep"><span class="label">Segmenten op papier</span><div class="segmenten segmenten--papier" role="tablist"><button role="tab" aria-selected="true">Programma</button><button role="tab" aria-selected="false">Vandaag</button><button role="tab" aria-selected="false">Paklijst</button></div></div>
+  <div class="groep"><span class="label">Badge en etiket</span><div class="knoprij"><span class="badge">3</span><span class="badge badge--stip"></span><span class="etiket">Nu</span><span class="etiket etiket--ijs">Hierna</span><span class="etiket etiket--rand">Wie wil</span></div></div>
+  <div class="groep"><span class="label">Toast</span>
+    <div class="toast" role="status">${i('update', 22)}<span class="toast__tekst">Nieuwe versie klaar. Je vinkjes blijven bewaard.</span><button class="knop">Vernieuw</button></div>
+    <div class="toast" role="status">${i('vink', 22)}<span class="toast__tekst">Geplaatst. Je kiekje staat in het clubblad.</span></div></div>
+  <div class="groep"><span class="label">Lege staat</span><div class="leeg blok"><div class="leeg__beeld" style="position:relative">${W.bergen({ camera: 645, verhouding: 120 / 64, dal: false, vlag: true })}</div><p class="leeg__titel">Nog geen kiekjes</p><p>De eerste foto uit de bus is voor jou.</p><button class="knop knop--primair knop--klein">${i('camera', 20)}Stuur een kiekje</button></div></div>
+  <div class="groep"><span class="label">Laden</span><div class="blok" style="display:grid;gap:10px"><div style="display:flex;gap:12px;align-items:center"><span class="skelet" style="width:40px;height:40px"></span><span style="flex:1;display:grid;gap:6px"><span class="skelet" style="height:14px;width:70%"></span><span class="skelet" style="height:12px;width:45%"></span></span></div><div style="display:flex;gap:10px;align-items:center" class="klein zacht"><span class="vlokspinner">${i('sneeuwvlok', 28)}</span>Weer ophalen…</div></div></div>
+  <div class="groep"><span class="label">Fout en offline</span>
+    <div class="melding melding--fout">${i('letop', 22)}<div><p class="melding__titel">Je kiekje is nog niet verstuurd</p><p class="klein zacht">Het staat klaar en gaat vanzelf als je bereik hebt.</p></div></div>
+    <div class="melding melding--offline">${i('offline', 22)}<div><p class="melding__titel">Geen bereik</p><p class="klein zacht">Je ziet de stand van 14:20. Klassement en clubblad hebben internet nodig.</p></div></div></div>
+  <div class="groep"><span class="label">Bottom sheet</span><div class="bladdemo"><div style="padding:16px" class="klein zacht">Challenges…</div><div class="blad-scherm"></div><div class="blad" style="padding-bottom:16px"><p class="label">Challenge · +15</p><h3 style="font:var(--t-2);margin:4px 0 8px">Vroege vogel</h3><p class="klein zacht">Zit in de eerste gondel van de dag. Stuur een kiekje als bewijs.</p><button class="knop knop--primair knop--breed" style="margin-top:14px">${i('camera', 22)}Maak een kiekje</button></div></div></div>
+  <div class="groep"><span class="label">Navigatiebalk (B · zwevend glas)</span><div class="tbdemo"><div class="kop" style="height:80px"><canvas class="sneeuwveld" data-aantal="10" style="color:var(--vlok)"></canvas></div>
+    <nav class="tb tb--b"><div class="tb__rij">${[['home', 'Home'], ['planning', 'Planning'], ['paklijst', 'Paklijst'], ['spel', 'Spel', '2'], ['groep', 'Groep', 's']].map(([t, l, b], k) => `<button class="tb__tab" ${k === 0 ? 'aria-current="page"' : ''}><span class="tb__icoon">${i(t, 24)}${b === 's' ? '<span class="badge badge--stip"></span>' : b ? `<span class="badge">${b}</span>` : ''}</span><span>${l}</span></button>`).join('')}</div></nav></div></div>`
+document.getElementById('comp-licht').innerHTML = '<span class="label">Licht</span>' + COMP('l')
+document.getElementById('comp-donker').innerHTML = '<span class="label">Donker</span>' + COMP('d')
+document.querySelectorAll('.segmenten button, .tb__tab').forEach((b) => b.addEventListener('click', () => {
+  const rij = b.parentElement
+  if (b.classList.contains('tb__tab')) { rij.querySelectorAll('.tb__tab').forEach((x) => x.removeAttribute('aria-current')); b.setAttribute('aria-current', 'page') }
+  else rij.querySelectorAll('button').forEach((x) => x.setAttribute('aria-selected', String(x === b)))
+}))
+
+// ---------- Bergvarianten
+const VAR = [['Home · groot, met vlag', 445, true, ''], ['Planning · camera 545', 545, false, ''], ['Spel · camera 845', 845, false, ''], ['Weer · bewolkt', 1050, false, '--berg-0:#5b6190;--berg-0-schaduw:#50567f;--berg-1:#8a8fb0;--berg-1-schaduw:#7d82a3;--berg-2:#b9bfd3;--berg-2-schaduw:#a6adc4;--berg-3:#e3e7ee;--berg-3-schaduw:#cdd3de'], ['Nacht (nieuw, voor donker)', 645, true, '--berg-0:#262a63;--berg-0-schaduw:#1f2255;--berg-1:#3a3f7e;--berg-1-schaduw:#313671;--berg-2:#6b72a8;--berg-2-schaduw:#5b6197;--berg-3:#c7d0e6;--berg-3-schaduw:#a7b2cf;--berg-dal:#0c0a2c']]
+document.getElementById('bergvarianten').innerHTML = VAR.map(([n, c, v, st]) => `<div class="bergstrook" style="${st}" data-camera="${c}" ${v ? 'data-vlag' : ''}><canvas class="sneeuwveld" data-aantal="10" style="color:var(--vlok);z-index:0"></canvas><span>${n}</span></div>`).join('') +
+  `<div class="bergstrook" style="height:60px;--kam-achter:#2a2280;--kam:var(--papier)"><span>Kam · scheiding / lege staat</span><div style="position:absolute;inset:auto 0 0 0;height:34px">${W.kamrand({ camera: 645 })}</div></div>`
+document.querySelectorAll('[data-camera]').forEach((el) => {
+  const teken = () => { const r = el.getBoundingClientRect(); if (!r.width) return; const svg = W.bergen({ camera: Number(el.dataset.camera), verhouding: r.width / r.height, vlag: el.hasAttribute('data-vlag') }); el.querySelector('svg.berg')?.remove(); el.insertAdjacentHTML('afterbegin', svg.replace('<svg class=""', '<svg class="berg"')) }
+  teken(); new ResizeObserver(teken).observe(el)
+})
+document.querySelectorAll('.kop [data-bergen]').forEach((el) => { const r = el.getBoundingClientRect(); el.innerHTML = W.bergen({ camera: Number(el.dataset.bergen), verhouding: (r.width || 340) / (r.height || 96) }) })
+</script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

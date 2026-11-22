@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indeling en navigatie</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<link rel="stylesheet" href="gedeeld/tabbalken.css">
+<style>
+  .fasetabel td, .fasetabel th { text-align: center; }
+  .fasetabel tbody th { text-align: left; }
+  .stip { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--inkt); margin: 0 1px; }
+  .stip--uit { background: none; border: 2px solid var(--lijn); }
+  .indeling { display: grid; gap: 12px; }
+  .indeling__tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .indeling__tab { border: 2px solid var(--lijn-sterk); border-radius: 10px; padding: 8px 6px; text-align: center; background: var(--papier-vlak); display: grid; justify-items: center; gap: 4px; font: 700 0.95rem/1 var(--font-smal); }
+  .indeling__tab small { font: 400 0.78rem/1.25 var(--font); color: var(--inkt-zacht); overflow-wrap: anywhere; hyphens: auto; }
+  .indeling__tab > span { overflow-wrap: anywhere; }
+  .indeling__tab--wissel { border-style: dashed; border-color: var(--ijs-inkt); }
+  .indeling__tab--meer { background: var(--papier-diep); }
+  .telefoons { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); justify-items: center; }
+  .mini { position: relative; width: 100%; max-width: 360px; aspect-ratio: 360 / 740; border-radius: 36px; overflow: hidden; border: 8px solid #101014; background: var(--papier); box-shadow: var(--schaduw-zweef); --onder: 20px; --boven: 34px; }
+  .mini__binnen { position: absolute; inset: 0; overflow: hidden; }
+  .mini__thuis { position: absolute; bottom: 7px; left: 50%; translate: -50% 0; width: 120px; height: 5px; border-radius: 3px; background: var(--inkt); opacity: 0.7; z-index: 50; }
+  .mini__klok { position: absolute; top: 10px; left: 26px; right: 26px; z-index: 50; display: flex; justify-content: space-between; color: #fff; font: 600 0.8rem/1 var(--font); }
+  .mini .kop { padding-top: calc(var(--boven) + 8px); }
+  .mini .kop__bergen { height: 112px; margin-top: -26px; }
+  .mini__inhoud { padding: 10px var(--rand-x) 120px; display: grid; gap: 0; }
+  .keuzes { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 18px; }
+  .keuzes .knop { min-height: 44px; }
+  .keuzes .knop[aria-pressed='true'] { background: var(--lucht); color: #fff; }
+  .richting h3 { margin-top: 10px; }
+  .richting { display: grid; gap: 6px; justify-items: stretch; max-width: 360px; width: 100%; }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="30" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven"><a href="index.html">Tweeslag Wispo · ontwerpvoorstel</a> · stap 3</p>
+    <h1>Indeling en navigatie</h1>
+    <p>Wat moet altijd onder je duim zitten, en wat mag één tik verder? Drie indelingen, drie vormen voor de balk, en hoe terug, vegen en het toetsenbord werken.</p>
+    <ul class="doc-nav"><li><a href="#gebruik">Gebruik per fase</a></li><li><a href="#indelingen">Indelingen</a></li><li><a href="#balken">Navigatiebalk</a></li><li><a href="#overgangen">Overgangen en terug</a></li><li><a href="#techniek">Safe area en toetsenbord</a></li></ul>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="545" data-vlag></div>
+</header>
+
+<main class="doc">
+  <h2 id="gebruik">Wat heeft de groep wanneer nodig?</h2>
+  <p>Geschat uit de inhoud en de functies (de app meet geen gebruik). Drie stippen = meerdere keren per dag.</p>
+  <div class="tabel-wrap" style="margin-top:12px"><table class="tabel fasetabel" id="fasen"></table></div>
+  <p style="margin-top:12px">Wat opvalt: <b>Paklijst</b> is vóór de reis het belangrijkst en daarna bijna niet meer; <b>Kaart</b> is precies andersom. <b>Clubblad</b> groeit tijdens de reis en is ná de reis het enige wat overblijft. Planning en Spel zijn de hele reis nodig.</p>
+
+  <h2 id="indelingen">Drie indelingen</h2>
+  <div class="raster raster--3" id="indelingen-lijst"></div>
+  <div class="aanbeveling"><p class="label">Aanbeveling</p><p><b>B · Meeschuivend.</b> Vier vaste tabs die de hele reis nodig zijn, en één plek die meebeweegt met de reis: vóór vertrek Paklijst, tijdens de reis Kaart, daarna Clubblad. Zo staat altijd het belangrijkste onder je duim, zonder ‘Meer’-la. De wissel valt op een natuurlijk moment (de bus vertrekt) en Home kondigt hem aan (‘De paklijst is klaar, de pistekaart staat nu onderin’). Wat niet in de balk staat, is altijd met één tik te vinden via Home of Groep. Wil je liever niets laten verschuiven, dan is A dezelfde indeling met Kaart vast op plek 3.</p></div>
+
+  <h2 id="balken">Drie vormen voor de navigatiebalk</h2>
+  <p>Alle drie met de eigen lijniconen (24 px, lijn 2 px), Nederlandse labels, een badge (rood getal of stip) en een tikvlak van minstens 64 × 56 px. Tik in de telefoons op de tabs; de bergen schuiven mee naar de plek van die tab in het panorama, net als in de app. Rechtsonder kun je licht en donker wisselen.</p>
+  <div class="keuzes" role="group" aria-label="Fase">
+    <button class="knop knop--secundair knop--klein" data-fase="voor" aria-pressed="true">Vóór de reis</button>
+    <button class="knop knop--secundair knop--klein" data-fase="tijdens" aria-pressed="false">Tijdens</button>
+    <button class="knop knop--secundair knop--klein" data-fase="na" aria-pressed="false">Na de reis</button>
+  </div>
+  <div class="telefoons" id="telefoons"></div>
+  <div class="raster raster--3" style="margin-top:20px">
+    <div class="kader"><h3 style="margin-top:0">A · Papier</h3><p class="klein">Vaste balk in de kleur van het papier, dunne lijn erboven, ijsblauwe pil achter het actieve icoon. Rustig, maximaal leesbaar in de zon, en het dichtst bij wat er nu is. Werkt overal, ook op oude Android-telefoons.</p></div>
+    <div class="kader"><h3 style="margin-top:0">B · Zwevend glas</h3><p class="klein">Losse balk boven de home-indicator, mat glas waar de sneeuw wazig achter langs valt (dezelfde vervaging als de blokken bij het Rad). Het actieve tab wordt een donkerblauw <b>pistebord</b>, dezelfde vorm als de iconen op Home. Meest ‘eigen’ zonder druk te worden.</p></div>
+    <div class="kader"><h3 style="margin-top:0">C · Bergkam</h3><p class="klein">De lucht komt onderin terug: de balk is donkerblauw met de voorste bergkam als bovenrand, en boven het actieve tab staat het rode vlaggetje van La Meije. De app wordt zo ingelijst door lucht, boven en onder. Het sterkste beeld, maar zwaarder: het neemt meer ruimte en het donker trekt aandacht weg van de inhoud.</p></div>
+  </div>
+  <div class="aanbeveling"><p class="label">Aanbeveling</p><p><b>B · Zwevend glas</b>, met het pistebord als actieve toestand. Het is de enige vorm waarin de sneeuw en de bergen ook onderin ‘doorlopen’ zonder dat de balk zelf een decor wordt, en het pistebord verbindt de balk met de iconen op Home, Paklijst en Planning. Op telefoons zonder <code>backdrop-filter</code> valt hij terug op effen papier (A). C is mooi voor een enkel scherm (bijvoorbeeld het welkomstscherm), niet voor elke dag.</p></div>
+
+  <h2 id="overgangen">Overgangen, terug en vegen</h2>
+  <div class="tabel-wrap"><table class="tabel">
+    <thead><tr><th>Wat</th><th>Beweging</th><th>Terug / vegen</th></tr></thead>
+    <tbody>
+      <tr><th>Tab wisselen (tikken)</th><td>Inhoud wisselt direct (geen schuif). De bergen in de kop glijden in 240 ms naar de plek van de nieuwe tab: het blijft één panorama.</td><td>Terug vanaf een andere tab gaat eerst naar Home; vanaf Home sluit terug de app (Android-gewoonte).</td></tr>
+      <tr><th>Tab wisselen (vegen)</th><td>Zoals nu: het buurscherm schuift mee met je vinger, de bergen trager (parallax).</td><td>Horizontaal vegen is alleen voor tabs. Segmenten binnen een tab wissel je met tikken, zodat de twee nooit botsen.</td></tr>
+      <tr><th>Segment binnen een tab</th><td>Inhoud vervaagt en schuift 16 px in de richting van het segment (200 ms). Het laatst gekozen segment blijft bewaard.</td><td>Geen stap in de geschiedenis.</td></tr>
+      <tr><th>Subscherm (Weer, Kamerverdeling, iemands profiel)</th><td>Schuift van rechts over de tab (240 ms); de tab eronder schuift 30 % mee en wordt iets donkerder. De balk blijft staan, met de bovenliggende tab actief.</td><td>Een stap in de geschiedenis. Terugknop in de kop (chevron + naam van de tab), Android-terug, en vegen vanaf de linkerrand.</td></tr>
+      <tr><th>Blad (Bewijs insturen, Installeren, Instellingen)</th><td>Schuift van onder omhoog (320 ms), papier eronder dimt.</td><td>Omlaag vegen, tik op het gedimde deel, Android-terug of de sluitknop.</td></tr>
+      <tr><th>Minder beweging</th><td colspan="2">Geen schuiven en geen sneeuw: alles verschijnt direct, het panorama springt naar zijn plek.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="techniek">Safe area, toetsenbord en tikvlak</h2>
+  <div class="raster raster--3">
+    <div class="kader"><h3 style="margin-top:0">Home-indicator</h3><p class="klein">Vaste balk: <code>padding-bottom: max(6px, env(safe-area-inset-bottom))</code>. Zwevende balk: <code>bottom: max(10px, env(safe-area-inset-bottom))</code>, dan zweeft hij net boven de streep. De inhoud krijgt onderaan de hoogte van de balk + de safe area + 16 px, zodat het laatste item nooit onder de balk verdwijnt.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Toetsenbord</h3><p class="klein">Zodra een invoerveld focus krijgt, schuift de balk weg (<code>focusin</code>, en <code>visualViewport</code> voor iOS) en komt hij terug bij <code>focusout</code>. In de viewport-meta <code>interactive-widget=resizes-content</code>, zodat Android de pagina verkleint in plaats van eroverheen te tekenen. Knoppen als ‘Bewaar’ staan in het blad zelf, niet in de balk.</p></div>
+    <div class="kader"><h3 style="margin-top:0">Tikvlak</h3><p class="klein">Vijf tabs op 360 px = 72 px breed en 56 px hoog per tab (nu met zeven: 51 px). Badge en vlag liggen bovenop en zijn niet apart tikbaar. Twee keer op de actieve tab tikken scrolt naar boven (dat doet de app nu al).</p></div>
+  </div>
+</main>
+
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script>
+const W = window.Wispo
+// ---- Gebruik per fase
+const GEBRUIK = [
+  ['Planning', 2, 3, 0], ['Paklijst', 3, 1, 0], ['Weer', 1, 3, 0], ['Kaart', 0, 3, 0], ['Spel: challenges, bingo', 1, 3, 1],
+  ['Rad en casino', 1, 3, 0], ['Clubblad', 1, 2, 3], ['Kamers', 2, 1, 0], ['Profiel / plaatje', 2, 1, 1], ['Klassement, stemmen', 0, 2, 2],
+]
+const stippen = (n) => [1, 2, 3].map((i) => `<span class="stip${i > n ? ' stip--uit' : ''}"></span>`).join('')
+document.getElementById('fasen').innerHTML = `<thead><tr><th>Onderdeel</th><th>Vóór (nu – 5 maart)</th><th>Tijdens (5 – 14 maart)</th><th>Na de reis</th></tr></thead><tbody>${GEBRUIK.map(([n, ...f]) => `<tr><th>${n}</th>${f.map((x) => `<td aria-label="${x} van 3">${stippen(x)}</td>`).join('')}</tr>`).join('')}</tbody>`
+
+// ---- Indelingen
+const IND = [
+  ['A · Vaste vijf', 'Elke tab staat altijd op dezelfde plek.', [['home', 'Home', 'aftelklok of vandaag, snelkoppelingen'], ['planning', 'Planning', 'Programma · Vandaag · Paklijst'], ['kaart', 'Kaart', 'pistekaart, waar ben ik'], ['spel', 'Spel', 'Challenges · Bingo · Rad · Stand'], ['groep', 'Groep', 'Kamers · Clubblad · Mensen']], 'Voor: voorspelbaar, simpel uit te leggen. Tegen: vóór de reis staat Kaart er voor niets, en de Paklijst zit een laag dieper.'],
+  ['B · Meeschuivend', 'Plek 3 volgt de reis.', [['home', 'Home', 'per fase andere bovenkant'], ['planning', 'Planning', 'Programma · Vandaag'], ['paklijst', 'Paklijst → Kaart → Clubblad', 'vóór · tijdens · na', true], ['spel', 'Spel', 'Challenges · Bingo · Rad · Stand'], ['groep', 'Groep', 'Kamers · Clubblad · Mensen']], 'Voor: altijd het belangrijkste onder je duim. Tegen: één tab verandert van naam en icoon (op een logisch moment).'],
+  ['C · Home als spil + Meer', 'Weinig tabs, de rest in een la.', [['home', 'Home', 'alles via tegels'], ['planning', 'Planning', 'met Paklijst'], ['kaart', 'Kaart', ''], ['spel', 'Spel', 'met Rad'], ['meer', 'Meer', 'Kamers, Clubblad, Weer, Profiel, Instellingen', 'meer']], 'Voor: makkelijk uit te breiden. Tegen: ‘Meer’ wordt een rommella, Clubblad en Kamers verdwijnen uit zicht.'],
+]
+document.getElementById('indelingen-lijst').innerHTML = IND.map(([titel, sub, tabs, oordeel]) => `<div class="kader indeling"><div><h3 style="margin:0">${titel}</h3><p class="zacht klein">${sub}</p></div>
+  <div class="indeling__tabs">${tabs.map(([i, n, o, x]) => `<div class="indeling__tab${x === true ? ' indeling__tab--wissel' : x === 'meer' ? ' indeling__tab--meer' : ''}">${W.icoon(i, 22)}<span>${n}</span><small>${o}</small></div>`).join('')}</div>
+  <p class="klein">${oordeel}</p></div>`).join('')
+
+// ---- Mini-telefoons met de drie balken
+const FASE_TAB = { voor: ['paklijst', 'Paklijst'], tijdens: ['kaart', 'Kaart'], na: ['clubblad', 'Clubblad'] }
+let fase = 'voor'
+const tabsVoor = () => [['home', 'Home', 'home'], ['planning', 'Planning', 'planning'], [FASE_TAB[fase][0], FASE_TAB[fase][1], 'fase'], ['spel', 'Spel', 'spel'], ['groep', 'Groep', 'groep']]
+const INHOUD = {
+  home: { boven: { voor: 'Wispo 2027 · Les Deux Alpes', tijdens: 'Ma 8 maart · dag 4 van 10', na: 'Tweeslag · Wispo 2027' }, titel: { voor: 'Nog 103 dagen', tijdens: 'Skidag 2', na: 'Groeten uit Les 2 Alpes' }, onder: { voor: 'tot de bus vertrekt · vrijdag 5 maart, 19:30', tijdens: 'Nu: naar de gletsjer. Om 11:00: IJsgrot.', na: 'Zet je mooiste foto’s in het clubblad.' } },
+  planning: { boven: 'Nog 103 dagen', titel: 'Planning', onder: 'Vertrek vrijdag 5 maart om 19:30' },
+  paklijst: { boven: 'Je staat op 1.650 m', titel: 'Paklijst', onder: '12 van 46 ingepakt. Nog in het dorp.' },
+  kaart: { boven: 'Les 2 Alpes', titel: 'Kaart', onder: 'Pistekaart en wie waar is' },
+  clubblad: { boven: 'G.S.B.V. Tweeslag', titel: 'Clubblad', onder: 'Wispo-editie · 214 kiekjes' },
+  spel: { boven: 'Score van Ronald', titel: 'Spel', onder: 'Challenges 40 · Busbingo 12' },
+  groep: { boven: '25 mensen · 7 appartementen', titel: 'Groep', onder: 'Je slaapt in Poedersneeuw, met Renske, Menno en Jacco.' },
+}
+const RIJEN = [['groen', 'paklijst', 'Paklijst', '12 van 46 ingepakt'], ['rood', 'persoon', 'Je plaatje is nog niet geplakt', 'Foto, ski of board, je piste'], ['blauw', 'sneeuwvlok', 'Nu op de berg', 'Gletsjer −5°, 2 cm verse sneeuw'], ['zwart', 'clubblad', 'Clubblad', '3 nieuwe kiekjes'], ['blauw', 'bus', 'Vertrek bus', 'vr 5 maart 19:30 · sporthal']]
+function telefoon(variant, actief) {
+  const tabs = tabsVoor()
+  const idx = Math.max(0, tabs.findIndex((t) => t[0] === actief))
+  const id = tabs[idx][0]
+  const c = INHOUD[id] || INHOUD.home
+  const v = (x) => (typeof x === 'object' ? x[fase] : x)
+  const badge = (t) => (t === 'spel' ? '<span class="badge">2</span>' : t === 'groep' ? '<span class="badge badge--stip"></span>' : '')
+  return `<div class="mini wispo" data-variant="${variant}"><div class="mini__binnen">
+    <div class="mini__klok"><span>9:41</span><span>●●● 5G</span></div>
+    <header class="kop"><canvas class="sneeuwveld" data-aantal="14" style="color:var(--vlok)"></canvas>
+      <p class="kop__boven">${v(c.boven)}</p><h3 class="kop__titel" style="font:var(--t-1)">${v(c.titel)}</h3><p class="kop__onder">${v(c.onder)}</p>
+      <div class="kop__bergen">${W.bergen({ camera: W.camera(idx), verhouding: 344 / 120 })}</div></header>
+    <div class="mini__inhoud">${RIJEN.map(([k, i, t, o]) => `<div class="rij"><span class="bord bord--${k}">${W.icoon(i, 22)}</span><span class="rij__tekst"><span class="rij__titel" style="display:block">${t}</span><span class="rij__onder">${o}</span></span><span class="rij__pijl">${W.icoon('rechts', 20)}</span></div>`).join('')}</div>
+    <nav class="tb tb--${variant}" aria-label="Hoofdmenu">${variant === 'c' ? `<div class="tb__kam">${W.kamrand({ camera: W.camera(idx) })}</div>` : ''}
+      <div class="tb__rij">${tabs.map(([t, l]) => `<button class="tb__tab" data-tab="${t}" ${t === id ? 'aria-current="page"' : ''}><span class="tb__icoon">${W.icoon(t, 24)}${badge(t)}</span><span>${l}</span></button>`).join('')}</div></nav>
+    <span class="mini__thuis"></span></div></div>`
+}
+const actief = { a: 'home', b: 'home', c: 'home' }
+function tekenTelefoons() {
+  const el = document.getElementById('telefoons')
+  el.innerHTML = ['a', 'b', 'c'].map((v) => `<div class="richting"><h3>${{ a: 'A · Papier', b: 'B · Zwevend glas', c: 'C · Bergkam' }[v]}</h3>${telefoon(v, actief[v])}</div>`).join('')
+  el.querySelectorAll('.tb__tab').forEach((b) => (b.onclick = () => { actief[b.closest('.mini').dataset.variant] = b.dataset.tab; tekenTelefoons() }))
+  W.sneeuwOveral(el)
+}
+document.querySelectorAll('[data-fase]').forEach((b) => (b.onclick = () => {
+  fase = b.dataset.fase
+  document.querySelectorAll('[data-fase]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+  for (const k in actief) if (!tabsVoor().some((t) => t[0] === actief[k])) actief[k] = FASE_TAB[fase][0]
+  tekenTelefoons()
+}))
+tekenTelefoons()
+</script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

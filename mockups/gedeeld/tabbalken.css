@@ -1,0 +1,41 @@
+/* Drie richtingen voor de navigatiebalk. Gedeeld door navigatie.html en app-prototype.html. */
+
+/* ---------- A · Papier: vaste balk, papier met lijn, ijsblauwe pil achter het actieve icoon ---------- */
+.tb { position: absolute; left: 0; right: 0; bottom: 0; z-index: 30; }
+.tb__rij { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.tb__tab { position: relative; display: grid; justify-items: center; align-content: center; gap: 3px; min-height: 58px; padding: 0; border: 0; background: none; cursor: pointer; font: 600 0.75rem/1 var(--font); color: var(--inkt-zacht); -webkit-tap-highlight-color: transparent; }
+.tb__icoon { position: relative; display: grid; place-items: center; width: 58px; height: 32px; border-radius: 999px; transition: background-color var(--duur-wissel) var(--gemak), color var(--duur-wissel); }
+.tb__icoon svg { width: 24px; height: 24px; }
+.tb__tab .badge { position: absolute; top: -3px; left: calc(50% + 6px); }
+.tb__tab .badge--stip { top: 1px; left: calc(50% + 10px); }
+
+.tb--a { background: var(--papier-vlak); border-top: 1px solid var(--lijn); padding: 4px 2px max(6px, var(--onder)); }
+.tb--a .tb__tab[aria-current='page'] { color: var(--inkt); }
+.tb--a .tb__tab[aria-current='page'] .tb__icoon { background: var(--ijs-zacht); }
+.tb--a .tb__tab[aria-current='page'] span:last-child { font-weight: 700; }
+
+/* ---------- B · Zwevend glas: losse balk boven de home-indicator, het actieve tab wordt een pistebord ---------- */
+.tb--b { left: 10px; right: 10px; bottom: max(10px, var(--onder)); border-radius: var(--rond-blad); padding: 5px; background: var(--glas); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); border: 1px solid color-mix(in srgb, var(--lijn) 70%, transparent); box-shadow: var(--schaduw-zweef); }
+.tb--b .tb__tab { min-height: 56px; border-radius: 16px; color: var(--inkt-zacht); }
+.tb--b .tb__icoon { width: 40px; height: 34px; border-radius: var(--rond-bord); }
+.tb--b .tb__tab[aria-current='page'] { color: var(--inkt); }
+.tb--b .tb__tab[aria-current='page'] .tb__icoon { background: var(--knop); color: var(--op-knop); }
+.tb--b .tb__tab[aria-current='page'] span:last-child { font-weight: 700; }
+
+/* ---------- C · Bergkam: de lucht komt onderin terug, de voorste kam als bovenrand, vlag boven het actieve tab ---------- */
+.tb--c { background: var(--lucht); color: #fff; padding: 2px 2px max(6px, var(--onder)); }
+.tb--c .tb__kam { position: absolute; left: 0; right: 0; bottom: 100%; height: 34px; pointer-events: none; }
+.tb--c .tb__kam svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tb--c { --kam-achter: #2a2280; --kam: var(--lucht); }
+.tb--c .tb__tab { color: rgba(255, 255, 255, 0.72); }
+.tb--c .tb__tab[aria-current='page'] { color: #fff; }
+.tb--c .tb__tab[aria-current='page'] .tb__icoon { color: var(--op-lucht-zacht); }
+.tb--c .tb__tab[aria-current='page'] span:last-child { font-weight: 700; }
+.tb--c .tb__tab[aria-current='page']::before { content: ''; position: absolute; top: -9px; left: calc(50% - 20px); width: 2px; height: 14px; background: rgba(255, 255, 255, 0.7); }
+.tb--c .tb__tab[aria-current='page']::after { content: ''; position: absolute; top: -9px; left: calc(50% - 18px); width: 11px; height: 8px; background: var(--rood); clip-path: polygon(0 0, 100% 0, 72% 50%, 100% 100%, 0 100%); }
+.tb--c .badge { box-shadow: 0 0 0 2px var(--lucht); }
+.tb--c .sneeuwveld { color: rgba(255, 255, 255, 0.8); }
+
+/* Toetsenbord open: balk weg (zie app-prototype: focusin/visualViewport) */
+.toetsenbord .tb { transform: translateY(120%); transition: transform var(--duur-wissel) var(--gemak-uit); }
+.tb { transition: transform var(--duur-wissel) var(--gemak); }

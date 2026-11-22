@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App-overzicht</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<style>
+  .navkaart { display: grid; grid-template-columns: repeat(7, minmax(110px, 1fr)); gap: 8px; min-width: 820px; }
+  .navkaart__tab { border: 2px solid var(--lijn-sterk); border-radius: 10px; padding: 8px; background: var(--papier-vlak); display: grid; gap: 6px; align-content: start; }
+  .navkaart__tab > b { display: flex; gap: 6px; align-items: center; font: 700 1.05rem/1 var(--font-smal); }
+  .navkaart__sub { border: 1.5px dashed var(--inkt-zacht); border-radius: 8px; padding: 6px 8px; font: var(--t-klein); }
+  .navkaart__sub small { display: block; color: var(--inkt-zacht); font-size: 0.8rem; line-height: 1.25; }
+  .navkaart__seg { font-size: 0.8rem; color: var(--inkt-zacht); line-height: 1.3; }
+  .kleurstalen { display: flex; flex-wrap: wrap; gap: 6px; }
+  .kleurstalen span { width: 26px; height: 26px; border-radius: 4px; border: 1px solid rgba(0,0,0,.12); }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="30" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven"><a href="index.html">Tweeslag Wispo · ontwerpvoorstel</a> · stap 1 en 2</p>
+    <h1>App-overzicht en consistentie</h1>
+    <p>Alle schermen zoals ze nu zijn (stand van <code>main</code>, 21 november 2026), op 390 × 844 px, in licht en donker. Daaronder hoe de navigatie werkt, wat er rond installeren is, wat er aan CSS ligt, en per scherm wat afwijkt.</p>
+    <ul class="doc-nav">
+      <li><a href="#schermen">Schermen</a></li><li><a href="#navigatie">Navigatie nu</a></li><li><a href="#installeren">Installeren</a></li><li><a href="#css">CSS en componenten</a></li><li><a href="#tabel">Consistentietabel</a></li><li><a href="#top10">Top 10</a></li><li><a href="#ai">AI-default</a></li>
+    </ul>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="445" data-vlag></div>
+</header>
+
+<main class="doc">
+  <p class="intro">Kort: de app heeft al een eigen stijl, alleen staat die er negen keer los in. <b>Papier, donkerblauwe lucht met het echte panorama vanaf Le Jandri, Barlow Condensed en pisteborden</b>: dat is de richting die op Home, Paklijst, Weer, Welkom en Profiel al gekozen is. Planning, Kamers, Spel en Clubblad kregen daarnaast Georgia, Kamerverdeling en Beheer zijn de oude stijl gebleven, en de zeven tabs staan krap. Er is geen map <code>/mockups</code> in de repo (ook niet op een branch); de commentaren in <code>Bergen.tsx</code> verwijzen naar <code>bergen-systeem.html</code> en <code>bergen-doorlopend.html</code>, maar die zijn nooit gecommit. Ik heb daarom de styles zelf als vastgelegde richting genomen.</p>
+
+  <div class="cijfers" style="margin-top:24px">
+    <div class="cijfer"><b>24</b><span>schermen en toestanden gefotografeerd</span></div>
+    <div class="cijfer"><b>7</b><span>tabs in de balk (richtlijn: 5)</span></div>
+    <div class="cijfer"><b>9×</b><span>hetzelfde papierpalet, elk met eigen voorvoegsel</span></div>
+    <div class="cijfer"><b>128</b><span>verschillende hexkleuren in de CSS</span></div>
+    <div class="cijfer"><b>64</b><span>verschillende lettergroottes</span></div>
+    <div class="cijfer"><b>21</b><span>soorten knoppen</span></div>
+    <div class="cijfer"><b>0</b><span>schermen met dark mode</span></div>
+  </div>
+
+  <h2 id="schermen">Schermen</h2>
+  <p>Tik op een beeld om het groot te zien. <b>Donker is overal gelijk aan licht</b>: de app zet <code>color-scheme: only light</code> en heeft geen donkere variabelen. Gemaakt zonder Supabase (lokaal), dus gedeelde onderdelen (Stemmen, Klassement, Clubblad, Bewijs insturen) tonen hun ‘niet ingesteld’-toestand; dat laat meteen zien hoe lege staten er nu uitzien. Bewijs insturen opent alleen met backend en staat daarom niet als beeld hieronder; de opmaak (kiekje, geeltje, stempel) staat in <code>bewijs.css</code>.</p>
+  <div class="raster raster--3" id="schermlijst"></div>
+
+  <h2 id="navigatie">Navigatie nu</h2>
+  <p>Zeven tabs, op elke telefoon even breed (<code>TabBalk.tsx</code>). Labels zijn 12 px en staan bij 360 px breed tegen elkaar aan. De overige schermen hangen onder een tab: die tab licht op als je erop staat.</p>
+  <div class="tabel-wrap" style="padding:12px; margin-top: 12px">
+    <div class="navkaart">
+      <div class="navkaart__tab"><b><i data-icoon="home" data-grootte="18"></i>Home</b><div class="navkaart__sub">Weer en sneeuw<small>via de weer-rij; ook vanaf Planning</small></div><div class="navkaart__sub">Profiel (venster)<small>naamknop rechtsboven, rij ‘plaatje’</small></div><div class="navkaart__sub">Clubblad<small>via de fotostrip; licht dan Spel op</small></div><div class="navkaart__sub">Welkom<small>eerste keer, over alles heen</small></div></div>
+      <div class="navkaart__tab"><b><i data-icoon="planning" data-grootte="18"></i>Planning</b><span class="navkaart__seg">Hele reis · Per dag / Vandaag</span><div class="navkaart__sub">Weer<small>weer-icoon in de kop</small></div></div>
+      <div class="navkaart__tab"><b><i data-icoon="paklijst" data-grootte="18"></i>Paklijst</b><span class="navkaart__seg">één lange lijst, eigen items</span></div>
+      <div class="navkaart__tab"><b><i data-icoon="kamers" data-grootte="18"></i>Kamers</b><span class="navkaart__seg">nummerkiezer 101–107</span><div class="navkaart__sub">Kamerverdeling<small>alleen reisleiding</small></div><div class="navkaart__sub">Beheer<small>knop onderaan</small></div><div class="navkaart__sub">Profiel bekijken<small>tik op een naam</small></div></div>
+      <div class="navkaart__tab"><b><i data-icoon="kaart" data-grootte="18"></i>Kaart</b><span class="navkaart__seg">pistekaart, zoomen, ‘Waar ben ik?’</span></div>
+      <div class="navkaart__tab"><b><i data-icoon="rad" data-grootte="18"></i>Rad</b><span class="navkaart__seg">Klos · Piste · Drankje · Eigen · Casino</span></div>
+      <div class="navkaart__tab"><b><i data-icoon="spel" data-grootte="18"></i>Spel</b><span class="navkaart__seg">Challenges · Busbingo · Stemmen · Klassement</span><div class="navkaart__sub">Bewijs insturen<small>blad over Challenges</small></div><div class="navkaart__sub">Clubblad<small>knop bij Challenges</small></div></div>
+    </div>
+  </div>
+  <div class="raster raster--2" style="margin-top:16px">
+    <div class="kader"><h3 style="margin-top:0">Wat de terugknop doet</h3>
+      <ul>
+        <li><b>Tussen tabs:</b> geen stap in de geschiedenis. Terug (Android) of terugvegen sluit de app, ook als je net van Home naar Spel ging.</li>
+        <li><b>Naar een subscherm</b> (Weer, Clubblad, Kamerverdeling, Beheer): wél een stap. Terug gaat naar de tab waar je vandaan kwam (Weer kan naar Home of Planning).</li>
+        <li><b>Profiel en Bewijs</b> zijn vensters; terug sluit het venster (<code>dialoogFocus.ts</code>).</li>
+        <li>Direct openen op <code>#weer</code> zet de tab eronder in de geschiedenis, zodat terug niet de app sluit. Goed opgelost.</li>
+      </ul></div>
+    <div class="kader"><h3 style="margin-top:0">Vegen en overgangen</h3>
+      <ul>
+        <li><b>Tikken</b> op een tab wisselt direct, zonder animatie.</li>
+        <li><b>Horizontaal vegen</b> schuift naar de buurtab; het buurscherm staat al klaar en de bergen schuiven trager mee (één doorlopend panorama, 100 px per tab). Dit is het sterkste ‘één geheel’-moment van de app.</li>
+        <li>Subschermen komen zonder overgang in beeld; de terugknop staat als tekst ‘← Spel’ / ‘← Terug’ in de kop.</li>
+        <li>Geen veeg-van-de-rand om terug te gaan binnen de app (op iOS doet Safari dat alleen buiten standalone).</li>
+      </ul></div>
+  </div>
+
+  <h2 id="installeren">Installeren en app-icoon</h2>
+  <div class="raster raster--2">
+    <div class="kader">
+      <h3 style="margin-top:0">Manifest (<code>vite.config.ts</code>)</h3>
+      <table class="tabel">
+        <tr><th>name</th><td>Tweeslag Wispo – Les Deux Alpes</td></tr>
+        <tr><th>short_name</th><td>Tweeslag Wispo <span class="etiket">14 tekens</span><br><span class="zacht">iOS kapt af na ±12: ‘Tweeslag Wis…’</span></td></tr>
+        <tr><th>display</th><td>standalone</td></tr>
+        <tr><th>orientation</th><td>portrait <span class="zacht">(tablet liggend gaat niet)</span></td></tr>
+        <tr><th>theme_color</th><td><span style="display:inline-block;width:14px;height:14px;background:#0d0058;border-radius:3px;vertical-align:-2px"></span> #0d0058</td></tr>
+        <tr><th>background_color</th><td><span style="display:inline-block;width:14px;height:14px;background:#0d0058;border-radius:3px;vertical-align:-2px"></span> #0d0058</td></tr>
+        <tr><th>start_url / scope</th><td>/tweeslag-wispo/</td></tr>
+        <tr><th>statusbalk iOS</th><td>black-translucent (kop loopt onder de klok door)</td></tr>
+      </table>
+    </div>
+    <div class="kader">
+      <h3 style="margin-top:0">Iconen en splash (gemaakt uit <code>public/logo.svg</code>)</h3>
+      <div style="display:flex; gap:14px; align-items:flex-end; margin-bottom:12px">
+        <img src="../public/logo.svg" width="96" height="96" alt="Huidig icoon" style="border-radius:22px">
+        <img src="../public/logo.svg" width="60" height="60" alt="" style="border-radius:14px">
+        <img src="../public/logo.svg" width="40" height="40" alt="" style="border-radius:9px">
+        <img src="../public/logo.svg" width="16" height="16" alt="">
+      </div>
+      <ul>
+        <li>pwa-64, 192, 512 (transparant preset, padding 0), maskable 512 (padding 0,1), apple-touch-icon 180, favicon.ico 48 + logo.svg.</li>
+        <li>30 iOS-splashschermen: logo op 65 % van de korte kant op donkerblauw; laadscherm in <code>index.html</code> is er een kopie van, zodat er niets verspringt. Goed.</li>
+        <li><b>Mist:</b> splash voor iPhone 16 Pro / Pro Max en nieuwer (1206×2622, 1320×2868); die tonen nu een wit of zwart scherm.</li>
+        <li><b>Icoon:</b> het woordmerk ‘2slag’ is op 60 px nog net leesbaar, op 40 px en als favicon niet; het lichtblauw van de bergen valt weg op donkere achtergronden.</li>
+        <li>Installatiehulp: blok op Home met emoji en ‘Hoe doe ik dat?’; Welkom heeft dezelfde uitleg. Android-prompt wordt opgevangen (<code>installatie.ts</code>).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 id="css">CSS, kleuren, fonts en componenten</h2>
+  <div class="cijfers">
+    <div class="cijfer"><b>15</b><span>CSS-bestanden, 12.839 regels (app.css alleen al 4.665)</span></div>
+    <div class="cijfer"><b>180 kB</b><span>CSS in de build (36 kB gzip)</span></div>
+    <div class="cijfer"><b>47</b><span>verschillende schaduwen</span></div>
+    <div class="cijfer"><b>25</b><span>verschillende afrondingen</span></div>
+    <div class="cijfer"><b>36</b><span>@keyframes</span></div>
+    <div class="cijfer"><b>41</b><span>soorten titel/kop-klassen</span></div>
+  </div>
+  <div class="raster raster--2" style="margin-top:16px">
+    <div class="kader">
+      <h3 style="margin-top:0">Hetzelfde palet, negen keer</h3>
+      <p class="klein">Home <code>--h-</code>, Paklijst <code>--pak-</code>, Weer <code>--w-</code>, Welkom <code>--w-</code> (zelfde voorvoegsel, ander bestand), Kamers <code>--ks-</code>, Profiel <code>--pl-</code>, Planning <code>--boek-</code>, Rad <code>--rad-</code>, Spel en Clubblad zonder voorvoegsel. Bijna gelijk, maar niet helemaal:</p>
+      <table class="tabel" style="margin-top:8px">
+        <tr><th>papier</th><td><div class="kleurstalen"><span style="background:#f5f2ea"></span><span style="background:#fbf8f1"></span><span style="background:#f2f7fb"></span></div></td><td class="zacht">Planning lichter, Beheer/Verdelen lichtblauw</td></tr>
+        <tr><th>lijn</th><td><div class="kleurstalen"><span style="background:#d9d3c4"></span><span style="background:#cfc6b2"></span><span style="background:#ddd6c6"></span><span style="background:#c9c1ae"></span><span style="background:#c7d7e4"></span></div></td><td class="zacht">vijf tinten</td></tr>
+        <tr><th>rood</th><td><div class="kleurstalen"><span style="background:#c4212f"></span><span style="background:#b3202c"></span><span style="background:#b3261e"></span></div></td><td class="zacht">drie tinten</td></tr>
+        <tr><th>blauw als tekst</th><td><div class="kleurstalen"><span style="background:#05607a"></span><span style="background:#066f8a"></span><span style="background:#0a7d9c"></span><span style="background:#0a80a0"></span></div></td><td class="zacht">vier tinten</td></tr>
+        <tr><th>pistekleuren</th><td><div class="kleurstalen"><span style="background:#1e7a4c"></span><span style="background:#1d5fc4"></span><span style="background:#c4212f"></span><span style="background:#17171c"></span></div></td><td class="zacht">consistent, goed</td></tr>
+      </table>
+    </div>
+    <div class="kader">
+      <h3 style="margin-top:0">Lettertypen</h3>
+      <ul>
+        <li><b style="font-family:var(--font-smal)">Barlow Condensed</b> 600/700 en <b style="font-family:var(--font)">Barlow</b> 400/600, lokaal (88 kB woff2): Home, Paklijst, Weer, Welkom, Profiel, Spel-koppen, Rad-borden.</li>
+        <li><b style="font-family:Georgia">Georgia</b> (ook cursief): Planning, Kamers, schermtitels ‘Spel’ en ‘Clubblad’, Rad-uitleg, lege staten. Op Android bestaat Georgia niet; daar wordt het een andere serif.</li>
+        <li><b style="font-family:'Trebuchet MS'">Trebuchet MS</b>: standaard in <code>app.css</code> (<code>--font-kop</code>), te zien in Kamerverdeling, Beheer, meldingen. Android valt terug op Roboto.</li>
+        <li>Stijlgids van Tweeslag noemt Trebuchet + Georgia; de app is daar al bewust van afgeweken met Barlow. Voorstel: dat doortrekken.</li>
+      </ul>
+      <h3>Componenten met varianten</h3>
+      <ul class="klein">
+        <li><b>Knoppen (21):</b> knop, --primair, --secundair, --accent, --gevaar, --klein, --breed, --naam, tekstknop, icoonknop, spelknop (+ --rood, --licht, --houd), plaatjeknop (+ --hoofd, --neven, --tekst), redactieknop, draaiknop.</li>
+        <li><b>Blokken (17):</b> kaartje (wit + schaduw), Home-rij, tijdlijnkaart, dagkaart (stippelrand), kiekje (polaroid), briefkaart, plaatje, vertrekbord, casino-tafel, weerkaart, …</li>
+        <li><b>Subtabs (4 vormen):</b> witte pil in de kop (Planning, Rad), onderstreepte hoofdletters (Spel), nummerknoppen (Kamers), filterchips (Clubblad).</li>
+        <li><b>Invoer (3):</b> zoekveld (onderlijn), veld (afgerond, grijze knop ernaast), invoer (Kamerverdeling, paarse plusknop).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 id="tabel">Sluiten de tabs op elkaar aan?</h2>
+  <div class="legenda"><span><i style="background:var(--groen)"></i>past bij de lijn van Home</span><span><i style="background:#d39b00"></i>kleine afwijking</span><span><i style="background:var(--rood)"></i>wijkt duidelijk af</span></div>
+  <div class="tabel-wrap"><table class="tabel" id="consistentie"></table></div>
+
+  <h2 id="top10">De 10 grootste inconsistenties</h2>
+  <ol class="top10">
+    <li><div><b>Zeven tabs, en de rest hangt er willekeurig onder</b>Labels van 12 px staan bij 360 px tegen elkaar. Clubblad hoort bij Spel, Weer bij Home, Profiel nergens. Wie Clubblad zoekt, moet weten dat het achter een knop bij Challenges zit.</div></li>
+    <li><div><b>Drie lettertypen door elkaar</b>Barlow op Home, Georgia (cursief) op Planning, Kamers en in de titels ‘Spel’ en ‘Clubblad’, Trebuchet op Kamerverdeling en Beheer. Een schermtitel wisselt dus van letter als je van tab wisselt.</div></li>
+    <li><div><b>Eén palet, negen kopieën</b>Elk scherm definieert papier, inkt, lijn en rood opnieuw met een eigen voorvoegsel, met kleine verschillen (vijf lijntinten, drie roden, vier lichtblauwe teksttinten). Daardoor kan dark mode er nu niet in één keer bij.</div></li>
+    <li><div><b>Subtabs in vier vormen</b>Witte pil in de kop (Planning, Rad), onderstreepte hoofdletters onder de kop (Spel), nummerknoppen (Kamers), chips (Clubblad). Dezelfde handeling ziet er overal anders uit.</div></li>
+    <li><div><b>21 soorten knoppen</b>Navy pil, omlijnde hoofdletters, een rode glansknop met cursieve Georgia (‘Hup, draaien!’), een turquoise blok (‘Bord rollen’), een paarse plus. De primaire actie is niet op elk scherm te herkennen.</div></li>
+    <li><div><b>De kop is per scherm anders</b>Home groot, Weer een eigen hero, Kaart géén kop (alleen een zwart label), Rad zonder ondertitel, Spel met een puntenblok en een losse geluidsknop eronder. Terugknoppen zijn tekst met pijl (‘← Terug’, ‘← Spel’, ‘← Kamers’).</div></li>
+    <li><div><b>Kamerverdeling en Beheer zijn de oude app</b>Lichtblauwe achtergrond met vlokpatroon, witte kaarten met schaduw, Trebuchet en Georgia, emoji in knoppen. Alleen de reisleiding ziet het, maar het is wel waar de kamers vandaan komen.</div></li>
+    <li><div><b>Lege staten en fouten zijn losse zinnen</b>Cursieve Georgia-zin zonder beeld of actie, met jargon: ‘Er is geen backend ingesteld, dus stemmen kan niet.’ Offline, laden en ‘niet ingesteld’ zien er hetzelfde uit.</div></li>
+    <li><div><b>Geen dark mode</b><code>only light</code> overal, terwijl de bus ’s nachts rijdt en après-ski in het donker is. Rad, vertrekbord en casino zijn al donker, maar als losse eilanden op een licht scherm.</div></li>
+    <li><div><b>Emoji en tekstpijlen naast de eigen iconen</b>De lijniconen zijn één goede set, maar daarnaast staan emoji (installatieblok, Kamerverdeling, Roulette, Stemmen, badges, paklijst-categorieën) en tekens als ‘←’, ‘→’, ‘✓’, ‘✕’.</div></li>
+  </ol>
+
+  <h2 id="ai">AI-default-kenmerken die terugkomen</h2>
+  <div class="raster raster--2">
+    <div class="kader">
+      <ul>
+        <li><b>Verloop zonder functie:</b> de voortgangsbalk (<code>--voortgang</code>, lichtblauw → donkerblauw), de rode glans op ‘Hup, draaien!’, verlopen op Roulette en Profiel. Wel functioneel en te houden: de waas onder de kop die tekst leesbaar houdt boven de bergen.</li>
+        <li><b>Witte kaart met schaduw:</b> <code>.kaartje</code> (radius 18, schaduw) op Beheer, Kamerverdeling, het installatieblok en Verbinding. Home en Paklijst laten al zien dat het zonder kan: rijen op papier met een lijn ertussen.</li>
+        <li><b>Emoji als iconen</b> in UI en data (zie top 10).</li>
+      </ul>
+    </div>
+    <div class="kader">
+      <ul>
+        <li><b>Standaardfont</b> waar Barlow niet is doorgevoerd: Trebuchet en Georgia, op Android Roboto en Noto Serif.</li>
+        <li><b>Generieke teksten:</b> ‘Er is een nieuwe versie van de app.’, ‘Geen verbinding (niet ingesteld)’, ‘✓ De app werkt nu ook zonder internet.’, ‘Zet de app op je beginscherm’.</li>
+        <li><b>iOS-standaardsegment</b> (witte pil op glas) en overal <code>border-radius: 999px</code>.</li>
+        <li><b>Wat juist níet generiek is</b> en de basis moet blijven: het echte panorama met vlag op La Meije, pisteborden als iconen, de paklijst als route naar de top met hoogtemeter, het vertrekbord voor pistes, dagkaarten met stempels, het clubblad met kiekjes en geeltjes, skipas-naamkaartjes, de ansichtkaart na de reis. Toon: overal je/jij, weinig uitroeptekens (16 in de hele app, vooral bij feest), droge humor (‘anders hangen je natte sokken straks over de lamp’).</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script>
+const SCHERMEN = [
+  ['welkom', 'Welkom', 'Eerste keer openen, over alles heen.', 'Eigen kop met het 2slag-logo, naamkaartjes als skipas (blauwe onderrand, ‘WISPO 2027’). Past in de lijn.'],
+  ['home', 'Home – vóór de reis', 'Tab 1.', 'Grote aftelklok in Barlow Condensed, rijen met pisteborden. Installatieblok wijkt af: dubbele rand, emoji, navy pil.', true],
+  ['home-zondernaam', 'Home – nog geen naam', 'Tab 1.', '‘Kies je naam’ als pil rechtsboven; verder gelijk.'],
+  ['home-tijdens', 'Home – tijdens (ma 8 maart)', 'Tab 1, ?nu=2027-03-08.', 'Tijdlijn met ‘NU’-kaart, drie tegels Spel/Foto’s/Kaart: een vierde bloksoort naast rij, kaart en installatieblok.', true],
+  ['home-na', 'Home – na de reis', 'Tab 1, ?nu=2027-03-15.', 'Ansichtkaart ‘Groeten uit Les 2 Alpes’, Georgia-cursief, omlijnde hoofdletterknop. Mooi idee, eigen typografie.'],
+  ['planning', 'Planning – hele reis', 'Tab 2.', 'Boekstijl: ‘Inhoud’ in Georgia-cursief, stippellijnen naar de datum. Papier iets lichter (#fbf8f1).', true],
+  ['planning-tijdens', 'Planning – vandaag', 'Tab 2.', 'Dagpagina met ‘NU’ en ‘HIERNA’; Georgia voor titels.'],
+  ['paklijst', 'Paklijst', 'Tab 3.', 'Hoogtemeter en route naar de top, genummerde pisteborden per categorie, ronde vinkjes in pistekleur. Sterkste scherm.', true],
+  ['kamers', 'Kamers', 'Tab 4.', 'Kamernamen in vette Georgia-cursief, initialen in bergvormige tegels, nummerkiezer. Eigen wereld, andere letter.', true],
+  ['kaart', 'Kaart', 'Tab 5.', 'Geen kop en geen bergen; zwart zwevend label, navy balk ‘Waar ben ik?’. Logisch (ruimte), maar los van de rest.'],
+  ['rad-klos', 'Rad – Klos', 'Tab 6.', 'Navy kaart met lampjes, rode glansknop met cursieve serif.'],
+  ['rad-piste', 'Rad – Piste', 'Tab 6.', 'Vertrekbord met pisteborden. Sterk idee.'],
+  ['rad-drankje', 'Rad – Drankje', 'Tab 6.', 'Rad zonder kader op papier; navy kader-knop ‘Wat wordt het?’; chips.'],
+  ['rad-eigen', 'Rad – Eigen', 'Tab 6.', 'Kompas op lichtblauw vlak: vijfde bloksoort binnen één tab.'],
+  ['rad-casino', 'Rad – Jaccasino', 'Tab 6.', 'Groen vilt, houten rand. Bewust eigen wereld (casino).'],
+  ['spel-challenges', 'Spel – Challenges', 'Tab 7, ?unlock=1.', 'Titel ‘Spel’ in Georgia, puntenblok, lichtblauwe testbalk, losse ronde geluidsknop, onderstreepte tabs, dagkaarten met stippelrand en stempels.', true],
+  ['spel-bingo', 'Spel – Busbingo', 'Tab 7.', 'Raster met hoofdletters in Barlow Condensed, navy vrij vakje.', true],
+  ['spel-stemmen', 'Spel – Stemmen', 'Tab 7.', 'Zonder backend: één cursieve zin. Geen lege staat.'],
+  ['spel-klassement', 'Spel – Klassement', 'Tab 7.', 'Idem.'],
+  ['fotomuur', 'Clubblad', 'Via Home of Spel; licht Spel op.', 'Titel in Georgia, terug als ‘← Spel’. Zonder backend: één zin.'],
+  ['weer', 'Weer en sneeuw', 'Via Home of Planning.', 'Eigen hero met weerbergen, ‘← Terug’, maan-icoon. Barlow; grafieken in eigen stijl.', true],
+  ['profiel', 'Profiel (plaatje maken)', 'Venster over Home.', 'Wit blad met hoofdletter-cursief in Barlow Condensed, plaatje als ruilkaart. Grijze knop ‘Bewaar’ naast het veld.'],
+  ['kamerverdeling', 'Kamerverdeling', 'Via Kamers, alleen reisleiding.', 'Oude stijl: lichtblauw met vlokpatroon, witte kaarten met schaduw, Trebuchet/Georgia, paarse plusknop.'],
+  ['beheer', 'Beheer', 'Via Kamers.', 'Oude stijl, ‘backend’ als woord in de UI.'],
+]
+const lijst = document.getElementById('schermlijst')
+for (const [id, naam, waar, noot, lang] of SCHERMEN) {
+  const el = document.createElement('article')
+  el.className = 'scherm-kaart'
+  const beelden = [['licht', `${id}-licht`], ['donker', `${id}-donker`]]
+  if (lang) beelden.push(['licht, gescrold', `${id}-licht-2`])
+  el.innerHTML = `<h3>${naam}</h3><p class="zacht">${waar}</p>
+    <div class="scherm-kaart__beelden" style="--n:${beelden.length}">${beelden.map(([l, f]) => `<figure><img loading="lazy" data-groot src="schermen/${f}.webp" alt="${naam}, ${l}"><figcaption>${l}</figcaption></figure>`).join('')}</div>
+    <p>${noot}</p>`
+  lijst.append(el)
+}
+
+// Consistentietabel: [scherm, ...cellen]; elke cel 'ok|half|af:tekst'
+const KOLOMMEN = ['Kleuren / accent', 'Typografie', 'Spacing / breedte', 'Kop van het scherm', 'Knoppen, blokken, velden', 'Iconen', 'Bergen en sneeuw', 'Leeg, laden, fout, toast', 'Animatie', 'Toon', 'Dark mode']
+const RIJEN = [
+  ['Home', 'ok:papier + navy, pisteborden', 'ok:Barlow / Condensed', 'ok:16 px, max 640', 'ok:groot, aftelklok, naam-pil', 'half:rijen goed; installatieblok dubbele rand + navy pil', 'half:lijniconen; emoji 📲 in installatieblok', 'ok:panorama + vlag, sneeuw in kop', 'half:installatie-uitleg als blok, geen toast', 'ok:droog, je/jij', 'af:alleen licht'],
+  ['Welkom', 'ok:papier + navy', 'ok:Barlow', 'ok:raster 2 kolommen', 'ok:als Home, met logo', 'ok:skipas-kaartjes', 'ok:lijniconen', 'ok:panorama', 'half:‘Zoek je naam’ zonder lege staat', 'ok:je/jij', 'af:alleen licht'],
+  ['Planning', 'half:papier lichter (#fbf8f1), eigen blauw', 'af:Georgia-cursief voor titels en tekst', 'ok:16 px', 'half:segment in de kop, weer als glasblok rechts', 'half:inhoudsopgave-rijen, tijdlijnkaart', 'ok:activiteitsiconen in borden', 'ok:panorama', 'half:geen lege dag-staat', 'ok:je/jij', 'af:alleen licht'],
+  ['Paklijst', 'ok:pistekleuren met betekenis', 'ok:Barlow', 'ok:16 px', 'ok:hoogtemeter in de kop', 'ok:vinkjes in pistekleur, genummerde borden', 'half:emoji in paklijst.json (niet getoond)', 'ok:route naar de top', 'ok:confetti bij 100 %', 'ok:‘Tot in de bus!’', 'af:alleen licht'],
+  ['Kamers', 'half:eigen accent #066f8a', 'af:Georgia vet cursief voor kamernamen', 'ok:16 px', 'ok:kleine kop + ondertitel', 'half:bergvormige initialen, nummerkiezer (4e subtab-vorm)', 'ok:lijniconen', 'ok:panorama', 'half:‘Nog geen kamer’ als tekst', 'ok:je/jij', 'af:alleen licht'],
+  ['Kaart', 'half:zwart label, navy balk', 'ok:Barlow', 'ok:volledig scherm', 'af:geen kop', 'half:+/− knoppen wit vierkant', 'ok:lijniconen', 'af:geen bergen, geen sneeuw (logisch)', 'half:locatie-fout als label', 'ok:kort', 'af:alleen licht'],
+  ['Rad (4 raderen)', 'half:elk rad een eigen kleurvlak (navy, lichtblauw)', 'af:Georgia-cursief in knop en uitslag', 'ok:16 px', 'half:kop zonder ondertitel, 5 segmenten', 'af:rode glansknop, turquoise blok, navy kaderknop', 'half:emoji in Rad.tsx (🗑, ✕)', 'ok:panorama', 'ok:uitslag in popup', 'ok:‘Hup, draaien!’', 'half:rad zelf is al donker'],
+  ['Jaccasino', 'half:groen vilt, hout (bewust)', 'half:script-logo', 'ok:past op één scherm', 'ok:zelfde kop als Rad', 'half:fiches, eigen knoppen', 'af:emoji 🍺🔊🔇🪙', 'ok:panorama', 'ok:popup', 'ok:‘Rien ne va plus!’', 'half:al donker'],
+  ['Spel', 'half:lichtblauwe testbalk, rood accent', 'af:titel ‘Spel’ in Georgia, rest Barlow', 'ok:16 px', 'af:puntenblok, losse geluidsknop onder de kop', 'af:onderstreepte tabs, stippelkaders, stempels', 'ok:lijniconen', 'ok:panorama', 'af:lege staat = cursieve zin met ‘backend’', 'half:‘Laat hem zien bij de prijsuitreiking!’', 'af:alleen licht'],
+  ['Clubblad', 'ok:papier, geeltje, rood', 'af:Georgia-titel; krant-stijl', 'ok:16 px', 'half:‘← Spel’ als tekst', 'half:kiekjes, filterchips (eigen vorm)', 'ok:lijniconen', 'ok:panorama', 'af:alleen een zin zonder backend', 'ok:‘Geplaatst!’', 'af:alleen licht'],
+  ['Bewijs insturen', 'ok:papier, geeltje', 'half:Barlow + handschrift-stijl', 'ok:blad', 'ok:blad met sluitknop', 'half:polaroid, memo, stempel', 'ok:lijniconen', 'half:geen bergen (blad)', 'ok:‘Je kiekje weghalen?’ als kaartje', 'ok:je/jij', 'af:alleen licht'],
+  ['Weer', 'ok:navy + papier, rood voor 0-graden', 'ok:Barlow / Condensed', 'ok:16 px', 'half:eigen hero, ‘← Terug’, maan-icoon', 'ok:rijen met lijn', 'ok:eigen weericonen', 'ok:bergen in het weer van vandaag', 'ok:‘Bijgewerkt om …’', 'ok:‘Rustig aan en blijf bij elkaar.’', 'af:alleen licht'],
+  ['Profiel', 'ok:papier, ijsblauw', 'half:hoofdletter-cursief Condensed', 'ok:blad', 'half:geen sluitknop in beeld', 'half:grijze ‘Bewaar’-knop naast veld', 'ok:lijniconen', 'half:geen (venster)', 'ok:‘Geplakt!’', 'ok:je/jij', 'af:alleen licht'],
+  ['Kamerverdeling / Beheer', 'af:lichtblauw + vlokpatroon, paars', 'af:Trebuchet + Georgia', 'half:kaarten met schaduw', 'half:kop goed, inhoud oud', 'af:witte kaart + schaduw, paarse plus', 'af:emoji ⚙️💾🛏️', 'ok:panorama', 'af:‘backend’, ‘niet ingesteld’', 'half:zakelijk', 'af:alleen licht'],
+  ['Meldingen (toast, update, installatie)', 'half:navy toast, groene ‘werkt offline’', 'half:Trebuchet', 'ok:onderin', 'ok:n.v.t.', 'half:twee knoppen klein', 'af:‘✓’ als teken', 'ok:n.v.t.', 'half:geen offline-melding per onderdeel', 'af:generiek: ‘Er is een nieuwe versie van de app.’', 'af:alleen licht'],
+]
+const t = document.getElementById('consistentie')
+t.innerHTML = `<thead><tr><th>Scherm</th>${KOLOMMEN.map((k) => `<th>${k}</th>`).join('')}</tr></thead><tbody>${RIJEN.map(([s, ...c]) => `<tr><th>${s}</th>${c.map((x) => { const [k, ...r] = x.split(':'); return `<td><span class="cel cel--${k}">${r.join(':')}</span></td>` }).join('')}</tr>`).join('')}</tbody>`
+</script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

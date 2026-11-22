@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wie ziet wat</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<style>
+  .niveaus { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+  .niveau { border-top: 6px solid var(--k); }
+  .niveau h3 { margin-top: 0; display: flex; gap: 8px; align-items: center; }
+  .niveau .bord { background: var(--k); }
+  .privtabel td:nth-child(n+2) { text-align: center; }
+  .ja { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--k, var(--inkt)); }
+  .deels { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 3px solid var(--k, var(--inkt)); }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="30" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven"><a href="index.html">Tweeslag Wispo · ontwerpvoorstel</a> · stap 7</p>
+    <h1>Wie ziet wat?</h1>
+    <p>Privacy over de hele app in één overzicht, gelezen uit de Supabase-migraties (0001–0019) en de code. Bedoeld om in de app te zetten (Instellingen → ‘Wie ziet wat?’) en voor de reisleiding.</p>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="945"></div>
+</header>
+<main class="doc">
+  <h2>Vier kringen</h2>
+  <div class="niveaus">
+    <div class="kader niveau" style="--k:var(--rood)"><h3><span class="bord bord--klein">${''}</span>Iedereen met de link</h3><p class="klein">Ook zonder de app te openen: de site is openbaar (wel <code>noindex</code>), en de repo op GitHub ook. Alles in <code>public/data/</code> is direct te downloaden.</p></div>
+    <div class="kader niveau" style="--k:var(--blauw)"><h3>Iedereen die de app opent</h3><p class="klein">De app logt elk apparaat anoniem in bij Supabase. ‘Deelnemer’ betekent dus: wie de app opent en een naam kiest. Er is geen code of uitnodiging.</p></div>
+    <div class="kader niveau" style="--k:var(--groen)"><h3>Alleen jij</h3><p class="klein">Op je eigen telefoon, of op de server gekoppeld aan jouw naam en alleen leesbaar voor het apparaat dat die naam nu heeft.</p></div>
+    <div class="kader niveau" style="--k:var(--zwart)"><h3>Alleen de organisatie</h3><p class="klein">Beheerders: ingelogd met een e-mailadres uit de tabel <code>beheerders</code> én een naam uit <code>beheerNamen</code> (nu Ronald en Sten). Zij vormen ook de redactie en de jury.</p></div>
+  </div>
+
+  <h2>Per gegeven</h2>
+  <div class="legenda"><span><i style="background:var(--inkt);border-radius:50%"></i>zichtbaar</span><span><i style="border:3px solid var(--inkt);border-radius:50%;background:none"></i>deels (zie toelichting)</span></div>
+  <div class="tabel-wrap"><table class="tabel privtabel" id="privtabel"></table></div>
+
+  <h2>Wat opvalt, en wat ik zou doen</h2>
+  <div class="raster raster--2">
+    <div class="kader kader--nadruk"><h3 style="margin-top:0">1 · ‘Deelnemer’ is niet te controleren</h3><p class="klein">Iedereen met de link kan een naam kiezen. <code>kies_naam</code> geeft die naam dan aan het nieuwe apparaat, en daarmee de paklijst, het casino en het profiel van die persoon. Profielen, foto’s die geplaatst zijn, locaties (als iemand ze deelt) en het klassement zijn leesbaar voor iedereen die de app opent.</p><p class="klein"><b>Voorstel:</b> een reiscode bij Welkom (bijvoorbeeld het woord dat op de QR-flyer staat), gecontroleerd door de server vóór <code>kies_naam</code>. Kleine moeite, grote drempel. En een naam die al op een ander apparaat in gebruik is, alleen overnemen na bevestiging op dat apparaat of door een beheerder.</p></div>
+    <div class="kader"><h3 style="margin-top:0">2 · Namen staan openbaar</h3><p class="klein"><code>kamers.json</code> met alle voornamen staat in een openbare repo en op de site. Alleen voornamen is goed (zoals de README zegt). Overweeg de kamerverdeling alleen nog via Supabase te laten lopen (dat kan al) en <code>kamers.json</code> leeg te laten, of de repo privé te maken met Pages via Actions.</p></div>
+    <div class="kader"><h3 style="margin-top:0">3 · Foto’s zijn goed geregeld</h3><p class="klein">Privé-bucket, tijdelijke links van een uur, EXIF (locatie) eruit, verkleind. Anderen zien alleen geplaatste foto’s die ‘voor iedereen’ zijn; ‘alleen de redactie’ ziet alleen de redactie. Wel: bij insturen staat de knop op ‘ze vinden het goed dat ze in het clubblad komen’. Houd die zin, en voeg in het overzicht toe dat iemand die op een foto staat de redactie kan vragen hem weg te halen.</p></div>
+    <div class="kader"><h3 style="margin-top:0">4 · Na de reis opruimen</h3><p class="klein">Er staat <code>supabase/opruimen.sql</code>. Spreek een datum af (bijvoorbeeld na de ALV, als het jaarboek af is) en zet die in de app: ‘Op 1 juni 2027 halen we alle foto’s, profielen en locaties weg.’ Locaties ruimen zich al elk uur op.</p></div>
+  </div>
+
+  <h2>Tekst voor in de app</h2>
+  <div class="kader" style="max-width:640px">
+    <p class="label">Instellingen → Wie ziet wat?</p>
+    <p style="margin-top:8px"><b>Iedereen die de app opent</b> ziet je naam, je bijnaam, je appartement, je plaatje, je score, je badges en de kiekjes die in het clubblad geplaatst zijn. Deel je je locatie, dan zien ze je stip op de kaart, hooguit een uur oud.</p>
+    <p><b>Alleen jij</b> ziet je paklijst, je bingokaart, je casinofiches, je stemmen en je kiekjes die nog bij de redactie liggen.</p>
+    <p><b>De redactie</b> (Ronald en Sten) ziet alle ingestuurde kiekjes en kan ze plaatsen of weghalen.</p>
+    <p><b>Niet in de app:</b> achternamen, telefoonnummers, adressen. Op 1 juni 2027 halen we alles weg.</p>
+  </div>
+</main>
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script>
+document.querySelectorAll('.niveau .bord').forEach((b) => b.remove())
+const R = [
+  // gegeven, link, app, jij, org, toelichting
+  ['Planning, paklijst-sjabloon, spel- en radteksten', 1, 1, 1, 1, 'public/data/*.json, ook offline in de cache'],
+  ['Voornamen en kamerindeling', 1, 1, 1, 1, 'kamers.json is openbaar; de kamerverdeling in Supabase alleen in de app'],
+  ['Gekozen naam en appartement (deelnemers)', 0, 1, 1, 1, ''],
+  ['Bijnaam, kamernaam', 0, 1, 1, 1, 'beheerder kan een ongepaste wissen'],
+  ['Profiel (plaatje, ski/board, feitje, karaoke, angst, foto)', 0, 1, 1, 1, 'alles optioneel'],
+  ['Score, klassement, badges, ‘alles ingepakt’', 0, 1, 1, 1, ''],
+  ['Kiekje, geplaatst en ‘voor iedereen’', 0, 1, 1, 1, 'tijdelijke link van 1 uur, zonder locatie'],
+  ['Kiekje ingestuurd, briefje terug, of ‘alleen redactie’', 0, 0, 1, 1, ''],
+  ['Ingezonden stukje', 0, 2, 1, 1, 'zelfde regel als kiekjes'],
+  ['Locatie op de kaart', 0, 2, 1, 1, 'alleen als je het aanzet; ouder dan 1 uur verdwijnt'],
+  ['Stemmen', 0, 0, 1, 2, 'je eigen stem zie je; de uitslag ziet iedereen'],
+  ['Paklijst-vinkjes, bingokaart, casino, eigen raderen', 0, 0, 1, 0, 'op de telefoon en gekoppeld aan je naam'],
+  ['Pushabonnement', 0, 0, 1, 2, 'beheerder kan het verwijderen'],
+  ['Beheerders-e-mailadressen', 0, 0, 0, 2, 'alleen je eigen rij'],
+]
+const cel = (v, k) => v === 1 ? `<span class="ja" style="--k:${k}" aria-label="ja"></span>` : v === 2 ? `<span class="deels" style="--k:${k}" aria-label="deels"></span>` : '<span class="zacht" aria-label="nee">–</span>'
+document.getElementById('privtabel').innerHTML = `<thead><tr><th>Gegeven</th><th>Iedereen met de link</th><th>Wie de app opent</th><th>Alleen jij</th><th>Organisatie</th><th style="text-align:left">Toelichting</th></tr></thead><tbody>${R.map(([n, a, b, c, d, t]) => `<tr><th style="white-space:normal;font:var(--t-3);font-size:1rem">${n}</th><td>${cel(a, 'var(--rood)')}</td><td>${cel(b, 'var(--blauw)')}</td><td>${cel(c, 'var(--groen)')}</td><td>${cel(d, 'var(--zwart)')}</td><td style="text-align:left" class="zacht">${t}</td></tr>`).join('')}</tbody>`
+</script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>
