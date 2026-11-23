@@ -15,8 +15,9 @@ const regels = bron.split('\n')
 const meije = regels[4].replace(/M-60 /g, 'M-260 ') // voorste sneeuwlaag met La Meije
 const logoBinnen = regels.slice(9, 18).join('\n')
 
-// Logo precies in het midden
-const S = 0.6, LB = 687, LH = 309 // logo-kader in eigen eenheden (y van -2 tot 307)
+// Logo precies in het midden. Groter dan 0,66 past het logo niet meer in de veilige cirkel van het
+// maskable-icoon (Android snijdt het dan aan de hoeken af).
+const S = 0.66, LB = 687, LH = 309 // logo-kader in eigen eenheden (y van -2 tot 307)
 const tx = 256 - (LB * S) / 2, ty = 256 - (LH * S) / 2 + 2 * S
 // La Meije: top van (253.2, 300) naar (400, 150), verticaal 2,6× opgerekt
 const PX = 253.2, PY = 300
@@ -29,7 +30,7 @@ const ster = (x, y, r, o = 1) => {
 const stip = (x, y, r, o) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${o}"/>`
 const sterren = [
   ster(92, 78, 16), ster(418, 58, 12, 0.95), ster(296, 108, 8, 0.85), ster(186, 38, 7, 0.8),
-  ster(472, 140, 7, 0.8), ster(38, 150, 6, 0.7), ster(60, 372, 8, 0.85),
+  ster(472, 140, 7, 0.8), ster(36, 118, 6, 0.7), ster(60, 372, 8, 0.85),
   stip(140, 120, 2.6, 0.7), stip(240, 66, 2.2, 0.6), stip(350, 30, 2.6, 0.7), stip(366, 132, 2, 0.5),
   stip(30, 40, 2.2, 0.55), stip(490, 92, 2.4, 0.6), stip(20, 300, 2.4, 0.55), stip(150, 368, 2, 0.55),
   stip(494, 262, 2.2, 0.55), stip(-30, 220, 2.4, 0.6), stip(-20, 360, 2, 0.5),
