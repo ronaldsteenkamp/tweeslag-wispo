@@ -53,7 +53,8 @@ export default defineConfig({
         scope: base,
         background_color: '#0d0058',
         theme_color: '#0d0058',
-        // Icoon: het 2slag-winterlogo (public/logo.svg, gemaakt via mockups/icoon.html, richting A)
+        // Icoon: 2slag in een sterrennacht met La Meije (public/logo.svg en maskable-wispo-*.png,
+        // gemaakt met scripts/icoon/maak-icoon.mjs)
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
