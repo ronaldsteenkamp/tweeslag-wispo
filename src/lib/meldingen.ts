@@ -170,6 +170,17 @@ export async function zetMeldingenAan(): Promise<string | null> {
   }
 }
 
+/**
+ * Welkomstscherm: bij de eerste tik (skipas kiezen of overslaan) meteen om toestemming vragen.
+ * Moet direct in de tik-handler aangeroepen worden (iPhone wil dat). Alleen als de telefoon het
+ * nog niet gevraagd heeft en je het niet zelf uitzette; geen testmelding. Lukt aanmelden nu niet
+ * (nog geen verbinding), dan doet herstel het zodra de app verbonden is.
+ */
+export function vraagMeldingenBijWelkom() {
+  if (!backendIngesteld || !ondersteund() || Notification.permission !== 'default' || uitgezet()) return
+  void zetMeldingenAan()
+}
+
 export async function zetMeldingenUit(): Promise<void> {
   schrijf(UITGEZET, true)
   schrijf(GEKOPPELD, null)
