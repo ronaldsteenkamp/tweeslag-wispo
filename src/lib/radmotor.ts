@@ -61,6 +61,22 @@ export function draai(o: DraaiOpties): { klaar: Promise<void>; stop: () => void 
     let vorigeT = t0
     let pinNu = o.vak ? Math.floor(o.van / o.vak) : 0
     let laatsteTik = -1e9
+    // Een fout in een tik of een beeld mag de draai nooit laten hangen (dan bleef het rad "bezig")
+    const veilig = (f: () => void) => {
+      try {
+        f()
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    const af = () => {
+      if (gestopt) return
+      gestopt = true
+      cancelAnimationFrame(frame)
+      clearTimeout(wachter)
+      veilig(() => o.onFrame(o.naar, 0))
+      klaarMet()
+    }
     const stap = (nu: number) => {
       if (gestopt) return
       const ms = nu - t0
@@ -70,7 +86,7 @@ export function draai(o: DraaiOpties): { klaar: Promise<void>; stop: () => void 
         const pin = Math.floor(h / o.vak)
         if (pin !== pinNu) {
           if (nu - laatsteTik > 32) {
-            o.onTik?.(snelheid)
+            veilig(() => o.onTik?.(snelheid))
             laatsteTik = nu
           }
           pinNu = pin
@@ -79,14 +95,13 @@ export function draai(o: DraaiOpties): { klaar: Promise<void>; stop: () => void 
       vorige = h
       vorigeT = nu
       if (ms < A + B + C) {
-        o.onFrame(h, snelheid)
         frame = requestAnimationFrame(stap)
-      } else {
-        o.onFrame(o.naar, 0)
-        klaarMet()
-      }
+        veilig(() => o.onFrame(h, snelheid))
+      } else af()
     }
     frame = requestAnimationFrame(stap)
+    // Vangnet als de beelden stoppen (app even weg, een haperende telefoon): op tijd toch klaar
+    const wachter = setTimeout(af, A + B + C + 1500)
   })
   return {
     klaar,
@@ -249,7 +264,10 @@ export function koppelVegen(
   // Alleen de eerste vinger telt (een tweede vinger liet het rad springen of halverwege stoppen)
   let vinger = -1
   const neer = (e: PointerEvent) => {
-    if (o.uit() || actief) return
+    if (o.uit()) return
+    // Al een vinger bezig: alleen overnemen als die vinger zijn capture kwijt is (gemist loslaten),
+    // anders blijft het rad voor altijd "vastgehouden"
+    if (actief && el.hasPointerCapture?.(vinger)) return
     o.onNeer?.()
     actief = true
     vinger = e.pointerId
