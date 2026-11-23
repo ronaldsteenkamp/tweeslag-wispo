@@ -7,8 +7,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 // De workflow geeft de repo-naam mee via BASE_PATH; lokaal valt hij terug op '/tweeslag-wispo/'.
 const base = process.env.BASE_PATH ?? '/tweeslag-wispo/'
 
-// Ophogen bij een nieuw app-icoon (zie manifest.icons hieronder), samen met ICOON in src/lib/icoonversie.ts
-const ICOON_VERSIE = 'c3'
+// Ophogen bij elke wijziging van het app-icoon (zie manifest.icons hieronder). ICOON in
+// src/lib/icoonversie.ts alleen ophogen als iPhone-gebruikers Wispo opnieuw moeten toevoegen.
+const ICOON_VERSIE = 'c3b'
 
 export default defineConfig({
   base,
