@@ -16,6 +16,21 @@ const URL = import.meta.env.VITE_SUPABASE_URL?.trim() ?? ''
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() ?? ''
 export const backendIngesteld = URL.startsWith('https://') && KEY.length > 20
 
+/*
+ * Alvast verbinding maken met de server terwijl de app nog opstart: na een lange pauze is de oude
+ * verbinding weg, en op de berg kost een nieuwe al gauw een seconde. Twee keer, want de gegevens
+ * (fetch, CORS) en de foto's (<img>) gebruiken elk een eigen verbinding.
+ */
+if (backendIngesteld && typeof document !== 'undefined') {
+  for (const metCors of [true, false]) {
+    const l = document.createElement('link')
+    l.rel = 'preconnect'
+    l.href = new globalThis.URL(URL).origin
+    if (metCors) l.crossOrigin = 'anonymous'
+    document.head.appendChild(l)
+  }
+}
+
 export type BackendStatus = 'uit' | 'verbinden' | 'verbonden' | 'offline'
 
 export interface BackendStand {
@@ -91,6 +106,32 @@ function isBeheerder() {
   return serverBeheerder && !!naam && config.beheerNamen.some((n) => n.toLowerCase() === naam)
 }
 
+/*
+ * Is deze ingelogde gebruiker beheerder? Bij het opstarten vragen verbind() en de sessie-melding
+ * van Supabase dit allebei; zo gaat er één vraag naar de server, tegelijk met de controle of die
+ * bereikbaar is in plaats van erna.
+ */
+let beheerVraag: { uid: string; sinds: number; antwoord: Promise<boolean> } | null = null
+function vraagBeheerder(c: SupabaseClient, uid: string): Promise<boolean> {
+  const nu = Date.now()
+  if (beheerVraag?.uid !== uid || nu - beheerVraag.sinds > 15_000) {
+    const vraag = { uid, sinds: nu, antwoord: Promise.resolve(false) }
+    vraag.antwoord = Promise.resolve(c.rpc('is_beheerder')).then(
+      ({ data, error }) => {
+        // Bij een fout de volgende keer opnieuw vragen
+        if (error && beheerVraag === vraag) beheerVraag = null
+        return !error && data === true
+      },
+      () => {
+        if (beheerVraag === vraag) beheerVraag = null
+        return false
+      },
+    )
+    beheerVraag = vraag
+  }
+  return beheerVraag.antwoord
+}
+
 async function verwerkSessie(c: SupabaseClient, sessie: Session | null) {
   if (!sessie) {
     serverBeheerder = false
@@ -101,8 +142,7 @@ async function verwerkSessie(c: SupabaseClient, sessie: Session | null) {
   const nieuweGebruiker = sessie.user.id !== stand.userId
   zet({ userId: sessie.user.id, email: sessie.user.email ?? undefined, anoniem, ...(nieuweGebruiker ? { gekoppeld: null } : {}) })
   if (!anoniem) {
-    const { data, error } = await c.rpc('is_beheerder')
-    serverBeheerder = !error && data === true
+    serverBeheerder = await vraagBeheerder(c, sessie.user.id)
   } else {
     serverBeheerder = false
   }
@@ -135,6 +175,8 @@ export async function verbind() {
       if (error) throw error
       session = data.session
     }
+    // Beheerder? Alvast vragen, tegelijk met de controle hieronder
+    if (!(session!.user.is_anonymous ?? !session!.user.email)) void vraagBeheerder(c, session!.user.id)
     // Controle of de server bereikbaar is én of de eigen rij er nog staat
     const eigenRij = (uid: string) => c.from('deelnemers').select('naam').eq('user_id', uid).maybeSingle()
     let { data: eigen, error } = await eigenRij(session!.user.id)

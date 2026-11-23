@@ -494,15 +494,24 @@ export function useFotos(aantal: number, actief = true) {
   const [limiet, setLimiet] = useState(aantal)
   const [meer, setMeer] = useState(() => lijstCache.get(aantal)?.meer ?? false)
   const weg = useRef(false)
+  /** Tijdstip van het laatste gelukte ophalen */
+  const opgehaald = useRef(0)
 
   const ververs = useCallback(async () => {
     const cb = supabase()
-    if (!cb || backendStand().status !== 'verbonden') {
+    const status = backendStand().status
+    if (!cb || status === 'offline' || status === 'uit') {
       setMislukt(true)
       return
     }
     try {
       const c = await cb
+      /*
+       * Nog aan het verbinden (bij het openen van de app): niet wachten op de hele controle, maar
+       * meteen ophalen als dit apparaat al een sessie heeft. Supabase ververst een verlopen sessie
+       * zelf eerst. Zonder sessie (eerste keer) wachten tot er verbinding is.
+       */
+      if (status === 'verbinden' && !(await c.auth.getSession()).data.session) return
       const velden = 'id, user_id, naam, kamer, challenge_id, challenge_titel, pad, breedte, hoogte, gemaakt, genomen'
       // Op volgorde van het moment dat de foto genomen is
       // Op de muur alleen wat de redactie plaatste en voor iedereen is (migratie 0018)
@@ -534,12 +543,14 @@ export function useFotos(aantal: number, actief = true) {
       const heeftMeer = rijen.length > limiet
       lijstCache.set(limiet, { fotos: zichtbaar, meer: heeftMeer })
       bewaarCache()
+      opgehaald.current = Date.now()
       if (weg.current) return
       setFotos(zichtbaar)
       setMeer(heeftMeer)
       setMislukt(false)
     } catch {
-      if (!weg.current) setMislukt(true)
+      // Tijdens het verbinden nog geen melding: zodra er verbinding is, volgt een nieuwe poging
+      if (!weg.current && backendStand().status !== 'verbinden') setMislukt(true)
     }
   }, [limiet])
 
@@ -558,8 +569,9 @@ export function useFotos(aantal: number, actief = true) {
     let vorige = backendStand().status
     const stop = abonneerBackend(() => {
       const nu = backendStand().status
-      if (nu === 'verbonden' && vorige !== 'verbonden') straks()
-      if (nu !== 'verbonden') setMislukt(true)
+      // Net verbonden: meteen ophalen, tenzij dat tijdens het verbinden al gelukt is
+      if (nu === 'verbonden' && vorige !== 'verbonden' && Date.now() - opgehaald.current > 10_000) void ververs()
+      if (nu === 'offline') setMislukt(true)
       vorige = nu
     })
     wijzigingLuisteraars.add(straks)
