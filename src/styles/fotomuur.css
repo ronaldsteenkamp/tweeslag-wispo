@@ -25,8 +25,12 @@
 
 .fotomuur p,
 .fotomuur h2,
-.fotomuur h3,
-.fotomuur figure {
+.fotomuur h3 {
+  margin: 0;
+}
+
+/* Zonder gewicht, zodat de marges van het zetwerk (figure.dagblad__mod e.d.) winnen */
+:where(.fotomuur) figure {
   margin: 0;
 }
 
@@ -169,43 +173,315 @@
   color: var(--blauw-tekst);
 }
 
-/* ---------- Een pagina (= een dag) ---------- */
+/* ---------- Een pagina (= een dag) als voorpagina: "Dagblad" (mockups/clubblad-a.html) ---------- */
 
 .fotomuur__pagina {
-  padding-top: 26px;
+  padding-top: 34px;
   scroll-margin-top: 60px;
 }
 
-.fotomuur__paginakop {
+/* Krantenkop: dikke lijn, datumregel tussen lijnen, de dag groot */
+.dagblad__kop {
+  border-top: 6px solid var(--inkt);
+}
+
+.dagblad__datumregel {
   display: flex;
-  align-items: flex-end;
   justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 6px;
+  gap: 8px;
+  padding: 5px 0 4px;
   border-bottom: 1px solid var(--inkt);
 }
 
-.fotomuur__paginakop h2 {
-  font: 700 30px/1 'Barlow Condensed', sans-serif;
+.dagblad__kop h2 {
+  padding: 8px 0 2px;
+  font: 700 clamp(48px, 16vw, 64px) / 0.9 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.dagblad__sub {
+  padding: 6px 0 8px;
+  border-bottom: 3px double var(--inkt);
+}
+
+.dagblad__rubriek {
+  display: inline-block;
+  margin: 14px 0 8px;
+  padding: 3px 8px 2px;
+  background: var(--inkt);
+  color: var(--papier);
+  font: 700 13px/1.2 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.fotomuur__paginakop small {
+/* Rood: papier op rood (licht 5,6:1; donker navy op rood 4,7:1, wit zou daar te zwak zijn) */
+.dagblad__rubriek--rood {
+  background: var(--rood);
+  color: var(--papier);
+}
+
+/* Tot aan de schermrand (de inhoud heeft 16 px marge) */
+.dagblad__rand {
+  margin-right: -16px;
+  margin-left: -16px;
+}
+
+.dagblad__opening h3 {
+  margin-top: 12px;
+  font: 700 34px/0.98 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.dagblad__opening h3.dagblad__quotekop {
+  font-size: 30px;
+  line-height: 1.02;
+  text-transform: none;
+}
+
+.dagblad__opening .fotomuur__byline {
+  margin-top: 8px;
+}
+
+/* Modules in de kolommen: elk met een lijn erboven */
+.dagblad__mod {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--inkt);
+}
+
+.dagblad__rand.dagblad__mod {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.dagblad__rand figcaption,
+.dagblad__rand > .dagblad__onderschrift {
+  padding: 0 16px;
+}
+
+.dagblad__onder {
   display: block;
-  margin-bottom: 4px;
+  margin-top: 5px;
+  font: 600 13px/1.3 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
 }
 
-.fotomuur__paginakop > span {
-  flex: none;
-  padding-bottom: 3px;
+.dagblad__onder b {
+  color: var(--inkt);
 }
 
-/* De foto als knop: geen eigen opmaak, de foto is het vlak */
+.dagblad .dagblad__onderschrift {
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* Twee naast elkaar, met een kolomlijn */
+.dagblad__duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.dagblad__duo > figure {
+  min-width: 0;
+}
+
+.dagblad__duo > figure + figure {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--lijn-sterk);
+}
+
+/* Eén foto met een tekstkolom ernaast; --om = tekst links */
+.dagblad__zij {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  align-items: start;
+}
+
+.dagblad__zij--staand {
+  grid-template-columns: 1fr 1fr;
+}
+
+.dagblad__zij > .fotomuur__foto {
+  min-width: 0;
+}
+
+.dagblad__kolom {
+  align-self: stretch;
+  min-width: 0;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--lijn-sterk);
+}
+
+.dagblad__zij--om > .fotomuur__foto {
+  order: 2;
+}
+
+.dagblad__zij--om > .dagblad__kolom {
+  margin: 0 12px 0 0;
+  padding: 0 12px 0 0;
+  border-left: 0;
+  border-right: 1px solid var(--lijn-sterk);
+}
+
+.dagblad__kolomkop {
+  display: block;
+  margin-bottom: 6px;
+  font: 700 21px/1 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.dagblad__kolom .dagblad__onder {
+  letter-spacing: 0.05em;
+}
+
+/* Ingezonden: kort = grote quote, lang = brief (lang in twee kolommen met kolomlijn) */
+.dagblad__quote {
+  margin-top: 22px;
+  text-align: center;
+}
+
+.dagblad__quote blockquote {
+  margin: 0;
+  font: 700 28px/1.05 'Barlow Condensed', sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.dagblad__quote blockquote::before {
+  content: '“';
+  display: block;
+  height: 34px;
+  font: 700 70px/1 'Barlow Condensed', sans-serif;
+  color: var(--rood);
+}
+
+.dagblad__quote figcaption {
+  margin-top: 8px;
+}
+
+.dagblad__brief {
+  margin-top: 18px;
+  padding: 12px 0;
+  border-top: 3px double var(--inkt);
+  border-bottom: 1px solid var(--inkt);
+}
+
+.dagblad__brief blockquote {
+  margin: 6px 0 0;
+  font-size: 15px;
+  line-height: 1.45;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.dagblad__brief--lang blockquote {
+  columns: 2;
+  column-gap: 22px;
+  column-rule: 1px solid var(--lijn-sterk);
+}
+
+/* De eerste letter groot, zoals in een krant */
+.dagblad__brief blockquote::first-letter {
+  float: left;
+  margin: 3px 6px 0 0;
+  font: 700 3.2em/0.8 'Barlow Condensed', sans-serif;
+  color: var(--rood);
+}
+
+.dagblad__brief figcaption {
+  margin-top: 8px;
+  text-align: right;
+}
+
+/* Kaders: Kamer van de dag, De uitslag */
+.dagblad__kader {
+  margin-top: 20px;
+  padding: 10px 12px 12px;
+  border: 2px solid var(--inkt);
+  box-shadow: 4px 4px 0 var(--blauw);
+}
+
+.dagblad__kader h3 {
+  font: 700 22px/1.05 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+.dagblad__drie {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dagblad__stand {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: stand;
+}
+
+.dagblad__stand li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  font: 700 19px/1.2 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  counter-increment: stand;
+  font-variant-numeric: tabular-nums;
+}
+
+.dagblad__stand li::before {
+  content: counter(stand) '.';
+  width: 1.3em;
+  color: var(--rood);
+}
+
+.dagblad__stand li span {
+  flex: 1;
+  border-bottom: 1px dotted var(--inkt-zacht);
+}
+
+/* Gespot: wat niet meer in de kolommen past, klein in een raster */
+.dagblad__gespot {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.dagblad__gespot .fotomuur__jury,
+.dagblad__duo .fotomuur__jury,
+.dagblad__drie .fotomuur__jury {
+  top: 6px;
+  right: 4px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.dagblad .dagblad__folio {
+  margin-top: 22px;
+  padding-top: 6px;
+  border-top: 1px solid var(--inkt);
+  text-align: right;
+}
+
+/* De foto als knop: het vak heeft vooraf een vaste maat (aspect-ratio in de style), de foto vult het */
 .fotomuur__foto {
   position: relative;
   display: block;
   width: 100%;
   padding: 0;
+  overflow: hidden;
   border: 0;
   background: var(--papier-2);
   touch-action: manipulation;
@@ -214,8 +490,13 @@
 .fotomuur__foto img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
+}
+
+.fotomuur__foto:focus-visible {
+  outline: 3px solid var(--blauw);
+  outline-offset: 2px;
 }
 
 /* Stempel van de jury, schuin op de hoek van de foto */
@@ -236,34 +517,9 @@
   pointer-events: none;
 }
 
-.fotomuur__zet--b .fotomuur__jury,
-.fotomuur__zet--a > :not(:first-child) .fotomuur__jury {
-  top: 6px;
-  right: 4px;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-}
-
 .fotomuur__leegvlak {
   display: block;
   aspect-ratio: 4 / 3;
-}
-
-/* Openingsfoto met de challenge als kop */
-.fotomuur__opening {
-  margin-top: 12px;
-}
-
-.fotomuur__opening img {
-  max-height: 470px;
-  min-height: 200px;
-}
-
-.fotomuur__opening h3 {
-  margin-top: 10px;
-  font: 700 34px/0.98 'Barlow Condensed', sans-serif;
-  text-transform: uppercase;
-  overflow-wrap: anywhere;
 }
 
 .fotomuur__byline {
@@ -272,87 +528,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--inkt-zacht);
-}
-
-/* Zetwerk: wisselende blokken. Foto's worden hier bijgesneden; groot zie je de hele foto. */
-.fotomuur__zet {
-  display: grid;
-  gap: 14px 10px;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--lijn);
-}
-
-.fotomuur__zet--a {
-  grid-template-columns: 2fr 1fr;
-}
-
-.fotomuur__zet--a > :first-child {
-  grid-row: span 2;
-  display: flex;
-  flex-direction: column;
-}
-
-/* De grote foto voegt zich naar de twee kleine ernaast (hij bepaalt de hoogte niet zelf) */
-.fotomuur__zet--a > :first-child .fotomuur__foto {
-  position: relative;
-  flex: 1;
-  min-height: 200px;
-}
-
-.fotomuur__zet--a > :first-child img {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-}
-
-.fotomuur__zet--a > :not(:first-child) img {
-  aspect-ratio: 1;
-}
-
-.fotomuur__zet--b {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.fotomuur__zet--b img {
-  aspect-ratio: 3 / 4;
-}
-
-.fotomuur__zet--c {
-  grid-template-columns: 1fr 1fr;
-}
-
-.fotomuur__zet--c img {
-  aspect-ratio: 4 / 5;
-}
-
-.fotomuur__zet--enkel img {
-  max-height: 420px;
-}
-
-.fotomuur__stuk {
-  min-width: 0;
-}
-
-.fotomuur__stuk figcaption {
-  padding-top: 4px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font: 600 14px/1.25 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--inkt-zacht);
-}
-
-.fotomuur__stuk b {
-  color: var(--inkt);
-}
-
-.fotomuur__panorama {
-  margin-top: 16px !important;
-  padding-top: 14px;
-  border-top: 1px solid var(--lijn);
 }
 
 .fotomuur__meer {
@@ -401,20 +576,37 @@
   padding-top: 18px;
 }
 
+.fotomuur__jaarboek h2 {
+  padding-top: 8px;
+  border-top: 6px solid var(--inkt);
+  font: 700 clamp(44px, 15vw, 58px) / 0.9 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+/* Omslag als voorpagina: één foto heel, twee naast elkaar, of één groot met twee ernaast */
 .fotomuur__omslag {
   display: grid;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.fotomuur__omslag--2 {
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
 }
 
-.fotomuur__omslag img {
-  aspect-ratio: 1;
+.fotomuur__omslag--3 {
+  grid-template-columns: 2fr 1fr;
 }
 
-.fotomuur__jaarboek h2 {
-  margin-top: 14px;
-  font: 700 40px/0.95 'Barlow Condensed', sans-serif;
-  text-transform: uppercase;
+/* De grote foto voegt zich naar de twee vierkante ernaast */
+.fotomuur__omslag--3 > :first-child {
+  grid-row: span 2;
+  aspect-ratio: auto !important;
+}
+
+.fotomuur__omslag--3 > :first-child img {
+  position: absolute;
+  inset: 0;
 }
 
 .fotomuur__jaarboek > p {
@@ -528,77 +720,3 @@
   gap: 8px;
 }
 
-/* ---------- Onderschrift van de maker ---------- */
-
-.fotomuur__onderschrift {
-  display: block;
-  margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font: 400 15px/1.35 var(--font);
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--inkt);
-}
-
-.fotomuur__stuk .fotomuur__onderschrift {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  white-space: normal;
-}
-
-.fotomuur__onderschrift--groot {
-  margin-top: 10px;
-  margin-bottom: 8px;
-  font-size: 1.15rem;
-}
-
-/* ---------- Rubriek Ingezonden: stukjes als ingezonden brieven ---------- */
-
-.ingezonden {
-  margin-top: 22px;
-  padding: 14px 16px 6px;
-  border-top: 3px double var(--inkt);
-  border-bottom: 1px solid var(--inkt);
-  background: var(--papier-2);
-}
-
-.ingezonden__kop {
-  font: 700 26px/1 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.ingezonden__stuk {
-  padding: 12px 0;
-}
-
-.ingezonden__stuk + .ingezonden__stuk {
-  border-top: 1px dashed var(--lijn);
-}
-
-.ingezonden__stuk blockquote {
-  margin: 4px 0 0;
-  font: 1.08rem/1.5 var(--font);
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-}
-
-/* De eerste letter van het eerste stukje groot, zoals in een krant */
-.ingezonden__stuk:first-of-type blockquote::first-letter {
-  float: left;
-  margin: 4px 6px 0 0;
-  font: 700 3.1em/0.8 'Barlow Condensed', sans-serif;
-  font-style: normal;
-  color: var(--rood);
-}
-
-.ingezonden__stuk figcaption {
-  margin-top: 6px;
-  text-align: right;
-  font: 600 14px/1.3 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--inkt-zacht);
-}

@@ -18,6 +18,20 @@ import { useSpelGeluid } from '../lib/spelgeluid'
 import { useGeplaatsteStukjes, useStukjesWachtrij, type Stukje } from '../lib/stukjes'
 import { useTerugSluit } from '../lib/terugknop'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
+import { useKlassement, type Klassement } from '../lib/scorebord'
+import {
+  kamerVanDeDag,
+  kiesOpening,
+  modules,
+  opTijd,
+  telling,
+  uitsnijpunt,
+  verdeel,
+  verdeelStukjes,
+  vorm,
+  zaad,
+  type Module,
+} from '../lib/dagblad'
 import '../styles/barlow.css'
 import '../styles/fotomuur.css'
 import '../styles/bewijs.css'
@@ -38,16 +52,31 @@ export function useKamerLabel() {
 }
 
 /*
- * De Fotomuur als de Wispo-editie van het clubblad (gekozen uit mockups/fotomuur-c.html), in
- * hetzelfde drukwerk als het Spel: papier, navy inkt, lichtblauw en stempelrood. Elke reisdag is
- * een pagina met een openingsfoto en de challenge als kop, daaronder wisselend zetwerk (foto's
- * mogen daar bijgesneden worden; groot zie je altijd de hele foto). Na de reis: het jaarboek.
- * Opmaak in styles/fotomuur.css.
+ * De Fotomuur als de Wispo-editie van het clubblad, in hetzelfde drukwerk als het Spel: papier,
+ * navy inkt, lichtblauw en stempelrood. Opmaak "Dagblad" (gekozen uit mockups/clubblad-a.html):
+ * elke reisdag is een voorpagina met een krantenkop, de Foto van de dag tot aan de schermrand en
+ * het onderschrift als kop, daaronder kolommen met een kolomlijn, ingezonden stukjes tussen de
+ * foto's, de kaders Kamer van de dag en De uitslag, en bij veel foto's de rubriek Gespot. Welke
+ * foto's samen een blok vormen staat in lib/dagblad.ts; foto's mogen in het zetwerk bijgesneden
+ * worden, groot zie je altijd de hele foto. Na de reis: het jaarboek. Opmaak in styles/fotomuur.css.
  */
 
-/** Breder dan dit = panorama: altijd over de hele breedte */
-const PANORAMA = 2.2
-const verhouding = (f: Foto) => (f.breedte && f.hoogte ? f.breedte / f.hoogte : 4 / 3)
+/**
+ * Alleen bij lokaal testen (`vite` of `--mode zonderbackend`): testdata uit window.__demoClubblad,
+ * gezet door scripts/clubblad-demo.js. In de echte build is deze voorwaarde altijd onwaar en
+ * valt de testdata eruit.
+ */
+interface DemoClubblad {
+  fotos: Foto[]
+  stukjes: Stukje[]
+  wachtrij: WachtendeFoto[]
+  klassement: Klassement | null
+  beheerder: boolean
+}
+const DEMO: DemoClubblad | undefined =
+  import.meta.env.DEV || import.meta.env.MODE === 'zonderbackend'
+    ? (window as unknown as { __demoClubblad?: DemoClubblad }).__demoClubblad
+    : undefined
 
 interface Pagina {
   datum: string
@@ -58,7 +87,10 @@ interface Pagina {
   rest: Foto[]
 }
 
-/** Foto's per dag (nieuwste dag eerst); opening = de (nieuwste) jurykeuze, anders de nieuwste liggende foto */
+/**
+ * Foto's per dag (nieuwste dag eerst). Binnen een dag op tijd, van de ochtend naar de avond;
+ * opening = de Foto van de dag (zie kiesOpening in lib/dagblad.ts).
+ */
 function maakPaginas(fotos: Foto[], dagen: Dag[]): Pagina[] {
   const perDag = new Map<string, Foto[]>()
   for (const f of fotos) {
@@ -68,50 +100,33 @@ function maakPaginas(fotos: Foto[], dagen: Dag[]): Pagina[] {
   }
   return [...perDag].map(([datum, lijst]) => {
     const i = dagen.findIndex((d) => d.datum === datum)
-    const opening = lijst.find((f) => f.jury) ?? lijst.find((f) => verhouding(f) >= 1 && verhouding(f) < PANORAMA) ?? lijst[0]
+    const opTijdLijst = opTijd(lijst)
+    const opening = kiesOpening(opTijdLijst)!
     return {
       datum,
       nr: i < 0 ? null : i + 1,
       titel: i < 0 ? datumLabel(datum) : dagen[i].titel,
       opening,
-      rest: lijst.filter((f) => f !== opening),
+      rest: opTijdLijst.filter((f) => f !== opening),
     }
   })
 }
 
-/** Zetwerk: panorama's breed, de rest in blokken (groot + twee klein, drie naast elkaar, twee naast elkaar) */
-function zetwerk(fotos: Foto[]): { soort: 'a' | 'b' | 'c' | 'enkel' | 'panorama'; fotos: Foto[] }[] {
-  const uit: ReturnType<typeof zetwerk> = []
-  let patroon = 0
-  let gewoon: Foto[] = []
-  const blokken = () => {
-    while (gewoon.length) {
-      const soort = (['a', 'b', 'c'] as const)[patroon++ % 3]
-      const deel = gewoon.splice(0, soort === 'c' ? 2 : 3)
-      uit.push({ soort: deel.length === 1 ? 'enkel' : deel.length === 2 ? 'c' : soort, fotos: deel })
-    }
-  }
-  for (const f of fotos) {
-    if (verhouding(f) >= PANORAMA) {
-      blokken()
-      uit.push({ soort: 'panorama', fotos: [f] })
-    } else gewoon.push(f)
-  }
-  blokken()
-  gewoon = []
-  return uit
-}
-
 export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => void; naarSpel: () => void; keuze?: ReactNode }) {
   const backend = useBackend()
-  const { fotos, mislukt, meer, laadMeer } = useFotos(30, backend.status !== 'uit')
+  const echteFotos = useFotos(30, backend.status !== 'uit' && !DEMO)
+  const { fotos, mislukt, meer, laadMeer } = DEMO ? { fotos: DEMO.fotos, mislukt: false, meer: false, laadMeer: () => {} } : echteFotos
   const { data: planning } = useData('planning')
   const nu = useNu(60_000)
   const kamerLabel = useKamerLabel()
-  const toon = useToonNaam()
-  const wachtend = useFotoWachtrijLijst()
+  const echtWachtend = useFotoWachtrijLijst()
+  const wachtend = DEMO ? DEMO.wachtrij : echtWachtend
   const [open, setOpen] = useState<{ lijst: Foto[]; i: number } | null>(null)
-  const stukjes = useGeplaatsteStukjes(backend.status !== 'uit')
+  const echteStukjes = useGeplaatsteStukjes(backend.status !== 'uit' && !DEMO)
+  const stukjes = DEMO ? DEMO.stukjes : echteStukjes
+  const echtKlassement = useKlassement(backend.status !== 'uit' && !DEMO).klassement
+  const klassement = DEMO ? DEMO.klassement : echtKlassement
+  const jury = backend.beheerder || !!DEMO?.beheerder
   const wachtendeStukjes = useStukjesWachtrij()
   const [schrijven, setSchrijven] = useState(false)
   const [geluid] = useSpelGeluid()
@@ -145,8 +160,9 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
     })
   }, [paginas, stukjes, dagen])
   const aantalStukjes = stukjes?.length ?? 0
-  // Doorbladeren gaat op leesvolgorde: per pagina de opening en dan het zetwerk
-  const leesvolgorde = useMemo(() => paginas.flatMap((p) => [p.opening, ...zetwerk(p.rest).flatMap((b) => b.fotos)]), [paginas])
+  // Doorbladeren gaat op leesvolgorde: per pagina de Foto van de dag, dan de kolommen en Gespot
+  // (het zetwerk houdt de volgorde van p.rest aan)
+  const leesvolgorde = useMemo(() => paginas.flatMap((p) => [p.opening, ...p.rest]), [paginas])
   const openFoto = (f: Foto, lijst = leesvolgorde) => setOpen({ lijst, i: Math.max(0, lijst.indexOf(f)) })
 
   // Oudere pagina's laden zodra je onderaan komt (geen knop nodig, wel als terugval)
@@ -183,7 +199,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
         {keuze}
       </SchermKop>
 
-      {backend.status === 'uit' ? (
+      {backend.status === 'uit' && !DEMO ? (
         <p className="fotomuur__tekst">Het clubblad is in deze versie niet gekoppeld.</p>
       ) : (
         <>
@@ -192,9 +208,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
               {naDeReis
                 ? 'Les Deux Alpes · 5 – 14 maart 2027'
                 : fotos?.length || aantalStukjes
-                  ? [fotos?.length ? `${fotos.length}${meer ? '+' : ''} foto's` : '', aantalStukjes ? `${aantalStukjes} ${aantalStukjes === 1 ? 'stukje' : 'stukjes'}` : '']
-                      .filter(Boolean)
-                      .join(' · ') + ' in het blad'
+                  ? `${telling(fotos?.length ?? 0, aantalStukjes).replace(/^(\d+)/, meer ? '$1+' : '$1')} in het blad`
                   : 'Bewijs van de challenges'}
             </p>
             {!naDeReis && (fotos?.length !== 0 || aantalStukjes > 0) && (
@@ -238,7 +252,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
                 is nog leeg.
               </h2>
               <p>
-                Stuur een kiekje in bij een challenge. Zodra de redactie het plaatst, staat het hier, per dag een pagina.
+                Stuur een kiekje in bij een challenge. Zodra de redactie het plaatst, staat het hier: elke reisdag een voorpagina.
               </p>
               <button type="button" className="fotomuur__knop" onClick={naarChallenges}>
                 <Icoon naam="camera" grootte={20} /> Eerste foto inzenden
@@ -253,48 +267,15 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
           ) : (
             <>
               {naDeReis && <Jaarboek paginas={paginas} dagen={dagen} meer={meer} onOpen={openFoto} />}
-              {bladen.map(({ datum, nr, titel, pagina: p, stukjes: st }) => (
-                <article key={datum} id={`pagina-${datum}`} className="fotomuur__pagina" aria-labelledby={`kop-${datum}`}>
-                  <header className="fotomuur__paginakop">
-                    <h2 id={`kop-${datum}`}>
-                      <small className="fotomuur__caps">
-                        {nr ? `Pag. ${nr} · ` : ''}
-                        {datumLabel(datum)}
-                      </small>
-                      {titel}
-                    </h2>
-                    <span className="fotomuur__caps">
-                      {[p ? `${p.rest.length + 1} ${p.rest.length ? "foto's" : 'foto'}` : '', st.length ? `${st.length} ${st.length === 1 ? 'stukje' : 'stukjes'}` : '']
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </span>
-                  </header>
-                  {p && <Opening foto={p.opening} kamerLabel={kamerLabel} onOpen={() => openFoto(p.opening)} />}
-                  {p && zetwerk(p.rest).map((b) =>
-                    b.soort === 'panorama' ? (
-                      <figure key={b.fotos[0].id} className="fotomuur__panorama">
-                        <FotoKnop foto={b.fotos[0]} onOpen={() => openFoto(b.fotos[0])} />
-                        <figcaption className="fotomuur__byline">
-                          {b.fotos[0].challenge_titel} · {toon(b.fotos[0].naam)} · {tijdUUMM(momentVan(b.fotos[0]))}
-                          {b.fotos[0].onderschrift && <span className="fotomuur__onderschrift">“{b.fotos[0].onderschrift}”</span>}
-                        </figcaption>
-                      </figure>
-                    ) : (
-                      <div key={b.fotos[0].id} className={`fotomuur__zet fotomuur__zet--${b.soort}`}>
-                        {b.fotos.map((f) => (
-                          <figure key={f.id} className="fotomuur__stuk">
-                            <FotoKnop foto={f} onOpen={() => openFoto(f)} />
-                            <figcaption>
-                              <b>{toon(f.naam)}</b> · {tijdUUMM(momentVan(f))}
-                              {f.onderschrift && <span className="fotomuur__onderschrift">“{f.onderschrift}”</span>}
-                            </figcaption>
-                          </figure>
-                        ))}
-                      </div>
-                    ),
-                  )}
-                  {st.length > 0 && <Ingezonden stukjes={st} kamerLabel={kamerLabel} />}
-                </article>
+              {bladen.map((blad, i) => (
+                <Voorpagina
+                  key={blad.datum}
+                  {...blad}
+                  // De uitslag alleen op de pagina van vandaag: de server kent geen stand per dag
+                  stand={i === 0 && blad.datum === vandaagISO ? (klassement?.personen ?? []).slice(0, 3) : []}
+                  kamerLabel={kamerLabel}
+                  onOpen={(f) => openFoto(f)}
+                />
               ))}
               <div ref={onderkant} />
               {meer ? (
@@ -327,7 +308,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
           start={open.i}
           kamerLabel={kamerLabel}
           kop={fotoDag}
-          extra={(f) => <JuryKnop key={f.id} foto={f} jury={backend.beheerder} />}
+          extra={(f) => <JuryKnop key={f.id} foto={f} jury={jury} />}
           onSluit={() => setOpen(null)}
           onBijnaAanHetEind={meer && open.lijst === leesvolgorde ? laadMeer : undefined}
         />
@@ -336,13 +317,30 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
   )
 }
 
-/** Een foto op de muur als knop; de alt-tekst noemt wie, wanneer en welke challenge */
-function FotoKnop({ foto: f, onOpen, groot }: { foto: Foto; onOpen: () => void; groot?: string | null }) {
+/**
+ * Een foto op de muur als knop; de alt-tekst noemt wie, wanneer en welke challenge. Het vak heeft
+ * vooraf een vaste maat (de verhouding van de foto, of `snij`), zodat niets verspringt tijdens het
+ * laden. Met `snij` wordt de foto bijgesneden, bij staande foto's vanaf de bovenkant.
+ */
+function FotoKnop({
+  foto: f,
+  onOpen,
+  groot,
+  snij,
+  stempel = true,
+}: {
+  foto: Foto
+  onOpen: () => void
+  groot?: string | null
+  snij?: string
+  stempel?: boolean
+}) {
   const toon = useToonNaam()
   const d = momentVan(f)
+  const eigen = f.breedte && f.hoogte ? `${f.breedte} / ${f.hoogte}` : undefined
   return (
-    <button type="button" className="fotomuur__foto" onClick={onOpen}>
-      {f.jury && (
+    <button type="button" className="fotomuur__foto" onClick={onOpen} style={{ aspectRatio: snij ?? eigen }}>
+      {f.jury && stempel && (
         <span className="fotomuur__jury" aria-hidden="true">
           Jurykeuze
         </span>
@@ -355,6 +353,7 @@ function FotoKnop({ foto: f, onOpen, groot }: { foto: Foto; onOpen: () => void; 
           height={f.hoogte ?? undefined}
           loading="lazy"
           decoding="async"
+          style={snij ? { objectPosition: uitsnijpunt(f) } : undefined}
         />
       ) : (
         <span className="fotomuur__leegvlak" role="img" aria-label={`Foto van ${toon(f.naam)} (nog niet geladen)`} />
@@ -363,8 +362,197 @@ function FotoKnop({ foto: f, onOpen, groot }: { foto: Foto; onOpen: () => void; 
   )
 }
 
-/** De openingsfoto van een pagina: groot (scherpe versie), met de challenge als kop */
-function Opening({ foto: f, kamerLabel, onOpen }: { foto: Foto; kamerLabel: (nr: string | null) => string; onOpen: () => void }) {
+type KamerLabel = (nr: string | null) => string
+
+/**
+ * Eén reisdag als voorpagina. Leesvolgorde (ook voor schermlezers): krantenkop → Foto van de dag →
+ * de kolommen, met de ingezonden stukjes op hun plek tussen de foto's → Kamer van de dag → Gespot →
+ * De uitslag. Rubrieken staan er alleen als er inhoud voor is.
+ */
+function Voorpagina({
+  datum,
+  nr,
+  titel,
+  pagina: p,
+  stukjes,
+  stand,
+  kamerLabel,
+  onOpen,
+}: {
+  datum: string
+  nr: number | null
+  titel: string
+  pagina?: Pagina
+  stukjes: Stukje[]
+  stand: { naam: string; totaal: number }[]
+  kamerLabel: KamerLabel
+  onOpen: (f: Foto) => void
+}) {
+  const toon = useToonNaam()
+  const { kolom, gespot } = verdeel(p?.rest ?? [])
+  const mods = modules(kolom, zaad(datum))
+  const { quote, brieven } = verdeelStukjes(stukjes)
+  const kamer = p ? kamerVanDeDag([p.opening, ...p.rest]) : null
+  const aantalFotos = p ? p.rest.length + 1 : 0
+
+  // Tussen de modules: de quote na de eerste, brieven na de vierde, Kamer van de dag na de zesde
+  const tussen = new Map<number, ReactNode[]>()
+  const zet = (na: number, n: ReactNode) => {
+    const plek = Math.min(na, mods.length)
+    tussen.set(plek, [...(tussen.get(plek) ?? []), n])
+  }
+  if (quote) zet(1, <Quote key={`q-${quote.id}`} stukje={quote} kamerLabel={kamerLabel} />)
+  for (const s of brieven) zet(4, <Brief key={`b-${s.id}`} stukje={s} kamerLabel={kamerLabel} />)
+  if (kamer)
+    zet(
+      6,
+      <aside key="kamer" className="dagblad__kader" aria-label="Kamer van de dag">
+        <span className="fotomuur__caps">Kamer van de dag</span>
+        <h3>{kamerLabel(kamer.kamer)}</h3>
+        <p>{kamer.aantal} foto&apos;s in het blad vandaag.</p>
+        <div className="dagblad__drie">
+          {kamer.fotos.slice(0, 3).map((f) => (
+            <FotoKnop key={f.id} foto={f} snij="1 / 1" stempel={false} onOpen={() => onOpen(f)} />
+          ))}
+        </div>
+      </aside>,
+    )
+
+  return (
+    <article id={`pagina-${datum}`} className="fotomuur__pagina dagblad" aria-labelledby={`kop-${datum}`}>
+      <header className="dagblad__kop">
+        <p className="dagblad__datumregel fotomuur__caps">
+          <span>{nr ? `Reisdag ${nr}` : 'Buiten de reis'}</span>
+          <span>{datumLabel(datum)}</span>
+        </p>
+        <h2 id={`kop-${datum}`}>{titel}</h2>
+        <p className="dagblad__sub fotomuur__caps">{telling(aantalFotos, stukjes.length)}</p>
+      </header>
+      {p && <Opening foto={p.opening} kamerLabel={kamerLabel} onOpen={() => onOpen(p.opening)} />}
+      {tussen.get(0)}
+      {mods.map((m, i) => (
+        <ModuleBlok key={m.fotos[0].id} m={m} kamerLabel={kamerLabel} onOpen={onOpen} na={tussen.get(i + 1)} />
+      ))}
+      {gespot.length > 0 && (
+        <section className="dagblad__mod" aria-label={`Gespot, ${gespot.length} foto's`}>
+          <span className="dagblad__rubriek">Gespot · {gespot.length}</span>
+          <div className="dagblad__gespot">
+            {gespot.map((f) => (
+              <FotoKnop key={f.id} foto={f} snij="1 / 1" onOpen={() => onOpen(f)} />
+            ))}
+          </div>
+        </section>
+      )}
+      {stand.length > 0 && (
+        <aside className="dagblad__kader" aria-label="De uitslag">
+          <span className="fotomuur__caps">De uitslag · stand van vandaag</span>
+          <ol className="dagblad__stand">
+            {stand.map((s) => (
+              <li key={s.naam}>
+                {toon(s.naam)}
+                <span aria-hidden="true" />
+                {s.totaal}
+              </li>
+            ))}
+          </ol>
+        </aside>
+      )}
+      <p className="dagblad__folio fotomuur__caps">Clubblad Tweeslag · Wispo 2027{nr ? ` · pag. ${nr}` : ''}</p>
+    </article>
+  )
+}
+
+/** Eén blok uit het zetwerk (zie modules() in lib/dagblad.ts), met wat er direct na komt */
+function ModuleBlok({ m, kamerLabel, onOpen, na }: { m: Module<Foto>; kamerLabel: KamerLabel; onOpen: (f: Foto) => void; na?: ReactNode }) {
+  const toon = useToonNaam()
+  const onderschrift = (f: Foto) => f.onderschrift && <p className="dagblad__onderschrift">“{f.onderschrift}”</p>
+  let blok: ReactNode
+  if (m.soort === 'pano') {
+    const f = m.fotos[0]
+    blok = (
+      <figure className="dagblad__mod dagblad__rand">
+        <FotoKnop foto={f} onOpen={() => onOpen(f)} />
+        <figcaption className="dagblad__onder">
+          <b>{f.challenge_titel}</b> · {toon(f.naam)} · {tijdUUMM(momentVan(f))}
+        </figcaption>
+        {onderschrift(f)}
+      </figure>
+    )
+  } else if (m.soort === 'duo') {
+    blok = (
+      <div className="dagblad__mod dagblad__duo">
+        {m.fotos.map((f) => (
+          <figure key={f.id}>
+            <FotoKnop foto={f} snij={m.snij} onOpen={() => onOpen(f)} />
+            <figcaption className="dagblad__onder">
+              <b>{toon(f.naam)}</b> · {tijdUUMM(momentVan(f))}
+            </figcaption>
+            {onderschrift(f)}
+          </figure>
+        ))}
+      </div>
+    )
+  } else {
+    const f = m.fotos[0]
+    blok = (
+      <figure className={`dagblad__mod dagblad__zij${m.om ? ' dagblad__zij--om' : ''}${vorm(f) === 'liggend' ? '' : ' dagblad__zij--staand'}`}>
+        <FotoKnop foto={f} snij={m.snij} onOpen={() => onOpen(f)} />
+        <figcaption className="dagblad__kolom">
+          <span className="dagblad__kolomkop">{f.challenge_titel}</span>
+          {onderschrift(f)}
+          <span className="dagblad__onder">
+            {toon(f.naam)}
+            {f.kamer ? ` · kamer ${kamerLabel(f.kamer)}` : ''} · {tijdUUMM(momentVan(f))}
+          </span>
+        </figcaption>
+      </figure>
+    )
+  }
+  return (
+    <>
+      {blok}
+      {na}
+    </>
+  )
+}
+
+/** Een kort ingezonden stukje als grote quote tussen de foto's */
+function Quote({ stukje: s, kamerLabel }: { stukje: Stukje; kamerLabel: KamerLabel }) {
+  const toon = useToonNaam()
+  return (
+    <figure className="dagblad__quote">
+      <span className="dagblad__rubriek dagblad__rubriek--rood">Ingezonden</span>
+      <blockquote>{s.tekst}</blockquote>
+      <figcaption className="fotomuur__caps">
+        — {toon(s.naam)}
+        {s.kamer ? `, kamer ${kamerLabel(s.kamer)}` : ''}
+        {s.challenge_titel ? ` · bij ${s.challenge_titel}` : ''}
+      </figcaption>
+    </figure>
+  )
+}
+
+/** Een langer ingezonden stukje als brief; lang = in twee kolommen met een kolomlijn */
+function Brief({ stukje: s, kamerLabel }: { stukje: Stukje; kamerLabel: KamerLabel }) {
+  const toon = useToonNaam()
+  return (
+    <figure className={`dagblad__brief${s.tekst.length > 220 ? ' dagblad__brief--lang' : ''}`}>
+      <span className="fotomuur__caps">Ingezonden{s.challenge_titel ? ` · bij ${s.challenge_titel}` : ''}</span>
+      <blockquote>{s.tekst}</blockquote>
+      <figcaption className="fotomuur__caps">
+        — {toon(s.naam)}
+        {s.kamer ? `, kamer ${kamerLabel(s.kamer)}` : ''} · {tijdUUMM(new Date(s.gemaakt))}
+      </figcaption>
+    </figure>
+  )
+}
+
+/**
+ * Foto van de dag: tot aan de schermrand (scherpe versie zodra die binnen is), het onderschrift
+ * als kop en anders de challenge. Een staande foto wordt hier 4:5 (vanaf de bovenkant), zodat hij
+ * niet meer dan een scherm hoog is; groot zie je hem heel.
+ */
+function Opening({ foto: f, kamerLabel, onOpen }: { foto: Foto; kamerLabel: KamerLabel; onOpen: () => void }) {
   const toon = useToonNaam()
   const [groot, setGroot] = useState<string | null>(() => grootGeheugen.get(f.id) ?? null)
   useEffect(() => {
@@ -387,34 +575,22 @@ function Opening({ foto: f, kamerLabel, onOpen }: { foto: Foto; kamerLabel: (nr:
     }
   }, [f])
   return (
-    <figure className="fotomuur__opening">
-      <FotoKnop foto={f} onOpen={onOpen} groot={groot} />
-      <h3>{f.challenge_titel}</h3>
-      {f.onderschrift && <p className="fotomuur__onderschrift fotomuur__onderschrift--groot">“{f.onderschrift}”</p>}
-      <p className="fotomuur__byline">
-        Foto: {toon(f.naam)}
-        {f.kamer ? ` · kamer ${kamerLabel(f.kamer)}` : ''} · {tijdUUMM(momentVan(f))}
-      </p>
-    </figure>
-  )
-}
-
-/** De rubriek Ingezonden: geplaatste stukjes van die dag, als ingezonden brieven in het blad */
-function Ingezonden({ stukjes, kamerLabel }: { stukjes: Stukje[]; kamerLabel: (nr: string | null) => string }) {
-  const toon = useToonNaam()
-  return (
-    <section className="ingezonden" aria-label="Ingezonden">
-      <h3 className="ingezonden__kop">Ingezonden</h3>
-      {stukjes.map((s) => (
-        <figure key={s.id} className="ingezonden__stuk">
-          {s.challenge_titel && <span className="fotomuur__caps">Bij: {s.challenge_titel}</span>}
-          <blockquote>{s.tekst}</blockquote>
-          <figcaption>
-            — {toon(s.naam)}
-            {s.kamer ? `, kamer ${kamerLabel(s.kamer)}` : ''} · {tijdUUMM(new Date(s.gemaakt))}
-          </figcaption>
-        </figure>
-      ))}
+    <section className="dagblad__opening" aria-label="Foto van de dag">
+      <span className={`dagblad__rubriek${f.jury ? ' dagblad__rubriek--rood' : ''}`}>
+        {f.jury ? 'Foto van de dag · jurykeuze' : 'Foto van de dag'}
+      </span>
+      <figure>
+        <div className="dagblad__rand">
+          <FotoKnop foto={f} onOpen={onOpen} groot={groot} stempel={false} snij={vorm(f) === 'staand' ? '4 / 5' : undefined} />
+        </div>
+        <figcaption>
+          {f.onderschrift ? <h3 className="dagblad__quotekop">“{f.onderschrift}”</h3> : <h3>{f.challenge_titel}</h3>}
+          <p className="fotomuur__byline">
+            {f.onderschrift ? `${f.challenge_titel} · ` : ''}Foto: {toon(f.naam)}
+            {f.kamer ? ` · kamer ${kamerLabel(f.kamer)}` : ''} · {tijdUUMM(momentVan(f))}
+          </p>
+        </figcaption>
+      </figure>
     </section>
   )
 }
@@ -539,7 +715,8 @@ function Jaarboek({ paginas, dagen, meer, onOpen }: { paginas: Pagina[]; dagen: 
   const [bezig, setBezig] = useState<{ wat: string; klaar: number; totaal: number } | null>(null)
   const [melding, setMelding] = useState<string | null>(null)
   const openingen = paginas.filter((p) => p.nr).map((p) => p.opening)
-  const omslag = [...openingen.filter((f) => f.jury), ...openingen.filter((f) => !f.jury)].slice(0, 4)
+  // Omslag als voorpagina: tot drie Foto's van de dag (jurykeuzes voorop), de eerste groot
+  const omslag = [...openingen.filter((f) => f.jury), ...openingen.filter((f) => !f.jury)].slice(0, 3)
   const aantal = paginas.reduce((n, p) => n + p.rest.length + 1, 0)
   const metFotos = new Set(paginas.map((p) => p.datum))
 
@@ -582,18 +759,18 @@ function Jaarboek({ paginas, dagen, meer, onOpen }: { paginas: Pagina[]; dagen: 
 
   return (
     <section className="fotomuur__jaarboek">
-      {omslag.length === 4 && (
-        <div className="fotomuur__omslag">
-          {omslag.map((f) => (
-            <FotoKnop key={f.id} foto={f} onOpen={() => onOpen(f, omslag)} />
-          ))}
-        </div>
-      )}
       <h2>
         Jaarboek
         <br />
         Wispo 2027
       </h2>
+      {omslag.length > 0 && (
+        <div className={`fotomuur__omslag fotomuur__omslag--${omslag.length}`}>
+          {omslag.map((f, i) => (
+            <FotoKnop key={f.id} foto={f} snij={omslag.length === 1 ? undefined : i === 0 && omslag.length === 3 ? undefined : '1 / 1'} onOpen={() => onOpen(f, omslag)} />
+          ))}
+        </div>
+      )}
       <p>
         {aantal}
         {meer ? '+' : ''} foto&apos;s op {metFotos.size} pagina&apos;s. Bewaar ze zelf: download alles in één keer of per
