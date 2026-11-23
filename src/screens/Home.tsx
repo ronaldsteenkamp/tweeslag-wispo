@@ -23,7 +23,7 @@ import { useKlassement } from '../lib/scorebord'
 import { paklijstZin } from '../lib/paklijstZinnen'
 import { datumISO, datumLabel, lokaalNaarDate, resterend } from '../lib/tijd'
 import { cm, graden, useWeer, weerTekst } from '../lib/weer'
-import { FotoGroot, useKamerLabel } from './Fotomuur'
+import { FotoGroot, GEZIEN, useKamerLabel } from './Fotomuur'
 import { beeldVoor, soortActiviteit } from './Planning'
 import '../styles/barlow.css'
 import '../styles/home.css'
@@ -690,6 +690,9 @@ function Terugblik({ naam, naarStemmen }: { naam: string | null; naarStemmen: ()
   const backend = useBackend()
   const aan = backend.status !== 'uit'
   const { fotos } = useFotos(8, aan)
+  // Nieuw = nog niet gezien op deze telefoon (clubblad geopend of groot bekeken) en niet van jezelf
+  const [gezien] = useOpgeslagen<string[]>(GEZIEN, [])
+  const gezienSet = useMemo(() => new Set(gezien), [gezien])
   const kamerLabel = useKamerLabel()
   const toon = useToonNaam()
   const [open, setOpen] = useState<number | null>(null)
@@ -711,14 +714,23 @@ function Terugblik({ naam, naarStemmen }: { naam: string | null; naarStemmen: ()
         <section>
           <Kopje titel="Ansichtkaarten" knop="Clubblad" onKlik={naarFotomuur} />
           <div className="ansichten">
-            {fotos.map((f, i) => (
-              <button key={f.id} type="button" className="ansicht" onClick={() => setOpen(i)}>
-                {f.klein ? <img src={f.klein} alt="" loading="lazy" /> : <span className="ansicht__leeg" />}
-                <span className="ansicht__tekst">
-                  {f.challenge_titel}, door {toon(f.naam)}
-                </span>
-              </button>
-            ))}
+            {fotos.map((f, i) => {
+              const nieuw = f.user_id !== backend.userId && !gezienSet.has(f.id)
+              return (
+                <button key={f.id} type="button" className="ansicht" onClick={() => setOpen(i)}>
+                  {f.klein ? <img src={f.klein} alt="" loading="lazy" /> : <span className="ansicht__leeg" />}
+                  <span className="ansicht__tekst">
+                    {f.challenge_titel}, door {toon(f.naam)}
+                  </span>
+                  <span className="verborgen">{nieuw ? ', nieuw' : ''}</span>
+                  {nieuw && (
+                    <span className="ansicht__nieuw" aria-hidden="true">
+                      Nieuw
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
           {open !== null && <FotoGroot fotos={fotos} start={open} kamerLabel={kamerLabel} onSluit={() => setOpen(null)} />}
         </section>
