@@ -7,6 +7,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 // De workflow geeft de repo-naam mee via BASE_PATH; lokaal valt hij terug op '/tweeslag-wispo/'.
 const base = process.env.BASE_PATH ?? '/tweeslag-wispo/'
 
+// Ophogen bij een nieuw app-icoon (zie manifest.icons hieronder)
+const ICOON_VERSIE = 'c3'
+
 export default defineConfig({
   base,
   // Versie in Instellingen: de dag van de build
@@ -54,14 +57,18 @@ export default defineConfig({
         background_color: '#0d0058',
         theme_color: '#0d0058',
         // Icoon: 2slag in een sterrennacht met La Meije (public/logo.svg en maskable-wispo-*.png,
-        // gemaakt met scripts/icoon/maak-icoon.mjs)
-        icons: [
-          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
-          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'maskable-wispo-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-          { src: 'maskable-wispo-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-        ],
+        // gemaakt met scripts/icoon/maak-icoon.mjs).
+        // ICOON_VERSIE ophogen bij een nieuw icoon: Android (Chrome) ziet dan andere icoon-adressen in het
+        // manifest en werkt het icoon op het beginscherm van een al geïnstalleerde app zelf bij (binnen
+        // een paar dagen, bij het openen; Chrome kan eerst om bevestiging vragen). iOS doet dat nooit.
+        icons: ['pwa-64x64', 'pwa-192x192', 'pwa-512x512', 'maskable-wispo-192x192', 'maskable-wispo-512x512'].map(
+          (naam) => ({
+            src: `${naam}.png?v=${ICOON_VERSIE}`,
+            sizes: naam.slice(naam.lastIndexOf('-') + 1),
+            type: 'image/png',
+            ...(naam.startsWith('maskable') ? { purpose: 'maskable' } : {}),
+          }),
+        ),
       },
       workbox: {
         // Cache-first voor de app zelf, de pistekaart en de iconen (precache)
