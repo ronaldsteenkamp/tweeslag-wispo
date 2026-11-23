@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 /**
  * Zolang een invoerveld focus heeft (het toetsenbord staat open), krijgt <html> de class
- * 'toetsenbord-open'. De zwevende tabbalk schuift dan weg, zodat hij niets bedekt.
+ * 'toetsenbord-open'. De tabbalk schuift dan weg, zodat hij niets bedekt.
  */
 export function useToetsenbord() {
   useEffect(() => {
