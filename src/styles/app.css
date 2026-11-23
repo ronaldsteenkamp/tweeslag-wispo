@@ -1689,7 +1689,7 @@ html.venster-open body {
   object-fit: contain;
   /* Afdruk met een witte rand op het papier */
   background: var(--papier-diep);
-  box-shadow: 0 0 0 6px #fffdf8, 0 1px 0 6px #cfc6b2;
+  box-shadow: 0 0 0 6px var(--foto-rand), 0 1px 0 6px var(--foto-rand-lijn);
   will-change: transform;
 }
 

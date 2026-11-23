@@ -206,7 +206,7 @@
   outline: 1.2px solid var(--pak-stempel);
   outline-offset: 2.5px;
   color: var(--pak-stempel);
-  background: rgba(245, 242, 234, 0.9); /* ook leesbaar waar het stempel over de lucht valt */
+  background: color-mix(in srgb, var(--papier-licht) 90%, transparent); /* ook leesbaar waar het stempel over de lucht valt */
   text-align: center;
   text-transform: uppercase;
   transform: translate(-50%, -50%) rotate(-7deg);
