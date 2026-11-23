@@ -165,6 +165,28 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
   const leesvolgorde = useMemo(() => paginas.flatMap((p) => [p.opening, ...p.rest]), [paginas])
   const openFoto = (f: Foto, lijst = leesvolgorde) => setOpen({ lijst, i: Math.max(0, lijst.indexOf(f)) })
 
+  // Het clubblad open = alle foto's erin gezien: de teller op de tabbalk en "Nieuw" op Home gaan
+  // weg zonder dat je elke foto hoeft aan te tikken. Alleen als het blad echt in beeld is: als
+  // buurscherm (onzichtbaar klaargezet voor het vegen, class 'buurpaneel') telt het niet.
+  const scherm = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const vak = scherm.current?.closest('.inhoud')
+    if (!vak || !fotos?.length) return
+    const ids = fotos.map((f) => f.id)
+    const kijk = () => {
+      if (!vak.classList.contains('buurpaneel') && document.visibilityState === 'visible') markeerGezien(ids)
+    }
+    kijk()
+    // Een buurscherm wordt bij het vegen het huidige scherm (zelfde element, andere class)
+    const mo = new MutationObserver(kijk)
+    mo.observe(vak, { attributes: true, attributeFilter: ['class'] })
+    document.addEventListener('visibilitychange', kijk)
+    return () => {
+      mo.disconnect()
+      document.removeEventListener('visibilitychange', kijk)
+    }
+  }, [fotos])
+
   // Oudere pagina's laden zodra je onderaan komt (geen knop nodig, wel als terugval)
   const onderkant = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -189,7 +211,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
   }
 
   return (
-    <div className="scherm fotomuur">
+    <div className="scherm fotomuur" ref={scherm}>
       <SchermKop
         titel="Clubblad"
         boven="G.S.B.V. Tweeslag"
@@ -828,8 +850,22 @@ function Jaarboek({ paginas, dagen, meer, onOpen }: { paginas: Pagina[]; dagen: 
   )
 }
 
-/** Opslagsleutel: id's van foto's die je groot hebt geopend */
+/**
+ * Opslagsleutel: id's van foto's die je gezien hebt (het clubblad geopend, of de foto groot
+ * geopend). Niet meer gezien = "Nieuw" op Home en de teller op de tabbalk.
+ */
 export const GEZIEN = 'fotos.gezien'
+
+/**
+ * Zet foto's op gezien (nieuwste voorop, max. 1000 onthouden). Rechtstreeks lezen en melden (één
+ * schrijfactie): met een eigen useOpgeslagen kon een scherm een oude lijst terugschrijven.
+ */
+export function markeerGezien(ids: string[]) {
+  const oud = lees<string[]>(GEZIEN, [])
+  const bekend = new Set(oud)
+  const nieuw = ids.filter((id) => !bekend.has(id))
+  if (nieuw.length) schrijfEnMeld(GEZIEN, [...nieuw, ...oud].slice(0, 1000))
+}
 
 const minderBeweging = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
@@ -927,9 +963,7 @@ export function FotoGroot({
   // beginwaarde weg en kon Home die daarna over de nieuwe lijst heen terugschrijven.
   const fotoId = foto?.id
   useEffect(() => {
-    if (!fotoId) return
-    const oud = lees<string[]>(GEZIEN, [])
-    if (!oud.includes(fotoId)) schrijfEnMeld(GEZIEN, [fotoId, ...oud].slice(0, 1000))
+    if (fotoId) markeerGezien([fotoId])
   }, [fotoId])
 
   // Grote versie van deze foto en de buren alvast ophalen
