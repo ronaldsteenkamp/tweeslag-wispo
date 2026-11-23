@@ -1,7 +1,7 @@
 import { abonneerBackend, backendIngesteld, backendStand, supabase } from './backend'
 import { config } from '../config'
 import { abonneer, bewaard, lees, schrijf, schrijfEnMeld, volgSchrijven, wisEnMeld } from './opslag'
-import { PERSOONLIJK, PERSOONLIJKE_SLEUTELS, voegAllesSamen, type Versie } from './persoonsdataregels'
+import { PERSOONLIJK, PERSOONLIJKE_SLEUTELS, REGELS_VERSIE, voegAllesSamen, type Versie } from './persoonsdataregels'
 import { spelBegint } from './testperiode'
 
 /*
@@ -17,8 +17,11 @@ import { spelBegint } from './testperiode'
  *  - Bij het kiezen (of terugkrijgen) van een naam haalt de telefoon EERST de gegevens van die
  *    naam op en voegt ze samen met wat hier staat. Pas daarna wordt er iets verstuurd, ook door
  *    het scorebord (klaarVoorVersturen). Zo overschrijft een nieuwe telefoon niets met een lege stand.
- *  - Wisselt iemand naar een andere naam, dan gaan de gegevens van de vorige naam niet mee: ze
- *    worden op deze telefoon apart gezet, voor als die naam hier later weer gekozen wordt.
+ *  - Wisselt iemand naar een andere naam, dan verdwijnen de gegevens van de vorige naam van deze
+ *    telefoon: ze staan op de server en komen terug als die naam hier weer gekozen wordt. Alleen
+ *    wat nog niet verstuurd was (bijv. zonder bereik) blijft hier apart bewaard, tot dan.
+ *  - Op de telefoon staat dus alleen een kopie van de gekozen naam, zodat alles ook zonder bereik
+ *    werkt. Zonder naam (overgeslagen) staat het alleen hier en gaat het mee naar de eerste naam.
  *
  * Zonder backend gebeurt hier niets en blijft alles zoals het was: alleen op deze telefoon.
  */
@@ -36,6 +39,8 @@ interface Meta {
   teVersturen: string[]
   /** De gegevens van deze naam zijn al een keer opgehaald en samengevoegd */
   opgehaald: boolean
+  /** Met welke REGELS_VERSIE er voor het laatst samengevoegd is */
+  versie?: number
 }
 
 /** Gegevens van andere namen die eerder op deze telefoon gekozen waren */
@@ -82,6 +87,9 @@ function huidigeWaarden(): Record<string, unknown> {
   return uit
 }
 
+/** Staat er van deze naam iets op de telefoon dat (nog) niet op de server staat? */
+const heeftOnverstuurd = (m: Meta) => !m.opgehaald || m.teVersturen.length > 0
+
 function wisselNaam(nieuw: string | null) {
   const m = leesMeta()
   if (!m) return
@@ -94,10 +102,12 @@ function wisselNaam(nieuw: string | null) {
   const apart = lees<Apart>(APART, {})
   let volgende: Meta
   if (m.naam !== null) {
-    // Gegevens van de vorige naam apart zetten en hier weghalen
-    apart[naamSleutel(m.naam)] = { waarden: huidigeWaarden(), meta: m }
+    // Gegevens van de vorige naam hier weghalen: ze staan op de server. Alleen als er nog iets
+    // niet verstuurd is (of nooit opgehaald), apart bewaren tot die naam hier terugkomt.
+    if (heeftOnverstuurd(m)) apart[naamSleutel(m.naam)] = { waarden: huidigeWaarden(), meta: m }
+    else delete apart[naamSleutel(m.naam)]
     stilSchrijven(() => PERSOONLIJKE_SLEUTELS.forEach(wisEnMeld))
-    volgende = { naam: nieuw, bijgewerkt: {}, teVersturen: [], opgehaald: false }
+    volgende = { naam: nieuw, bijgewerkt: {}, teVersturen: [], opgehaald: false, versie: REGELS_VERSIE }
   } else {
     // Nog geen naam: wat hier staat hoorde bij niemand en gaat mee naar de eerste naam
     volgende = { ...m, naam: nieuw, opgehaald: false }
@@ -203,6 +213,7 @@ async function haalOpNu() {
       bijgewerkt: Object.fromEntries(Object.entries(stand).map(([s, v]) => [s, v.bijgewerkt])),
       teVersturen,
       opgehaald: true,
+      versie: REGELS_VERSIE,
     })
     stilSchrijven(() => {
       for (const [s, v] of Object.entries(stand)) {
@@ -340,8 +351,26 @@ export function startPersoonsdata() {
       bijgewerkt: Object.fromEntries(aanwezig.map((s) => [s, 0])),
       teVersturen: aanwezig,
       opgehaald: false,
+      versie: REGELS_VERSIE,
     })
+  } else {
+    const m = leesMeta()!
+    // Nieuwe persoonlijke sleutels (bijv. de eigen raderen): nog een keer ophalen en samenvoegen,
+    // zodat wat hier al stond naar de server gaat (of de stand van de server hier komt)
+    if (m.versie !== REGELS_VERSIE) {
+      const nieuw = PERSOONLIJKE_SLEUTELS.filter((s) => !(s in m.bijgewerkt) && bewaard(s))
+      zetMeta({
+        ...m,
+        bijgewerkt: { ...m.bijgewerkt, ...Object.fromEntries(nieuw.map((s) => [s, 0])) },
+        opgehaald: false,
+        versie: REGELS_VERSIE,
+      })
+    }
   }
+  // Apart bewaarde namen zonder iets onverstuurds horen niet op deze telefoon: weg ermee
+  const apart = lees<Apart>(APART, {})
+  const houden = Object.fromEntries(Object.entries(apart).filter(([, a]) => heeftOnverstuurd(a.meta)))
+  if (Object.keys(houden).length !== Object.keys(apart).length) stilSchrijven(() => schrijf(APART, houden))
   volgSchrijven(bijSchrijven)
   wisselNaam(lees<string | null>('naam', null))
   abonneer('naam', (n) => wisselNaam((n as string | null | undefined) ?? null))

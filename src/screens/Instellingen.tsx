@@ -62,13 +62,14 @@ export default function Instellingen({ terug }: { terug: () => void }) {
         <MeldingenKaart />
       </section>
 
-      <section className="instellingen__groep" aria-labelledby="inst-telefoon">
-        <h2 className="home__kopje" id="inst-telefoon">
-          Op deze telefoon
+      <section className="instellingen__groep" aria-labelledby="inst-naam">
+        <h2 className="home__kopje" id="inst-naam">
+          Bij je naam
         </h2>
         <p className="instellingen__tekst">
-          Je paklijst, je busbingokaart, je eigen raderen en je casinofiches staan op je telefoon (en gaan mee als je je
-          naam op een andere telefoon kiest). Een nieuwe versie van de app laat ze staan.
+          Je paklijst, je busbingokaart, je eigen raderen en je casinofiches horen bij je naam, niet bij je telefoon.
+          Kies je je naam op een andere telefoon, dan staat alles daar ook. Kies je hier een andere naam, dan zie je wat
+          bij die naam hoort. Zonder bereik werkt alles gewoon; wat je dan verandert, gaat mee zodra je weer bereik hebt.
         </p>
       </section>
 
@@ -83,16 +84,12 @@ export default function Instellingen({ terug }: { terug: () => void }) {
             een uur oud.
           </p>
           <p>
-            <b>Alleen jij</b> ziet je paklijst, je bingokaart, je casinofiches, je stemmen en je kiekjes die nog bij de
+            <b>Alleen jij</b> ziet je paklijst, je bingokaart, je eigen raderen, je casinofiches, je stemmen en je kiekjes die nog bij de
             redactie liggen.
           </p>
           <p>
             <b>De redactie</b> ({config.beheerNamen.join(' en ')}) ziet alle ingestuurde kiekjes en kan ze plaatsen of
             weghalen.
-          </p>
-          <p>
-            <b>Niet in de app:</b> achternamen, telefoonnummers en adressen. De app staat op een openbare website die
-            niet in zoekmachines komt; iedereen met de link kan hem openen.
           </p>
         </div>
       </section>
