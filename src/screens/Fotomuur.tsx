@@ -264,7 +264,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
 
           {!fotos ? (
             <p className="fotomuur__tekst">
-              {mislukt || backend.status !== 'verbonden' ? 'Geen verbinding. Het blad laadt zodra er internet is.' : 'Het blad wordt gedrukt…'}
+              {mislukt || backend.status === 'offline' ? 'Geen verbinding. Het blad laadt zodra er internet is.' : 'Het blad wordt gedrukt…'}
             </p>
           ) : fotos.length === 0 && !aantalStukjes ? (
             <section className="fotomuur__leeg">
