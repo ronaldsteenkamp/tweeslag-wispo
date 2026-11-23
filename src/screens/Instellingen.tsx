@@ -15,7 +15,8 @@ export function zetThema(t: Thema) {
 
 /** Instellingen: thema, sneeuw, meldingen, wat er op je telefoon staat en wie wat ziet. */
 export default function Instellingen({ terug }: { terug: () => void }) {
-  const [thema, setThema] = useOpgeslagen<Thema>('thema', 'auto')
+  // Standaard licht (index.html zet hetzelfde vóór het tekenen)
+  const [thema, setThema] = useOpgeslagen<Thema>('thema', 'licht')
   useEffect(() => zetThema(thema), [thema])
 
   return (
