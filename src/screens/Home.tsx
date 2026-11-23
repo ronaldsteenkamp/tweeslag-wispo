@@ -120,7 +120,7 @@ export default function Home({ naarTab, naarWeer, naarInstellingen }: { naarTab:
               {profielOpen && <ProfielRij />}
               <WeerRij nu={nu} naarWeer={naarWeer} />
               <Rij
-                bord={<Bord kleur="groen" icoon="kaart" vierkant />}
+                bord={<Bord kleur="zwart" icoon="kaart" vierkant />}
                 titel="Pistekaart"
                 onder="Alle pistes en liften van Les 2 Alpes"
                 onKlik={() => naarTab('kaart')}
