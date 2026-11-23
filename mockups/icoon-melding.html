@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nieuw icoon op de iPhone</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<style>
+  .doc { max-width: 1340px; }
+  .schermen { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, 300px); justify-content: center; margin-top: 18px; }
+  .schermen figure { margin: 0; display: grid; gap: 8px; justify-items: center; }
+  .schermen figcaption { max-width: 290px; text-align: center; }
+  .mini { position: relative; width: 300px; aspect-ratio: 9/19.5; border-radius: 34px; border: 7px solid #111; overflow: hidden; background: var(--papier); --onder: 18px; }
+  .mini .kop { padding-top: 40px; }
+  .mini .kop__bergen { height: 90px; margin-top: -16px; }
+  .mini .blad { transform: none; position: absolute; max-height: 92%; }
+  .mini .blad-scherm { opacity: 1; }
+  .mini__papier { padding: 14px 14px 0; display: grid; gap: 12px; }
+  .homekopje { font: 700 1.05rem/1 var(--font-smal); text-transform: uppercase; letter-spacing: .06em; color: var(--inkt-zacht); margin: 4px 0 0; }
+  .nep-rij { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--lijn); font-size: .92rem; }
+  .nep-rij .bord { width: 34px; height: 34px; flex: none; }
+  .nep-rij small { display: block; color: var(--inkt-zacht); font-size: .78rem; }
+
+  /* De melding op Home */
+  .icoonkaart { position: relative; border: 1.5px solid var(--lijn-sterk); border-radius: var(--rond-blok); background: var(--papier-vlak); padding: 14px 14px 12px; }
+  .icoonkaart h2 { font: 700 1.3rem/1.05 var(--font-smal); margin: 0 26px 6px 0; }
+  .icoonkaart p { font-size: .9rem; line-height: 1.35; margin: 0 0 10px; }
+  .icoonkaart__sluit { position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; border: 0; background: none; color: var(--inkt-zacht); display: grid; place-items: center; }
+  .wissel { display: flex; align-items: center; gap: 10px; margin: 2px 0 10px; }
+  .wissel img { width: 50px; height: 50px; border-radius: 11px; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+  .wissel img.oud { opacity: .55; filter: grayscale(.4); }
+  .wissel svg { width: 20px; height: 20px; color: var(--inkt-zacht); }
+  .wissel span { font-size: .78rem; color: var(--inkt-zacht); line-height: 1.2; }
+  .icoonkaart .knop { min-height: 44px; font-size: 1rem; }
+
+  /* Het blad met uitleg */
+  .blad h3 { font: 700 1.45rem/1.05 var(--font-smal); margin: 2px 0 8px; }
+  .check { display: grid; gap: 6px; margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: var(--papier-vlak); border: 1px solid var(--lijn); font-size: .84rem; line-height: 1.3; }
+  .check div { display: grid; grid-template-columns: 20px 1fr; gap: 6px; align-items: start; }
+  .check svg { width: 18px; height: 18px; margin-top: 1px; }
+  .check .goed svg { color: var(--groen); }
+  .check .let svg { color: var(--rood); }
+  .stap { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--lijn); font-size: .86rem; line-height: 1.32; }
+  .stap .bord { width: 30px; height: 30px; font-size: 1rem; }
+  .stap b { font-weight: 600; }
+  .stap .knop { margin-top: 6px; min-height: 38px; font-size: .9rem; padding: 0 12px; }
+  .ik { display: inline-flex; vertical-align: -4px; }
+  .ik svg { width: 18px; height: 18px; }
+
+  /* Beginscherm-demo (stap 1) */
+  .ios { position: relative; width: 300px; aspect-ratio: 9/19.5; border-radius: 34px; border: 7px solid #111; overflow: hidden; background: linear-gradient(160deg, #1c1c2e, #0b1220 60%, #241a2a); padding: 60px 18px 0; }
+  .ios__menu { position: absolute; left: 50%; top: 228px; translate: -50% 0; width: 220px; border-radius: 14px; background: rgba(245,245,247,.92); color: #111; font: 14px/1.2 -apple-system, system-ui, sans-serif; overflow: hidden; z-index: 3; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  .ios__menu div { padding: 11px 14px; border-top: 1px solid rgba(0,0,0,.12); display: flex; justify-content: space-between; }
+  .ios__menu div:first-child { border-top: 0; }
+  .ios__menu .rood { color: #ff3b30; }
+  .ios__app { position: absolute; left: 50%; top: 130px; translate: -50% 0; display: grid; justify-items: center; gap: 5px; z-index: 3; }
+  .ios__app img { width: 62px; height: 62px; border-radius: 14px; }
+  .ios__app span { color: #fff; font: 500 12px -apple-system, system-ui, sans-serif; }
+  .ios__waas { position: absolute; inset: 0; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(0,0,0,.25); z-index: 2; }
+  .ios__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 10px; }
+  .ios__grid i { width: 52px; height: 52px; border-radius: 12px; display: block; justify-self: center; }
+  .ios__label { position: absolute; top: 14px; left: 0; right: 0; text-align: center; color: #fff; opacity: .7; font: 600 11px system-ui; z-index: 4; }
+  table.tabel td, table.tabel th { vertical-align: top; }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="24" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven">Tweeslag Wispo · schets</p>
+    <h1>Nieuw icoon op de iPhone</h1>
+    <p>Android werkt het icoon op het beginscherm zelf bij. Een iPhone houdt het oude icoon, tot je Wispo eraf haalt en opnieuw toevoegt. Deze melding legt dat één keer uit, alleen aan wie het nodig heeft.</p>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="645"></div>
+</header>
+
+<main class="doc">
+  <h2>Zo ziet het eruit</h2>
+  <div class="schermen" id="schermen"></div>
+
+  <h2>Wie ziet het, en wanneer</h2>
+  <table class="tabel" style="margin-top:12px">
+    <tr><th>Wie</th><td>Alleen op een <b>iPhone/iPad</b>, alleen in de app op het <b>beginscherm</b> (niet in Safari), en alleen als die app er al stond vóór het nieuwe icoon. Wie Wispo na de update voor het eerst toevoegt, heeft het nieuwe icoon al en ziet niets.</td></tr>
+    <tr><th>Waar</th><td>Op Home, bovenaan het papier (onder de kop), in alle fases. Eén kaartje, zoals de installatiemelding.</td></tr>
+    <tr><th>Weg</th><td><b>Laat maar</b> of het kruisje: nooit meer. Na het opnieuw toevoegen is alles op de telefoon leeg, dus ook dan zie je hem niet meer.</td></tr>
+    <tr><th>Herkennen</th><td>Bij de eerste start bewaart de app welk icoon er was (<code>icoon.versie</code>). Een app die al gebruikt was (welkomstscherm gehad) en nog geen <code>c3</code> heeft, krijgt de melding. Een verse installatie zet meteen <code>c3</code>.</td></tr>
+    <tr><th>Wat er verloren gaat</th><td>De paklijst, badges, het spel, de raderen en het casino staan bij je naam op de server en komen terug zodra je je naam weer kiest. Weg zijn: <b>meldingen</b> (opnieuw aanzetten; het welkomstscherm vraagt dat meteen), thema en sneeuw-instelling, en foto's of stukjes die <b>nog niet verstuurd</b> zijn. Daarom checkt het blad eerst of er nog iets in de wachtrij staat.</td></tr>
+  </table>
+
+  <div class="aanbeveling"><p class="label">Aanbeveling</p><p>Melding op Home zoals links, uitleg in een blad zoals in het midden. Geen pop-up bij het openen: het icoon is leuk, maar niet dringend, en wie geen zin heeft tikt <b>Laat maar</b>. Android krijgt niets te zien (dat gaat vanzelf).</p></div>
+</main>
+
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script>
+const W = window.Wispo
+const kop = (boven, titel, onder) => `<header class="kop"><canvas class="sneeuwveld" data-aantal="10" style="color:var(--vlok)"></canvas><p class="kop__boven">${boven}</p><p class="kop__titel" style="font:var(--t-reus)">${titel}</p><p class="kop__onder">${onder}</p><div class="kop__bergen" data-bergen="445" data-vlag></div></header>`
+const rij = (kleur, ik, t, o) => `<div class="nep-rij"><span class="bord bord--${kleur}">${W.icoon(ik, 20)}</span><span><b>${t}</b><small>${o}</small></span></div>`
+const kaart = `<section class="icoonkaart">
+  <button class="icoonkaart__sluit" aria-label="Verbergen">${W.icoon('kruis', 20)}</button>
+  <h2>Wispo heeft een nieuw icoon</h2>
+  <div class="wissel"><img class="oud" src="icoon-melding/oud.svg" alt="Oud icoon">${W.icoon('pijl', 20)}<img src="icoon-melding/nieuw.svg" alt="Nieuw icoon"><span>2slag in een<br>sterrennacht</span></div>
+  <p>Je iPhone houdt het oude vast. Wil je het nieuwe? Zet Wispo dan opnieuw op je beginscherm. Dat kost een minuut en je raakt niets kwijt.</p>
+  <button class="knop knop--primair knop--breed">Zo doe je dat</button>
+  <button class="knop knop--tekst knop--breed">Laat maar</button>
+</section>`
+const home = `<div class="mini wispo">${kop('Wispo 2027 · Les Deux Alpes', 'Nog 102 dagen', 'tot de bus vertrekt · vr 5 maart')}
+  <div class="mini__papier">${kaart}
+    <p class="homekopje">Voor de bus</p>
+    ${rij('groen', 'paklijst', 'Paklijst', '14 van 38 ingepakt')}
+    ${rij('ijs', 'weer', 'Weer in Les 2 Alpes', 'Zon, −4° op 3400 m')}
+  </div></div>`
+
+const stap = (n, tekst) => `<div class="stap"><span class="bord bord--nummer bord--zwart">${n}</span><span>${tekst}</span></div>`
+const ik = (n) => `<span class="ik">${W.icoon(n, 18)}</span>`
+const blad = (wachtrij) => `<div class="mini wispo">${kop('Wispo 2027 · Les Deux Alpes', 'Nog 102 dagen', 'tot de bus vertrekt · vr 5 maart')}
+  <div class="mini__papier">${kaart}</div>
+  <div class="blad-scherm"></div><div class="blad">
+    <h3>Nieuw icoon in 4 stappen</h3>
+    <div class="check">
+      <div class="goed">${W.icoon('vink', 18)}<span>Je paklijst, badges en het spel staan bij <b>Ronald</b> op de server en komen terug.</span></div>
+      ${wachtrij
+        ? `<div class="let">${W.icoon('info', 18)}<span><b>Nog 2 foto's</b> wachten op verzenden. Wacht tot je bereik hebt en ze weg zijn, anders raak je ze kwijt.</span></div>`
+        : `<div class="goed">${W.icoon('vink', 18)}<span>Alle foto's en stukjes zijn verstuurd.</span></div>`}
+      <div class="let">${W.icoon('bel', 18)}<span>Meldingen zet je daarna opnieuw aan.</span></div>
+    </div>
+    ${stap(1, 'Druk op je beginscherm lang op het Wispo-icoon en kies <b>Verwijder app</b> → <b>Verwijder van beginscherm</b>.')}
+    ${stap(2, `Open de link in <b>Safari</b>.<br><button class="knop knop--secundair">${W.icoon('deel', 18)}Kopieer de link</button>`)}
+    ${stap(3, `Tik op Deel ${ik('deelIos')}, kies <b>Zet op beginscherm</b> ${ik('plusVierkant')} en dan <b>Voeg toe</b>.`)}
+    ${stap(4, 'Open Wispo en kies weer <b>Ronald</b>.')}
+  </div></div>`
+
+const kleuren = ['#30b158', '#34c759', '#5b5b60', '#f2a33a', '#3d8bfd', '#2f7de1', '#1c1c1e', '#ff5e57', '#f5c400', '#fa3c55', '#8e8e93', '#30b158']
+const ios = `<div class="ios"><span class="ios__label">Stap 1 · op het beginscherm</span>
+  <div class="ios__grid">${kleuren.map((k) => `<i style="background:${k}"></i>`).join('')}</div>
+  <div class="ios__waas"></div>
+  <div class="ios__app"><img src="icoon-melding/oud.svg" alt=""><span>Tweeslag Wispo</span></div>
+  <div class="ios__menu"><div>Wijzig beginscherm</div><div>Deel app</div><div class="rood">Verwijder app <span>⊖</span></div></div>
+</div>`
+
+document.getElementById('schermen').innerHTML = `
+  <figure>${home}<figcaption class="klein"><b>Home.</b> Het kaartje bovenaan, met oud → nieuw. Kruisje of <i>Laat maar</i> = nooit meer.</figcaption></figure>
+  <figure>${blad(false)}<figcaption class="klein"><b>Zo doe je dat.</b> Eerst een korte check (wat komt terug, wat niet), dan vier stappen.</figcaption></figure>
+  <figure>${blad(true)}<figcaption class="klein"><b>Met iets in de wachtrij.</b> Dan zegt het blad eerst: wacht even met verwijderen.</figcaption></figure>
+  <figure>${ios}<figcaption class="klein">Ter illustratie: zo ziet stap 1 eruit op de iPhone (geen onderdeel van de app).</figcaption></figure>`
+
+document.querySelectorAll('[data-bergen]').forEach((el) => { const r = el.getBoundingClientRect(); el.innerHTML = W.bergen({ camera: Number(el.dataset.bergen), verhouding: (r.width || 280) / (r.height || 90), vlag: el.hasAttribute('data-vlag') }) })
+</script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
+import { IcoonMelding } from '../components/IcoonMelding'
 import { FotoStrip } from '../components/FotoStrip'
 import { Bergen, MEIJE, cameraVoor } from '../components/Bergen'
 import { openMijnProfiel } from '../components/Profiel'
@@ -111,6 +112,9 @@ export default function Home({ naarTab, naarWeer, naarInstellingen }: { naarTab:
             </button>
           </section>
         )}
+
+        {/* Alleen op een iPhone met de oude app op het beginscherm */}
+        <IcoonMelding />
 
         {fase === 'voor' && (
           <>

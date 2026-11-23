@@ -845,6 +845,137 @@ html.venster-open body {
   color: #0a84ff;
 }
 
+/* ---------- Nieuw app-icoon (iPhone) ---------- */
+
+.icoonmelding p {
+  margin: 0;
+}
+
+.icoonmelding .knop--tekst {
+  margin-top: -6px;
+}
+
+.icoonmelding__wissel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--tekst-zacht);
+}
+
+.icoonmelding__wissel img {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.icoonmelding__oud {
+  opacity: 0.55;
+  filter: grayscale(0.4);
+}
+
+.icoonmelding__wissel span {
+  font-size: 0.85rem;
+  line-height: 1.2;
+  max-width: 9em;
+}
+
+.dialoog.icoonblad {
+  position: relative;
+  border-radius: 18px 18px 0 0;
+  gap: 14px;
+}
+
+.icoonblad h2 {
+  margin: 0;
+  padding-right: 44px;
+}
+
+.icoonblad__sluit {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--tekst-zacht);
+}
+
+.icoonblad__check {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--rand);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.icoonblad__check p {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.icoonblad__check svg {
+  margin-top: 2px;
+}
+
+.icoonblad__check .is-goed svg {
+  color: var(--piste-groen);
+}
+
+.icoonblad__check .is-let svg {
+  color: var(--piste-rood);
+}
+
+.icoonblad__stappen {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: stap;
+}
+
+.icoonblad__stappen li {
+  counter-increment: stap;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  column-gap: 12px;
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rand);
+  line-height: 1.4;
+}
+
+.icoonblad__stappen li:last-child {
+  border-bottom: 0;
+}
+
+.icoonblad__stappen li::before {
+  content: counter(stap);
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--piste-zwart);
+  color: #fff;
+  font: 700 1.1rem/1 'Barlow Condensed', sans-serif;
+}
+
+.icoonblad__kopieer {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 8px;
+}
+
 /* ---------- Planning ---------- */
 
 .dagkiezer {
