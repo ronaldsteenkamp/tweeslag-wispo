@@ -169,8 +169,9 @@ export default function App() {
           // Vanuit een subscherm naar een andere tab: de subscherm-stap vervangen
           window.history.replaceState(t === 'home' ? null : { tabStap: true }, '', adres)
         } else if (t === 'home' && isTabStap()) {
+          // Een stap terug, maar Home meteen tonen: wachten op de hashchange gaf na het vegen een
+          // frame waarin de oude tab weer even in beeld stond (knipperen)
           window.history.back()
-          return
         } else if (huidig === 'home' && t !== 'home') {
           window.history.pushState({ tabStap: true }, '', adres)
         } else {

@@ -119,6 +119,12 @@ export default function Home({ naarTab, naarWeer, naarInstellingen }: { naarTab:
               <PaklijstRij pak={pak} naarPaklijst={() => naarTab('paklijst')} />
               {profielOpen && <ProfielRij />}
               <WeerRij nu={nu} naarWeer={naarWeer} />
+              <Rij
+                bord={<Bord kleur="groen" icoon="kaart" vierkant />}
+                titel="Pistekaart"
+                onder="Alle pistes en liften van Les 2 Alpes"
+                onKlik={() => naarTab('kaart')}
+              />
             </section>
             <InstallatieBanner />
             <StemmingOpHome naarStemmen={naarStemmen} />
