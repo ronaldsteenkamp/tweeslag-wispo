@@ -24,7 +24,7 @@ export type MeldingStatus =
 
 /** Van een eerdere versie: waar = aan. Alleen nog gebruikt om 'uitgezet' te bepalen. */
 const AAN = 'meldingen.aan'
-/** Zelf op Uitzetten getikt (of nog nooit aangezet) */
+/** Zelf op Uitzetten getikt (of van een eerdere versie: nooit aangezet). Op een nieuwe telefoon: niet uitgezet. */
 const UITGEZET = 'meldingen.uitgezet'
 /** Welk abonnement van welke gebruiker op de server staat, en wanneer dat voor het laatst is doorgegeven */
 const GEKOPPELD = 'meldingen.gekoppeld'
@@ -34,6 +34,11 @@ const OPNIEUW_MS = 12 * 60 * 60 * 1000
 function uitgezet(): boolean {
   const v = lees<boolean | null>(UITGEZET, null)
   if (v !== null) return v
+  // Nieuwe telefoon: standaard aan. Zodra de telefoon toestemming geeft, meldt de app zich vanzelf aan.
+  if (lees<unknown>(AAN, null) === null && lees<unknown>(GEKOPPELD, null) === null) {
+    schrijf(UITGEZET, false)
+    return false
+  }
   // Eerdere versie: de app zette 'aan' zelf uit als de browser het abonnement kwijt was. Alleen wie
   // zelf op Uitzetten tikte (dan is 'gekoppeld' leeg) of nooit aanzette, blijft uit.
   const oud = !lees(AAN, false) && !lees(GEKOPPELD, '')

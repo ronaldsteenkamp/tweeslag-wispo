@@ -13,11 +13,13 @@
     <meta name="format-detection" content="telephone=no" />
     <title>Tweeslag Wispo</title>
     <script>
-      // Thema uit Instellingen (licht, donker of de telefoon volgen) vóór het tekenen, zodat er niets omslaat
+      // Thema uit Instellingen (licht, donker of de telefoon volgen) vóór het tekenen, zodat er niets omslaat.
+      // Standaard licht (zelfde standaard als in screens/Instellingen.tsx).
+      var t = 'licht'
       try {
-        var t = JSON.parse(localStorage.getItem('tweeslag-wispo.thema') || '"auto"')
-        if (t === 'licht' || t === 'donker') document.documentElement.dataset.thema = t
+        t = JSON.parse(localStorage.getItem('tweeslag-wispo.thema') || '"licht"')
       } catch (e) {}
+      if (t === 'licht' || t === 'donker') document.documentElement.dataset.thema = t
     </script>
     <style>
       /* Voorkomt een wit flitsje voordat de app geladen is */
