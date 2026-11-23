@@ -4,7 +4,8 @@ import { Icoon } from './Icoon'
 export type { Tab }
 
 /**
- * De tabbalk: zwevend mat glas boven de home-indicator, het actieve tab als donkerblauw pistebord
+ * De tabbalk: mat glas over de volle breedte, vast aan de onderrand (de home-indicator valt erbinnen),
+ * het actieve tab als donkerblauw pistebord
  * (ontwerp: mockups/navigatie.html, richting B). Badges: een getal of een stip voor iets nieuws.
  */
 export function TabBalk({
