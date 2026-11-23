@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useToonNaam } from '../lib/bijnamen'
 import { useData } from '../lib/data'
 import { useInstallatie } from '../lib/installatie'
+import { vraagMeldingenBijWelkom } from '../lib/meldingen'
 import { useOpgeslagen } from '../lib/opslag'
 import { InstallatieUitleg } from './InstallatieBanner'
 import { profielBestaatVoor, useMijnProfiel } from '../lib/profiel'
@@ -64,6 +65,8 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
               <NaamKiezer
                 skipas
                 namen={namen}
+                // Meteen om meldingen vragen, nog in de tik (na de stempel weigert een iPhone de vraag)
+                onTik={vraagMeldingenBijWelkom}
                 onKies={(n) => {
                   setNaam(n)
                   // Heeft deze naam al een profiel (bijv. van een andere telefoon), dan meteen door
@@ -76,7 +79,14 @@ export function Welkom({ onKlaar }: { onKlaar: () => void }) {
                 {fout ? 'De namenlijst kon niet geladen worden. Je kunt je naam later kiezen bij Kamers.' : 'Even laden…'}
               </p>
             )}
-            <button type="button" className="tekstknop welkom__later" onClick={naNaam}>
+            <button
+              type="button"
+              className="tekstknop welkom__later"
+              onClick={() => {
+                vraagMeldingenBijWelkom()
+                naNaam()
+              }}
+            >
               Sla over, ik kies later
             </button>
           </>

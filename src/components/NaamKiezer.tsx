@@ -25,10 +25,13 @@ function scrollHouder(el: HTMLElement | null): HTMLElement | null {
 export function NaamKiezer({
   namen,
   onKies,
+  onTik,
   skipas = false,
 }: {
   namen: string[]
   onKies: (n: string) => void
+  /** Meteen bij de tik, nog vóór de stempel (voor wat alleen in een tik mag, zoals om meldingen vragen) */
+  onTik?: () => void
   skipas?: boolean
 }) {
   const [zoek, setZoek] = useState('')
@@ -45,8 +48,9 @@ export function NaamKiezer({
   // Naam gekozen: terug naar boven. Tijdens het zoeken stond het zoekveld bovenaan in beeld; het
   // scherm daarna (bijv. je profiel in hetzelfde venster) zou anders half naar beneden beginnen.
   const kies = (n: string) => {
+    if (skipas && gestempeld) return
+    onTik?.()
     if (skipas) {
-      if (gestempeld) return
       // Even de stempel laten zien; zonder beweging (reduced motion) meteen door
       setGestempeld(n)
       const rustig = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
