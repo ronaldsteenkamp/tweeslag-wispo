@@ -131,19 +131,40 @@ export function startStukjesWachtrij() {
 
 // ---------- Ophalen, beoordelen, weghalen ----------
 
-/** Geplaatste stukjes voor het clubblad, nieuwste eerst. `null` zolang ze laden; leeg als de server ze nog niet kent. */
+/*
+ * De laatst opgehaalde stukjes onthouden (in het geheugen en op het apparaat), net als de foto's
+ * (zie useFotos): dan staan ze er bij het openen van het clubblad meteen, tegelijk met de foto's,
+ * in plaats van een tel later (waardoor de pagina verschoof). Daarna wordt de lijst ververst.
+ */
+const STUKJES_CACHE = 'stukjescache'
+let laatsteStukjes: Stukje[] | null = (() => {
+  const l = lees<Stukje[] | null>(STUKJES_CACHE, null)
+  return Array.isArray(l) ? l : null
+})()
+const bewaarStukjes = (l: Stukje[]) => {
+  laatsteStukjes = l
+  schrijf(STUKJES_CACHE, l)
+}
+
+/** Geplaatste stukjes voor het clubblad, nieuwste eerst. `null` zolang ze (de eerste keer) laden; leeg als de server ze nog niet kent. */
 export function useGeplaatsteStukjes(actief: boolean) {
-  const [lijst, setLijst] = useState<Stukje[] | null>(null)
+  const [lijst, setLijst] = useState<Stukje[] | null>(() => (actief ? laatsteStukjes : null))
   const ververs = useCallback(async () => {
     const cb = supabase()
     if (!cb || backendStand().status !== 'verbonden') return
     const { data, error } = await (await cb).from('stukjes').select(STUKJE_VELDEN).eq('status', 'goed').order('gemaakt', { ascending: false }).limit(200)
     if (error) {
       // Migratie 0019 nog niet gedraaid: geen rubriek
-      if (error.code === '42P01' || error.code === 'PGRST205') setLijst([])
+      if (error.code === '42P01' || error.code === 'PGRST205') {
+        bewaarStukjes([])
+        setLijst([])
+      }
       return
     }
-    setLijst((data ?? []) as Stukje[])
+    const nieuw = (data ?? []) as Stukje[]
+    bewaarStukjes(nieuw)
+    // Niets veranderd: dezelfde lijst houden, dan rekent het blad niets opnieuw uit
+    setLijst((oud) => (oud && JSON.stringify(oud) === JSON.stringify(nieuw) ? oud : nieuw))
   }, [])
   useEffect(() => {
     if (!actief || !backendIngesteld) return
