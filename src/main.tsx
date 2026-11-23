@@ -6,6 +6,7 @@ import { resetCasinoAlsNodig } from './components/Roulette'
 import { startBackend } from './lib/backend'
 import { wachtOp } from './lib/data'
 import { vangInstallatieMelding } from './lib/installatie'
+import { bepaalIcoonVersie } from './lib/icoonversie'
 import { startKamerverdeling } from './lib/kamerverdeling'
 import { resetVoortgangAlsNodig, startPersoonsdata } from './lib/persoonsdata'
 import { startProfielen } from './lib/profiel'
@@ -28,6 +29,8 @@ document.addEventListener('gesturestart', (e) => e.preventDefault())
 
 // Zo vroeg mogelijk, anders missen we het beforeinstallprompt-event van Chrome
 vangInstallatieMelding()
+// Vóór het welkomstscherm: is dit een app die er al stond met het oude icoon? (zie icoonversie.ts)
+bepaalIcoonVersie()
 // Gedeelde functies (alleen als Supabase is ingesteld; anders gebeurt er niets)
 startBackend()
 // Eenmalig: voortgang van iedereen wissen (zie persoonsdata.ts)

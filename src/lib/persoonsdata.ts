@@ -293,6 +293,16 @@ export function klaarVoorVersturen(): boolean {
   return !!m && m.opgehaald && m.naam === lees<string | null>('naam', null)
 }
 
+/**
+ * Staat er voortgang (paklijst, spel, badges...) op deze telefoon die nog niet op de server staat?
+ * Bijvoorbeeld om te waarschuwen voordat iemand de app van het beginscherm haalt.
+ */
+export function voortgangNogNietVerstuurd(): boolean {
+  if (!backendIngesteld || tabelOntbreekt) return false
+  const m = leesMeta()
+  return !!m && heeftOnverstuurd(m)
+}
+
 /** Seintje zodra de stand klaar is om te versturen */
 export function abonneerKlaar(f: () => void): () => void {
   klaarLuisteraars.add(f)
