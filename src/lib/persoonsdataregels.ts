@@ -45,7 +45,22 @@ export const PERSOONLIJK: Readonly<Record<string, Strategie>> = {
   'casino.geleend': 'nieuwste',
   'casino.inzet': 'nieuwste',
   'casino.reset': 'nieuwste',
+  // Eigen raderen (lijsten waar je ook uit weghaalt: dus niet optellen, de laatste wint)
+  'rad.eigenLijsten': 'nieuwste',
+  'rad.eigenLijst': 'nieuwste',
+  'rad.eigen': 'nieuwste',
+  'rad.drankjes.uit': 'nieuwste',
+  'rad.drankjes.eigen': 'nieuwste',
+  'rad.kleuren': 'nieuwste',
+  'rad.deelnemers': 'nieuwste',
 }
+
+/**
+ * Ophogen als er sleutels bij PERSOONLIJK komen: dan haalt elke telefoon de stand van zijn naam
+ * nog een keer op en voegt samen, zodat de nieuwe sleutels (die hier al stonden) naar de server gaan.
+ * 2: eigen raderen erbij.
+ */
+export const REGELS_VERSIE = 2
 
 export const PERSOONLIJKE_SLEUTELS = Object.keys(PERSOONLIJK)
 
