@@ -39,6 +39,9 @@
   --knop: #0d0058; /* primaire knop, actieve tab */
   --op-knop: #ffffff;
   --glas: rgba(255, 253, 248, 0.72);
+  --papier-licht: #f5f2ea; /* papier dat ook in donker licht blijft (stempel, afgevinkt vak) */
+  --foto-rand: #fffdf8; /* witte rand om grote foto's, ook in donker */
+  --foto-rand-lijn: #cfc6b2;
   --vaag: blur(16px) saturate(1.4);
   --schaduw-zweef: 0 10px 30px rgba(13, 0, 88, 0.18), 0 2px 6px rgba(13, 0, 88, 0.08);
   --schaduw-blad: 0 -8px 30px rgba(13, 0, 88, 0.16);
@@ -138,6 +141,46 @@
     --berg-3-schaduw: #a7b2cf;
     --berg-sneeuwrand: #c7d0e6;
 }
+
+/*
+ * ==== SCHAKELAAR: ACHTERGROND "VERSE SNEEUW" (data-papier) ====
+ * Zet de achtergrond onder de sneeuwlaag van crèmepapier op een effen, koel wit.
+ * Aan:  <html data-papier="sneeuw"> in index.html.
+ * Uit:  haal data-papier="sneeuw" weg uit index.html; dan geldt weer het crèmepapier hierboven.
+ * Helemaal terug: git revert van de commit "Achtergrond: verse sneeuw in plaats van crèmepapier".
+ *
+ * Alleen in licht thema: bij een vaste keuze voor licht (data-thema="licht") en bij "volgt de
+ * telefoon" (geen data-thema) als de telefoon op licht staat. Nooit bij donker: daar blijven de
+ * donkere waarden hierboven gelden (de selectors hieronder sluiten donker uit).
+ *
+ * Naast de vier papiertokens gaan hier ook mee (alleen afgeleid van die vier, geen nieuwe kleuren):
+ * --glas (tabbalk), --papier-licht (stempel op de Paklijst, afgevinkt vak bij Spel) en
+ * --foto-rand / --foto-rand-lijn (witte rand om grote foto's). Die laatste drie stonden eerder als
+ * vaste crèmekleur in paklijst.css, bewijs.css en app.css.
+ */
+:root[data-papier='sneeuw'][data-thema='licht'] {
+  --papier: #f5f8fb;
+  --papier-vlak: #ffffff;
+  --papier-diep: #e6edf3;
+  --lijn: #d3dde7;
+  --glas: color-mix(in srgb, var(--papier-vlak) 72%, transparent);
+  --papier-licht: var(--papier);
+  --foto-rand: var(--papier-vlak);
+  --foto-rand-lijn: var(--lijn);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-papier='sneeuw']:not([data-thema]) {
+    --papier: #f5f8fb;
+    --papier-vlak: #ffffff;
+    --papier-diep: #e6edf3;
+    --lijn: #d3dde7;
+    --glas: color-mix(in srgb, var(--papier-vlak) 72%, transparent);
+    --papier-licht: var(--papier);
+    --foto-rand: var(--papier-vlak);
+    --foto-rand-lijn: var(--lijn);
+  }
+}
+/* ==== einde schakelaar verse sneeuw ==== */
 
 /* -- Oude namen (verwijzen naar de stijlbasis) -- */
 :root {

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Verse sneeuw: vóór en na</title>
+<style>
+  :root {
+    --navy: #0d0058; --lb: #099fc4; --inkt: #0d0058; --zacht: #4b4e6b;
+    --bg: #eef1f5; --vlak: #ffffff; --lijn: #d3dde7;
+    font-family: Barlow, 'Trebuchet MS', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--inkt); line-height: 1.45; }
+  header { background: var(--navy); color: #fff; padding: 28px 16px 24px; }
+  header .binnen, main { max-width: 1120px; margin: 0 auto; }
+  header p { color: #c9d7f2; margin: 6px 0 0; max-width: 70ch; }
+  h1 { font-size: clamp(26px, 5vw, 40px); margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 22px; margin: 40px 0 10px; }
+  h3 { font-size: 16px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--zacht); }
+  main { padding: 8px 16px 64px; }
+  .kaart { background: var(--vlak); border: 1px solid var(--lijn); border-radius: 12px; padding: 16px; }
+  .rij { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--lijn); vertical-align: top; }
+  th { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--zacht); }
+  td.getal { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tabel { overflow-x: auto; }
+  .staal { display: inline-block; width: 18px; height: 18px; border-radius: 4px; border: 1px solid #0002; vertical-align: -4px; margin-right: 6px; }
+  code { background: #e6edf3; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+  .ok { color: #1e7a4c; font-weight: 600; }
+  .let { color: #c4212f; font-weight: 600; }
+  .paar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  figure { margin: 0; }
+  figure img { display: block; width: 100%; height: auto; border-radius: 14px; box-shadow: 0 2px 10px #0d005822; background: #ddd; }
+  figcaption { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--zacht); margin: 0 0 6px; }
+  .scherm { margin-top: 22px; }
+  .scherm > h3 { color: var(--inkt); font-size: 18px; letter-spacing: 0.02em; text-transform: none; }
+  .schermen { display: grid; gap: 28px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  .bediening { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .bediening button { font: inherit; font-weight: 600; border: 1.5px solid var(--navy); background: var(--vlak); color: var(--navy); padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+  .bediening button[aria-pressed='true'] { background: var(--navy); color: #fff; }
+  body.alleen-na figure.voor, body.alleen-voor figure.na { display: none; }
+  body.alleen-na .paar, body.alleen-voor .paar { grid-template-columns: 1fr; }
+</style>
+</head>
+<body>
+<header>
+  <div class="binnen">
+    <h1>Achtergrond: verse sneeuw</h1>
+    <p>Vóór: crèmepapier (<code style="background:#ffffff22;color:#fff">#f5f2ea</code>). Na: effen koel wit (<code style="background:#ffffff22;color:#fff">#F5F8FB</code>). Alleen het licht thema verandert. Banners, bergen, sneeuwval en de rest van de stijl blijven hetzelfde. Schermafbeeldingen op 390 × 844 (2×), gemaakt in headless Edge met een build zonder backend (naam "Demo").</p>
+  </div>
+</header>
+<main>
+
+<h2>De vier tokens</h2>
+<div class="kaart tabel">
+  <table>
+    <thead><tr><th>Token</th><th>Nu (crèmepapier)</th><th>Verse sneeuw</th><th>Gebruik</th></tr></thead>
+    <tbody>
+      <tr><td><code>--papier</code></td><td><span class="staal" style="background:#f5f2ea"></span>#f5f2ea</td><td><span class="staal" style="background:#f5f8fb"></span>#F5F8FB</td><td>achtergrond van elk scherm, dal onder de bergen</td></tr>
+      <tr><td><code>--papier-vlak</code></td><td><span class="staal" style="background:#fffdf8"></span>#fffdf8</td><td><span class="staal" style="background:#ffffff"></span>#FFFFFF</td><td>blok, invoerveld, blad</td></tr>
+      <tr><td><code>--papier-diep</code></td><td><span class="staal" style="background:#ebe5d6"></span>#ebe5d6</td><td><span class="staal" style="background:#e6edf3"></span>#E6EDF3</td><td>ingedrukt, segmentbalk, skelet</td></tr>
+      <tr><td><code>--lijn</code></td><td><span class="staal" style="background:#d9d3c4"></span>#d9d3c4</td><td><span class="staal" style="background:#d3dde7"></span>#D3DDE7</td><td>scheidingslijnen, randen van vakjes</td></tr>
+    </tbody>
+  </table>
+  <p style="margin:12px 0 0">Ook onder de schakelaar, alleen afgeleid van die vier (geen nieuwe kleuren): <code>--glas</code> (tabbalk, wit 72%), <code>--papier-licht</code> (stempel Paklijst, afgevinkt vak Spel), <code>--foto-rand</code> en <code>--foto-rand-lijn</code> (witte rand om grote foto's).</p>
+</div>
+
+<h2>Aan en uit zetten</h2>
+<div class="kaart">
+  <p style="margin-top:0"><strong>Aan:</strong> <code>&lt;html lang="nl" data-papier="sneeuw"&gt;</code> in <code>index.html</code>. <strong>Snel terug:</strong> haal <code>data-papier="sneeuw"</code> weg. <strong>Helemaal terug:</strong> <code>git revert</code> van de commit, of de PR niet mergen.</p>
+  <p style="margin-bottom:0">Getest (waarden van <code>getComputedStyle</code> in de build): licht vast → sneeuw · telefoon licht + "volgt de telefoon" → sneeuw · donker vast → donker ongewijzigd · telefoon donker + "volgt de telefoon" → donker ongewijzigd · licht vast terwijl de telefoon donker staat → sneeuw · donker vast terwijl de telefoon licht staat → donker ongewijzigd. Attribuut weggehaald → in alle zes de gevallen precies de oude waarden (ook <code>--glas</code> en de foto-rand).</p>
+</div>
+
+<h2>Licht thema: alle schermen</h2>
+<div class="bediening" role="group" aria-label="Weergave">
+  <button type="button" data-stand="" aria-pressed="true">Vóór en na</button>
+  <button type="button" data-stand="alleen-voor" aria-pressed="false">Alleen vóór</button>
+  <button type="button" data-stand="alleen-na" aria-pressed="false">Alleen na</button>
+</div>
+<div class="schermen" id="licht"></div>
+
+<h2>Licht tijdens de reis (8 maart 11:00)</h2>
+<div class="schermen" id="reis"></div>
+
+<h2>Donker thema: niets veranderd</h2>
+<p>Vast op donker (Instellingen) en "volgt de telefoon" met de telefoon op donker. Verschillen tussen vóór en na komen alleen van de vallende sneeuw en de klok.</p>
+<div class="schermen" id="donker"></div>
+
+<h2>Controle: licht via "volgt de telefoon"</h2>
+<div class="schermen" id="auto"></div>
+
+<h2>Contrast</h2>
+<div class="kaart tabel">
+  <table>
+    <thead><tr><th>Voorgrond</th><th>Op</th><th>Crème</th><th>Verse sneeuw</th><th>Eis</th></tr></thead>
+    <tbody id="contrast"></tbody>
+  </table>
+  <p style="margin-bottom:0">Alle teksten worden iets beter (koel wit is lichter dan crème). <span class="let">Let op:</span> <code>--lijn</code> haalt geen 3 : 1, en deed dat met crème ook niet (1,33 → 1,29). Het zijn zachte scheidingslijnen; knoppen en velden zijn te herkennen aan hun tekst of aan een donkere rand (<code>--lijn-sterk</code>, <code>--accent</code>). <code>--ijsblauw-zacht</code> ("nu", geselecteerd) steekt in helderheid iets beter af dan eerst (1,08 → 1,13), maar zit altijd samen met een rand in <code>--accent</code> of een donkerblauw label "NU"; die rand haalt rond 3 : 1.</p>
+</div>
+
+<h2>Plekken met eigen crèmekleuren</h2>
+<div class="kaart tabel">
+  <table>
+    <thead><tr><th>Plek</th><th>Wat</th><th>Gedaan</th></tr></thead>
+    <tbody>
+      <tr><td><code>src/styles/rad.css</code> r. 69–70</td><td><code>--creme</code> en <code>--papier</code> binnen <code>.radm</code> (het rad zelf)</td><td>Laten staan: eigen emaille/liftbordkleuren van de raderen. <code>--papier</code> binnen <code>.radm</code> wordt nergens gebruikt. Het tabblad Rad zelf gebruikt <code>--rad-papier: var(--papier)</code> en gaat dus mee.</td></tr>
+      <tr><td><code>TaartRad.tsx</code></td><td>Pisteboord: crème vakken (#fffdf8), lijnen tussen de vakken en het midden (#f5f2ea), crème randjes</td><td>Laten staan: het pisteboord is een emaillebord op een donkerblauwe rand, het raakt de pagina niet.</td></tr>
+      <tr><td><code>Trommel.tsx</code>, <code>Kompas.tsx</code></td><td>#fffdf8 als vlak (trommelbordjes) en lijnkleur op de donkere kompasplaat</td><td>Laten staan: eigen kleur van het liftbord en het kompas.</td></tr>
+      <tr><td><code>src/styles/app.css</code> r. 1692</td><td>Witte rand om grote foto's (#fffdf8, lijntje #cfc6b2)</td><td>Gaat mee: nu <code>var(--foto-rand)</code> / <code>var(--foto-rand-lijn)</code>. Standaard dezelfde crème waarden; onder de schakelaar <code>--papier-vlak</code> en <code>--lijn</code>.</td></tr>
+      <tr><td><code>src/styles/paklijst.css</code> r. 209</td><td>Stempel "ingepakt": rgba(245, 242, 234, .9)</td><td>Gaat mee: <code>color-mix(in srgb, var(--papier-licht) 90%, transparent)</code>, zelfde resultaat bij crème.</td></tr>
+      <tr><td><code>src/styles/bewijs.css</code> r. 560</td><td>Afgevinkt challenge-vak: rgba(245, 242, 234, .55)</td><td>Gaat mee: <code>color-mix(in srgb, var(--papier-licht) 55%, transparent)</code>.</td></tr>
+      <tr><td><code>--glas</code> in theme.css</td><td>Tabbalk: rgba(255, 253, 248, .72)</td><td>Gaat mee onder de schakelaar: <code>--papier-vlak</code> op 72%.</td></tr>
+      <tr><td><code>--berg-sneeuwrand</code> (#f3f7fa)</td><td>Wit dal onder de bergen</td><td>Ongewijzigd. Valt nu vrijwel samen met het papier (verschil 1–2 per kleurkanaal), dus de overgang is naadloos.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>Vallende sneeuw</h2>
+<div class="kaart">
+  <p style="margin:0">De sneeuw valt alleen in de blauwe koppen; onderaan loopt hij door over het witte dal. De vlokken zijn wit met een ijsblauwe rand (rgba(96, 160, 200, .95)). Die rand haalt op het dal 2,54 : 1 (op crème 2,43), en het witte dal zelf was al koel wit (#f3f7fa). De vlokken blijven dus even goed zichtbaar; aanpassing niet nodig.</p>
+</div>
+
+</main>
+<script>
+  const licht = [['home', 'Home'], ['planning', 'Planning'], ['paklijst', 'Paklijst'], ['kamers', 'Kamers'], ['kaart', 'Kaart'], ['rad', 'Rad'], ['spel', 'Spel'], ['fotomuur', 'Fotomuur (Clubblad)'], ['profiel', 'Profiel'], ['weer', 'Weer'], ['welkom', 'Welkom'], ['beheer', 'Beheer']]
+  const map = 'achtergrond-verse-sneeuw/'
+  const paar = (titel, voor, na, vt = 'Vóór', nt = 'Na') => `<section class="scherm"><h3>${titel}</h3><div class="paar">
+    <figure class="voor"><figcaption>${vt}</figcaption><a href="${map}${voor}.webp"><img loading="lazy" src="${map}${voor}.webp" alt="${titel}, ${vt.toLowerCase()}" width="780" height="1688"></a></figure>
+    <figure class="na"><figcaption>${nt}</figcaption><a href="${map}${na}.webp"><img loading="lazy" src="${map}${na}.webp" alt="${titel}, ${nt.toLowerCase()}" width="780" height="1688"></a></figure></div></section>`
+  document.getElementById('licht').innerHTML = licht.map(([k, t]) => paar(t, 'voor-licht/' + k, 'na-licht/' + k)).join('')
+  document.getElementById('reis').innerHTML = paar('Planning, vandaag', 'voor-licht/planning-nu', 'na-licht/planning-nu') + paar('Home tijdens de reis', 'voor-licht/home-reis', 'na-licht/home-reis')
+  document.getElementById('donker').innerHTML =
+    [['home', 'Home'], ['planning', 'Planning'], ['rad', 'Rad'], ['weer', 'Weer']].map(([k, t]) => paar(t + ' · donker vast', 'voor-donker/' + k, 'na-donker/' + k)).join('') +
+    [['home', 'Home'], ['planning', 'Planning'], ['rad', 'Rad'], ['weer', 'Weer']].map(([k, t]) => paar(t + ' · telefoon donker', 'voor-auto-donker/' + k, 'na-auto-donker/' + k)).join('')
+  document.getElementById('auto').innerHTML =
+    paar('Home · telefoon licht, thema volgt telefoon', 'voor-licht/home', 'na-auto-licht/home', 'Vóór (licht vast)', 'Na (volgt telefoon)') +
+    paar('Planning · telefoon licht, thema volgt telefoon', 'voor-licht/planning', 'na-auto-licht/planning', 'Vóór (licht vast)', 'Na (volgt telefoon)') +
+    paar('Home · licht vast, telefoon donker', 'voor-licht/home', 'na-licht-telefoondonker/home', 'Vóór', 'Na')
+
+  const rijen = [
+    ['--inkt', 'papier', '16,21', '17,01', 't'], ['--inkt', 'papier-vlak', '17,84', '18,13', 't'],
+    ['--inkt-zacht', 'papier', '7,22', '7,57', 't'], ['--inkt-zacht', 'papier-vlak', '7,94', '8,07', 't'], ['--inkt-zacht', 'papier-diep (segmentbalk)', '6,42', '6,83', 't'],
+    ['--ijsblauw-inkt', 'papier', '6,34', '6,65', 't'], ['--ijsblauw-inkt', 'papier-vlak', '6,98', '7,09', 't'],
+    ['--piste-groen', 'papier', '4,76', '5,00', 't'], ['--piste-groen', 'papier-vlak', '5,24', '5,33', 't'],
+    ['--piste-blauw', 'papier', '5,38', '5,65', 't'], ['--piste-blauw', 'papier-vlak', '5,93', '6,02', 't'],
+    ['--piste-rood', 'papier', '5,21', '5,46', 't'], ['--piste-rood', 'papier-vlak', '5,73', '5,82', 't'],
+    ['--piste-zwart', 'papier', '15,97', '16,76', 't'], ['--piste-zwart', 'papier-vlak', '17,57', '17,86', 't'],
+    ['--memo-inkt', '--memo', '11,48', '11,48', 't'], ['--inkt', '--ijsblauw-zacht', '15,08', '15,08', 't'],
+    ['--lijn-sterk', 'papier', '16,21', '17,01', 'l'],
+    ['--lijn', 'papier', '1,33', '1,29', 'l'], ['--lijn', 'papier-vlak', '1,47', '1,38', 'l'],
+    ['--ijsblauw-zacht (vlak)', 'papier', '1,08', '1,13', 'v'], ['--ijsblauw-zacht (vlak)', 'papier-vlak', '1,18', '1,20', 'v'],
+    ['--memo (vlak)', 'papier', '1,02', '1,07', 'v'],
+    ['vlokrand', 'papier (dal)', '2,43', '2,54', 'v'],
+  ]
+  const n = (s) => parseFloat(s.replace(',', '.'))
+  document.getElementById('contrast').innerHTML = rijen.map(([a, b, o, z, s]) => {
+    const eis = s === 't' ? 4.5 : s === 'l' ? 3 : null
+    const oordeel = eis === null ? '—' : n(z) >= eis ? `<span class="ok">≥ ${String(eis).replace('.', ',')} ✓</span>` : `<span class="let">&lt; ${eis}</span>`
+    return `<tr><td><code>${a}</code></td><td>${b}</td><td class="getal">${o}</td><td class="getal"><strong>${z}</strong></td><td>${oordeel}</td></tr>`
+  }).join('')
+
+  document.querySelectorAll('.bediening button').forEach((k) => k.addEventListener('click', () => {
+    document.body.classList.remove('alleen-voor', 'alleen-na')
+    if (k.dataset.stand) document.body.classList.add(k.dataset.stand)
+    document.querySelectorAll('.bediening button').forEach((b) => b.setAttribute('aria-pressed', String(b === k)))
+  }))
+</script>
+</body>
+</html>

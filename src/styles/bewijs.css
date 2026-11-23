@@ -557,7 +557,7 @@
   inset: 0;
   width: auto;
   height: auto;
-  background: rgba(245, 242, 234, 0.55);
+  background: color-mix(in srgb, var(--papier-licht) 55%, transparent);
 }
 
 .ch--wacht .ch__kiekje {
