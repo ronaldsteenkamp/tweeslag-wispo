@@ -2,7 +2,7 @@
 
 :root {
   --radius: 18px;
-  --tabbalk-hoogte: 70px; /* balk aan de onderrand: 1 rand + 5 + tab (59) + 5; de home-indicator komt er nog bij (--onder) */
+  --tabbalk-hoogte: 59px; /* balk aan de onderrand: 1 rand + 5 + tab (48) + 5; de home-indicator komt er nog bij (--onder) */
   --boven: env(safe-area-inset-top, 0px);
   --onder: env(safe-area-inset-bottom, 0px);
   --knop-hoogte: 56px;
@@ -412,8 +412,8 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  min-height: 56px;
+  gap: 1px;
+  min-height: 48px;
   border: 0;
   border-radius: 16px;
   background: none;
@@ -421,6 +421,7 @@ button {
   font-family: var(--font);
   font-size: 0.75rem;
   font-weight: 600;
+  line-height: 1.2;
   touch-action: manipulation;
 }
 
@@ -429,7 +430,7 @@ button {
   display: grid;
   place-items: center;
   width: 42px;
-  height: 34px;
+  height: 30px;
   border-radius: var(--rond-bord);
   transition: background-color var(--duur-wissel) var(--gemak), color var(--duur-wissel);
 }
