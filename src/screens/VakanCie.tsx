@@ -5,7 +5,6 @@ import { FotoBijsnijder } from '../components/FotoBijsnijder'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useTerugSluit } from '../lib/terugknop'
 import { Icoon } from '../components/Icoon'
-import { Pistebord } from '../components/Profiel'
 import { SchermKop } from '../components/SchermKop'
 import { config } from '../config'
 import { vakancie as tekst } from '../content/vakancie'
@@ -287,7 +286,7 @@ function Leden() {
 
 /**
  * Eén lid: pasfoto, naam en rol. De foto is de eigen VakanCie-foto (lib/groepsfoto.ts) en anders de
- * profielfoto; piste en bijnaam komen uit het profiel. Niet aanklikbaar.
+ * profielfoto; de bijnaam komt uit het profiel. Geen pistebordje en niet aanklikbaar.
  */
 function Lid({ naam, rol }: { naam: string; rol: string }) {
   const toon = useToonNaam()
@@ -303,7 +302,6 @@ function Lid({ naam, rol }: { naam: string; rol: string }) {
   )
   const eigen = useLidFoto(naam)
   const url = eigen.url ?? profielUrl
-  const niveau = isJij ? mijnProfiel?.niveau : rij?.niveau
   const leeg = isInvullen(naam)
   const getoond = leeg ? naam : toon(naam)
 
@@ -321,7 +319,6 @@ function Lid({ naam, rol }: { naam: string; rol: string }) {
             </svg>
           </span>
         )}
-        {niveau ? <Pistebord niveau={niveau} className="vk-pasfoto__piste" /> : null}
       </span>
       <span className="vk-lid__naam">{leeg ? <Invul t={naam} /> : getoond}</span>
       {!leeg && getoond !== naam && <span className="vk-lid__echt">{naam}</span>}
