@@ -57,10 +57,24 @@ export const lidSleutel = (naam: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'lid'
 
-/** iepie-leah--1764000000000.jpg → iepie-leah */
-const lidUitNaam = (bestand: string) => /^([a-z0-9-]+)--\d+\.jpg$/.exec(bestand)?.[1] ?? null
+/**
+ * Van wie is dit bestand? "iepie-leah--1764000000000.jpg" (zo plaatst de app hem) en ook gewoon
+ * "Iepie Leah.jpg" (zo kun je hem met de hand in Supabase Storage zetten) → "iepie-leah".
+ */
+export const lidUitNaam = (bestand: string) => {
+  const m = /^(.+?)(?:--\d+)?\.jpe?g$/i.exec(bestand)
+  return m ? lidSleutel(m[1]) : null
+}
 
-const cacheSleutel = (pad: string) => `${location.origin}/__vakancie/${pad}`
+/**
+ * Een foto heet in de app pad + versie, bijv. "vakancie/leden/Tom.jpg?v=2026-11-24T14:00:00Z".
+ * Wordt een bestand met dezelfde naam vervangen, dan verandert de versie (wijzigingsdatum) en wordt
+ * hij opnieuw opgehaald.
+ */
+const fotoId = (pad: string, versie?: string | null) => (versie ? `${pad}?v=${encodeURIComponent(versie)}` : pad)
+const padVan = (id: string) => id.split('?v=')[0]
+
+const cacheSleutel = (id: string) => `${location.origin}/__vakancie/${id}`
 
 async function openCache() {
   try {
@@ -101,14 +115,14 @@ async function ruimCacheOp() {
   for (const req of await cache.keys()) if (!houden.has(req.url)) await cache.delete(req)
 }
 
-/** Haalt een foto op als hij nog niet in de cache staat. true = staat er nu. */
-async function zorgVoor(c: Awaited<NonNullable<ReturnType<typeof supabase>>>, pad: string) {
-  if (await uitCache(pad)) return true
-  const { data: link } = await c.storage.from(BUCKET).createSignedUrl(pad, LINK_GELDIG)
+/** Haalt een foto (id = pad + versie) op als hij nog niet in de cache staat. true = staat er nu. */
+async function zorgVoor(c: Awaited<NonNullable<ReturnType<typeof supabase>>>, id: string) {
+  if (await uitCache(id)) return true
+  const { data: link } = await c.storage.from(BUCKET).createSignedUrl(padVan(id), LINK_GELDIG)
   if (!link?.signedUrl) return false
   const antwoord = await fetch(link.signedUrl)
   if (!antwoord.ok) return false
-  await bewaarInCache(pad, await antwoord.blob())
+  await bewaarInCache(id, await antwoord.blob())
   return true
 }
 
@@ -152,13 +166,15 @@ async function verversNu() {
       }
     }
 
-    // Ledenfoto's: per lid de nieuwste
+    // Ledenfoto's: per lid de nieuwste (laatst gewijzigd)
     if (!leden.error) {
       const oud = lees<LedenFotos>(LEDEN, {})
       const nieuw: LedenFotos = {}
-      for (const f of (leden.data ?? []).sort((a, b) => (a.name < b.name ? 1 : -1))) {
+      const wanneer = (f: { updated_at?: string | null; created_at?: string | null }) => f.updated_at ?? f.created_at ?? ''
+      const bestanden = (leden.data ?? []).sort((a, b) => wanneer(b).localeCompare(wanneer(a)) || b.name.localeCompare(a.name))
+      for (const f of bestanden) {
         const lid = lidUitNaam(f.name)
-        if (lid && !nieuw[lid]) nieuw[lid] = `${LEDEN_MAP}/${f.name}`
+        if (lid && !nieuw[lid]) nieuw[lid] = fotoId(`${LEDEN_MAP}/${f.name}`, wanneer(f))
       }
       for (const [lid, pad] of Object.entries(nieuw)) {
         // Lukt ophalen niet, dan de oude houden (als die er was)
@@ -294,7 +310,9 @@ export async function plaatsLidFoto(lid: string, bestand: File): Promise<string 
   const s = lidSleutel(lid)
   const r = await plaats(bestand, () => `${s}--${Date.now()}.jpg`, LEDEN_MAP, (n) => lidUitNaam(n) === s)
   if (r.fout || !r.pad) return r.fout
+  // Nieuwe naam, dus geen versie nodig; bij de volgende keer verversen krijgt hij die van de server
   schrijfEnMeld<LedenFotos>(LEDEN, { ...lees<LedenFotos>(LEDEN, {}), [s]: r.pad })
+  void ververs(true)
   await ruimCacheOp()
   return null
 }
