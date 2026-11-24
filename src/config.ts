@@ -33,8 +33,9 @@ export const config = {
   /**
    * Namen die beheerder mogen zijn. Beheerfuncties staan alleen aan als je op deze telefoon als
    * beheerder bent ingelogd (e-mail in de tabel beheerders) ÉN een van deze namen gekozen hebt.
+   * In de app heet dit "de redactie": de hele VakanCie.
    */
-  beheerNamen: ['Ronald', 'Sten'],
+  beheerNamen: ['Ronald', 'Sten', 'Iepie Leah', 'Tom', 'Selma', 'Josje'],
   /** Standaardtijd waarop de challenges van een dag opengaan (als 'openOm' ontbreekt in spel.json) */
   challengesOpenOm: '07:00',
 
