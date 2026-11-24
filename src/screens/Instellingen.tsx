@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { LogoKnop } from '../components/LogoKnop'
 import { MeldingenKaart } from '../components/Meldingen'
 import { SchermKop } from '../components/SchermKop'
 import { SneeuwRij } from '../components/SneeuwRij'
@@ -14,7 +15,7 @@ export function zetThema(t: Thema) {
 }
 
 /** Instellingen: thema, sneeuw, meldingen, wat er op je telefoon staat en wie wat ziet. */
-export default function Instellingen({ terug }: { terug: () => void }) {
+export default function Instellingen({ terug, naarVakancie }: { terug: () => void; naarVakancie: () => void }) {
   // Standaard licht (index.html zet hetzelfde vóór het tekenen)
   const [thema, setThema] = useOpgeslagen<Thema>('thema', 'licht')
   useEffect(() => zetThema(thema), [thema])
@@ -95,7 +96,7 @@ export default function Instellingen({ terug }: { terug: () => void }) {
       </section>
 
       <footer className="home__voet">
-        <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" width={56} height={56} loading="lazy" />
+        <LogoKnop grootte={56} onKlik={naarVakancie} />
         <p>
           {config.appNaam} · versie {__BOUWDATUM__}
         </p>
