@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useRef, useState, type ReactNode } from 'react'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Icoon } from '../components/Icoon'
-import { Pistebord, toonProfiel } from '../components/Profiel'
+import { Pistebord } from '../components/Profiel'
 import { SchermKop } from '../components/SchermKop'
 import { config } from '../config'
 import { vakancie as tekst } from '../content/vakancie'
@@ -12,7 +12,6 @@ import { useToonNaam } from '../lib/bijnamen'
 import { alleDeelnemers, useData } from '../lib/data'
 import type { Foto } from '../lib/fotos'
 import { haalGroepsfotoWeg, haalLidFotoWeg, plaatsGroepsfoto, plaatsLidFoto, useGroepsfoto, useLidFoto } from '../lib/groepsfoto'
-import { opsomming } from '../lib/kamerligging'
 import { useNu } from '../lib/nu'
 import { useOpgeslagen } from '../lib/opslag'
 import { sleutel, useMijnProfiel, useProfielen, useProfielFoto } from '../lib/profiel'
@@ -224,7 +223,7 @@ function Brief() {
     <section className="vk-brief" aria-labelledby="vk-waarom">
       <Kopje id="vk-waarom">{w.kop}</Kopje>
       {w.alineas.map((a, i) => (
-        <p key={i} className={i === 0 ? 'vk-brief__eerste' : undefined}>
+        <p key={i}>
           <Invul t={a} />
         </p>
       ))}
@@ -273,7 +272,6 @@ function Leden() {
   return (
     <section className="vk-leden" aria-labelledby="vk-leden-kop">
       <Kopje id="vk-leden-kop">{l.kop}</Kopje>
-      <p className="vk-zacht">{l.intro}</p>
       <ul className="vk-ledenlijst">
         {l.lijst.map((lid, i) => (
           <Lid key={`${lid.naam}-${i}`} naam={lid.naam} rol={lid.rol} />
@@ -285,7 +283,7 @@ function Leden() {
 
 /**
  * Eén lid: pasfoto, naam en rol. De foto is de eigen VakanCie-foto (lib/groepsfoto.ts) en anders de
- * profielfoto; piste en bijnaam komen uit het profiel. Tik = het spelerskaartje (dat blijft apart).
+ * profielfoto; piste en bijnaam komen uit het profiel. Niet aanklikbaar.
  */
 function Lid({ naam, rol }: { naam: string; rol: string }) {
   const toon = useToonNaam()
@@ -329,20 +327,10 @@ function Lid({ naam, rol }: { naam: string; rol: string }) {
     </>
   )
 
+  // Geen knop: de leden zijn alleen om te bekijken (het spelerskaartje opent hier niet)
   return (
-    <li className="vk-lid">
-      {leeg ? (
-        <div className="vk-lid__vak">{inhoud}</div>
-      ) : (
-        <button
-          type="button"
-          className="vk-lid__vak"
-          onClick={() => toonProfiel(naam)}
-          aria-label={`${getoond}${getoond !== naam ? ` (${naam})` : ''}, ${rol}. Bekijk het plaatje.`}
-        >
-          {inhoud}
-        </button>
-      )}
+    <li className={`vk-lid${leeg ? ' is-invullen' : ''}`}>
+      <div className="vk-lid__vak">{inhoud}</div>
       {backend.beheerder && !leeg && <LidFotoBeheer naam={naam} heeftFoto={!!eigen.pad} />}
     </li>
   )
@@ -445,21 +433,10 @@ function Dank() {
   const aantal = kamers ? alleDeelnemers(kamers).length : null
   // Zolang de kamerlijst nog niet geladen is: "alle mensen" in plaats van een getal
   const deelnemers = d.deelnemers.replace('{aantal}', aantal ? String(aantal) : 'alle')
-  const helpers = d.helpers as readonly string[]
   return (
     <section className="vk-dank" aria-labelledby="vk-dank-kop">
       <Kopje id="vk-dank-kop">{d.kop}</Kopje>
       <p className="vk-dank__groot">{deelnemers}</p>
-      {helpers.length > 0 && (
-        <p>
-          {d.helpersZin.split('{namen}').map((stuk, i) => (
-            <Fragment key={i}>
-              {i > 0 && <Invul t={opsomming([...helpers])} />}
-              {stuk}
-            </Fragment>
-          ))}
-        </p>
-      )}
       <p className="vk-zacht">{d.bronnenIntro}</p>
       <ul className="vk-bronnen">
         {d.bronnen.map((b) => (

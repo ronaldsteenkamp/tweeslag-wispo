@@ -308,12 +308,6 @@
   margin-top: 0.8em;
 }
 
-/* Eerste letters in kleine kapitalen, zoals de opening van een stuk in het clubblad */
-.vk-brief__eerste::first-line {
-  font-variant: small-caps;
-  letter-spacing: 0.03em;
-}
-
 .vk-ondertekening {
   position: relative;
   margin-top: 22px;
@@ -402,11 +396,6 @@
 
 /* ---------------------------------------------------------------- leden */
 
-.vk-leden > .vk-zacht {
-  margin: -4px 0 16px;
-  font-size: 15px;
-}
-
 .vk-ledenlijst {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -419,17 +408,6 @@
 .vk-lid__vak {
   display: grid;
   gap: 3px;
-  width: 100%;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: left;
-  color: inherit;
-}
-
-button.vk-lid__vak {
-  cursor: pointer;
 }
 
 .vk-pasfoto {
@@ -442,15 +420,10 @@ button.vk-lid__vak {
     0 1px 0 var(--foto-rand-lijn),
     0 8px 18px -8px color-mix(in srgb, var(--tweeslag-donkerblauw) 30%, transparent);
   transform: rotate(-1.2deg);
-  transition: transform var(--duur-tik) var(--gemak);
 }
 
 .vk-lid:nth-child(even) .vk-pasfoto {
   transform: rotate(1.1deg);
-}
-
-button.vk-lid__vak:active .vk-pasfoto {
-  transform: rotate(0deg) scale(0.97);
 }
 
 .vk-pasfoto img,
@@ -495,15 +468,15 @@ button.vk-lid__vak:active .vk-pasfoto {
 }
 
 /* Lege plek voor een lid dat nog ingevuld moet worden */
-.vk-lid div.vk-lid__vak .vk-pasfoto__leeg {
+.vk-lid.is-invullen .vk-pasfoto__leeg {
   background: color-mix(in srgb, var(--lucht) 12%, var(--foto-rand));
 }
 
-.vk-lid div.vk-lid__vak .vk-pasfoto__leeg b {
+.vk-lid.is-invullen .vk-pasfoto__leeg b {
   color: var(--vk-print-zacht);
 }
 
-.vk-lid div.vk-lid__vak .vk-pasfoto__berg {
+.vk-lid.is-invullen .vk-pasfoto__berg {
   fill: color-mix(in srgb, var(--lucht) 20%, var(--foto-rand));
 }
 
@@ -683,8 +656,7 @@ button.vk-lid__vak:active .vk-pasfoto {
   .vk-afdruk {
     animation: none;
   }
-  .logoknop img,
-  .vk-pasfoto {
+  .logoknop img {
     transition: none;
   }
 }

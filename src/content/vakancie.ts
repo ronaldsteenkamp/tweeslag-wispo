@@ -70,8 +70,6 @@ export const vakancie = {
   leden: {
     /** Kopje boven de leden */
     kop: 'De VakanCie',
-    /** Korte regel onder het kopje */
-    intro: 'Tik op iemand voor het hele plaatje.',
     /**
      * Wie er in de VakanCie zitten. Gebruik precies dezelfde (voor)naam als in de kamerlijst van de
      * app: dan komen bijnaam en piste van het plaatje vanzelf mee.
@@ -113,13 +111,6 @@ export const vakancie = {
     kop: 'Met dank aan',
     /** Over de deelnemers. {aantal} wordt vervangen door het aantal deelnemers in de kamerlijst. */
     deelnemers: 'Iedereen die meegaat: {aantal} mensen die van een week in de sneeuw een wispo maken.',
-    /**
-     * Mensen die geholpen hebben (meedenken, testen, foto's). Eén voornaam per regel tussen
-     * aanhalingstekens, bijv. ['Anna', 'Bas']. Niemand? Dan leeg laten: []
-     */
-    helpers: ['[namen van helpers]'],
-    /** De zin waarin de helpers genoemd worden. {namen} wordt vervangen door de namen hierboven. */
-    helpersZin: 'Voor het meedenken en het uitproberen van de eerste versies: {namen}.',
     /** Regel boven de bronnen */
     bronnenIntro: 'De app staat op de schouders van anderen. Zij vragen terecht om een naamsvermelding:',
     /**
