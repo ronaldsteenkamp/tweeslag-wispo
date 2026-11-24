@@ -382,16 +382,24 @@ button {
   display: grid;
   /* minmax(0, …): kolommen mogen smaller dan het langste woord */
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  /* De balk loopt van rand tot rand; de tabs blijven op brede schermen samen in het midden
+  /* Het glas loopt van rand tot rand; de tabs blijven op brede schermen samen in het midden
      (max. 560 px), en de home-indicator van de iPhone krijgt zijn eigen ruimte onderin. */
   padding: 5px max(5px, calc((100% - 560px) / 2)) calc(5px + var(--onder));
-  /* Effen papier, geen glas: backdrop-filter tekent op iPhones bij het opstarten soms even zwart */
+  /* Eerst effen papier: backdrop-filter tekent op iPhones bij het opstarten soms heel even zwart.
+     Pas als het laadscherm weg is (main.tsx zet .is-geladen) wordt de balk glas. */
   background: var(--papier-vlak);
   border-top: 1px solid var(--lijn);
   box-shadow: var(--schaduw-blad);
   transition: transform var(--duur-wissel) var(--gemak);
 }
 
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .is-geladen .tabbalk {
+    background: var(--glas);
+    -webkit-backdrop-filter: var(--vaag);
+    backdrop-filter: var(--vaag);
+  }
+}
 
 /* Toetsenbord open (een invoerveld heeft focus): balk weg, dan bedekt hij niets */
 .toetsenbord-open .tabbalk {
