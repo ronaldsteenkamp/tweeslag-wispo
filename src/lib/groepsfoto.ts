@@ -244,13 +244,16 @@ function foutTekst(e: { message?: string; statusCode?: string | number } | null 
 
 const geenVerbinding = 'Geen verbinding met de server. Probeer het met internet nog eens.'
 
-/** Zet een foto in de bucket en haalt de oude(s) weg die `isOud` aanwijst. Geeft fout of null. */
-async function plaats(bestand: File, naamVoor: (v: { breedte: number; hoogte: number }) => string, map: string, isOud: (n: string) => boolean) {
+/**
+ * Zet een foto in de bucket en haalt de oude(s) weg die `isOud` aanwijst. Geeft fout of null.
+ * Een File wordt eerst verkleind; een Blob komt al klaar uit de bijsnijder (JPEG zonder EXIF).
+ */
+async function plaats(bestand: File | Blob, naamVoor: (v: { breedte: number; hoogte: number }) => string, map: string, isOud: (n: string) => boolean) {
   const cb = supabase()
   if (!cb || backendStand().status !== 'verbonden') return { fout: geenVerbinding }
   try {
     // Zelfde verkleining als in het clubblad: max. 1600 px, ~300 kB, zonder EXIF (dus zonder locatie)
-    const v = await verklein(bestand)
+    const v = bestand instanceof File ? await verklein(bestand) : { groot: bestand, breedte: 0, hoogte: 0 }
     const c = await cb
     const naam = naamVoor(v)
     const pad = `${map}/${naam}`
@@ -305,8 +308,11 @@ export async function haalGroepsfotoWeg(): Promise<string | null> {
   return null
 }
 
-/** Plaatst de VakanCie-foto van een lid (alleen beheerders). Geeft een foutmelding terug, of null. */
-export async function plaatsLidFoto(lid: string, bestand: File): Promise<string | null> {
+/**
+ * Plaatst de VakanCie-foto van een lid (alleen beheerders): de bijgesneden pasfoto (4:5) uit de
+ * FotoBijsnijder. Geeft een foutmelding terug, of null.
+ */
+export async function plaatsLidFoto(lid: string, bestand: Blob): Promise<string | null> {
   const s = lidSleutel(lid)
   const r = await plaats(bestand, () => `${s}--${Date.now()}.jpg`, LEDEN_MAP, (n) => lidUitNaam(n) === s)
   if (r.fout || !r.pad) return r.fout

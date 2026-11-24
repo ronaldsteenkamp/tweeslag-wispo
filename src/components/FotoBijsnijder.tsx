@@ -13,10 +13,13 @@ export function FotoBijsnijder({
   bestand,
   onKlaar,
   onAnnuleer,
+  band = 'Hier komt je naam',
 }: {
   bestand: File
   onKlaar: (blob: Blob) => void
   onAnnuleer: () => void
+  /** Tekst op de naamband onderin het kader; null = geen band (bijv. de pasfoto's van de VakanCie) */
+  band?: string | null
 }) {
   const [url, setUrl] = useState<string | null>(null)
   const [maat, setMaat] = useState<{ b: number; h: number } | null>(null)
@@ -157,9 +160,11 @@ export function FotoBijsnijder({
           />
         )}
         {/* Waar straks de naamband van het plaatje over de foto valt */}
-        <div className="bijsnijder__band" aria-hidden="true">
-          <span>Hier komt je naam</span>
-        </div>
+        {band !== null && (
+          <div className="bijsnijder__band" aria-hidden="true">
+            <span>{band}</span>
+          </div>
+        )}
       </div>
 
       <div className="bijsnijder__zoom">
