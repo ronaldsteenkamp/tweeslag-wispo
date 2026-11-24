@@ -75,16 +75,16 @@ export const vakancie = {
     /**
      * Wie er in de VakanCie zitten. Gebruik precies dezelfde (voor)naam als in de kamerlijst van de
      * app: dan komen de foto, bijnaam en piste van het plaatje vanzelf mee. Een lid toevoegen: kopieer
-     * een regel { naam: ..., rol: ... }, met de komma erachter.
-     *
-     * Ronald en Sten staan er al in omdat ze in config.ts als reisleiding staan. Klopt dat niet,
-     * haal ze dan weg.
+     * een regel { naam: ..., rol: ... }, met de komma erachter. De volgorde hier is de volgorde op
+     * de pagina (en van de handtekeningen onder "Waarom deze app").
      */
     lijst: [
-      { naam: 'Ronald', rol: '[rol, bijv. bouwer van de app]' },
-      { naam: 'Sten', rol: '[rol, bijv. reisleiding]' },
-      { naam: '[voornaam]', rol: '[rol, bijv. penningmeester]' },
-      { naam: '[voornaam]', rol: '[rol, bijv. redactie clubblad]' },
+      { naam: 'Sten', rol: 'Voorzitter' },
+      { naam: 'Ronald', rol: 'Penningmeester en app-bouwer' },
+      { naam: 'Iepie Leah', rol: 'Secretaris en strepenjury' },
+      { naam: 'Tom', rol: 'Chef promo: announcements en communicatie' },
+      { naam: 'Selma', rol: 'Chef promo: creativiteit en promo' },
+      { naam: 'Josje', rol: 'Orakel der wijsheid' },
     ],
   },
 
