@@ -31,11 +31,18 @@ export const config = {
    */
   nieuweKoppen: 'aan' as 'uit' | 'test' | 'aan',
   /**
-   * Namen die beheerder mogen zijn. Beheerfuncties staan alleen aan als je op deze telefoon als
-   * beheerder bent ingelogd (e-mail in de tabel beheerders) ÉN een van deze namen gekozen hebt.
-   * In de app heet dit "de redactie": de hele VakanCie.
+   * Namen die beheerder mogen zijn: alles (berichten aan iedereen, stemmingen, punten corrigeren,
+   * deelnemers, kamers, bijnamen wissen, foto's op de VakanCie-pagina). Beheerfuncties staan alleen
+   * aan als je op deze telefoon bent ingelogd met een e-mailadres uit de tabel beheerders ÉN een van
+   * deze namen gekozen hebt.
    */
-  beheerNamen: ['Ronald', 'Sten', 'Iepie Leah', 'Tom', 'Selma', 'Josje'],
+  beheerNamen: ['Ronald', 'Sten'],
+  /**
+   * De redactie (de VakanCie): beoordeelt de kiekjes en stukjes aan de redactietafel en zet de
+   * jurystempel. Ingelogd met een e-mailadres uit de tabel redactie (of beheerders) ÉN een van deze
+   * namen gekozen. Beheerders horen er altijd bij.
+   */
+  redactieNamen: ['Ronald', 'Sten', 'Iepie Leah', 'Tom', 'Selma', 'Josje'],
   /** Standaardtijd waarop de challenges van een dag opengaan (als 'openOm' ontbreekt in spel.json) */
   challengesOpenOm: '07:00',
 

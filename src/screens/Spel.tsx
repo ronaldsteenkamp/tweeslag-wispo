@@ -99,7 +99,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   const [stukjeVoor, setStukjeVoor] = useState<string | null>(null)
   const [tafelOpen, setTafelOpen] = useState(false)
   const [fotoGelukt, setFotoGelukt] = useState<string | null>(null)
-  const { beheerder } = useBackend()
+  const { redactie } = useBackend()
 
   // Per challenge: de info voor het insturen (met het moment dat de dagkaart openging)
   const challengeInfo = useMemo(() => {
@@ -263,7 +263,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
               : undefined
           }
           redactie={metRedactie ? { beste, wachtend, stukjes: wachtendeStukjes } : undefined}
-          opTafel={beheerder && metRedactie ? () => setTafelOpen(true) : undefined}
+          opTafel={redactie && metRedactie ? () => setTafelOpen(true) : undefined}
         />
       ) : (
         <Bingo
@@ -390,7 +390,7 @@ function Challenges({
   onFoto?: (c: { id: string; titel: string }) => void
   /** Met de redactie (migratie 0018): je kiekjes per challenge en wat nog op de post wacht */
   redactie?: { beste: Map<string, Inzending>; wachtend: WachtendeFoto[]; stukjes: StukjeIn[] }
-  /** Alleen voor beheerders: de redactietafel openen */
+  /** Alleen voor de redactie (en beheerders): de redactietafel openen */
   opTafel?: () => void
 }) {
   const aantalOpTafel = useOpTafel(!!opTafel)

@@ -39,7 +39,10 @@ export interface BackendStand {
   userId?: string
   email?: string
   anoniem: boolean
+  /** Beheer: alles (berichten, stemmingen, punten, deelnemers, kamers). Zie config.beheerNamen. */
   beheerder: boolean
+  /** Redactie: kiekjes en stukjes beoordelen en de jurystempel (beheerders horen er ook bij). Zie config.redactieNamen. */
+  redactie: boolean
   /** Naam en kamer zoals ze op de server staan, of null als dat nog moet gebeuren */
   gekoppeld: { naam: string; kamer: string | null } | null
 }
@@ -48,6 +51,7 @@ let stand: BackendStand = {
   status: backendIngesteld ? 'verbinden' : 'uit',
   anoniem: true,
   beheerder: false,
+  redactie: false,
   gekoppeld: null,
 }
 const luisteraars = new Set<() => void>()
@@ -94,59 +98,72 @@ export function supabase(): Promise<SupabaseClient> | null {
   return clientBelofte
 }
 
-/** Volgens de server (ingelogd met een e-mailadres uit de tabel beheerders) */
+/** Volgens de server (ingelogd met een e-mailadres uit de tabel beheerders, of redactie) */
 let serverBeheerder = false
+let serverRedactie = false
+
+const gekozenNaam = () => lees<string | null>('naam', null)?.trim().toLowerCase()
+const inLijst = (namen: readonly string[], naam: string | undefined) => !!naam && namen.some((n) => n.toLowerCase() === naam)
 
 /**
  * Beheerder in de app: ingelogd als beheerder én een beheerdersnaam gekozen. Kiest een beheerder op
  * zijn telefoon (even) een andere naam, dan ziet hij de app zoals die persoon, zonder beheer.
  */
 function isBeheerder() {
-  const naam = lees<string | null>('naam', null)?.trim().toLowerCase()
-  return serverBeheerder && !!naam && config.beheerNamen.some((n) => n.toLowerCase() === naam)
+  return serverBeheerder && inLijst(config.beheerNamen, gekozenNaam())
 }
 
+/** Redactie in de app: beheerder, of ingelogd als redactie (tabel redactie) én een redactienaam gekozen */
+function isRedactie() {
+  const naam = gekozenNaam()
+  return isBeheerder() || ((serverRedactie || serverBeheerder) && inLijst(config.redactieNamen, naam))
+}
+
+type Rollen = { beheerder: boolean; redactie: boolean }
+const geenRol: Rollen = { beheerder: false, redactie: false }
+
 /*
- * Is deze ingelogde gebruiker beheerder? Bij het opstarten vragen verbind() en de sessie-melding
- * van Supabase dit allebei; zo gaat er één vraag naar de server, tegelijk met de controle of die
- * bereikbaar is in plaats van erna.
+ * Is deze ingelogde gebruiker beheerder of redactie? Bij het opstarten vragen verbind() en de
+ * sessie-melding van Supabase dit allebei; zo gaat er één vraag naar de server, tegelijk met de
+ * controle of die bereikbaar is in plaats van erna. Kent de server is_redactie nog niet (migratie
+ * 0021), dan geldt redactie = beheerder.
  */
-let beheerVraag: { uid: string; sinds: number; antwoord: Promise<boolean> } | null = null
-function vraagBeheerder(c: SupabaseClient, uid: string): Promise<boolean> {
+let beheerVraag: { uid: string; sinds: number; antwoord: Promise<Rollen> } | null = null
+function vraagBeheerder(c: SupabaseClient, uid: string): Promise<Rollen> {
   const nu = Date.now()
   if (beheerVraag?.uid !== uid || nu - beheerVraag.sinds > 15_000) {
-    const vraag = { uid, sinds: nu, antwoord: Promise.resolve(false) }
-    vraag.antwoord = Promise.resolve(c.rpc('is_beheerder')).then(
-      ({ data, error }) => {
-        // Bij een fout de volgende keer opnieuw vragen
-        if (error && beheerVraag === vraag) beheerVraag = null
-        return !error && data === true
-      },
-      () => {
-        if (beheerVraag === vraag) beheerVraag = null
-        return false
-      },
-    )
+    const vraag = { uid, sinds: nu, antwoord: Promise.resolve(geenRol) }
+    const vraagRpc = (naam: string) =>
+      Promise.resolve(c.rpc(naam)).then(
+        ({ data, error }) => ({ ja: !error && data === true, fout: !!error }),
+        () => ({ ja: false, fout: true }),
+      )
+    vraag.antwoord = Promise.all([vraagRpc('is_beheerder'), vraagRpc('is_redactie')]).then(([b, r]) => {
+      // Bij een fout de volgende keer opnieuw vragen
+      if (b.fout && beheerVraag === vraag) beheerVraag = null
+      return { beheerder: b.ja, redactie: b.ja || r.ja }
+    })
     beheerVraag = vraag
   }
   return beheerVraag.antwoord
 }
 
+const rollen = (): Rollen => ({ beheerder: isBeheerder(), redactie: isRedactie() })
+
 async function verwerkSessie(c: SupabaseClient, sessie: Session | null) {
   if (!sessie) {
     serverBeheerder = false
-    zet({ userId: undefined, email: undefined, anoniem: true, beheerder: false, gekoppeld: null })
+    serverRedactie = false
+    zet({ userId: undefined, email: undefined, anoniem: true, ...geenRol, gekoppeld: null })
     return
   }
   const anoniem = sessie.user.is_anonymous ?? !sessie.user.email
   const nieuweGebruiker = sessie.user.id !== stand.userId
   zet({ userId: sessie.user.id, email: sessie.user.email ?? undefined, anoniem, ...(nieuweGebruiker ? { gekoppeld: null } : {}) })
-  if (!anoniem) {
-    serverBeheerder = await vraagBeheerder(c, sessie.user.id)
-  } else {
-    serverBeheerder = false
-  }
-  zet({ beheerder: isBeheerder() })
+  const r = anoniem ? geenRol : await vraagBeheerder(c, sessie.user.id)
+  serverBeheerder = r.beheerder
+  serverRedactie = r.redactie
+  zet(rollen())
   if (nieuweGebruiker) void stuurProfiel()
 }
 
@@ -343,7 +360,8 @@ export function startBackend() {
   }, 60_000)
   // Zelf een (andere) naam gekozen: meteen doorgeven, ook als een ander apparaat hem had
   abonneer('naam', (n) => {
-    if (stand.beheerder !== isBeheerder()) zet({ beheerder: isBeheerder() })
+    const r = rollen()
+    if (stand.beheerder !== r.beheerder || stand.redactie !== r.redactie) zet(r)
     if (n === null || n === undefined) return
     schrijfEnMeld(NAAM_OVERGENOMEN, null)
     void stuurProfiel(false, true)

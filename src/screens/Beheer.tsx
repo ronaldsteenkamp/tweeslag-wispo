@@ -11,10 +11,19 @@ import { haalLogboek, stuurBericht, type LogRegel } from '../lib/meldingen'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { synchroniseerStemmingen, trekStemIn, useStemmingen, useStemmingSync } from '../lib/stemming'
 import { tijdUUMM } from '../lib/tijd'
+import { opsomming } from '../lib/kamerligging'
+import { useOpgeslagen } from '../lib/opslag'
 
-/** Beheer voor de reisleiding en de redactie (de VakanCie, config.beheerNamen): verbinding, dit apparaat en inloggen met e-mail */
+/**
+ * Beheer voor de reisleiding, de beheerders (config.beheerNamen) en de redactie (config.redactieNamen):
+ * verbinding, dit apparaat en inloggen met e-mail. Berichten en stemmingen alleen voor beheerders.
+ */
+const inBeheerNamen = (naam: string | null) =>
+  !!naam && config.beheerNamen.some((n) => n.toLowerCase() === naam.trim().toLowerCase())
+
 export default function Beheer({ terug }: { terug: () => void }) {
   const b = useBackend()
+  const [gekozen] = useOpgeslagen<string | null>('naam', null)
   const nieuweKop = useNieuweKoppen()
   const [email, setEmail] = useState('')
   const [mailVerstuurd, setMailVerstuurd] = useState(false)
@@ -80,6 +89,10 @@ export default function Beheer({ terug }: { terug: () => void }) {
               </dd>
             </div>
             <div>
+              <dt>Redactie</dt>
+              <dd>{b.redactie ? 'Ja' : 'Nee'}</dd>
+            </div>
+            <div>
               <dt>Beheerder</dt>
               <dd>{b.beheerder ? 'Ja' : 'Nee'}</dd>
             </div>
@@ -129,7 +142,7 @@ export default function Beheer({ terug }: { terug: () => void }) {
               </p>
               <ol className="beheer__stappen">
                 <li>De link opent de app (op een iPhone: in Safari). Je bent dan ingelogd.</li>
-                <li>Ga daarna weer naar Groep → Beheer (redactie): bij "Beheerder" staat dan "Ja".</li>
+                <li>Ga daarna weer naar Groep → Beheer (redactie): bij "Redactie" staat dan "Ja".</li>
                 <li>Staat er "Nee"? Dan staat je adres nog niet in de lijst van de redactie; het scherm vertelt wat er moet gebeuren.</li>
               </ol>
               <p className="klein">Geen mail? Kijk ook bij spam of ongewenst. De link werkt één keer en maar kort.</p>
@@ -144,11 +157,24 @@ export default function Beheer({ terug }: { terug: () => void }) {
       {!b.anoniem && b.userId && (
         <section className="kaartje">
           <h2>Ingelogd</h2>
-          {!b.beheerder && (
+          {!b.redactie && (
             <p className="melding">
-              Beheer staat alleen aan als je een van deze namen gekozen hebt: {config.beheerNamen.join(', ')}, én dit
-              adres in de tabel <code>beheerders</code> staat. Toevoegen in Supabase (SQL Editor):
+              De redactie staat alleen aan als je een van deze namen gekozen hebt: {opsomming([...config.redactieNamen])}, én
+              dit adres op de lijst van de redactie staat. Vraag {opsomming([...config.beheerNamen])} om het toe te voegen
+              (Supabase, SQL Editor):
               <br />
+              <code>insert into public.redactie (email) values ('{b.email}');</code>
+            </p>
+          )}
+          {b.redactie && !b.beheerder && (
+            <p>
+              Je bent redactie: je beoordeelt de kiekjes en stukjes aan de redactietafel (bij Spel) en zet de jurystempel.
+              Beheer (berichten aan iedereen, stemmingen, punten) is voor {opsomming([...config.beheerNamen])}.
+            </p>
+          )}
+          {!b.beheerder && b.email && inBeheerNamen(gekozen) && (
+            <p className="klein">
+              Beheer staat alleen aan als dit adres in de tabel <code>beheerders</code> staat:{' '}
               <code>insert into public.beheerders (email) values ('{b.email}');</code>
             </p>
           )}

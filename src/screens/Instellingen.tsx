@@ -90,7 +90,7 @@ export default function Instellingen({ terug, naarVakancie }: { terug: () => voi
             redactie liggen.
           </p>
           <p>
-            <b>De redactie</b> ({opsomming([...config.beheerNamen])}) ziet alle ingestuurde kiekjes en kan ze plaatsen of
+            <b>De redactie</b> ({opsomming([...config.redactieNamen])}) ziet alle ingestuurde kiekjes en kan ze plaatsen of
             weghalen.
           </p>
         </div>

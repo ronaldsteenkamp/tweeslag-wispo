@@ -10,7 +10,7 @@ import { Briefkaart, Kiekje, RedactieStempel } from './Bewijs'
 import { Icoon } from './Icoon'
 
 /*
- * De redactietafel: hier beoordeelt de redactie (beheerders) de kiekjes. Rooster met alles wat ter
+ * De redactietafel: hier beoordeelt de redactie (config.redactieNamen, en de beheerders) de kiekjes. Rooster met alles wat ter
  * perse ligt, dan per kiekje "Plaatsen" (punten, op de muur) of "Briefje terug" (met een reden).
  * Toetsen: G = plaatsen, N = briefje, pijltjes = bladeren.
  */

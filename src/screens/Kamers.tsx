@@ -48,7 +48,7 @@ export default function Kamers({ naarVerdelen, naarBeheer, keuze }: { naarVerdel
 
   const isReisleiding = naam !== null && config.reisleiding.includes(naam)
   // De redactie (de VakanCie) logt via Beheer in met e-mail; de kamerverdeling blijft voor de reisleiding
-  const isRedactie = naam !== null && config.beheerNamen.some((n) => n.toLowerCase() === naam.trim().toLowerCase())
+  const isRedactie = naam !== null && config.redactieNamen.some((n) => n.toLowerCase() === naam.trim().toLowerCase())
 
   if (!data) {
     return (
