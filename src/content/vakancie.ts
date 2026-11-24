@@ -76,8 +76,9 @@ export const vakancie = {
      * Wie er in de VakanCie zitten. Gebruik precies dezelfde (voor)naam als in de kamerlijst van de
      * app: dan komen bijnaam en piste van het plaatje vanzelf mee.
      * De foto: een beheerder zet per lid een eigen VakanCie-foto in de app (onder het lid, "Foto
-     * plaatsen"). Die staat niet in dit bestand en los van het spelerskaartje. Zonder eigen foto
-     * toont de pagina de profielfoto. Een lid toevoegen: kopieer
+     * plaatsen"), of zet hem in Supabase Storage in fotos/vakancie/leden/ met de naam van het lid,
+     * bijv. "Iepie Leah.jpg". Die staat niet in dit bestand en los van het spelerskaartje. Zonder
+     * eigen foto toont de pagina de profielfoto. Een lid toevoegen: kopieer
      * een regel { naam: ..., rol: ... }, met de komma erachter. De volgorde hier is de volgorde op
      * de pagina (en van de handtekeningen onder "Waarom deze app").
      */
