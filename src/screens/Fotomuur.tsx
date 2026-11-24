@@ -228,7 +228,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
           <div className="fotomuur__naam">
             <p className="fotomuur__caps">
               {naDeReis
-                ? 'Les Deux Alpes · 5 – 14 maart 2027'
+                ? 'Les Deux Alpes · 5 – 14 maart 2027'
                 : fotos?.length || aantalStukjes
                   ? `${telling(fotos?.length ?? 0, aantalStukjes).replace(/^(\d+)/, meer ? '$1+' : '$1')} in het blad`
                   : 'Bewijs van de challenges'}
@@ -260,7 +260,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
 
           <TerPerse wachtend={wachtend} verbonden={verbonden} />
 
-          {mislukt && fotos && <p className="fotomuur__melding">Geen verbinding. Nieuwe foto&apos;s verschijnen zodra er internet is.</p>}
+          {mislukt && fotos && <p className="fotomuur__melding">Geen verbinding. Nieuwe foto’s verschijnen zodra er internet is.</p>}
 
           {!fotos ? (
             <p className="fotomuur__tekst">
@@ -302,7 +302,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
               <div ref={onderkant} />
               {meer ? (
                 <button type="button" className="fotomuur__knop fotomuur__knop--licht fotomuur__meer" onClick={laadMeer}>
-                  Oudere pagina&apos;s
+                  Oudere pagina’s
                 </button>
               ) : (
                 <p className="fotomuur__caps fotomuur__einde">{naDeReis ? 'Einde van het jaarboek' : '— einde van deze editie —'}</p>
@@ -431,7 +431,7 @@ function Voorpagina({
       <aside key="kamer" className="dagblad__kader" aria-label="Kamer van de dag">
         <span className="fotomuur__caps">Kamer van de dag</span>
         <h3>{kamerLabel(kamer.kamer)}</h3>
-        <p>{kamer.aantal} foto&apos;s in het blad vandaag.</p>
+        <p>{kamer.aantal} foto’s in het blad vandaag.</p>
         <div className="dagblad__drie">
           {kamer.fotos.slice(0, 3).map((f) => (
             <FotoKnop key={f.id} foto={f} snij="1 / 1" stempel={false} onOpen={() => onOpen(f)} />
@@ -456,7 +456,7 @@ function Voorpagina({
         <ModuleBlok key={m.fotos[0].id} m={m} kamerLabel={kamerLabel} onOpen={onOpen} na={tussen.get(i + 1)} />
       ))}
       {gespot.length > 0 && (
-        <section className="dagblad__mod" aria-label={`Gespot, ${gespot.length} foto's`}>
+        <section className="dagblad__mod" aria-label={`Gespot, ${gespot.length} foto’s`}>
           <span className="dagblad__rubriek">Gespot · {gespot.length}</span>
           <div className="dagblad__gespot">
             {gespot.map((f) => (
@@ -659,7 +659,7 @@ function TerPerse({ wachtend, verbonden }: { wachtend: WachtendeFoto[]; verbonde
         ))}
       </ul>
       {!verbonden ? (
-        <p className="fotomuur__klein">Je foto&apos;s liggen veilig op je telefoon en gaan vanzelf naar de drukker zodra er bereik is.</p>
+        <p className="fotomuur__klein">Je foto’s liggen veilig op je telefoon en gaan vanzelf naar de drukker zodra er bereik is.</p>
       ) : (
         wachtend.some((w) => w.vast) && (
           <p className="fotomuur__klein">Een foto die niet lukt blijft hier staan tot jij kiest: nog een keer, of weg.</p>
@@ -753,7 +753,7 @@ function Jaarboek({ paginas, dagen, meer, onOpen }: { paginas: Pagina[]; dagen: 
 
   const download = async (dag?: { d: Dag; nr: number }) => {
     if (bezig) return
-    const wat = dag ? `Dag ${dag.nr}` : "Alle foto's"
+    const wat = dag ? `Dag ${dag.nr}` : "Alle foto’s"
     setMelding(null)
     setBezig({ wat, klaar: 0, totaal: 0 })
     try {
@@ -795,18 +795,18 @@ function Jaarboek({ paginas, dagen, meer, onOpen }: { paginas: Pagina[]; dagen: 
       )}
       <p>
         {aantal}
-        {meer ? '+' : ''} foto&apos;s op {metFotos.size} pagina&apos;s. Bewaar ze zelf: download alles in één keer of per
-        dag (gewone JPEG&apos;s in een zip, ± 0,3 MB per foto). Op wifi gaat het het snelst.
+        {meer ? '+' : ''} foto’s op {metFotos.size} pagina’s. Bewaar ze zelf: download alles in één keer of per
+        dag (gewone JPEG’s in een zip, ± 0,3 MB per foto). Op wifi gaat het het snelst.
       </p>
       <div className="fotomuur__download">
         <button type="button" className="fotomuur__knop" onClick={() => void download()} disabled={!!bezig}>
-          <Icoon naam="download" grootte={20} /> Alle foto&apos;s (zip)
+          <Icoon naam="download" grootte={20} /> Alle foto’s (zip)
         </button>
         <p className="fotomuur__klein" role="status" aria-live="polite">
           {bezig
             ? bezig.totaal
               ? `${bezig.wat}: ${bezig.klaar} van ${bezig.totaal} ingepakt…`
-              : `${bezig.wat}: foto's opzoeken…`
+              : `${bezig.wat}: foto’s opzoeken…`
             : melding}
         </p>
       </div>
@@ -831,7 +831,7 @@ function Jaarboek({ paginas, dagen, meer, onOpen }: { paginas: Pagina[]; dagen: 
                   className="fotomuur__inhoud-download"
                   onClick={() => void download({ d, nr: i + 1 })}
                   disabled={!!bezig}
-                  aria-label={`Foto's van dag ${i + 1}, ${d.titel}, downloaden`}
+                  aria-label={`Foto’s van dag ${i + 1}, ${d.titel}, downloaden`}
                 >
                   <Icoon naam="download" grootte={20} />
                 </button>
@@ -840,7 +840,7 @@ function Jaarboek({ paginas, dagen, meer, onOpen }: { paginas: Pagina[]; dagen: 
               <span className="fotomuur__inhoud-leeg">
                 <b>{d.titel}</b>
                 <span aria-hidden="true" />
-                <span className="fotomuur__caps">geen foto&apos;s</span>
+                <span className="fotomuur__caps">geen foto’s</span>
               </span>
             )}
           </li>

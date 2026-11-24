@@ -158,7 +158,7 @@ const ITEM_ZINNEN: Record<string, string[]> = {
   // Voor de busreis
   Nekkussen: [
     'Een nekkussen, tenzij je wakker wil worden met je hoofd op de schouder van een onbekende.',
-    'Zonder nekkussen stap je in Les 2 Alpes uit met een hoofd dat scheef staat. Al gevonden?',
+    'Zonder nekkussen stap je in Les 2 Alpes uit met een hoofd dat scheef staat. Al gevonden?',
   ],
   Oordopjes: [
     'Oordopjes: er snurkt altijd iemand in de bus. Misschien ben jij het wel.',

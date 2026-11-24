@@ -81,7 +81,7 @@ function IcoonBlad({ onSluit }: { onSluit: () => void }) {
     }
   }, [onSluit])
 
-  const wachtrij = [fotos > 0 && (fotos === 1 ? '1 foto' : `${fotos} foto's`), stukjes > 0 && (stukjes === 1 ? '1 stukje' : `${stukjes} stukjes`)]
+  const wachtrij = [fotos > 0 && (fotos === 1 ? '1 foto' : `${fotos} foto’s`), stukjes > 0 && (stukjes === 1 ? '1 stukje' : `${stukjes} stukjes`)]
     .filter(Boolean)
     .join(' en ')
   const link = `${window.location.origin}${BASIS}`
@@ -148,7 +148,7 @@ function IcoonBlad({ onSluit }: { onSluit: () => void }) {
             naam && (
               <p className="is-goed">
                 <Icoon naam="vink" grootte={18} />
-                <span>Alle foto's en stukjes zijn verstuurd.</span>
+                <span>Alle foto’s en stukjes zijn verstuurd.</span>
               </p>
             )
           )}

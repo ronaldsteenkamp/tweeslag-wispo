@@ -120,7 +120,7 @@ test('kamerVanDeDag: minstens 3 foto\'s, bij gelijkspel het laagste nummer', () 
 
 test('telling: enkelvoud en meervoud', () => {
   assert.equal(telling(1, 0), '1 foto')
-  assert.equal(telling(15, 2), "15 foto's · 2 stukjes")
+  assert.equal(telling(15, 2), "15 foto’s · 2 stukjes")
   assert.equal(telling(0, 1), '1 stukje')
   assert.equal(telling(0, 0), '')
 })

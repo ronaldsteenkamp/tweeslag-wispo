@@ -17,6 +17,7 @@ import { useData } from '../lib/data'
 import { nu } from '../lib/nu'
 import { lees, schrijfEnMeld, useOpgeslagen } from '../lib/opslag'
 import { lokaalNaarDate } from '../lib/tijd'
+import { netjes } from '../lib/typografie'
 import '../styles/barlow.css'
 import '../styles/paklijst.css'
 
@@ -203,7 +204,7 @@ export default function Paklijst({ terug }: { terug?: () => void } = {}) {
       <div className="scherm paklijst">
         <header className="pakkop">
           <Sneeuw aantal={8} />
-          <p className="pakkop__boven">Wispo 2027 · Les Deux Alpes</p>
+          <p className="pakkop__boven">Wispo 2027 · Les Deux Alpes</p>
           <h1 className="pakkop__titel">Paklijst</h1>
         </header>
         <DataStatus fout={fout} />
@@ -251,7 +252,7 @@ export default function Paklijst({ terug }: { terug?: () => void } = {}) {
         )}
         <div className="pakkop__rij">
           <div>
-            <p className="pakkop__boven">Wispo 2027 · Les Deux Alpes</p>
+            <p className="pakkop__boven">Wispo 2027 · Les Deux Alpes</p>
             <h1 className="pakkop__titel">Paklijst</h1>
           </div>
           <p className="pakkop__hoogte" aria-hidden="true">
@@ -296,7 +297,7 @@ export default function Paklijst({ terug }: { terug?: () => void } = {}) {
                   <span className="pak-cat__nr" aria-hidden="true" onAnimationEnd={() => setNetGestempeld(null)}>
                     {i + 1}
                   </span>
-                  <span className="pak-cat__naam">{o.naam}</span>
+                  <span className="pak-cat__naam">{netjes(o.naam)}</span>
                   <span className="pak-cat__teller">
                     <span className="verborgen">{isKlaar ? 'klaar, ' : ''}</span>
                     {c.klaar}/{c.totaal}
@@ -639,7 +640,7 @@ function VinkRegel({ tekst, aan, onWissel }: { tekst: string; aan: boolean; onWi
           <path d="M5.5 12.5l4.2 4.2L18.5 7.8" />
         </svg>
       </span>
-      <span className="pak-vink__tekst">{tekst}</span>
+      <span className="pak-vink__tekst">{netjes(tekst)}</span>
     </label>
   )
 }

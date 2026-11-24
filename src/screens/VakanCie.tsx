@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from '
 import { createPortal } from 'react-dom'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { FotoBijsnijder } from '../components/FotoBijsnijder'
+import { metCie } from '../components/VakanCieNaam'
 import { useDialoogFocus } from '../lib/dialoogFocus'
 import { useTerugSluit } from '../lib/terugknop'
 import { Icoon } from '../components/Icoon'
@@ -58,7 +59,7 @@ function Invul({ t }: { t: string }) {
 function Kopje({ id, children }: { id: string; children: ReactNode }) {
   return (
     <h2 className="vk-kopje" id={id}>
-      <span>{children}</span>
+      <span>{typeof children === 'string' ? metCie(children) : children}</span>
     </h2>
   )
 }

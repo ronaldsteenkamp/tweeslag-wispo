@@ -63,7 +63,7 @@ export function skidag(locaties: WeerLocatie[], datum: string): Skidag | null {
       niveau: 'slecht',
       soort: 'storm',
       kop: 'Boven niet. Storm op de gletsjer.',
-      sub: `Stoten tot ${stoten} km/u boven 3000 m. Hoge liften gaan dan meestal dicht: kijk eerst in de app van Les 2 Alpes wat er draait.`,
+      sub: `Stoten tot ${stoten} km/u boven 3000 m. Hoge liften gaan dan meestal dicht: kijk eerst in de app van Les 2 Alpes wat er draait.`,
     }
 
   if (mistUren >= 4) {

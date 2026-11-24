@@ -245,7 +245,6 @@ export default function App() {
             naarTab={kies}
             naarWeer={() => kies('weer')}
             naarInstellingen={() => kies('instellingen')}
-            naarVakancie={() => kies('vakancie')}
           />
         )
       case 'weer':

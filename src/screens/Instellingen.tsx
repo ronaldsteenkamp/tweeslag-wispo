@@ -30,7 +30,6 @@ export default function Instellingen({ terug, naarVakancie }: { terug: () => voi
           Weergave
         </h2>
         <div className="instellingen__thema">
-          <p className="instellingen__label">Thema</p>
           <div className="segment segment--auto" role="group" aria-label="Thema">
             {(
               [
@@ -99,7 +98,7 @@ export default function Instellingen({ terug, naarVakancie }: { terug: () => voi
       <footer className="home__voet">
         <LogoKnop grootte={56} onKlik={naarVakancie} />
         <p>
-          {config.appNaam} · versie {__BOUWDATUM__}
+          {config.appNaam} · versie {__BOUWDATUM__.split('-').reverse().join('/')}
         </p>
       </footer>
     </div>

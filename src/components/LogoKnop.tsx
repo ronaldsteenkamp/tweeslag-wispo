@@ -1,4 +1,5 @@
 import '../styles/vakancie.css'
+import { metCie } from './VakanCieNaam'
 
 /**
  * Het Tweeslag-logo onderaan Home en Instellingen, als knop naar de pagina over de VakanCie.
@@ -9,7 +10,8 @@ export function LogoKnop({ grootte, onKlik }: { grootte: number; onKlik: () => v
     <button type="button" className="logoknop" onClick={onKlik} aria-label="Over de VakanCie">
       <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" width={grootte} height={grootte} loading="lazy" />
       <span className="logoknop__hint" aria-hidden="true">
-        Over de VakanCie
+        {/* In één span: de hint is een flexbox, losse stukken zouden uit elkaar staan */}
+        <span>{metCie('Over de VakanCie')}</span>
       </span>
     </button>
   )

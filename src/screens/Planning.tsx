@@ -319,7 +319,7 @@ function Inhoud({ dagen, vandaag, naar }: { dagen: Dag[]; vandaag: string; naar:
     <section className="inhoudsopgave" aria-labelledby="inhoudkop">
       <h2 id="inhoudkop">Inhoud</h2>
       <p className="inhoudsopgave__intro">
-        {dagen.length} dagen Les Deux Alpes, van de parkeerplaats tot de parkeerplaats.
+        {dagen.length} dagen Les Deux Alpes, van de parkeerplaats tot de parkeerplaats.
       </p>
       <ol>
         {dagen.map((d, i) => {

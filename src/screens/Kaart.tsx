@@ -232,7 +232,7 @@ export default function Kaart({ terug }: { terug?: () => void } = {}) {
       <div className="kaartscherm__kaart">
         <ZoomKaart
           src={KAART}
-          alt="Pistekaart van Les Deux Alpes"
+          alt="Pistekaart van Les Deux Alpes"
           ontbreekt="De pistekaart is nog niet bewaard. Open dit scherm één keer met internet."
           markers={markers}
           gekozen={open?.soort === 'jij' ? 'jij' : open?.soort === 'persoon' ? open.id : null}
@@ -276,7 +276,7 @@ export default function Kaart({ terug }: { terug?: () => void } = {}) {
               mijnPlek && (
                 <>
                   <BladKop titel="Jij" ondertitel={`${bijWelkePlek(mijnPlek)} · ${geleden(new Date(mijnPlek.tijd).toISOString(), nu)}`} rond="jij" onSluit={sluit} />
-                  <p>De stip staat er ongeveer: de pistekaart is een tekening, geen kaart op schaal. Reken op zo'n 50 meter speling.</p>
+                  <p>De stip staat er ongeveer: de pistekaart is een tekening, geen kaart op schaal. Reken op zo’n 50 meter speling.</p>
                   {kanDelen && <DeelSchakelaar aan={deelAan} naam={naam} onZet={zetDelen} />}
                   <GoogleMapsKnop plek={mijnPlek} />
                 </>
@@ -296,7 +296,7 @@ export default function Kaart({ terug }: { terug?: () => void } = {}) {
                       ? 'Buiten het gebied van de pistekaart.'
                       : persoon.oud
                         ? `Deze plek is ${geleden(persoon.bijgewerkt, nu).replace(' geleden', '')} oud. ${toon(persoon.naam)} heeft de app misschien dicht.`
-                        : "Bij benadering, zo'n 50 meter speling."}
+                        : "Bij benadering, zo’n 50 meter speling."}
                   </p>
                   <GoogleMapsKnop plek={persoon} />
                 </>

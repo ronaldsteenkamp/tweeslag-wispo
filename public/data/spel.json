@@ -59,7 +59,7 @@
       "items": [
         { "id": "clubkleuren", "titel": "Clubkleuren", "omschrijving": "Sta op de groepsfoto in je Tweeslag-shirt.", "punten": 10 },
         { "id": "jaren80", "titel": "Fout maar goed", "omschrijving": "Kom in volledige jaren 80-outfit naar het themafeest.", "punten": 20 },
-        { "id": "dansje", "titel": "Pistedans", "omschrijving": "Doe een dansje met ski's aan. Iemand filmt.", "punten": 10 }
+        { "id": "dansje", "titel": "Pistedans", "omschrijving": "Doe een dansje met ski’s aan. Iemand filmt.", "punten": 10 }
       ]
     },
     {
@@ -88,7 +88,7 @@
     "vrijVakje": "🏐 Vrij!",
     "vakjes": [
       "🎰 Josje gokt",
-      "🍺 Sten aan 't bier",
+      "🍺 Sten aan ’t bier",
       "💤 Eerste in slaap",
       "🏐 Volleybal-praat",
       "🍿 Snack al open",
@@ -118,7 +118,7 @@
       "🍬 Snoep gedeeld",
       "🔋 Telefoon leeg",
       "🔌 Stekker-ruzie",
-      "📍 \"Zijn we er al?\"",
+      "📍 „Zijn we er al?”",
       "🤢 Wagen-ziek",
       "🫣 Kussen kwijt",
       "🚻 Rij voor de wc",

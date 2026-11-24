@@ -121,6 +121,6 @@ export function kamerVanDeDag<F extends Pick<Foto, 'kamer'>>(fotos: F[]): { kame
 
 /** '1 foto', '3 foto's', '1 stukje · 2 stukjes' */
 export const telling = (fotos: number, stukjes: number) =>
-  [fotos ? `${fotos} ${fotos === 1 ? 'foto' : "foto's"}` : '', stukjes ? `${stukjes} ${stukjes === 1 ? 'stukje' : 'stukjes'}` : '']
+  [fotos ? `${fotos} ${fotos === 1 ? 'foto' : "foto’s"}` : '', stukjes ? `${stukjes} ${stukjes === 1 ? 'stukje' : 'stukjes'}` : '']
     .filter(Boolean)
     .join(' · ')

@@ -188,7 +188,7 @@ export default function Kamers({ naarVerdelen, naarBeheer, keuze }: { naarVerdel
 
       <p className="ks-voet">
         <Icoon naam="offline" grootte={18} />
-        Staat ook zonder wifi op je telefoon.
+        Staat ook zonder bereik op je telefoon.
       </p>
 
       {(isReisleiding || isRedactie) && (

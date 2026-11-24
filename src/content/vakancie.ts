@@ -100,7 +100,7 @@ export const vakancie = {
      */
     extra: [
       // Bron: les2alpes.com (Ski area: "220 km of slopes", 2026)
-      { getal: '220', tekst: 'kilometer piste in Les 2 Alpes' },
+      { getal: '220', tekst: 'kilometer piste in Les 2 Alpes' },
       { getal: '214', tekst: 'kopjes koffie tijdens het bouwen' },
     ],
   },
@@ -139,7 +139,7 @@ export const vakancie = {
       },
       {
         wat: 'De pistekaart',
-        wie: 'De officiële pistekaart van Les 2 Alpes',
+        wie: 'De officiële pistekaart van Les 2 Alpes',
         link: 'https://www.les2alpes.com/',
         linkTekst: 'les2alpes.com',
       },

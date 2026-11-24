@@ -7,7 +7,7 @@ export function DataStatus({ fout }: { fout?: DataFout }) {
     return (
       <div className="kaartje melding melding--fout" role="alert">
         <strong>Er zit een fout in {fout.bestand}.json</strong>
-        <p>Controleer komma's, aanhalingstekens en haakjes. Tip: plak de inhoud in jsonlint.com.</p>
+        <p>Controleer komma’s, aanhalingstekens en haakjes. Tip: plak de inhoud in jsonlint.com.</p>
         <p className="klein">{fout.message}</p>
       </div>
     )

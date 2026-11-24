@@ -2,7 +2,6 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
-import { LogoKnop } from '../components/LogoKnop'
 import { IcoonMelding } from '../components/IcoonMelding'
 import { FotoStrip } from '../components/FotoStrip'
 import { Bergen, MEIJE, cameraVoor } from '../components/Bergen'
@@ -24,6 +23,7 @@ import { useKlassement } from '../lib/scorebord'
 import { paklijstZin } from '../lib/paklijstZinnen'
 import { datumISO, datumLabel, lokaalNaarDate, resterend } from '../lib/tijd'
 import { cm, graden, useWeer, weerTekst } from '../lib/weer'
+import { netjes } from '../lib/typografie'
 import { FotoGroot, GEZIEN, useKamerLabel } from './Fotomuur'
 import { beeldVoor, soortActiviteit } from './Planning'
 import '../styles/barlow.css'
@@ -75,12 +75,10 @@ export default function Home({
   naarTab,
   naarWeer,
   naarInstellingen,
-  naarVakancie,
 }: {
   naarTab: (t: Tab) => void
   naarWeer: () => void
   naarInstellingen: () => void
-  naarVakancie: () => void
 }) {
   const nu = useNu(10_000)
   const { data: planning, fout } = useData('planning')
@@ -137,7 +135,7 @@ export default function Home({
               <Rij
                 bord={<Bord kleur="zwart" icoon="kaart" vierkant />}
                 titel="Pistekaart"
-                onder="Alle pistes en liften van Les 2 Alpes"
+                onder="Alle pistes en liften van Les 2 Alpes"
                 onKlik={() => naarTab('kaart')}
               />
             </section>
@@ -213,16 +211,11 @@ export default function Home({
             </span>
             <span className="homerij__tekst">
               <b>Instellingen</b>
-              <small>Thema, sneeuw, meldingen en wie wat ziet</small>
+              <small>Thema, sneeuw en meldingen</small>
             </span>
             <Icoon naam="pijl" grootte={18} className="homerij__pijl" />
           </button>
         </section>
-
-        <footer className="home__voet">
-          <LogoKnop grootte={68} onKlik={naarVakancie} />
-          <p>Tweeslag · Wispo 2027 · {config.bestemming}</p>
-        </footer>
       </div>
     </div>
   )
@@ -608,8 +601,8 @@ function NogInpakken({ pak, naarPaklijst }: { pak: PakStand; naarPaklijst: () =>
         <button key={i.s} type="button" className="homerij" onClick={naarPaklijst}>
           <span className="homerij__vakje" aria-hidden="true" />
           <span className="homerij__tekst">
-            <b>{i.naam}</b>
-            <small>{i.categorie}</small>
+            <b>{netjes(i.naam)}</b>
+            <small>{netjes(i.categorie)}</small>
           </span>
         </button>
       ))}
@@ -666,7 +659,7 @@ function Borden({ naam, naarTab }: { naam: string | null; naarTab: (t: Tab) => v
       </button>
       <button type="button" onClick={() => (window.location.hash = '#fotos')}>
         <Bord kleur="rood" icoon="camera" />
-        <b>Foto's</b>
+        <b>Foto’s</b>
         <small>Het clubblad</small>
       </button>
       <button type="button" onClick={() => naarTab('kaart')}>
@@ -689,7 +682,7 @@ function LiftenRij() {
       <Bord kleur="blauw" icoon="lift" vierkant />
       <span className="homerij__tekst">
         <b>Liften, pistes en webcams</b>
-        <small>Wat er open is, in de officiële app van Les 2 Alpes</small>
+        <small>Wat er open is, in de officiële app van Les 2 Alpes</small>
       </span>
       <Icoon naam="extern" grootte={18} className="homerij__pijl" />
     </a>
@@ -719,7 +712,7 @@ function Terugblik({ naam, naarStemmen }: { naam: string | null; naarStemmen: ()
   return (
     <>
       <p className="home__zin">
-        Wat een week. Zet je mooiste foto&apos;s in het clubblad, dan maken we er voor de ALV een terugblik van.
+        Wat een week. Zet je mooiste foto’s in het clubblad, dan maken we er voor de ALV een terugblik van.
       </p>
 
       {fotos && fotos.length > 0 && (

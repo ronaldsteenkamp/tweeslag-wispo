@@ -57,7 +57,7 @@ export default function Beheer({ terug }: { terug: () => void }) {
         {b.status === 'uit' && (
           <p>
             Er is nog geen backend ingesteld. De app werkt gewoon, maar gedeelde functies (scorebord, stemming,
-            meldingen en foto's) staan uit. Zie het hoofdstuk <em>Backend (Supabase)</em> in de README.
+            meldingen en foto’s) staan uit. Zie het hoofdstuk <em>Backend (Supabase)</em> in de README.
           </p>
         )}
         {b.status === 'offline' && (

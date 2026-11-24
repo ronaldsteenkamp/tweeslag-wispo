@@ -15,7 +15,7 @@
       "titel": "Aankomst",
       "items": [
         { "tijd": "09:00", "titel": "Aankomst in Les Deux Alpes", "omschrijving": "Bagage in de bagageruimte van het verblijf. Daarna ontbijten in het dorp.", "gewicht": "hoog" },
-        { "tijd": "11:00", "titel": "Ski's huren", "omschrijving": "Neem je schoenmaat en lengte mee. De verhuur is gereserveerd op naam van Tweeslag.", "locatie": "Skiverhuur in het centrum", "melding": true },
+        { "tijd": "11:00", "titel": "Ski’s huren", "omschrijving": "Neem je schoenmaat en lengte mee. De verhuur is gereserveerd op naam van Tweeslag.", "locatie": "Skiverhuur in het centrum", "melding": true },
         { "tijd": "13:00", "titel": "Skipassen ophalen", "omschrijving": "De reisleiding deelt ze uit. Zet je pas direct in de app van Les 2 Alpes.", "locatie": "Kassa bij de Jandri Express", "melding": true },
         { "tijd": "16:00", "titel": "Inchecken", "omschrijving": "Kamers zijn vanaf nu beschikbaar. Kijk in het tabblad Kamers waar je slaapt." },
         { "tijd": "19:00", "titel": "Welkomstdiner", "omschrijving": "Samen eten en het weekprogramma doornemen.", "melding": true, "gewicht": "hoog" }
@@ -89,10 +89,10 @@
       "datum": "2027-03-13",
       "titel": "Terugreis",
       "items": [
-        { "tijd": "09:00", "titel": "Ski's inleveren", "omschrijving": "Of skiën tot de middag en daarna inleveren. Uiterlijk 15:00.", "locatie": "Skiverhuur in het centrum", "melding": true },
+        { "tijd": "09:00", "titel": "Ski’s inleveren", "omschrijving": "Of skiën tot de middag en daarna inleveren. Uiterlijk 15:00.", "locatie": "Skiverhuur in het centrum", "melding": true },
         { "tijd": "10:00", "titel": "Uitchecken", "omschrijving": "Kamer leeg, bedden afgehaald, sleutel bij de reisleiding. Bagage in de bagageruimte.", "melding": true },
         { "tijd": "17:00", "titel": "Douchen en omkleden", "omschrijving": "In de sanitaire ruimte van het verblijf.", "gewicht": "routine" },
-        { "tijd": "19:00", "titel": "Vertrek bus", "omschrijving": "Tel je tassen: ski's, schoenen, helm, rugzak.", "melding": true, "gewicht": "hoog" }
+        { "tijd": "19:00", "titel": "Vertrek bus", "omschrijving": "Tel je tassen: ski’s, schoenen, helm, rugzak.", "melding": true, "gewicht": "hoog" }
       ]
     },
     {

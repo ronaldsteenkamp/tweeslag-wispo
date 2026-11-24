@@ -2,7 +2,8 @@
 // genoteerd als 'JJJJ-MM-DDTUU:MM'.
 export const config = {
   appNaam: 'Tweeslag Wispo',
-  bestemming: 'Les Deux Alpes',
+  /** Met vaste spaties (zoals overal in de teksten), zodat de naam nooit over twee regels breekt */
+  bestemming: 'Les Deux Alpes',
   tijdzone: 'Europe/Amsterdam',
 
   /** Vertrek van de bus: hierheen telt de aftelklok op het beginscherm */

@@ -254,7 +254,7 @@ export function BewijsInsturen({
                 <Icoon naam="camera" grootte={22} /> Foto maken
               </button>
               <button type="button" className="bewijs__tekstknop" onClick={() => galerij.current?.click()} disabled={stap === 'ontwikkelen'}>
-                Uit je foto&apos;s
+                Uit je foto’s
               </button>
               {onTekst && (
                 <button type="button" className="bewijs__tekstknop" onClick={onTekst} disabled={stap === 'ontwikkelen'}>

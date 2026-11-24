@@ -33,6 +33,15 @@
   margin: 0;
 }
 
+/* "VakanCie" in kapitalen: Cie in een eigen kleur, anders valt de grap weg (components/VakanCieNaam.tsx) */
+.vk-kopje .cie {
+  color: var(--ijsblauw-inkt);
+}
+
+.logoknop__hint .cie {
+  color: var(--inkt);
+}
+
 .logoknop__hint {
   display: inline-flex;
   align-items: center;

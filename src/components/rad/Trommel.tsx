@@ -193,7 +193,7 @@ export function Trommel(p: MachineProps) {
       ? { label: uitslag.u.label, tekst: uitslag.u.tekst, zin: uitslag.u.zin ?? '' }
       : bericht === 'wacht'
         ? { label: 'Een ogenblik geduld', tekst: '· · ·', zin: '' }
-        : { label: 'Vertrekbord', tekst: 'Welke piste?', zin: 'Veeg de trommel of druk op de knop.' }
+        : { label: 'Volgende afdaling', tekst: 'Welke piste?', zin: 'Veeg de trommel of druk op de knop.' }
 
   return (
     <section className="radm radm--liftbord" aria-label="Piste-rad">

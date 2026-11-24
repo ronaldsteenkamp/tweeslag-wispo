@@ -91,7 +91,7 @@ export default function Weer({ terug }: { terug: () => void }) {
         <div className="weerkop">
           <Lucht avond={avond} soort={oordeel?.soort} />
           <p className="weerkop__vraag">
-            {alleenNu ? (avond ? 'Zo wordt het morgen in Les Deux Alpes' : 'Zo is het nu in Les Deux Alpes') : avond ? 'En morgen?' : 'Wordt het een goede skidag?'}
+            {alleenNu ? (avond ? 'Zo wordt het morgen in Les Deux Alpes' : 'Zo is het nu in Les Deux Alpes') : avond ? 'En morgen?' : 'Wordt het een goede skidag?'}
           </p>
           {oordeel ? (
             <>
@@ -111,12 +111,12 @@ export default function Weer({ terug }: { terug: () => void }) {
                 ? laden
                   ? 'Weerbericht laden…'
                   : 'Nog geen weerbericht op deze telefoon. Open de app een keer met internet.'
-                : 'Dit bericht is te oud om iets over de skidag te zeggen. Zodra je bereik hebt, halen we een nieuw.'}
+                : 'Dit bericht is te oud om iets over de skidag te zeggen.'}
             </p>
           )}
           {weer && (
             <p className="weerkop__bijgewerkt">
-              <WeerIcoon naam="klok" grootte={16} /> {bijgewerkt(weer, nu)} · tijd in Les Deux Alpes
+              <WeerIcoon naam="klok" grootte={16} /> {bijgewerkt(weer, nu)} · tijd in Les Deux Alpes
             </p>
           )}
           {weer && (oud || (mislukt && !navigator.onLine)) && (
@@ -550,7 +550,7 @@ function Lawine() {
       </h2>
       <div className="lawine">
         <p>
-          Het officiële lawinebulletin (BERA) van Météo-France voor het massief Oisans, waar Les Deux Alpes onder valt, verschijnt elke dag rond 16
+          Het officiële lawinebulletin (BERA) van Météo-France voor het massief Oisans, waar Les Deux Alpes onder valt, verschijnt elke dag rond 16
           uur voor de volgende dag. Het risico staat op de Europese schaal van 1 (laag) tot 5 (zeer groot).
         </p>
         <p className="lawine__klein">Het bulletin gaat over terrein buiten de pistes. Op de open pistes zorgt het skigebied voor de veiligheid.</p>

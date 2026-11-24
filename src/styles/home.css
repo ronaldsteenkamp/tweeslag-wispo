@@ -386,7 +386,7 @@
   padding-top: 6px;
 }
 
-/* Afsluiter helemaal onderaan Home */
+/* Afsluiter onderaan Instellingen: logo (naar De VakanCie) en versie */
 .home__voet {
   display: grid;
   justify-items: center;
@@ -637,8 +637,13 @@
   color: var(--h-zacht);
 }
 
-.afdaling__item.is-voorbij {
+.afdaling__item.is-voorbij > :not(.bord) {
   opacity: 0.55;
+}
+
+/* Het bord zelf blijft dekkend (anders schijnt de pistelijn erdoorheen), alleen bleker */
+.afdaling__item.is-voorbij .bord {
+  background: color-mix(in srgb, var(--kleur) 45%, var(--h-papier));
 }
 
 .afdaling__item.is-nu {

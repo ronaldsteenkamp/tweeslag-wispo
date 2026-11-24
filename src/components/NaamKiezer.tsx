@@ -106,9 +106,6 @@ export function NaamKiezer({
               className={`skipas${gestempeld === n ? ' is-gestempeld' : ''}`}
               onClick={() => kies(n)}
             >
-              <span className="skipas__soort" aria-hidden="true">
-                Wispo 2027
-              </span>
               <b>{n}</b>
               {toon(n) !== n && <small>{toon(n)}</small>}
               {gestempeld === n && <span className="skipas__stempel">van mij</span>}

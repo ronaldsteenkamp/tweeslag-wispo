@@ -4831,13 +4831,6 @@ button.badge {
   border-bottom: 1px solid var(--lijn);
 }
 
-.instellingen__label {
-  font: 600 0.85rem/1 var(--font-smal);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--inkt-zacht);
-}
-
 .instellingen__uitleg,
 .instellingen__tekst {
   font-size: 0.95rem;

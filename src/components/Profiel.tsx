@@ -198,7 +198,7 @@ export function Plaatje({
         {/* Achterkant */}
         <div className="plaatje__kant plaatje__achter" aria-hidden={!omgedraaid}>
           <p className="achter__kop">
-            <span>Seizoen 2027 · Les 2 Alpes</span>
+            <span>Seizoen 2027 · Les 2 Alpes</span>
             <img src={`${import.meta.env.BASE_URL}img/2slag-wit.svg`} alt="" />
           </p>
           <p className="achter__naam">{getoond}</p>
@@ -607,9 +607,12 @@ export function BijnaamVeld({ namen }: { namen: string[] }) {
             setOpgeslagen(false)
           }}
         />
-        <button type="submit" className="plaatjeknop plaatjeknop--neven" disabled={!!fout || !gewijzigd}>
-          {tekst.trim() || !bijnaam ? 'Bewaar' : 'Weghalen'}
-        </button>
+        {/* Pas zichtbaar als er iets veranderd is: een grijze knop naast een leeg veld leest als een fout */}
+        {gewijzigd && (
+          <button type="submit" className="plaatjeknop plaatjeknop--neven" disabled={!!fout}>
+            {tekst.trim() || !bijnaam ? 'Bewaar' : 'Weghalen'}
+          </button>
+        )}
       </div>
       {fout ? (
         <p className="melding melding--fout">{fout}</p>
@@ -750,7 +753,7 @@ function Bekijk({ naam, melding, onSluit }: { naam: string; melding?: string; on
         <p className="plaatje__rustig">Je plaatje is nog niet geplakt. Geen haast: het album hoeft pas in maart vol.</p>
       )}
       <DraaibaarPlaatje p={p} kamer={kamer?.nummer ?? null} />
-      {!eigen && leeg && <p className="plaatje__rustig">{toon(naam)} komt nog. Zo'n plaatje is extra zeldzaam.</p>}
+      {!eigen && leeg && <p className="plaatje__rustig">{toon(naam)} komt nog. Zo’n plaatje is extra zeldzaam.</p>}
       <BadgeRij naam={naam} />
       {eigen && (
         <button type="button" className="plaatjeknop plaatjeknop--hoofd" onClick={() => openMijnProfiel()}>

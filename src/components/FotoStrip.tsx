@@ -25,7 +25,7 @@ export function FotoStrip({ naarFotomuur }: { naarFotomuur: () => void }) {
   return (
     <section>
       <div className="home__kopje">
-        <h2>Nieuwste foto&apos;s</h2>
+        <h2>Nieuwste foto’s</h2>
         <button type="button" onClick={naarFotomuur}>
           Clubblad <Icoon naam="pijl" grootte={16} />
         </button>
