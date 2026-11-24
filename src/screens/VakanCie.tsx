@@ -11,7 +11,7 @@ import { PANORAMA } from '../lib/bergen-data'
 import { useToonNaam } from '../lib/bijnamen'
 import { alleDeelnemers, useData } from '../lib/data'
 import type { Foto } from '../lib/fotos'
-import { haalGroepsfotoWeg, plaatsGroepsfoto, useGroepsfoto } from '../lib/groepsfoto'
+import { haalGroepsfotoWeg, haalLidFotoWeg, plaatsGroepsfoto, plaatsLidFoto, useGroepsfoto, useLidFoto } from '../lib/groepsfoto'
 import { opsomming } from '../lib/kamerligging'
 import { useNu } from '../lib/nu'
 import { useOpgeslagen } from '../lib/opslag'
@@ -283,15 +283,24 @@ function Leden() {
   )
 }
 
-/** Eén lid: pasfoto uit het profiel (met piste en bijnaam), naam en rol. Tik = het plaatje. */
+/**
+ * Eén lid: pasfoto, naam en rol. De foto is de eigen VakanCie-foto (lib/groepsfoto.ts) en anders de
+ * profielfoto; piste en bijnaam komen uit het profiel. Tik = het spelerskaartje (dat blijft apart).
+ */
 function Lid({ naam, rol }: { naam: string; rol: string }) {
   const toon = useToonNaam()
+  const backend = useBackend()
   const { perNaam } = useProfielen()
   const mijnProfiel = useMijnProfiel()
   const [jij] = useOpgeslagen<string | null>('naam', null)
   const isJij = !!jij && sleutel(jij) === sleutel(naam)
   const rij = perNaam.get(sleutel(naam))
-  const url = useProfielFoto(isJij ? (mijnProfiel?.foto ?? null) : (rij?.foto_pad ?? null), isJij ? (mijnProfiel?.fotoLokaal ?? null) : null)
+  const profielUrl = useProfielFoto(
+    isJij ? (mijnProfiel?.foto ?? null) : (rij?.foto_pad ?? null),
+    isJij ? (mijnProfiel?.fotoLokaal ?? null) : null,
+  )
+  const eigen = useLidFoto(naam)
+  const url = eigen.url ?? profielUrl
   const niveau = isJij ? mijnProfiel?.niveau : rij?.niveau
   const leeg = isInvullen(naam)
   const getoond = leeg ? naam : toon(naam)
@@ -334,7 +343,50 @@ function Lid({ naam, rol }: { naam: string; rol: string }) {
           {inhoud}
         </button>
       )}
+      {backend.beheerder && !leeg && <LidFotoBeheer naam={naam} heeftFoto={!!eigen.pad} />}
     </li>
+  )
+}
+
+/** Alleen voor beheerders: de VakanCie-foto van een lid plaatsen, vervangen of weghalen */
+function LidFotoBeheer({ naam, heeftFoto }: { naam: string; heeftFoto: boolean }) {
+  const kiezer = useRef<HTMLInputElement>(null)
+  const [bezig, setBezig] = useState(false)
+  const [fout, setFout] = useState<string | null>(null)
+
+  const kies = async (bestand: File | undefined) => {
+    if (!bestand) return
+    setBezig(true)
+    setFout(null)
+    setFout(await plaatsLidFoto(naam, bestand))
+    setBezig(false)
+    if (kiezer.current) kiezer.current.value = ''
+  }
+  const weg = async () => {
+    setBezig(true)
+    setFout(await haalLidFotoWeg(naam))
+    setBezig(false)
+  }
+
+  return (
+    <div className="vk-lidbeheer">
+      <input ref={kiezer} type="file" accept="image/*" hidden onChange={(e) => void kies(e.target.files?.[0])} />
+      <button type="button" className="tekstknop" disabled={bezig} onClick={() => kiezer.current?.click()}>
+        <Icoon naam="camera" grootte={18} />
+        {bezig ? 'Bezig…' : heeftFoto ? 'Andere foto' : 'Foto plaatsen'}
+        <span className="verborgen"> voor {naam}</span>
+      </button>
+      {heeftFoto && (
+        <button type="button" className="tekstknop" disabled={bezig} onClick={() => void weg()}>
+          Weghalen<span className="verborgen"> (foto van {naam})</span>
+        </button>
+      )}
+      {fout && (
+        <p className="vk-beheer__melding is-fout" role="alert">
+          {fout}
+        </p>
+      )}
+    </div>
   )
 }
 
