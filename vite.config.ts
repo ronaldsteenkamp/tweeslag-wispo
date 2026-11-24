@@ -100,7 +100,9 @@ export default defineConfig({
             // Foto's van de fotomuur (privé-bucket, tijdelijke links). Een foto verandert nooit (elk
             // pad is uniek), dus cache-first op het pad zonder de token: ook met een nieuwe of
             // verlopen link staat de foto er meteen, ook bij het openen van de app en zonder bereik.
-            urlPattern: /\/storage\/v1\/object\/sign\/fotos\//,
+            // Een functie en geen regex: Workbox laat een regex op een ander domein (Supabase) alleen
+            // gelden als hij vanaf het begin van de url past, dus /\/storage\/.../ werd nooit gebruikt.
+            urlPattern: ({ url }) => url.pathname.startsWith('/storage/v1/object/sign/fotos/'),
             handler: 'CacheFirst',
             options: {
               cacheName: 'tweeslag-fotos',
