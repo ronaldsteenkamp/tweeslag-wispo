@@ -480,13 +480,6 @@
   fill: color-mix(in srgb, var(--lucht) 20%, var(--foto-rand));
 }
 
-.vk-pasfoto__piste {
-  position: absolute;
-  right: -6px;
-  bottom: -8px;
-  font-size: 15px;
-}
-
 .vk-lid__naam {
   font: 700 21px/1.05 var(--font-smal);
   overflow-wrap: anywhere;
