@@ -532,6 +532,27 @@ button.vk-lid__vak:active .vk-pasfoto {
   color: var(--ijsblauw-inkt);
 }
 
+/* Beheer per lid: klein, onder de rol */
+.vk-lidbeheer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  margin-top: 4px;
+}
+
+.vk-lidbeheer .tekstknop {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+.vk-lidbeheer .vk-beheer__melding {
+  flex-basis: 100%;
+  font-size: 13px;
+}
+
 /* ---------------------------------------------------------------- cijfers */
 
 .vk-cijfers ul {
