@@ -221,16 +221,19 @@ function omschrijving(p: Plek, ctx: Ctx) {
   return `${naam ? `${naam}, appartement ${p.kamer.nummer}` : `Appartement ${p.kamer.nummer}`}${p === ctx.mijn ? ', jouw appartement' : ''}${p.verdieping !== null ? `, ${verdiepingNaam(p.verdieping)}` : ''}. ${wie.length ? opsomming(wie) : 'Nog leeg'}${p.vrij ? `, ${p.vrij} ${p.vrij === 1 ? 'bed' : 'bedden'} vrij` : ''}. Bekijk het appartement.`
 }
 
-/** De duotoonfilter: elke foto in clubkleuren (navy → ijsblauw), zoals in het smoelenboek */
+/**
+ * De duotoonfilter: elke foto in clubkleuren (navy → ijsblauw), zoals in het smoelenboek.
+ * Gamma 1.6 (was 2.6): bij 2.6 werden middentinten, zoals een gezicht, bijna egaal donkerblauw.
+ */
 function Duotoon() {
   return (
     <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
       <filter id="ks-duo" colorInterpolationFilters="sRGB">
         <feColorMatrix type="matrix" values="0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0 0 0 1 0" />
         <feComponentTransfer>
-          <feFuncR type="gamma" exponent="2.6" />
-          <feFuncG type="gamma" exponent="2.6" />
-          <feFuncB type="gamma" exponent="2.6" />
+          <feFuncR type="gamma" exponent="1.6" />
+          <feFuncG type="gamma" exponent="1.6" />
+          <feFuncB type="gamma" exponent="1.6" />
         </feComponentTransfer>
         <feComponentTransfer>
           <feFuncR type="table" tableValues="0.05 0.87" />
