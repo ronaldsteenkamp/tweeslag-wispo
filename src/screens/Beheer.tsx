@@ -5,7 +5,7 @@ import { config } from '../config'
 import { useNieuweKoppen } from '../lib/nieuweKoppen'
 import { metEchteNaam, useToonNaam } from '../lib/bijnamen'
 import { Verbinding } from '../components/Verbinding'
-import { controleerCode, stuurInlogmail, stuurProfiel, uitloggen, useBackend, verbind } from '../lib/backend'
+import { stuurInlogmail, stuurProfiel, uitloggen, useBackend, verbind } from '../lib/backend'
 import { alleDeelnemers, useData } from '../lib/data'
 import { haalLogboek, stuurBericht, type LogRegel } from '../lib/meldingen'
 import { BevestigDialoog } from '../components/BevestigDialoog'
@@ -17,7 +17,6 @@ export default function Beheer({ terug }: { terug: () => void }) {
   const b = useBackend()
   const nieuweKop = useNieuweKoppen()
   const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
   const [mailVerstuurd, setMailVerstuurd] = useState(false)
   const [melding, setMelding] = useState<string | null>(null)
   const [bezig, setBezig] = useState(false)
@@ -30,19 +29,6 @@ export default function Beheer({ terug }: { terug: () => void }) {
     setBezig(false)
     if (fout) setMelding(`Versturen lukte niet: ${fout}`)
     else setMailVerstuurd(true)
-  }
-
-  const logIn = async (e: FormEvent) => {
-    e.preventDefault()
-    setBezig(true)
-    setMelding(null)
-    const fout = await controleerCode(email, code)
-    setBezig(false)
-    if (fout) setMelding(`Inloggen lukte niet: ${fout}`)
-    else {
-      setCode('')
-      setMailVerstuurd(false)
-    }
   }
 
   return (
@@ -135,28 +121,22 @@ export default function Beheer({ terug }: { terug: () => void }) {
               </button>
             </form>
           ) : (
-            <form className="beheer__formulier" onSubmit={logIn}>
-              <p className="klein">Mail verstuurd naar {email}. Tik op de link in de mail. Staat er een code in, dan kun je die hier invullen.</p>
-              <label className="verborgen" htmlFor="beheer-code">
-                Code uit de mail
-              </label>
-              <input
-                id="beheer-code"
-                className="invoer beheer__code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                placeholder="Code uit de mail"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                maxLength={10}
-              />
-              <button type="submit" className="knop knop--primair knop--breed" disabled={bezig || code.length < 6}>
-                {bezig ? 'Bezig…' : 'Inloggen'}
-              </button>
+            // Er komt geen code mee: alleen een link (Supabase-mail zonder eigen SMTP)
+            <div className="beheer__formulier" role="status">
+              <p className="melding">
+                <b>Mail verstuurd naar {email}.</b> Open de mail op deze telefoon en tik op de link
+                (<i>Log In</i>). Er komt geen code mee.
+              </p>
+              <ol className="beheer__stappen">
+                <li>De link opent de app (op een iPhone: in Safari). Je bent dan ingelogd.</li>
+                <li>Ga daarna weer naar Groep → Beheer (redactie): bij "Beheerder" staat dan "Ja".</li>
+                <li>Staat er "Nee"? Dan staat je adres nog niet in de lijst van de redactie; het scherm vertelt wat er moet gebeuren.</li>
+              </ol>
+              <p className="klein">Geen mail? Kijk ook bij spam of ongewenst. De link werkt één keer en maar kort.</p>
               <button type="button" className="tekstknop" onClick={() => setMailVerstuurd(false)}>
                 Ander adres of opnieuw sturen
               </button>
-            </form>
+            </div>
           )}
         </section>
       )}

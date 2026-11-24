@@ -298,7 +298,10 @@ async function stuurProfielNu(forceer: boolean, overnemen: boolean) {
 
 // ---------- Beheerders: inloggen met e-mail ----------
 
-/** Stuurt een e-mail met inloglink (en code) naar de beheerder */
+/**
+ * Stuurt een e-mail met een inloglink naar de beheerder. Alleen een link, geen code: de standaardmail
+ * van Supabase (zonder eigen SMTP) heeft geen code. De link komt terug op de app (hoofdpagina).
+ */
 export async function stuurInlogmail(email: string): Promise<string | null> {
   const cb = supabase()
   if (!cb) return 'Er is geen backend ingesteld.'
@@ -308,15 +311,6 @@ export async function stuurInlogmail(email: string): Promise<string | null> {
     // Zonder #: Supabase zet de inloggegevens zelf achter een # in de link
     options: { emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}` },
   })
-  return error ? error.message : null
-}
-
-/** Inloggen met de code uit de e-mail (handig in de app op het beginscherm van een iPhone) */
-export async function controleerCode(email: string, code: string): Promise<string | null> {
-  const cb = supabase()
-  if (!cb) return 'Er is geen backend ingesteld.'
-  const c = await cb
-  const { error } = await c.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: 'email' })
   return error ? error.message : null
 }
 
