@@ -121,9 +121,10 @@
   cursor: pointer;
 }
 
+/* Knopkleur: in licht donkerblauw met wit, in donker lichtblauw met donkere tekst (donkerblauw viel weg op het donkere papier) */
 .ks-register button.is-jouw {
-  background: var(--ks-navy);
-  color: #fff;
+  background: var(--knop);
+  color: var(--op-knop);
 }
 
 /* ---------- Bladzijden ---------- */
