@@ -74,7 +74,15 @@ export const lidUitNaam = (bestand: string) => {
 const fotoId = (pad: string, versie?: string | null) => (versie ? `${pad}?v=${encodeURIComponent(versie)}` : pad)
 const padVan = (id: string) => id.split('?v=')[0]
 
-const cacheSleutel = (id: string) => `${location.origin}/__vakancie/${id}`
+/**
+ * Adres in de cache. Via new URL, zodat het precies zo geschreven wordt als cache.keys() het
+ * teruggeeft (een spatie wordt %20): anders gooide het opruimen een foto als "Iepie Leah.jpg"
+ * telkens weer weg.
+ */
+const cacheSleutel = (id: string) => new URL(`/__vakancie/${id}`, location.origin).href
+
+// Wie wil weten dat een foto (net) in de cache staat (zie useCacheLink)
+const opgehaaldLuisteraars = new Set<(id: string) => void>()
 
 async function openCache() {
   try {
@@ -102,6 +110,7 @@ async function bewaarInCache(pad: string, blob: Blob) {
   const cache = await openCache()
   await cache?.put(cacheSleutel(pad), new Response(blob, { headers: { 'content-type': 'image/jpeg' } })).catch(() => {})
   geheugen.set(pad, URL.createObjectURL(blob))
+  opgehaaldLuisteraars.forEach((f) => f(pad))
 }
 
 /** Alles uit de cache weghalen wat niet meer in gebruik is */
@@ -201,9 +210,15 @@ function useCacheLink(pad: string | null) {
       return
     }
     setUrl(geheugen.get(pad) ?? null)
-    void uitCache(pad).then((u) => !weg && setUrl(u))
+    void uitCache(pad).then((u) => !weg && u && setUrl(u))
+    // Stond hij nog niet in de cache: zodra hij binnen is alsnog tonen
+    const opgehaald = (id: string) => {
+      if (id === pad && !weg) setUrl(geheugen.get(pad) ?? null)
+    }
+    opgehaaldLuisteraars.add(opgehaald)
     return () => {
       weg = true
+      opgehaaldLuisteraars.delete(opgehaald)
     }
   }, [pad])
   return url
