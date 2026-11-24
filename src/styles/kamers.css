@@ -150,7 +150,8 @@
 
 .ks-kop {
   display: grid;
-  grid-template-columns: 1fr auto;
+  /* minmax(0, …): een naam van één lang woord mag de kolom niet breder maken, anders verdwijnt het pijltje */
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 0 12px;
   width: 100%;
@@ -188,7 +189,7 @@
   display: block;
   margin-top: 2px;
   font: 700 1.9rem/1.05 var(--font-smal);
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere; /* eerst afbreken met koppelteken; past het woord nog niet, dan toch breken */
   hyphens: auto;
 }
 
