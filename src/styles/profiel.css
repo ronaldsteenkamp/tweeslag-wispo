@@ -49,6 +49,13 @@
   overflow-wrap: anywhere;
 }
 
+.plaatjekop__echt {
+  font: 600 1rem/1.2 var(--pl-tekst);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--pl-zacht);
+}
+
 .plaatje__rustig {
   margin: 0;
   font-family: var(--font-tekst);
@@ -147,20 +154,26 @@
   object-position: 50% 25%;
 }
 
-.plaatje__nr {
+/* Het deurbordje van je appartement: emaille, donkerblauw met een lichte rand binnenin */
+.plaatje__hoek {
   position: absolute;
   top: 10px;
   left: 10px;
-  display: grid;
+}
+
+.plaatje__bordje {
+  display: inline-grid;
   place-items: center;
-  min-width: 44px;
-  height: 30px;
-  padding: 0 8px;
-  border-radius: 6px;
-  background: var(--knop);
-  color: var(--op-knop);
-  font: 700 1rem/1 var(--pl-smal);
-  letter-spacing: 0.04em;
+  min-width: 46px;
+  height: 34px;
+  padding: 0 9px;
+  border-radius: 7px;
+  background: var(--lucht);
+  color: var(--op-lucht);
+  box-shadow: inset 0 0 0 2px var(--lucht), inset 0 0 0 3.5px var(--op-lucht-zacht), 0 0 0 1px var(--lijn-sterk);
+  font: 700 1.15rem/1 var(--pl-smal);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .plaatje__piste {
@@ -187,8 +200,9 @@
   color: var(--pl-zacht);
 }
 
+/* De initiaal van wie er nog moet komen */
 .plaatje__gat b {
-  font: 700 clamp(2.2rem, 20cqw, 4rem)/1 var(--pl-smal);
+  font: 700 clamp(3rem, 30cqw, 5.5rem)/1 var(--pl-smal);
   color: var(--pl-slot);
 }
 
@@ -390,10 +404,10 @@
   color: #8f97c9;
 }
 
-.achter__voet b {
-  font-size: 1.5rem;
+.achter__voet .plaatje__bordje {
+  flex: none;
+  margin-bottom: 2px;
   letter-spacing: 0.02em;
-  color: #fff;
 }
 
 .draaiknop {
