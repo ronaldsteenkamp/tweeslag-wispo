@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kopje A · Deurbordje</title>
+<link rel="stylesheet" href="kamers-plaatjes/basis.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/kamers.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/profiel.css">
+<link rel="stylesheet" href="kamers-plaatjes/richtingen.css">
+</head>
+<body class="mock">
+<nav class="mock__nav"><a href="kamers-en-plaatjes.html">Overzicht</a><b>Kopje: A Deurbordje</b><a href="kopje-appartement-b.html">B Sleutelhanger</a><a href="kopje-appartement-c.html">C Wegwijzer</a><a href="plaatjes-a.html">Plaatjes A</a><a href="plaatjes-b.html">Plaatjes B</a><a href="plaatjes-c.html">Plaatjes C</a></nav>
+<h1>Kopje A · Deurbordje</h1>
+<div class="mock__intro"><p>Het nummer staat groot op een emaille bordje, zoals naast de deur van een appartement in het dorp. De naam staat er groot naast. Jouw appartement heeft een lichtblauw bordje, de andere een donkerblauw. Tik in de telefoons op een kopje of een portret.</p></div>
+<form class="mock__knoppen" onsubmit="return false"></form>
+<div class="mock__rij"></div>
+
+<section class="mock__uitleg">
+  <h2>Hoe het werkt</h2>
+  <h3>Wat valt eerst op</h3>
+  <ul>
+    <li><b>Het nummer</b>, op het bordje. Dat is ook wat je op de gang zoekt. Direct daarna de naam.</li>
+    <li><b>"Jouw"</b>: het bordje is lichtblauw in plaats van donkerblauw, groter, en erboven staat "Jouw appartement · 1e verdieping". De kleur werkt ook zonder te lezen.</li>
+    <li><b>Verdieping</b>: alleen bij jouw appartement en in het detailscherm; bij de andere staat hij al als tussenkop ("2e verdieping").</li>
+  </ul>
+  <h3>Groot en klein</h3>
+  <ul><li>Eén bordje in drie maten: groot (jouw appartement, detailscherm), gewoon (de andere), klein (register). Zelfde vorm, schroefjes en rand.</li></ul>
+  <h3>Lastige namen</h3>
+  <ul>
+    <li><b>Lang</b>: de naam loopt door over meerdere regels naast het bordje; het bordje en het pijltje blijven op hun plek (naamkolom krimpt, pijltje niet).</li>
+    <li><b>Eén lang woord</b>: wordt afgebroken, zo nodig zonder koppelteken.</li>
+    <li><b>Heel kort / met cijfer</b> ("Ski", "De 7 Dwergen"): het nummer staat op het bordje en het cijfer in de naam, dus ze lopen niet door elkaar.</li>
+    <li><b>Geen naam</b>: bordje "104" met daarnaast "Appartement". Samen lees je "Appartement 104", gelijk aan de voorleestekst.</li>
+    <li><b>Leeg appartement</b>: onder de naam "Nog leeg · 4 bedden vrij" (stond al in de voorleestekst).</li>
+  </ul>
+  <h3>Klikbaar</h3>
+  <ul><li>Het hele kopje blijft één knop met het pijltje rechts en dezelfde aria-label (omschrijving()). Het bordje zelf ziet eruit als een voorwerp, niet als een knop. Daarom blijft het pijltje staan.</li></ul>
+  <h3>Register en detailscherm</h3>
+  <ul><li>Het register wordt een rij kleine bordjes (jouw bordje lichtblauw), 50×48 px tikvlak. In het detailscherm staat hetzelfde grote bordje. Overal hetzelfde bordje.</li></ul>
+  <h3>Contrast</h3>
+  <ul><li>Wit op donkerblauw 16:1; donkerblauw op lichtblauw 5,5:1. In donker krijgt het bordje een lichte rand (--lijn-sterk) zodat het niet in het papier verdwijnt.</li></ul>
+</section>
+
+<script type="module">
+import { bouw } from './kamers-plaatjes/pagina.js'
+bouw({ soort: 'kopje', knoppen: ['scherm', 'naam', 'thema', 'breed'], tels: [{ titel: 'Nu', a: 'nu', b: 'nu' }, { titel: 'A · Deurbordje', a: 'a', b: 'nu' }] })
+</script>
+</body>
+</html>

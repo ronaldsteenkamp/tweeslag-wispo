@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plaatjes B · Bergen en stempel</title>
+<link rel="stylesheet" href="kamers-plaatjes/basis.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/kamers.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/profiel.css">
+<link rel="stylesheet" href="kamers-plaatjes/richtingen.css">
+</head>
+<body class="mock">
+<nav class="mock__nav"><a href="kamers-en-plaatjes.html">Overzicht</a><a href="kopje-appartement-a.html">Kopje A</a><a href="kopje-appartement-b.html">Kopje B</a><a href="kopje-appartement-c.html">Kopje C</a><a href="plaatjes-a.html">A Gewoon weg</a><b>Plaatjes: B Bergen + stempel</b><a href="plaatjes-c.html">C Bordje in de hoek</a></nav>
+<h1>Plaatjes B · Bergen en stempel</h1>
+<div class="mock__intro"><p>Zonder foto staat er hetzelfde als het portret in Kamers waar je net op tikte: de bergrand met de initiaal, en daaroverheen een stempel "Nog niet geplakt", zoals de stempels op de Paklijst. Met foto staat er linksboven niets meer. Titel = (bij)naam. Tik op het kaartje om het om te draaien.</p></div>
+<form class="mock__knoppen" onsubmit="return false"></form>
+<div class="mock__rij"></div>
+
+<section class="mock__uitleg">
+  <h2>Wat verandert er</h2>
+  <ul>
+    <li><b>Leeg vak</b>: donkerblauwe lucht met bergrand, lichtblauwe berg en sneeuw (tokens --lucht, --tweeslag-lichtblauw, --berg-3), de initiaal groot in wit, en een schuin stempel "Nog niet geplakt" in --ijsblauw-inkt op papier. Het blijft een verzamelplaatje dat nog "ontbreekt", maar je ziet meteen van wie.</li>
+    <li><b>Samenhang</b>: hetzelfde beeld als het portret in Kamers. Je tikt op de "L" van Lotte en het plaatje laat dezelfde "L" zien, nu groot.</li>
+    <li><b>Foto</b>: niets linksboven; het pistebordje rechtsboven blijft (geen tweede bordje of stempel erbij, dat werd dubbelop).</li>
+    <li><b>Achterkant</b>: voet zonder №. De kop "Seizoen 2027 · Les 2 Alpes" met het logo staat er al, dus geen extra "Wispo '27"-stempel.</li>
+    <li><b>Titel</b>: de (bij)naam met de echte naam klein ernaast; jouw eigen plaatje blijft "Jouw plaatje".</li>
+    <li><b>Formulier "Plaatje maken"</b>: het voorbeeld toont al jouw initiaal met de bergen, dus het voelt meteen als jouw plaatje.</li>
+    <li><b>Contrast</b>: wit op --lucht 16:1; stempeltekst #05607a op wit 6,3:1 (donker: #6fd6ef op #16133d 10:1).</li>
+  </ul>
+</section>
+
+<script type="module">
+import { bouw } from './kamers-plaatjes/pagina.js'
+bouw({ soort: 'plaatjes', knoppen: ['wie', 'kant', 'thema', 'breed'], start: { wie: 'ander-leeg' }, tels: [{ titel: 'Nu', a: 'nu', b: 'nu' }, { titel: 'B · Bergen + stempel', a: 'nu', b: 'b' }] })
+</script>
+</body>
+</html>
