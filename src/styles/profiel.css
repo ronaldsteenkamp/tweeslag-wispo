@@ -267,7 +267,8 @@
   gap: 10px;
   padding: 14px 14px 14px;
   transform: rotateY(180deg);
-  background: radial-gradient(120% 60% at 100% 0, #1b1580 0, transparent 60%), var(--pl-inkt);
+  /* Altijd donkerblauw: var(--pl-inkt) is in donker thema bijna wit, met witte tekst erop */
+  background: radial-gradient(120% 60% at 100% 0, #1b1580 0, transparent 60%), var(--tweeslag-donkerblauw);
   color: #fff;
 }
 
