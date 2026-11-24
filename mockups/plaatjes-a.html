@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plaatjes A · Gewoon weg</title>
+<link rel="stylesheet" href="kamers-plaatjes/basis.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/kamers.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/profiel.css">
+<link rel="stylesheet" href="kamers-plaatjes/richtingen.css">
+</head>
+<body class="mock">
+<nav class="mock__nav"><a href="kamers-en-plaatjes.html">Overzicht</a><a href="kopje-appartement-a.html">Kopje A</a><a href="kopje-appartement-b.html">Kopje B</a><a href="kopje-appartement-c.html">Kopje C</a><b>Plaatjes: A Gewoon weg</b><a href="plaatjes-b.html">B Bergen + stempel</a><a href="plaatjes-c.html">C Bordje in de hoek</a></nav>
+<h1>Plaatjes A · Gewoon weg</h1>
+<div class="mock__intro"><p>De nummers gaan eraf en er komt niets voor in de plaats. Het kaartje werkt zonder: linksboven niets op de foto, in het lege vak alleen "Nog niet geplakt", op de achterkant geen № meer, en de titel van andermans plaatje is zijn of haar (bij)naam. Tik op het kaartje om het om te draaien.</p></div>
+<form class="mock__knoppen" onsubmit="return false"></form>
+<div class="mock__rij"></div>
+
+<section class="mock__uitleg">
+  <h2>Wat verandert er</h2>
+  <ul>
+    <li><b>Foto</b>: het "№ 11"-label linksboven verdwijnt. De foto is rustiger; het pistebordje rechtsboven blijft.</li>
+    <li><b>Leeg vak</b>: alleen "Nog niet geplakt" in de stippellijn. Het vak voelt wat leeg; dat is ook de bedoeling, maar het mist een beetje het "album".</li>
+    <li><b>Achterkant</b>: de voet houdt "Tweeslag Groningen · Wispo 05.03–14.03.2027"; rechts is leeg.</li>
+    <li><b>Titel</b>: "Plaatje 22" wordt de (bij)naam, met de echte naam klein ernaast als er een bijnaam is ("Fen <small>Fenna</small>"). Erboven blijft "Kamer 101 · Gletsjer". Jouw eigen plaatje blijft "Jouw plaatje".</li>
+    <li><b>Voorlezen</b>: de titel is de naam (geen verborgen ": Fen" meer nodig), "Foto van Fenna" blijft.</li>
+    <li><b>Code</b>: plaatjeInfo().nummer, nr() en de prop nummer van Plaatje kunnen weg; .plaatje__nr en .plaatje__gat b uit profiel.css. plaatjeInfo().kamer blijft.</li>
+  </ul>
+</section>
+
+<script type="module">
+import { bouw } from './kamers-plaatjes/pagina.js'
+bouw({ soort: 'plaatjes', knoppen: ['wie', 'kant', 'thema', 'breed'], start: { wie: 'ander-leeg' }, tels: [{ titel: 'Nu', a: 'nu', b: 'nu' }, { titel: 'A · Gewoon weg', a: 'nu', b: 'a' }] })
+</script>
+</body>
+</html>

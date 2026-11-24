@@ -1,0 +1,487 @@
+/* De richtingen voor het kopje (A) en de plaatjes (B). Alleen tokens uit theme.css; geen nieuwe kleuren. */
+
+/* ================= A: het kopje ================= */
+
+.kop {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 14px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0 0 14px;
+  padding: 0 0 10px;
+  border: 0;
+  border-bottom: 1px solid var(--ks-lijn);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kop > .icoon {
+  color: var(--ks-zacht);
+}
+
+.kop--detail {
+  grid-template-columns: auto minmax(0, 1fr);
+  margin: 0 0 12px;
+  padding: 0 44px 0 0;
+  border-bottom: 0;
+  cursor: default;
+}
+
+.kop__tekst {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kop__boven {
+  font: 700 0.8rem/1.2 var(--font-smal);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ks-zacht);
+}
+
+.kop--jouw .kop__boven {
+  color: var(--ks-accent);
+}
+
+.kop__boven--vol {
+  grid-column: 1 / -1;
+  margin-bottom: 10px;
+}
+
+/* Lange namen: eerst afbreken met een koppelteken, een heel lang woord zonder afbreekpunt toch breken;
+   de naamkolom is minmax(0, 1fr), dus het pijltje blijft altijd staan */
+.kop__naam {
+  font: 700 1.7rem/1.02 var(--font-smal);
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.kop--jouw .kop__naam,
+.kop--detail .kop__naam {
+  font-size: 2.15rem;
+}
+
+.kop__naam.is-zonder-naam {
+  font-weight: 600;
+}
+
+.kop__onder {
+  font: 400 0.95rem/1.25 var(--font);
+  color: var(--ks-zacht);
+}
+
+/* ---------- A-a Deurbordje: emaille nummerbordje naast de deur ---------- */
+.bordje {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: 66px;
+  height: 50px;
+  padding: 0 15px;
+  border-radius: 9px;
+  background: var(--lucht);
+  color: var(--op-lucht);
+  box-shadow: inset 0 0 0 3px var(--lucht), inset 0 0 0 4.5px var(--op-lucht-zacht), 0 0 0 1px var(--lijn-sterk);
+}
+
+.bordje b {
+  font: 700 1.75rem/1 var(--font-smal);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Twee schroefjes */
+.bordje::before,
+.bordje::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 7px;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+.bordje::after {
+  left: auto;
+  right: 7px;
+}
+
+.bordje--groot {
+  min-width: 88px;
+  height: 72px;
+  padding: 0 16px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 4px var(--lucht), inset 0 0 0 6px var(--op-lucht-zacht), 0 0 0 1px var(--lijn-sterk);
+}
+
+.bordje--groot b {
+  font-size: 2.6rem;
+}
+
+.bordje--groot::before { left: 9px; }
+.bordje--groot::after { right: 9px; }
+
+.bordje--klein {
+  min-width: 46px;
+  height: 34px;
+  padding: 0 9px;
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 2px var(--lucht), inset 0 0 0 3.5px var(--op-lucht-zacht), 0 0 0 1px var(--lijn-sterk);
+}
+
+.bordje--klein b {
+  font-size: 1.15rem;
+}
+
+/* Klein: geen schroefjes, anders plakken ze tegen het nummer */
+.bordje--klein::before,
+.bordje--klein::after {
+  display: none;
+}
+
+/* Jouw appartement: lichtblauw emaille, overal hetzelfde (kopje, register, detail) */
+.bordje--jouw {
+  background: var(--tweeslag-lichtblauw);
+  color: var(--tweeslag-donkerblauw);
+  box-shadow: inset 0 0 0 3px var(--tweeslag-lichtblauw), inset 0 0 0 4.5px var(--tweeslag-donkerblauw), 0 0 0 1.5px var(--lijn-sterk);
+}
+
+.bordje--jouw.bordje--groot {
+  box-shadow: inset 0 0 0 4px var(--tweeslag-lichtblauw), inset 0 0 0 6px var(--tweeslag-donkerblauw), 0 0 0 1.5px var(--lijn-sterk);
+}
+
+.bordje--jouw.bordje--klein {
+  box-shadow: inset 0 0 0 2px var(--tweeslag-lichtblauw), inset 0 0 0 3.5px var(--tweeslag-donkerblauw), 0 0 0 1.5px var(--lijn-sterk);
+}
+
+/* ---------- A-b Sleutelhanger: de ouderwetse hotelsleutel ---------- */
+.fob {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 100px;
+  height: 46px;
+  transform: rotate(-7deg);
+}
+
+.fob svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.fob__lijf {
+  fill: var(--tweeslag-lichtblauw);
+  stroke: var(--lijn-sterk);
+  stroke-width: 2;
+}
+
+.fob__ring {
+  fill: none;
+  stroke: var(--inkt-zacht);
+  stroke-width: 2.5;
+}
+
+.fob__gat {
+  fill: var(--papier);
+  stroke: var(--lijn-sterk);
+  stroke-width: 1.5;
+}
+
+.fob b {
+  position: absolute;
+  inset: 0 6% 0 34%;
+  display: grid;
+  place-items: center;
+  font: 700 1.4rem/1 var(--font-smal);
+  font-variant-numeric: tabular-nums;
+  color: var(--tweeslag-donkerblauw);
+}
+
+.fob--jouw .fob__lijf {
+  fill: var(--lucht);
+}
+
+.fob--jouw b {
+  color: var(--op-lucht);
+}
+
+.fob--groot {
+  width: 138px;
+  height: 62px;
+}
+
+.fob--groot b {
+  font-size: 2rem;
+}
+
+.fob--klein {
+  width: 72px;
+  height: 33px;
+  transform: rotate(-5deg);
+}
+
+.fob--klein b {
+  font-size: 1.05rem;
+}
+
+/* ---------- A-c Wegwijzer: het bord bij de lift ---------- */
+.kop--wijzer {
+  display: block;
+  padding: 0;
+  border-bottom: 0;
+}
+
+.wijzer {
+  display: block;
+  padding: 2px;
+  background: var(--lijn-sterk);
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 50%, calc(100% - 26px) 100%, 0 100%);
+}
+
+.wijzer__binnen {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 6px 40px 6px 6px;
+  background: var(--papier-vlak);
+  clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 50%, calc(100% - 25px) 100%, 0 100%);
+}
+
+.wijzer__nr {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 50px;
+  height: 48px;
+  padding: 0 7px;
+  border-radius: 5px;
+  background: var(--lucht);
+  color: var(--op-lucht);
+  font: 700 1.55rem/1 var(--font-smal);
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 2px var(--lucht), inset 0 0 0 3.5px var(--op-lucht-zacht), 0 0 0 1px var(--lijn-sterk);
+}
+
+.kop--wijzer .kop__naam {
+  font-size: 1.55rem;
+}
+
+.kop--wijzer.kop--jouw .wijzer__binnen {
+  min-height: 88px;
+  padding-left: 8px;
+  background: var(--knop);
+  color: var(--op-knop);
+}
+
+.kop--wijzer.kop--jouw .wijzer .kop__boven {
+  color: var(--op-knop);
+}
+
+.kop__boven--los {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.kop--wijzer.kop--jouw .kop__naam {
+  font-size: 2rem;
+}
+
+.kop--wijzer.is-jouw .wijzer__nr {
+  background: var(--papier-vlak);
+  color: var(--inkt);
+  box-shadow: inset 0 0 0 2px var(--papier-vlak), inset 0 0 0 3.5px var(--inkt);
+}
+
+.kop--wijzer.kop--jouw .wijzer__nr {
+  min-width: 68px;
+  height: 68px;
+  font-size: 2.3rem;
+}
+
+.hoogte {
+  width: 0.75em;
+  height: 0.75em;
+  margin-right: 5px;
+  fill: currentColor;
+  vertical-align: -0.02em;
+}
+
+/* In het detailscherm is er niets meer om naartoe te gaan: een recht bord */
+.kop--wijzer.kop--detail {
+  padding-right: 44px;
+}
+
+.kop--detail .wijzer,
+.kop--detail .wijzer__binnen {
+  clip-path: none;
+  border-radius: 6px;
+}
+
+.kop--detail .wijzer__binnen {
+  padding-right: 12px;
+}
+
+.kop--detail .wijzer__nr {
+  min-width: 64px;
+  height: 64px;
+  font-size: 2.2rem;
+}
+
+/* ---------- Register per richting ---------- */
+.ks-register.register--a,
+.ks-register.register--b,
+.ks-register.register--c {
+  gap: 6px;
+  align-items: center;
+  padding: 6px 16px;
+}
+
+.ks-register .reg-bord,
+.ks-register .reg-fob,
+.ks-register .reg-wijzer {
+  min-width: 50px;
+  height: 48px;
+  padding: 0 2px;
+  border-radius: 8px;
+  background: none;
+}
+
+.ks-register .reg-fob {
+  min-width: 78px;
+}
+
+.reg-wijzer .wijzer__nr {
+  min-width: 46px;
+  height: 38px;
+  font-size: 1.2rem;
+}
+
+.reg-wijzer.is-jouw .wijzer__nr {
+  background: var(--knop);
+  color: var(--op-knop);
+  box-shadow: inset 0 0 0 2px var(--knop), inset 0 0 0 3.5px var(--op-knop), 0 0 0 1px var(--lijn-sterk);
+}
+
+/* Bij de wegwijzer is het vlak van jouw appartement al gevuld */
+.blz--c.ks-blz--jouw {
+  margin: 0;
+  padding: 0 0 4px;
+  background: none;
+  box-shadow: none;
+}
+
+/* ================= B: de plaatjes ================= */
+
+/* Alle richtingen: de achterkant is altijd donkerblauw. Nu is hij var(--inkt), en die is in donker thema
+   bijna wit, met witte tekst erop (onleesbaar). Zelfde verloop als nu. */
+.plaatje--a .plaatje__achter,
+.plaatje--b .plaatje__achter,
+.plaatje--c .plaatje__achter {
+  background: radial-gradient(120% 60% at 100% 0, #1b1580 0, transparent 60%), var(--tweeslag-donkerblauw);
+}
+
+/* B-a: alleen de tekst in het lege vak */
+.gat--leeg span {
+  font-size: 1rem;
+  letter-spacing: 0.14em;
+}
+
+/* B-c: de initiaal in het lege vak */
+.gat--initiaal b {
+  font-size: clamp(3rem, 30cqw, 5.5rem);
+}
+
+/* B-b: bergen met de initiaal, zoals het portret in Kamers, met een stempel */
+.plaatje__voor:has(.gat-bergen) {
+  background: var(--pl-papier);
+}
+
+.gat-bergen {
+  position: absolute;
+  inset: 0;
+}
+
+.gat-bergen__lucht {
+  position: absolute;
+  inset: 0 0 26%;
+  background: var(--lucht);
+  clip-path: polygon(0 9%, 22% 3%, 40% 7%, 60% 0, 78% 6%, 100% 2%, 100% 100%, 0 100%);
+}
+
+.gat-bergen__lucht b {
+  position: absolute;
+  inset: 12% 0 38%;
+  display: grid;
+  place-items: center;
+  font: 700 clamp(4rem, 36cqw, 7.5rem)/1 var(--pl-smal);
+  color: var(--op-lucht);
+}
+
+.gat-bergen__lucht svg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 34%;
+}
+
+.gat-bergen__berg {
+  fill: var(--tweeslag-lichtblauw);
+}
+
+.gat-bergen__sneeuw {
+  fill: var(--berg-3);
+}
+
+.gat-stempel {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  padding: 6px 12px 5px;
+  border: 3px solid var(--ijsblauw-inkt);
+  border-radius: 4px;
+  outline: 1.2px solid var(--ijsblauw-inkt);
+  outline-offset: 2.5px;
+  background: color-mix(in srgb, var(--papier-vlak) 94%, transparent);
+  color: var(--ijsblauw-inkt);
+  font: 700 clamp(0.9rem, 6.4cqw, 1.2rem)/1.05 var(--pl-smal);
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-8deg);
+}
+
+/* B-c: het deurbordje van het appartement in de hoek */
+.plaatje__hoek {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.achter__voet .bordje {
+  margin-bottom: 2px;
+}
+
+/* De echte naam naast de bijnaam in de titel van het venster */
+.plaatjekop__echt {
+  font: 600 1rem/1.2 var(--pl-tekst);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--pl-zacht);
+}

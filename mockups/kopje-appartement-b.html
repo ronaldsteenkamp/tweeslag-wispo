@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kopje B · Sleutelhanger</title>
+<link rel="stylesheet" href="kamers-plaatjes/basis.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/kamers.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/profiel.css">
+<link rel="stylesheet" href="kamers-plaatjes/richtingen.css">
+</head>
+<body class="mock">
+<nav class="mock__nav"><a href="kamers-en-plaatjes.html">Overzicht</a><a href="kopje-appartement-a.html">A Deurbordje</a><b>Kopje: B Sleutelhanger</b><a href="kopje-appartement-c.html">C Wegwijzer</a><a href="plaatjes-a.html">Plaatjes A</a><a href="plaatjes-b.html">Plaatjes B</a><a href="plaatjes-c.html">Plaatjes C</a></nav>
+<h1>Kopje B · Sleutelhanger</h1>
+<div class="mock__intro"><p>Het nummer staat op een ouderwetse hotelsleutelhanger (eigen SVG, lijn 2 zoals de iconen), een beetje scheef, met de naam ernaast als label. Jouw sleutel is donkerblauw en groter, de andere lichtblauw. Tik in de telefoons op een kopje of een portret.</p></div>
+<form class="mock__knoppen" onsubmit="return false"></form>
+<div class="mock__rij"></div>
+
+<section class="mock__uitleg">
+  <h2>Hoe het werkt</h2>
+  <h3>Wat valt eerst op</h3>
+  <ul>
+    <li><b>De sleutelhanger</b>, en daarop het nummer. De vorm valt meer op dan het bordje van A; het nummer zelf is iets kleiner en staat scheef (7°), dus het leest wat minder snel.</li>
+    <li><b>"Jouw"</b>: donkerblauwe sleutel met wit nummer (de andere zijn lichtblauw), groter, en "Jouw appartement · 1e verdieping" erboven. Het voelt als "jouw sleutel".</li>
+    <li><b>Verdieping</b>: zoals nu, alleen bij jou en in het detailscherm.</li>
+  </ul>
+  <h3>Groot en klein</h3>
+  <ul><li>Dezelfde sleutel in drie maten. In het register hangen de kleine sleutels naast elkaar, als aan een sleutelbord bij de receptie.</li></ul>
+  <h3>Lastige namen</h3>
+  <ul>
+    <li><b>Lang</b>: de naam loopt door naast de sleutel; de sleutel blijft even groot, het pijltje blijft staan.</li>
+    <li><b>Eén lang woord</b>: wordt afgebroken.</li>
+    <li><b>Heel kort / met cijfer</b>: geen probleem, het nummer staat op de sleutel.</li>
+    <li><b>Geen naam</b>: sleutel "104" met "Appartement" ernaast.</li>
+    <li><b>Leeg appartement</b>: "Nog leeg · 4 bedden vrij" onder de naam.</li>
+  </ul>
+  <h3>Klikbaar</h3>
+  <ul><li>Eén knop met pijltje en de bestaande aria-label. Een sleutel hoort bij "naar binnen gaan", dat past bij tikken om het appartement te openen.</li></ul>
+  <h3>Register en detailscherm</h3>
+  <ul><li>Register: kleine sleutels (78×48 px tikvlak, dus er passen er minder naast elkaar; bij 6 appartementen nog net in beeld op 390 px, daarna schuiven). Detailscherm: de grote sleutel.</li></ul>
+  <h3>Let op</h3>
+  <ul><li>Het meest speels van de drie, maar ook het drukst. Met een rij sleutels in het register en een sleutel boven elke bladzijde wordt het al snel veel; het nummer leest minder snel door de scheve stand.</li></ul>
+</section>
+
+<script type="module">
+import { bouw } from './kamers-plaatjes/pagina.js'
+bouw({ soort: 'kopje', knoppen: ['scherm', 'naam', 'thema', 'breed'], tels: [{ titel: 'Nu', a: 'nu', b: 'nu' }, { titel: 'B · Sleutelhanger', a: 'b', b: 'nu' }] })
+</script>
+</body>
+</html>

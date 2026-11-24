@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kopje C · Wegwijzer</title>
+<link rel="stylesheet" href="kamers-plaatjes/basis.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/kamers.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/profiel.css">
+<link rel="stylesheet" href="kamers-plaatjes/richtingen.css">
+</head>
+<body class="mock">
+<nav class="mock__nav"><a href="kamers-en-plaatjes.html">Overzicht</a><a href="kopje-appartement-a.html">A Deurbordje</a><a href="kopje-appartement-b.html">B Sleutelhanger</a><b>Kopje: C Wegwijzer</b><a href="plaatjes-a.html">Plaatjes A</a><a href="plaatjes-b.html">Plaatjes B</a><a href="plaatjes-c.html">Plaatjes C</a></nav>
+<h1>Kopje C · Wegwijzer</h1>
+<div class="mock__intro"><p>Elk kopje is een richtingbord zoals bij de lift: een bord met een punt naar rechts, met het nummer op een vierkant plaatje en de naam erop. De punt vervangt het pijltje. Jouw bord is gevuld (donkerblauw, in donker lichtblauw). Tik in de telefoons op een bord of een portret.</p></div>
+<form class="mock__knoppen" onsubmit="return false"></form>
+<div class="mock__rij"></div>
+
+<section class="mock__uitleg">
+  <h2>Hoe het werkt</h2>
+  <h3>Wat valt eerst op</h3>
+  <ul>
+    <li><b>Het bord als geheel</b>, dan nummer en naam tegelijk. Het is het duidelijkst klikbaar van de drie: het bord wijst ergens naartoe.</li>
+    <li><b>"Jouw"</b>: een gevuld bord (de andere zijn wit met een donkere rand), groter, met "Jouw appartement · ▲ 1e verdieping" erin. Het driehoekje is de hoogte, zoals bij een liftbord.</li>
+    <li><b>Verdieping</b>: bij jou en in het detailscherm, met het driehoekje.</li>
+  </ul>
+  <h3>Groot en klein</h3>
+  <ul><li>Groot bord (jouw), gewoon bord (de andere), los nummerplaatje (register). In het detailscherm een recht bord zonder punt: daar valt niets meer te openen.</li></ul>
+  <h3>Lastige namen</h3>
+  <ul>
+    <li><b>Lang</b>: het bord wordt hoger; de punt rekt mee en blijft rechts. Er is wat minder breedte voor de naam dan bij A (de punt neemt ruimte).</li>
+    <li><b>Eén lang woord</b>: wordt afgebroken.</li>
+    <li><b>Heel kort / met cijfer</b>: werkt; het nummerplaatje staat los van de naam.</li>
+    <li><b>Geen naam</b>: plaatje "104" met "Appartement" ernaast.</li>
+    <li><b>Leeg appartement</b>: "Nog leeg · 4 bedden vrij" op het bord.</li>
+  </ul>
+  <h3>Klikbaar</h3>
+  <ul><li>Eén knop met de bestaande aria-label; de punt is de pijl. Het tikvlak is het hele bord (minstens 60 px hoog).</li></ul>
+  <h3>Register en detailscherm</h3>
+  <ul><li>Register: nummerplaatjes, jouw plaatje gevuld in de knopkleur. Detailscherm: recht bord.</li></ul>
+  <h3>Let op</h3>
+  <ul><li>Borden met punten heb je ook al bij het rad (Pisteboord) en het pistebordje op de plaatjes; een pagina vol borden is luid naast de rustige portretten van het smoelenboek.</li></ul>
+</section>
+
+<script type="module">
+import { bouw } from './kamers-plaatjes/pagina.js'
+bouw({ soort: 'kopje', knoppen: ['scherm', 'naam', 'thema', 'breed'], tels: [{ titel: 'Nu', a: 'nu', b: 'nu' }, { titel: 'C · Wegwijzer', a: 'c', b: 'nu' }] })
+</script>
+</body>
+</html>

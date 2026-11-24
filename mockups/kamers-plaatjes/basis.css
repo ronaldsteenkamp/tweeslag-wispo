@@ -1,0 +1,169 @@
+/* Mockups Kamers + plaatjes: lettertypes, tokens (kopie van src/styles/theme.css, per telefoon i.p.v. :root),
+   en het geraamte van een scherm. app/kamers.css en app/profiel.css zijn ongewijzigde kopieën uit src/styles. */
+
+@font-face { font-family: Barlow; font-weight: 400; src: url(fonts/barlow-400.woff2) format('woff2'); }
+@font-face { font-family: Barlow; font-weight: 600 700; src: url(fonts/barlow-600.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 600; src: url(fonts/barlow-condensed-600.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 700; src: url(fonts/barlow-condensed-700.woff2) format('woff2'); }
+
+/* ---------- Tokens: crème (zonder data-papier) ---------- */
+.tel {
+  --tweeslag-donkerblauw: #0d0058;
+  --tweeslag-lichtblauw: #099fc4;
+  --font: Barlow, 'Trebuchet MS', system-ui, sans-serif;
+  --font-smal: 'Barlow Condensed', 'Trebuchet MS', system-ui, sans-serif;
+  --font-tekst: var(--font);
+  --lucht: #0d0058;
+  --op-lucht: #ffffff;
+  --op-lucht-zacht: #9fe3f4;
+  --papier: #f5f2ea;
+  --papier-vlak: #fffdf8;
+  --papier-diep: #ebe5d6;
+  --inkt: #0d0058;
+  --inkt-zacht: #4b4e6b;
+  --lijn: #d9d3c4;
+  --lijn-sterk: #0d0058;
+  --ijsblauw: #099fc4;
+  --ijsblauw-inkt: #05607a;
+  --ijsblauw-zacht: #d3eff7;
+  --piste-groen: #1e7a4c;
+  --piste-blauw: #1d5fc4;
+  --piste-rood: #c4212f;
+  --piste-zwart: #17171c;
+  --knop: #0d0058;
+  --op-knop: #ffffff;
+  --papier-licht: #f5f2ea;
+  --berg-1: #8e97c4;
+  --berg-2: #c3cbe0;
+  --berg-3: #e9f1f5;
+  --berg-3-schaduw: #cfdee8;
+  --oppervlak: var(--papier-vlak);
+  --tekst-zacht: var(--inkt-zacht);
+  color-scheme: light;
+}
+
+/* ---------- Licht met data-papier="sneeuw" (de standaard in de app) ---------- */
+.tel[data-thema='licht'] {
+  --papier: #f5f8fb;
+  --papier-vlak: #ffffff;
+  --papier-diep: #e6edf3;
+  --lijn: #d3dde7;
+  --papier-licht: var(--papier);
+}
+
+/* ---------- Donker ---------- */
+.tel[data-thema='donker'] {
+  --papier: #0c0a2c;
+  --papier-vlak: #16133d;
+  --papier-diep: #221e54;
+  --inkt: #eef0fa;
+  --inkt-zacht: #b4b7d4;
+  --lijn: #302c68;
+  --lijn-sterk: #c9cdf0;
+  --ijsblauw-inkt: #6fd6ef;
+  --ijsblauw-zacht: #123a55;
+  --piste-groen: #2f9e66;
+  --piste-blauw: #3f7ff0;
+  --piste-rood: #e0444f;
+  --piste-zwart: #000000;
+  --knop: #099fc4;
+  --op-knop: #04203a;
+  --berg-1: #3a3f7e;
+  --berg-2: #6b72a8;
+  --berg-3: #c7d0e6;
+  --berg-3-schaduw: #a7b2cf;
+  color-scheme: dark;
+}
+
+/* De --pl-*-tokens uit profiel.css staan daar op :root; hier per telefoon opnieuw, zodat ze het thema volgen */
+.tel {
+  --pl-papier: var(--papier);
+  --pl-inkt: var(--inkt);
+  --pl-zacht: var(--inkt-zacht);
+  --pl-ijs: var(--op-lucht-zacht);
+  --pl-zand: #e8d9b5;
+  --pl-zand-inkt: #5b4a22;
+  --pl-veld: #6f7391;
+  --pl-slot: #8f89b0;
+  --pl-lijn: var(--lijn);
+  --pl-focus: var(--ijsblauw-inkt);
+  --pl-smal: var(--font-smal);
+  --pl-tekst: var(--font);
+}
+
+/* ---------- De pagina met de telefoons ---------- */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body.mock {
+  margin: 0;
+  padding: 20px 16px 60px;
+  background: #e9ebf2;
+  color: #0d0058;
+  font: 16px/1.45 Barlow, 'Trebuchet MS', sans-serif;
+}
+.mock h1 { margin: 0; font: 700 2rem/1.05 'Barlow Condensed', sans-serif; }
+.mock__intro { max-width: 900px; margin: 6px 0 14px; }
+.mock__intro p { margin: 6px 0; }
+.mock__knoppen { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 0 0 18px; }
+.mock__knoppen fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; align-items: center; }
+.mock__knoppen legend { float: left; margin-right: 6px; font: 700 0.8rem 'Barlow Condensed'; letter-spacing: 0.1em; text-transform: uppercase; color: #4b4e6b; }
+.mock__knoppen label { position: relative; }
+.mock__knoppen input { position: absolute; opacity: 0; }
+.mock__knoppen label span { display: inline-block; padding: 6px 11px; border: 2px solid #6f7391; border-radius: 999px; background: #fff; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+.mock__knoppen input:checked + span { background: #0d0058; border-color: #0d0058; color: #fff; }
+.mock__knoppen input:focus-visible + span { outline: 3px solid #05607a; outline-offset: 2px; }
+.mock__rij { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.mock__kolom { display: flex; flex-direction: column; gap: 8px; }
+.mock__kolom > h2 { margin: 0; font: 700 1.15rem 'Barlow Condensed'; letter-spacing: 0.06em; text-transform: uppercase; }
+.mock__kolom > h2 small { font: 400 0.95rem Barlow; letter-spacing: 0; text-transform: none; color: #4b4e6b; }
+.mock__uitleg { max-width: 900px; margin-top: 28px; }
+.mock__uitleg h2 { font: 700 1.5rem 'Barlow Condensed'; margin: 22px 0 6px; }
+.mock__uitleg h3 { font: 700 1.1rem 'Barlow Condensed'; letter-spacing: 0.04em; text-transform: uppercase; margin: 16px 0 4px; }
+.mock__uitleg ul { padding-left: 20px; margin: 4px 0; }
+.mock__uitleg li { margin: 3px 0; }
+.mock__nav { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 10px; font-size: 0.9rem; }
+.mock__nav a { color: #0d0058; }
+
+/* ---------- Een telefoon ---------- */
+.tel {
+  position: relative;
+  width: var(--breed, 390px);
+  height: 844px;
+  overflow: hidden auto;
+  border-radius: 28px;
+  outline: 8px solid #1b1a2e;
+  background: var(--papier);
+  color: var(--inkt);
+  font-family: var(--font);
+  scrollbar-width: none;
+}
+.tel::-webkit-scrollbar { display: none; }
+.tel.is-dialoog { overflow: hidden; }
+.tel .scherm { display: flex; flex-direction: column; gap: 16px; padding: 0 16px 100px; }
+.tel .inhoud--kamers { min-height: 0; }
+.tel button { font: inherit; }
+.verborgen { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Vereenvoudigde schermkop zoals in de app */
+.tel .schermkop {
+  margin: 0 -16px;
+  padding: 26px 20px 74px;
+  background: linear-gradient(180deg, var(--lucht) 0 72%, color-mix(in srgb, var(--lucht) 35%, var(--papier)) 100%);
+  color: var(--op-lucht);
+  clip-path: polygon(0 0, 100% 0, 100% 86%, 82% 80%, 62% 90%, 40% 82%, 18% 91%, 0 84%);
+}
+.tel .schermkop__boven { margin: 0; font: 700 0.85rem/1.2 var(--font-smal); letter-spacing: 0.14em; text-transform: uppercase; color: var(--op-lucht-zacht); }
+.tel .schermkop__titel { margin: 4px 0 6px; font: 700 2.3rem/1 var(--font-smal); }
+.tel .schermkop__onder { margin: 0; font-size: 1.05rem; line-height: 1.35; }
+
+/* Dialoog (uit app.css) */
+.tel .dialoog-achtergrond { position: absolute; inset: 0; z-index: 40; display: grid; place-items: end center; padding: 16px; background: rgba(3, 6, 24, 0.55); }
+.tel .dialoog { width: 100%; padding: 22px; border-radius: 22px; background: var(--oppervlak); display: flex; flex-direction: column; gap: 12px; }
+.tel .dialoog--hoog { max-height: calc(100% - 32px); overflow-y: auto; scrollbar-width: none; }
+.tel .dialoog--hoog::-webkit-scrollbar { display: none; }
+
+/* Tabbalk, alleen als decor */
+.tel .tabbalk { position: sticky; bottom: 0; z-index: 30; display: flex; justify-content: space-around; height: 70px; margin-top: -70px; padding-top: 10px; background: color-mix(in srgb, var(--papier-vlak) 86%, transparent); border-top: 1px solid var(--lijn); font: 600 0.8rem var(--font); color: var(--inkt-zacht); }
+.tel .tabbalk span { display: grid; justify-items: center; gap: 3px; }
+.tel .tabbalk .is-actief { color: var(--inkt); }
+.tel .icoon { flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plaatjes C · Bordje in de hoek</title>
+<link rel="stylesheet" href="kamers-plaatjes/basis.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/kamers.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/profiel.css">
+<link rel="stylesheet" href="kamers-plaatjes/richtingen.css">
+</head>
+<body class="mock">
+<nav class="mock__nav"><a href="kamers-en-plaatjes.html">Overzicht</a><a href="kopje-appartement-a.html">Kopje A</a><a href="kopje-appartement-b.html">Kopje B</a><a href="kopje-appartement-c.html">Kopje C</a><a href="plaatjes-a.html">A Gewoon weg</a><a href="plaatjes-b.html">B Bergen + stempel</a><b>Plaatjes: C Bordje in de hoek</b></nav>
+<h1>Plaatjes C · Bordje in de hoek</h1>
+<div class="mock__intro"><p>Op de plek van het nummer komt iets dat wél iets betekent: het deurbordje van je appartement (zelfde bordje als kopje A). Daarom gaat het appartementnummer uit de lichtblauwe band onderaan; daar staat alleen nog ski of board. Zonder foto: je initiaal in het lege vak. Titel = (bij)naam.</p></div>
+<form class="mock__knoppen" onsubmit="return false"></form>
+<div class="mock__rij"></div>
+
+<section class="mock__uitleg">
+  <h2>Wat verandert er</h2>
+  <ul>
+    <li><b>Hoek</b>: klein emaille bordje "101" linksboven (op foto en in het lege vak). Voorleestekst: "Appartement 101" (verborgen tekst), geen plaatjesnummer.</li>
+    <li><b>Band</b>: alleen ski/board; het kamericoon met "101" gaat eruit, anders staat het er twee keer.</li>
+    <li><b>Leeg vak</b>: de initiaal groot in de stippellijn met "Nog niet geplakt" eronder.</li>
+    <li><b>Achterkant</b>: rechts in de voet hetzelfde kleine bordje; het vak "Kamer" in de feiten blijft.</li>
+    <li><b>Titel</b>: (bij)naam; erboven blijft "Kamer 101 · Gletsjer".</li>
+    <li><b>Let op</b>: in Kamers zie je het nummer dan drie keer kort na elkaar: in het kopje, boven de titel van het venster en op het plaatje. Werkt alleen goed zonder kopje A, of als je het plaatje vooral buiten Kamers opent (klassement, badges). Zonder kamer (nog niet ingedeeld) is de hoek leeg.</li>
+  </ul>
+</section>
+
+<script type="module">
+import { bouw } from './kamers-plaatjes/pagina.js'
+bouw({ soort: 'plaatjes', knoppen: ['wie', 'kant', 'thema', 'breed'], start: { wie: 'ander-foto' }, tels: [{ titel: 'Nu', a: 'nu', b: 'nu' }, { titel: 'C · Bordje in de hoek', a: 'nu', b: 'c' }] })
+</script>
+</body>
+</html>

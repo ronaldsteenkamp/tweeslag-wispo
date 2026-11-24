@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kamers en plaatjes</title>
+<link rel="stylesheet" href="kamers-plaatjes/basis.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/kamers.css">
+<link rel="stylesheet" href="kamers-plaatjes/app/profiel.css">
+<link rel="stylesheet" href="kamers-plaatjes/richtingen.css">
+</head>
+<body class="mock">
+<nav class="mock__nav"><b>Overzicht</b><a href="kopje-appartement-a.html">Kopje A Deurbordje</a><a href="kopje-appartement-b.html">Kopje B Sleutelhanger</a><a href="kopje-appartement-c.html">Kopje C Wegwijzer</a><a href="plaatjes-a.html">Plaatjes A Gewoon weg</a><a href="plaatjes-b.html">Plaatjes B Bergen + stempel</a><a href="plaatjes-c.html">Plaatjes C Bordje in de hoek</a></nav>
+<h1>Kamers en plaatjes: aanbevolen combinatie</h1>
+<div class="mock__intro">
+  <p><b>Kopje A (Deurbordje) + plaatjes B (Bergen en stempel).</b> Links de app zoals hij nu is, in het midden een bladzijde in Kamers met de aanbevolen combinatie, rechts het plaatje dat opent als je op Lotte tikt (zonder foto). Tik in de telefoons op kopjes en portretten; tik op een plaatje om het om te draaien.</p>
+</div>
+<form class="mock__knoppen" onsubmit="return false"></form>
+<div class="mock__rij"></div>
+
+<section class="mock__uitleg">
+  <h2>Aanbeveling</h2>
+  <h3>A: Deurbordje</h3>
+  <ul>
+    <li>Het nummer is wat je op de gang zoekt; op een emaille bordje staat het groot en rustig, en het hoort echt bij een appartement in een dorp.</li>
+    <li>Past bij het smoelenboek: een voorwerp boven elke bladzijde, geen extra vormen of kleuren. B (sleutel) is leuker maar drukker en leest minder snel; C (wegwijzer) is het duidelijkst klikbaar, maar een pagina vol borden met punten wordt luid en lijkt op het rad en de pistebordjes.</li>
+    <li>Lost meteen het probleem op dat een heel lang woord nu het pijltje uit beeld duwt (de naamkolom mag krimpen).</li>
+    <li>Eén bordje overal: kopje, register, detailscherm. Jouw bordje is lichtblauw, de andere donkerblauw.</li>
+  </ul>
+  <h3>B: Bergen en stempel</h3>
+  <ul>
+    <li>Het lege plaatje laat hetzelfde zien als het portret waar je net op tikte (bergrand + initiaal), dus je herkent meteen van wie het is; de stempel houdt het "album"-gevoel.</li>
+    <li>A (gewoon weg) werkt, maar het lege vak is dan echt leeg. C (bordje in de hoek) geeft het nummer betekenis, maar in Kamers staat het appartementnummer dan drie keer kort na elkaar.</li>
+  </ul>
+  <h3>Samen</h3>
+  <ul>
+    <li>Het kopje toont het appartementnummer groot, dus op het plaatje komt geen nummer in de hoek. Alleen de kleine "101" in de lichtblauwe band blijft (die stond er al, en het plaatje opent ook buiten Kamers, bijv. vanuit het klassement).</li>
+    <li>De portretten onder het kopje blijven zoals ze zijn; het plaatje neemt hun beeld over. Bordje, portret en plaatje gebruiken dezelfde clubkleuren.</li>
+    <li>Ook meegenomen in B (klein, zelfde bestand): de achterkant van het plaatje vast donkerblauw, want in donker thema is hij nu onleesbaar.</li>
+  </ul>
+
+  <h2>Waar het plaatjesnummer nu staat of gebruikt wordt</h2>
+  <p>Gezocht in heel src/, scripts/ en de tests. Het nummer (plek in de alfabetische namenlijst) komt alleen voor in <code>src/components/Profiel.tsx</code> en <code>src/styles/profiel.css</code>:</p>
+  <ul>
+    <li><code>plaatjeInfo()</code> r. 94–98 maakt <code>nummer</code> (en <code>kamer</code>); <code>nr()</code> r. 100 zet er een 0 voor.</li>
+    <li>Voorkant met foto: <code>.plaatje__nr</code> "№ 11" r. 163 (CSS r. 150–164).</li>
+    <li>Voorkant zonder foto: groot nummer in <code>.plaatje__gat b</code> r. 167 (CSS r. 190–193).</li>
+    <li>Achterkant: "№ 11" rechts in de voet r. 265 (CSS <code>.achter__voet b</code> r. 393–397). Stond niet in de opdracht.</li>
+    <li>Titel van andermans plaatje: "Plaatje 22" r. 743, met verborgen tekst ": naam" r. 744 voor schermlezers.</li>
+    <li>Gebruikt in <code>ProfielFormulier</code> r. 323/366 (voorbeeld in "Plaatje maken", ook op het welkomstscherm) en <code>Bekijk</code> r. 736/754.</li>
+    <li>Niet gebruikt in: aria-labels van de portretten in Kamers ("Lotte. Bekijk het plaatje."), klassement, Home, Spel, jurykeuze, badges, tests. Die noemen al de naam.</li>
+    <li>Ander nummer op het kaartje, geen plaatjesnummer: het pistebordje (niveau 1–5) rechtsboven; dat blijft.</li>
+  </ul>
+  <p>Daarom kunnen <code>plaatjeInfo().nummer</code>, <code>nr()</code> en de prop <code>nummer</code> van <code>Plaatje</code> weg; <code>plaatjeInfo().kamer</code> blijft.</p>
+
+  <h2>Ook gevonden</h2>
+  <ul>
+    <li>Kopje nu: een naam van één lang woord duwt het pijltje rechts uit beeld en maakt de pagina breder dan het scherm (zie mockup, knop "Eén lang woord"). Lost A/B/C allemaal op.</li>
+    <li>Register in donker thema: het knopje van jouw appartement is donkerblauw op donkerblauw papier, bijna onzichtbaar.</li>
+    <li>Achterkant plaatje in donker thema: bijna witte achtergrond met witte tekst (zie screenshots huidig-kamers-plaatjes/donker-b5-achterkant.png).</li>
+    <li>Achterkant: "Allebei" breekt af als "ALLEBE / I" in het smalle vak "Speelt als". Niet in deze opdracht opgelost.</li>
+  </ul>
+  <p>Screenshots van de huidige app (390×844, licht/sneeuw, licht/crème, donker): map <a href="huidig-kamers-plaatjes/">huidig-kamers-plaatjes</a>.</p>
+</section>
+
+<script type="module">
+import { bouw } from './kamers-plaatjes/pagina.js'
+bouw({
+  soort: 'overzicht',
+  knoppen: ['scherm', 'naam', 'thema', 'breed'],
+  tels: [
+    { titel: 'Nu', a: 'nu', b: 'nu' },
+    { titel: 'Aanbevolen: A + B', a: 'a', b: 'b' },
+    { titel: 'Plaatje van Lotte (A + B)', a: 'a', b: 'b', overlay: { soort: 'plaatje', naam: 'Lotte', profiel: { ski: 'ski', niveau: 1, feitje: "Nog nooit op ski's gestaan", geenFoto: true } } },
+  ],
+})
+</script>
+</body>
+</html>
