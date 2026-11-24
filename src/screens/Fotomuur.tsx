@@ -126,7 +126,7 @@ export default function Fotomuur({ terug, naarSpel, keuze }: { terug?: () => voi
   const stukjes = DEMO ? DEMO.stukjes : echteStukjes
   const echtKlassement = useKlassement(backend.status !== 'uit' && !DEMO).klassement
   const klassement = DEMO ? DEMO.klassement : echtKlassement
-  const jury = backend.beheerder || !!DEMO?.beheerder
+  const jury = backend.redactie || !!DEMO?.beheerder
   const wachtendeStukjes = useStukjesWachtrij()
   const [schrijven, setSchrijven] = useState(false)
   const [geluid] = useSpelGeluid()
@@ -694,7 +694,7 @@ function Colofon() {
 }
 
 /**
- * In de grote foto: de stempel als de jury hem koos, en voor beheerders (de jury) de knop om hem
+ * In de grote foto: de stempel als de jury hem koos, en voor de redactie (de jury) de knop om hem
  * te geven of af te nemen. De server geeft de maker er 10 punten voor (migratie 0017).
  */
 function JuryKnop({ foto, jury }: { foto: Foto; jury: boolean }) {

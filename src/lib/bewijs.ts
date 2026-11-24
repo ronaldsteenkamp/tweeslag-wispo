@@ -160,7 +160,7 @@ export function useMijnBewijs(naam: string | null) {
   return { ...stand, ververs }
 }
 
-/** Voor de redactie (beheerders): alles wat nog ter perse ligt, oudste eerst */
+/** Voor de redactie: alles wat nog ter perse ligt, oudste eerst */
 export function useRedactietafel(actief: boolean) {
   const [lijst, setLijst] = useState<Inzending[] | null>(null)
   const [fout, setFout] = useState<string | null>(null)
@@ -206,7 +206,7 @@ export function useOpTafel(actief: boolean) {
 }
 
 const foutTekst: Record<string, string> = {
-  geen_beheerder: 'Alleen de redactie (beheerders) kan dit.',
+  geen_beheerder: 'Alleen de redactie kan dit.',
   reden_nodig: 'Schrijf er even een reden bij.',
   geen_foto: 'Dit kiekje bestaat niet meer.',
   geen_stukje: 'Dit stukje bestaat niet meer.',

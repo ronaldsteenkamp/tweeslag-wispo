@@ -337,7 +337,7 @@ export async function zetJury(f: Foto, aan: boolean): Promise<string | null> {
   if (!cb || backendStand().status !== 'verbonden') return 'Geen verbinding.'
   const { data, error } = await (await cb).from('fotos').update({ jury: aan }).eq('id', f.id).select('id')
   if (error) return `Lukte niet: ${error.message}`
-  if (!data?.length) return 'Alleen de jury (beheerders) kan dit.'
+  if (!data?.length) return 'Alleen de redactie (de jury) kan dit.'
   f.jury = aan
   meldWijziging()
   return null
