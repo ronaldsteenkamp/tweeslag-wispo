@@ -1,5 +1,9 @@
-import { Fragment, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { BevestigDialoog } from '../components/BevestigDialoog'
+import { FotoBijsnijder } from '../components/FotoBijsnijder'
+import { useDialoogFocus } from '../lib/dialoogFocus'
+import { useTerugSluit } from '../lib/terugknop'
 import { Icoon } from '../components/Icoon'
 import { Pistebord } from '../components/Profiel'
 import { SchermKop } from '../components/SchermKop'
@@ -331,24 +335,44 @@ function Lid({ naam, rol }: { naam: string; rol: string }) {
   return (
     <li className={`vk-lid${leeg ? ' is-invullen' : ''}`}>
       <div className="vk-lid__vak">{inhoud}</div>
-      {backend.beheerder && !leeg && <LidFotoBeheer naam={naam} heeftFoto={!!eigen.pad} />}
+      {backend.beheerder && !leeg && <LidFotoBeheer naam={naam} url={eigen.url} heeftFoto={!!eigen.pad} />}
     </li>
   )
 }
 
-/** Alleen voor beheerders: de VakanCie-foto van een lid plaatsen, vervangen of weghalen */
-function LidFotoBeheer({ naam, heeftFoto }: { naam: string; heeftFoto: boolean }) {
+/**
+ * Alleen voor beheerders: de VakanCie-foto van een lid plaatsen, bijsnijden (in- en uitzoomen,
+ * verschuiven, net als bij de profielfoto), vervangen of weghalen.
+ */
+function LidFotoBeheer({ naam, url, heeftFoto }: { naam: string; url: string | null; heeftFoto: boolean }) {
   const kiezer = useRef<HTMLInputElement>(null)
   const [bezig, setBezig] = useState(false)
   const [fout, setFout] = useState<string | null>(null)
+  // De foto die nu in het bijsnijvenster staat
+  const [bijsnijden, setBijsnijden] = useState<File | null>(null)
 
-  const kies = async (bestand: File | undefined) => {
-    if (!bestand) return
-    setBezig(true)
-    setFout(null)
-    setFout(await plaatsLidFoto(naam, bestand))
-    setBezig(false)
+  const kies = (bestand: File | undefined) => {
     if (kiezer.current) kiezer.current.value = ''
+    if (!bestand) return
+    setFout(null)
+    setBijsnijden(bestand)
+  }
+  /** De foto die er nu staat opnieuw bijsnijden (bijv. een foto die met de hand in Storage is gezet) */
+  const opnieuw = async () => {
+    if (!url) return
+    try {
+      const blob = await (await fetch(url)).blob()
+      setFout(null)
+      setBijsnijden(new File([blob], 'foto.jpg', { type: blob.type || 'image/jpeg' }))
+    } catch {
+      setFout('Deze foto kan nu niet geopend worden. Kies hem opnieuw met "Andere foto".')
+    }
+  }
+  const gebruik = async (blob: Blob) => {
+    setBijsnijden(null)
+    setBezig(true)
+    setFout(await plaatsLidFoto(naam, blob))
+    setBezig(false)
   }
   const weg = async () => {
     setBezig(true)
@@ -358,12 +382,18 @@ function LidFotoBeheer({ naam, heeftFoto }: { naam: string; heeftFoto: boolean }
 
   return (
     <div className="vk-lidbeheer">
-      <input ref={kiezer} type="file" accept="image/*" hidden onChange={(e) => void kies(e.target.files?.[0])} />
+      <input ref={kiezer} type="file" accept="image/*" hidden onChange={(e) => kies(e.target.files?.[0])} />
       <button type="button" className="tekstknop" disabled={bezig} onClick={() => kiezer.current?.click()}>
         <Icoon naam="camera" grootte={18} />
         {bezig ? 'Bezig…' : heeftFoto ? 'Andere foto' : 'Foto plaatsen'}
         <span className="verborgen"> voor {naam}</span>
       </button>
+      {heeftFoto && url && (
+        <button type="button" className="tekstknop" disabled={bezig} onClick={() => void opnieuw()}>
+          <Icoon naam="zoek" grootte={18} />
+          Bijsnijden<span className="verborgen"> (foto van {naam})</span>
+        </button>
+      )}
       {heeftFoto && (
         <button type="button" className="tekstknop" disabled={bezig} onClick={() => void weg()}>
           Weghalen<span className="verborgen"> (foto van {naam})</span>
@@ -374,7 +404,43 @@ function LidFotoBeheer({ naam, heeftFoto }: { naam: string; heeftFoto: boolean }
           {fout}
         </p>
       )}
+      {bijsnijden && (
+        <Bijsnijvenster naam={naam} bestand={bijsnijden} onKlaar={(b) => void gebruik(b)} onSluit={() => setBijsnijden(null)} />
+      )}
     </div>
+  )
+}
+
+/** Het bijsnijden in een venster over de pagina, met de bijsnijder van de profielfoto (4:5, zonder naamband) */
+function Bijsnijvenster({
+  naam,
+  bestand,
+  onKlaar,
+  onSluit,
+}: {
+  naam: string
+  bestand: File
+  onKlaar: (blob: Blob) => void
+  onSluit: () => void
+}) {
+  const venster = useDialoogFocus<HTMLDivElement>(true)
+  // Terugknop of terugvegen sluit het venster, niet de pagina
+  useTerugSluit(true, onSluit)
+  useEffect(() => {
+    const opToets = (e: KeyboardEvent) => e.key === 'Escape' && onSluit()
+    window.addEventListener('keydown', opToets)
+    return () => window.removeEventListener('keydown', opToets)
+  }, [onSluit])
+
+  // Naar body, zodat het vegen tussen tabs (transform op de inhoud) het venster niet meeneemt
+  return createPortal(
+    <div className="dialoog-achtergrond">
+      <div ref={venster} className="dialoog dialoog--hoog vk-bijsnijvenster" role="dialog" aria-modal="true" aria-labelledby="vk-bijsnij-titel">
+        <h2 id="vk-bijsnij-titel">Foto van {naam}</h2>
+        <FotoBijsnijder bestand={bestand} band={null} onKlaar={onKlaar} onAnnuleer={onSluit} />
+      </div>
+    </div>,
+    document.body,
   )
 }
 

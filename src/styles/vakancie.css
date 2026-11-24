@@ -521,6 +521,13 @@
   font-size: 14px;
 }
 
+/* Venster om een ledenfoto bij te snijden (de bijsnijder zelf staat in app.css) */
+.vk-bijsnijvenster h2 {
+  margin: 0 0 10px;
+  font: 700 22px/1.1 var(--font-smal);
+  color: var(--inkt);
+}
+
 .vk-lidbeheer .vk-beheer__melding {
   flex-basis: 100%;
   font-size: 13px;
