@@ -4,6 +4,7 @@ import { MeldingenKaart } from '../components/Meldingen'
 import { SchermKop } from '../components/SchermKop'
 import { SneeuwRij } from '../components/SneeuwRij'
 import { config } from '../config'
+import { opsomming } from '../lib/kamerligging'
 import { useOpgeslagen } from '../lib/opslag'
 
 export type Thema = 'auto' | 'licht' | 'donker'
@@ -89,7 +90,7 @@ export default function Instellingen({ terug, naarVakancie }: { terug: () => voi
             redactie liggen.
           </p>
           <p>
-            <b>De redactie</b> ({config.beheerNamen.join(' en ')}) ziet alle ingestuurde kiekjes en kan ze plaatsen of
+            <b>De redactie</b> ({opsomming([...config.beheerNamen])}) ziet alle ingestuurde kiekjes en kan ze plaatsen of
             weghalen.
           </p>
         </div>

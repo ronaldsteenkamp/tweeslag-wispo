@@ -47,6 +47,8 @@ export default function Kamers({ naarVerdelen, naarBeheer, keuze }: { naarVerdel
   }, [naam, mijnNummer, gezien, setGezien])
 
   const isReisleiding = naam !== null && config.reisleiding.includes(naam)
+  // De redactie (de VakanCie) logt via Beheer in met e-mail; de kamerverdeling blijft voor de reisleiding
+  const isRedactie = naam !== null && config.beheerNamen.some((n) => n.toLowerCase() === naam.trim().toLowerCase())
 
   if (!data) {
     return (
@@ -189,13 +191,15 @@ export default function Kamers({ naarVerdelen, naarBeheer, keuze }: { naarVerdel
         Staat ook zonder wifi op je telefoon.
       </p>
 
-      {isReisleiding && (
+      {(isReisleiding || isRedactie) && (
         <div className="ks-reisleiding">
-          <button type="button" className="knop knop--secundair knop--breed" onClick={naarVerdelen}>
-            <Icoon naam="kamers" grootte={20} /> Kamerverdeling maken (reisleiding)
-          </button>
+          {isReisleiding && (
+            <button type="button" className="knop knop--secundair knop--breed" onClick={naarVerdelen}>
+              <Icoon naam="kamers" grootte={20} /> Kamerverdeling maken (reisleiding)
+            </button>
+          )}
           <button type="button" className="knop knop--secundair knop--breed" onClick={naarBeheer}>
-            <Icoon naam="slot" grootte={20} /> Beheer (reisleiding)
+            <Icoon naam="slot" grootte={20} /> Beheer ({isReisleiding ? 'reisleiding' : 'redactie'})
           </button>
         </div>
       )}

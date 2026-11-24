@@ -12,7 +12,7 @@ import { BevestigDialoog } from '../components/BevestigDialoog'
 import { synchroniseerStemmingen, trekStemIn, useStemmingen, useStemmingSync } from '../lib/stemming'
 import { tijdUUMM } from '../lib/tijd'
 
-/** Beheer voor de reisleiding: verbinding, dit apparaat en inloggen met e-mail */
+/** Beheer voor de reisleiding en de redactie (de VakanCie, config.beheerNamen): verbinding, dit apparaat en inloggen met e-mail */
 export default function Beheer({ terug }: { terug: () => void }) {
   const b = useBackend()
   const nieuweKop = useNieuweKoppen()
@@ -52,7 +52,7 @@ export default function Beheer({ terug }: { terug: () => void }) {
           <Icoon naam="links" grootte={20} /> Terug naar Groep
         </button>
       )}
-      {nieuweKop ? <SchermKop titel="Beheer" boven="Reisleiding" terug={{ label: 'Groep', onClick: terug }} /> : <h1>Beheer</h1>}
+      {nieuweKop ? <SchermKop titel="Beheer" boven="Redactie" terug={{ label: 'Groep', onClick: terug }} /> : <h1>Beheer</h1>}
 
       <section className="kaartje">
         <div className="kaartje__kop">
@@ -108,7 +108,7 @@ export default function Beheer({ terug }: { terug: () => void }) {
 
       {b.status === 'verbonden' && b.anoniem && (
         <section className="kaartje">
-          <h2>Inloggen als reisleiding</h2>
+          <h2>Inloggen als redactie</h2>
           <p>
             Je krijgt een mail met een inloglink. Tik erop in de browser waarin je wilt beheren. Op Android werkt dat
             ook voor de geïnstalleerde app. Op een iPhone opent de link in Safari: doe het beheer dan in Safari (de app
