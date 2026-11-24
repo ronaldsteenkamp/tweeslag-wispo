@@ -90,14 +90,18 @@ export function Pistebord({ niveau, className = '' }: { niveau: number; classNam
   )
 }
 
-/** Plaatjesnummer (plek op het alfabet) en kamer van iemand */
-export function plaatjeInfo(naam: string, namen: string[], kamers?: Kamers) {
-  const i = namen.findIndex((n) => sleutel(n) === sleutel(naam))
+/** De kamer van iemand (voor het bordje op het plaatje) */
+export function plaatjeInfo(naam: string, kamers?: Kamers) {
   const kamer = kamers?.kamers.find((k) => k.bewoners.some((b) => sleutel(b) === sleutel(naam))) ?? null
-  return { nummer: i >= 0 ? i + 1 : null, kamer }
+  return { kamer }
 }
 
-const nr = (n: number | null) => (n === null ? '' : String(n).padStart(2, '0'))
+/** Het deurbordje van het appartement, zoals naast de deur: in de hoek van het plaatje en op de achterkant */
+const Bordje = ({ kamer }: { kamer: string }) => (
+  <span className="plaatje__bordje" aria-hidden="true">
+    {kamer}
+  </span>
+)
 
 /** Wat er op een plaatje staat: van de server, of je eigen (ook als het nog verstuurd moet worden) */
 export type Bekeken = Pick<ProfielRij, 'naam' | 'ski' | 'niveau' | 'feitje' | 'karaoke' | 'artiest' | 'angst' | 'foto_pad'> & {
@@ -120,13 +124,11 @@ const vanProfiel = (p: Profiel): Bekeken => ({ ...p, foto_pad: p.foto, fotoLokaa
 /** Het spelerskaartje, voor- en achterkant. Draaien gaat met de knop eronder (of door erop te tikken). */
 export function Plaatje({
   p,
-  nummer,
   kamer,
   omgedraaid = false,
   onDraai,
 }: {
   p: Bekeken
-  nummer: number | null
   kamer: string | null
   omgedraaid?: boolean
   onDraai?: () => void
@@ -158,15 +160,18 @@ export function Plaatje({
         {/* Voorkant */}
         <div className="plaatje__kant plaatje__voor" aria-hidden={omgedraaid}>
           {url ? (
-            <>
-              <img src={url} alt={`Foto van ${p.naam}`} />
-              {nummer !== null && <span className="plaatje__nr">№ {nr(nummer)}</span>}
-            </>
+            <img src={url} alt={`Foto van ${p.naam}`} />
           ) : (
             <div className="plaatje__gat" aria-hidden="true">
-              <b>{nr(nummer)}</b>
+              <b>{getoond.charAt(0).toUpperCase()}</b>
               <span>Nog niet geplakt</span>
             </div>
+          )}
+          {kamer && (
+            <span className="plaatje__hoek">
+              <Bordje kamer={kamer} />
+              <span className="verborgen">Kamer {kamer}</span>
+            </span>
           )}
           {p.niveau && <Pistebord niveau={p.niveau} className="plaatje__piste" />}
           <div className="plaatje__band">
@@ -174,6 +179,7 @@ export function Plaatje({
               {getoond}
               {bijnaam && <small>{p.naam}</small>}
             </p>
+            {/* De kamer staat op het bordje linksboven, niet ook nog hier */}
             <p className="plaatje__positie">
               <span>
                 {ski ? (
@@ -185,13 +191,6 @@ export function Plaatje({
                   'Tweeslag'
                 )}
               </span>
-              {kamer && (
-                <span>
-                  <Icoon naam="kamers" grootte={18} />
-                  <span className="verborgen">Kamer </span>
-                  {kamer}
-                </span>
-              )}
             </p>
           </div>
         </div>
@@ -262,7 +261,7 @@ export function Plaatje({
               <br />
               Wispo 05.03–14.03.2027
             </span>
-            {nummer !== null && <b>№ {nr(nummer)}</b>}
+            {kamer && <Bordje kamer={kamer} />}
           </p>
         </div>
       </div>
@@ -271,7 +270,7 @@ export function Plaatje({
 }
 
 /** Plaatje met de knop "Draai om" eronder */
-function DraaibaarPlaatje(props: { p: Bekeken; nummer: number | null; kamer: string | null }) {
+function DraaibaarPlaatje(props: { p: Bekeken; kamer: string | null }) {
   const [om, setOm] = useState(false)
   return (
     <>
@@ -319,8 +318,7 @@ export function ProfielFormulier({
   const [bijsnijden, setBijsnijden] = useState<File | null>(null)
   const bestand = useRef<HTMLInputElement>(null)
   const { data } = useData('kamers')
-  const namen = useAlleNamen(data)
-  const { nummer, kamer } = plaatjeInfo(profiel.naam, namen, data)
+  const { kamer } = plaatjeInfo(profiel.naam, data)
 
   const kiesFoto = (f: File | undefined) => {
     if (bestand.current) bestand.current.value = ''
@@ -363,7 +361,7 @@ export function ProfielFormulier({
   return (
     <form className="plaatjeform" onSubmit={opslaan}>
       <div className="plaatjeform__voorbeeld" aria-hidden="true">
-        <Plaatje p={voorbeeld} nummer={nummer} kamer={kamer?.nummer ?? null} />
+        <Plaatje p={voorbeeld} kamer={kamer?.nummer ?? null} />
       </div>
 
       <section className="plaatjeform__blok" aria-labelledby="pf-foto-kop">
@@ -705,13 +703,14 @@ export function ProfielVenster() {
   )
 }
 
-function VensterKop({ boven, titel, verborgen }: { boven: string; titel: string; verborgen?: string }) {
+function VensterKop({ boven, titel, echt }: { boven: string; titel: string; echt?: string }) {
   return (
     <header className="plaatjekop">
       <p className="plaatjekop__boven">{boven}</p>
       <h2 id="venster-titel" className="plaatjekop__titel">
         {titel}
-        {verborgen && <span className="verborgen">{verborgen}</span>}
+        {/* Met een bijnaam: de echte naam klein erachter */}
+        {echt && <span className="plaatjekop__echt"> {echt}</span>}
       </h2>
     </header>
   )
@@ -723,7 +722,6 @@ function Bekijk({ naam, melding, onSluit }: { naam: string; melding?: string; on
   const { perNaam } = useProfielen()
   const backend = useBackend()
   const { data } = useData('kamers')
-  const namen = useAlleNamen(data)
   const [bijnaamWissen, setBijnaamWissen] = useState(false)
   const [fout, setFout] = useState<string | null>(null)
   const bijnaam = useBijnaamVan(naam)
@@ -733,15 +731,15 @@ function Bekijk({ naam, melding, onSluit }: { naam: string; melding?: string; on
   const rij = perNaam.get(sleutel(naam))
   const p: Bekeken = eigen && mijn ? vanProfiel(mijn) : !eigen && rij ? rij : leegPlaatje(naam)
   const leeg = !heeftIets(p)
-  const { nummer, kamer } = plaatjeInfo(naam, namen, data)
+  const { kamer } = plaatjeInfo(naam, data)
   const kamerTekst = useKamerTekst(kamer)
 
   return (
     <>
       <VensterKop
         boven={eigen ? 'Tweeslag-album 2027' : (kamerTekst ?? 'Tweeslag-album 2027')}
-        titel={eigen ? 'Jouw plaatje' : nummer !== null ? `Plaatje ${nr(nummer)}` : toon(naam)}
-        verborgen={eigen || nummer === null ? undefined : `: ${toon(naam)}`}
+        titel={eigen ? 'Jouw plaatje' : toon(naam)}
+        echt={!eigen && bijnaam ? naam : undefined}
       />
       {melding && (
         <p className="plaatje__melding" role="status">
@@ -751,7 +749,7 @@ function Bekijk({ naam, melding, onSluit }: { naam: string; melding?: string; on
       {eigen && leeg && (
         <p className="plaatje__rustig">Je plaatje is nog niet geplakt. Geen haast: het album hoeft pas in maart vol.</p>
       )}
-      <DraaibaarPlaatje p={p} nummer={nummer} kamer={kamer?.nummer ?? null} />
+      <DraaibaarPlaatje p={p} kamer={kamer?.nummer ?? null} />
       {!eigen && leeg && <p className="plaatje__rustig">{toon(naam)} komt nog. Zo'n plaatje is extra zeldzaam.</p>}
       <BadgeRij naam={naam} />
       {eigen && (
