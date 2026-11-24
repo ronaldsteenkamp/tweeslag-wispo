@@ -142,19 +142,7 @@ export default function Weer({ terug }: { terug: () => void }) {
 
       {weer && gletsjer && dorp && <Dagen gletsjer={gletsjer} dorp={dorp} vandaag={vandaag} reisdagen={reisdagen} voorVertrek={nu < vertrek} />}
 
-      <section className="weer__voet" aria-label="Bron">
-        <p className="weer__bron">
-          Weerbericht:{' '}
-          <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
-            Open-Meteo.com
-          </a>{' '}
-          (
-          <a href="https://creativecommons.org/licenses/by/4.0/deed.nl" target="_blank" rel="noopener noreferrer">
-            CC BY 4.0
-          </a>
-          ), een modelverwachting omgerekend naar de hoogte van elke plek. Lawinerisico: Météo-France. Alle tijden in de tijd van Les Deux
-          Alpes.
-        </p>
+      <section className="weer__voet" aria-label="Vernieuwen">
         <button type="button" className="weer__vernieuw" onClick={() => verversWeer(true)} disabled={laden || !navigator.onLine}>
           {!navigator.onLine ? (
             <>

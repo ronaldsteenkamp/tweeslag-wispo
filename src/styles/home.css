@@ -103,11 +103,15 @@
   letter-spacing: -0.01em;
 }
 
-/* Ruimte voor twee regels, zodat de rij niet groeit als de tekst later binnenkomt */
+/* Het weerbericht komt pas later binnen en is soms twee regels. De rij houdt daarom de hoogte van
+   een rij met twee regels ondertekst, zodat hij niet verspringt. Die ruimte zit op de rij en niet
+   onder de tekst: zo blijft de tekst ook bij één regel op één lijn met bordje en pijltje. */
 .homerij__tweeregels {
   display: block;
-  min-height: 2.9em;
-  min-height: 2lh;
+}
+
+.homerij:has(.homerij__tweeregels) {
+  min-height: 84px;
 }
 
 /* Klok tot op de seconde onder de grote dagen (vaste cijferbreedte, zodat niets verspringt) */

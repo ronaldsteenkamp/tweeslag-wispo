@@ -615,16 +615,6 @@
   gap: 12px;
 }
 
-.weer__bron {
-  font-size: 0.75rem;
-  line-height: 1.5;
-  color: var(--w-zacht);
-}
-
-.weer__bron a {
-  color: var(--w-inkt);
-}
-
 .weer__vernieuw {
   display: flex;
   align-items: center;
