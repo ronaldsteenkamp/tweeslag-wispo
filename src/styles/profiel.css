@@ -300,9 +300,10 @@
   overflow-wrap: anywhere;
 }
 
+/* Kamer krijgt alleen de breedte die het nummer nodig heeft; de rest gaat naar "Speelt als" en "Piste" */
 .achter__feiten {
   display: grid;
-  grid-template-columns: 1.15fr 1.35fr 0.8fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) auto;
   gap: 6px;
 }
 
@@ -321,14 +322,17 @@
   color: var(--pl-ijs);
 }
 
+/* Past een woord niet naast het icoon ("Allebei", "Dubbelzwart"), dan gaat het icoon erboven staan
+   in plaats van dat het woord middenin breekt; op smalle schermen wordt de letter iets kleiner */
 .achter__feiten dd {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
+  gap: 3px 5px;
   margin-top: 5px !important;
-  font: 700 1.02rem/1.05 var(--pl-smal);
+  font: 700 clamp(0.88rem, 5.4cqw, 1.02rem)/1.05 var(--pl-smal);
   text-transform: uppercase;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .achter__feiten dd svg {
