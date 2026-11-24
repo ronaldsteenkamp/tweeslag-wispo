@@ -270,7 +270,7 @@
 
 .pakbalk b {
   font-family: var(--font-kop);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.1rem;
   line-height: 1.2;
 }
@@ -535,6 +535,17 @@
   100% { transform: scale(1); }
 }
 
+/* De hele rij licht kort op in de kleur van de piste: ook vanuit je ooghoek zie je dat het gelukt is */
+.pak-vink.is-net {
+  border-radius: 6px;
+  animation: pak-flits 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes pak-flits {
+  0% { background: color-mix(in srgb, var(--kleur) 22%, transparent); }
+  100% { background: transparent; }
+}
+
 .pak-vink__tekst {
   min-width: 0;
   overflow-wrap: anywhere;
@@ -674,6 +685,7 @@
   }
   .pakprofiel__stempel.is-net,
   .pak-cat.net-gestempeld .pak-cat__nr::after,
+  .pak-vink.is-net,
   .pak-vink.is-net .pak-vink__vak {
     animation: none;
   }

@@ -645,7 +645,7 @@ button {
 }
 
 .hero__club {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.05rem;
 }
 
@@ -701,7 +701,7 @@ html.venster-open body {
 
 .hero__dag {
   font-size: 3rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -788,7 +788,7 @@ html.venster-open body {
 
 .aftelklok__getal {
   font-size: 2rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
@@ -1101,7 +1101,7 @@ html.venster-open body {
 }
 
 .tijdlijn__tijd {
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   padding-top: 2px;
 }
@@ -1282,14 +1282,14 @@ html.venster-open body {
   border-radius: 12px;
   background: var(--primair);
   color: var(--primair-tekst);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.3rem;
   text-align: center;
 }
 
 .kamer__label {
   font-size: 0.85rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent);
@@ -1470,7 +1470,7 @@ html.venster-open body {
 
 .verdelen__nummer {
   flex: 0 0 84px;
-  font-weight: 800;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -1683,14 +1683,14 @@ html.venster-open body {
   height: 34px;
   border-radius: 50%;
   background: var(--oppervlak);
-  font-weight: 800;
+  font-weight: 700;
   color: var(--inkt);
 }
 
 .ranglijst__naam {
   display: flex;
   flex-direction: column;
-  font-weight: 800;
+  font-weight: 700;
   min-width: 0;
 }
 
@@ -1707,7 +1707,7 @@ html.venster-open body {
 
 .ranglijst__punten {
   font-size: 1.4rem;
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1751,7 +1751,7 @@ html.venster-open body {
   margin: 0;
   font-family: var(--font-kop);
   font-size: 1.3rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .stemming__winnaar small {
@@ -2020,7 +2020,7 @@ html.venster-open body {
 .alle-stemmingen summary {
   cursor: pointer;
   font-family: var(--font-kop);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.05rem;
 }
 
@@ -2113,7 +2113,7 @@ html.venster-open body {
   border-radius: 10px;
   background: var(--succes-zacht);
   color: var(--succes);
-  font-weight: 800;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -2206,53 +2206,6 @@ html.venster-open body {
   to {
     opacity: 0;
   }
-}
-
-.kaartvak__bron {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.85);
-  color: #0d0058;
-  font-family: var(--font-kop);
-  font-size: 0.7rem;
-  pointer-events: none;
-}
-
-/* Zoomknoppen: één strak blok rechtsonder, groot genoeg voor handschoenen */
-.kaartvak__zoom {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-.kaartvak__zoomknop {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  padding: 0;
-  border: 1.5px solid var(--lijn-sterk);
-  background: var(--papier-vlak);
-  color: var(--inkt);
-  touch-action: manipulation;
-}
-
-.kaartvak__zoomknop:first-child {
-  border-radius: 8px 8px 0 0;
-}
-
-.kaartvak__zoomknop + .kaartvak__zoomknop {
-  border-top: 0;
-  border-radius: 0 0 8px 8px;
-}
-
-.kaartvak__zoomknop:active {
-  background: var(--accent-zacht);
 }
 
 /* Laag met stippen: beweegt mee met de kaart (zelfde transform) */
@@ -2835,7 +2788,7 @@ body:has(.huidig .kaartbalk) .toast {
 
 .score__totaal {
   font-size: 3rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -2957,7 +2910,7 @@ body:has(.huidig .kaartbalk) .toast {
   border-radius: 50%;
   background: transparent;
   color: var(--tekst);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.05rem;
   touch-action: manipulation;
 }
@@ -3057,7 +3010,7 @@ body:has(.huidig .kaartbalk) .toast {
   background: var(--opvallend);
   color: var(--opvallend-tekst);
   font-size: 1.6rem;
-  font-weight: 900;
+  font-weight: 700;
   white-space: nowrap;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   animation: knal 0.35s cubic-bezier(0.2, 1.6, 0.4, 1);
@@ -3572,7 +3525,7 @@ body:has(.huidig .kaartbalk) .toast {
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.25);
   font-family: var(--font-kop);
-  font-weight: 800;
+  font-weight: 700;
   color: var(--goud);
   font-variant-numeric: tabular-nums;
 }
@@ -3840,7 +3793,7 @@ body:has(.huidig .kaartbalk) .toast {
   border: 3px solid var(--goud);
   border-radius: 50%;
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
 }
 
@@ -3863,7 +3816,7 @@ body:has(.huidig .kaartbalk) .toast {
 .casino__klos {
   font-family: var(--font-kop);
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--goud);
 }
 
@@ -3876,7 +3829,7 @@ body:has(.huidig .kaartbalk) .toast {
   border: 4px dashed rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   font-family: var(--font-kop);
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   touch-action: manipulation;
@@ -3936,7 +3889,7 @@ body:has(.huidig .kaartbalk) .toast {
   background: var(--goud);
   color: #3a2408;
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.4;
 }
 
@@ -4037,7 +3990,8 @@ body:has(.huidig .kaartbalk) .toast {
   --krimp: 0;
   --bergen-hoogte: 120px;
   margin: 0 -16px;
-  padding: calc(var(--boven) + 16px) 20px 84px;
+  /* Onder de tekst 44px bergen: genoeg voor het panorama, en de inhoud begint hoger */
+  padding: calc(var(--boven) + 16px) 20px 44px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -4115,7 +4069,7 @@ body:has(.huidig .kaartbalk) .toast {
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.22);
   font-family: var(--font-kop);
-  font-weight: 800;
+  font-weight: 700;
   text-align: center;
   line-height: 1.1;
 }
@@ -4758,7 +4712,7 @@ button.badge {
 .badgekaart__nog summary {
   cursor: pointer;
   font-family: var(--font-kop);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1rem;
 }
 
@@ -4808,7 +4762,7 @@ button.badge {
 
 .kamernaam__knop {
   align-self: flex-start;
-  min-height: 36px;
+  min-height: 48px; /* ook met handschoenen te raken */
 }
 
 .kamernaam {

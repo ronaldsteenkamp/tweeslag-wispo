@@ -577,7 +577,8 @@ function PaklijstRij({ pak, naarPaklijst }: { pak: PakStand; naarPaklijst: () =>
   const klaar = pak.totaal > 0 && pak.klaar === pak.totaal
   return (
     <Rij
-      bord={<Bord kleur="groen" icoon={klaar ? 'vink' : 'paklijst'} />}
+      // De kleur is een status: rood = er mist nog iets, groen = alles ingepakt
+      bord={<Bord kleur={klaar ? 'groen' : 'rood'} icoon={klaar ? 'vink' : 'paklijst'} />}
       titel="Paklijst"
       onder={klaar ? 'Alles ingepakt' : `${pak.klaar} van ${pak.totaal} ingepakt`}
       onKlik={naarPaklijst}

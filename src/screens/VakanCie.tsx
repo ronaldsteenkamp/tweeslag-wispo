@@ -524,7 +524,7 @@ function Colofon() {
     <footer className="vk-colofon">
       <p className="vk-klein">Colofon</p>
       <p>
-        {config.appNaam} · versie {__BOUWDATUM__}
+        {config.appNaam} · versie {__BOUWDATUM__.split('-').reverse().join('/')}
       </p>
       <p>
         <Invul t={tekst.voet.contact} />

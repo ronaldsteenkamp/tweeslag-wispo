@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as AanwijsEvent } from 'react'
-import { Icoon } from './Icoon'
 
 interface Stand {
   s: number // zoom (1 = past precies in beeld)
@@ -40,7 +39,6 @@ export interface KaartFocus {
 interface Props {
   src: string
   alt: string
-  bron: string
   /** Tekst als de afbeelding (nog) niet te laden is */
   ontbreekt: string
   /** Volgorde = voorrang voor de naam als het druk wordt (eerst = belangrijkst) */
@@ -73,7 +71,6 @@ interface Groep {
 export function ZoomKaart({
   src,
   alt,
-  bron,
   ontbreekt,
   markers,
   gekozen,
@@ -245,14 +242,6 @@ export function ZoomKaart({
     if (geladen === 'ok') zet(stand.current)
   }, [onderMarge, geladen, zet])
 
-  /** Zoomknoppen (met handschoenen gaat knijpen lastig): rond het midden van het zichtbare deel */
-  const zoomMidden = (factor: number) => {
-    const v = vak.current
-    if (!v) return
-    zoomOm(stand.current.s * factor, v.clientWidth / 2, (v.clientHeight - Math.min(onderMarge, v.clientHeight * 0.6)) / 2, true)
-    onHandmatig?.()
-  }
-
   const punt = (e: AanwijsEvent) => {
     const r = vak.current!.getBoundingClientRect()
     return { x: e.clientX - r.left, y: e.clientY - r.top }
@@ -270,8 +259,6 @@ export function ZoomKaart({
   }
 
   const onDown = (e: AanwijsEvent) => {
-    // De zoomknoppen handelen hun eigen tik af
-    if ((e.target as HTMLElement).closest?.('.kaartvak__zoom')) return
     vak.current?.setPointerCapture(e.pointerId)
     const p = punt(e)
     vingers.current.set(e.pointerId, p)
@@ -459,17 +446,6 @@ export function ZoomKaart({
       </div>
       {geladen === 'fout' && <p className="kaartvak__melding">{ontbreekt}</p>}
       {geladen === 'ok' && hint && hintTekst && <p className="kaartvak__hint">{hintTekst}</p>}
-      {geladen === 'ok' && <p className="kaartvak__bron">{bron}</p>}
-      {geladen === 'ok' && (
-        <div className="kaartvak__zoom" style={{ bottom: Math.min(onderMarge, 9999) + 12 }}>
-          <button type="button" className="kaartvak__zoomknop" aria-label="Inzoomen" onClick={() => zoomMidden(1.6)}>
-            <Icoon naam="plus" />
-          </button>
-          <button type="button" className="kaartvak__zoomknop" aria-label="Uitzoomen" onClick={() => zoomMidden(1 / 1.6)}>
-            <Icoon naam="min" />
-          </button>
-        </div>
-      )}
     </div>
   )
 }

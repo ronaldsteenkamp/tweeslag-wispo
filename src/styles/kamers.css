@@ -36,8 +36,10 @@
   margin: 0;
 }
 
-.ks button,
-.ks-blad button {
+/* Gewone knopjes erven de inkt; .knop (Bewaar, Annuleren) houdt zijn eigen kleuren, anders werd
+   de primaire knop donkerblauw op donkerblauw */
+.ks button:not(.knop),
+.ks-blad button:not(.knop) {
   color: inherit;
   font-family: inherit;
 }
@@ -220,7 +222,7 @@
   font: 700 1.6rem/1 var(--font-smal);
 }
 
-/* ---------- Portretten: vier op een rij; jouw appartement en het onderblad 2 × 2 ---------- */
+/* ---------- Portretten: vier op een rij; alleen het onderblad 2 × 2 ---------- */
 .ks-smoelen {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -230,7 +232,7 @@
   list-style: none;
 }
 
-.ks-blz--jouw .ks-smoelen,
+/* Je eigen appartement staat net als de rest op één rij van vier (alleen het detailblad heeft er twee) */
 .ks-blad .ks-smoelen {
   grid-template-columns: repeat(2, 1fr);
   gap: 16px 14px;
@@ -283,9 +285,12 @@
   font: 700 1.7rem/1 var(--font-smal);
 }
 
-.ks-blz--jouw .ks-beeld b,
 .ks-blad .ks-beeld b {
   font-size: 3.4rem;
+}
+
+.ks-blz--jouw .ks-beeld b {
+  font-size: 2.2rem;
 }
 
 .ks-beeld svg {
@@ -307,9 +312,12 @@
   margin-top: 8px;
 }
 
-.ks-blz--jouw .ks-smoel__naam,
 .ks-blad .ks-smoel__naam {
   font-size: 1.15rem;
+}
+
+.ks-blz--jouw .ks-smoel__naam {
+  font-size: 1.05rem;
 }
 
 .ks-smoel__jij {

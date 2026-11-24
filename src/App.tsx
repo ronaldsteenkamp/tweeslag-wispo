@@ -9,7 +9,7 @@ import { haalAllesVooraf } from './lib/data'
 import { reisFase, tabsVoor, type Tab } from './lib/navigatie'
 import { verwerkKopSchakelaar } from './lib/nieuweKoppen'
 import { useNu } from './lib/nu'
-import { lees, schrijf, useOpgeslagen } from './lib/opslag'
+import { lees, schrijfEnMeld, useOpgeslagen } from './lib/opslag'
 import { useSchermWakker } from './lib/wakker'
 import { useTabSwipe } from './lib/tabswipe'
 import { useToetsenbord } from './lib/toetsenbord'
@@ -58,23 +58,25 @@ function tabUitAdres(tabs: Tab[]): Scherm {
     window.history.replaceState(null, '', `${pathname}${search}#home`)
     return 'home'
   }
+  // schrijfEnMeld en niet schrijf: Spel en Groep kunnen al openstaan (als buurscherm voor het vegen)
+  // en moeten dan meteen naar het juiste onderdeel, anders zie je eerst het vorige (bijv. Appartementen)
   // Vanuit een melding over de uitslag: meteen naar Spel → Stand
   if (h === 'stemmen' || h === 'klassement') {
-    schrijf('spel.onderdeel', 'stand')
+    schrijfEnMeld('spel.onderdeel', 'stand')
     return 'spel'
   }
   // Oude adressen (van voor de tabbalk met vijf tabs)
   if (h === 'rad') {
-    schrijf('spel.onderdeel', 'rad')
+    schrijfEnMeld('spel.onderdeel', 'rad')
     return 'spel'
   }
   if (h === 'kamers') {
-    schrijf('groep.onderdeel', 'kamers')
+    schrijfEnMeld('groep.onderdeel', 'kamers')
     return 'groep'
   }
   // Het clubblad: een eigen tab na de reis, anders onder Groep
   if (h === 'fotos' && !tabs.includes('fotos')) {
-    schrijf('groep.onderdeel', 'clubblad')
+    schrijfEnMeld('groep.onderdeel', 'clubblad')
     return 'groep'
   }
   return (SCHERMEN as string[]).includes(h) ? (h as Scherm) : 'home'

@@ -233,7 +233,6 @@ export default function Kaart({ terug }: { terug?: () => void } = {}) {
         <ZoomKaart
           src={KAART}
           alt="Pistekaart van Les Deux Alpes"
-          bron="Pistekaart © Les 2 Alpes"
           ontbreekt="De pistekaart is nog niet bewaard. Open dit scherm één keer met internet."
           markers={markers}
           gekozen={open?.soort === 'jij' ? 'jij' : open?.soort === 'persoon' ? open.id : null}

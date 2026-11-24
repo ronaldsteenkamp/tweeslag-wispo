@@ -233,8 +233,17 @@
   left: -16px;
   top: 12px;
   bottom: 12px;
-  width: 5px;
-  background: var(--boek-streep);
+  width: 6px;
+  /* Gevuld tot waar het onderdeel nu is (--punt-voortgang, gezet in Planning.tsx); de rest lichter */
+  background: linear-gradient(
+    var(--boek-streep) calc(var(--punt-voortgang, 1) * 100%),
+    color-mix(in srgb, var(--boek-streep) 28%, transparent) 0
+  );
+}
+
+/* Wat nú gebeurt: de titel steviger dan de rest van het boekje */
+.punt--bezig h3 {
+  font-weight: 600;
 }
 
 /* Hoogtepunt: groter, met een lijn erboven en een rond beeldmerk */

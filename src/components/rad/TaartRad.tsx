@@ -19,8 +19,8 @@ import { GeluidKnop, rond, tekstVan, useMachine, type MachineProps } from './bas
 
 /*
  * Rond rad in twee uitvoeringen:
- * - 'apres' (Klos): het houten rad aan de muur van de après-skibar, posterkleuren, gloeilampjes
- *   rondom, een skipunt als wijzer, koeienbel en een affiche bij de uitslag.
+ * - 'apres' (Klos): het houten rad aan de muur van de après-skibar, posterkleuren (zonder
+ *   gloeilampjes: die horen bij het casino), een skipunt als wijzer, koeienbel en een affiche bij de uitslag.
  * - 'pisteboord' (Drankje): een geëmailleerd bord met klinknagels, een slalomvlag als wijzer, een
  *   belletje en een pistebord met de uitslag.
  * De wijzer buigt mee als er een pin tegenaan komt; het rad is ook met een veeg te draaien.
@@ -108,7 +108,6 @@ export function TaartRad({ stijl, vraag, ...p }: MachineProps & { stijl: Stijl; 
   const draaiEl = useRef<HTMLDivElement>(null)
   const vlak = useRef<SVGSVGElement>(null)
   const wijzer = useRef<HTMLDivElement>(null)
-  const lampjes = useRef<SVGGElement>(null)
   const hoek = useRef(0)
   const richting = useRef<1 | -1>(1)
   const lopend = useRef<{ stop: () => void } | null>(null)
@@ -149,22 +148,6 @@ export function TaartRad({ stijl, vraag, ...p }: MachineProps & { stijl: Stijl; 
     if (snelheid < 520) tril(7, true)
   }
 
-  // Lichtje loopt rond met de snelheid van het rad (alleen bij het après-rad)
-  const fase = useRef({ f: 0, t: 0, stap: -1 })
-  const lichtjes = (snelheid: number) => {
-    const g = lampjes.current
-    if (!g) return
-    const nu = performance.now()
-    const f = fase.current
-    f.f += Math.min(12, snelheid / 60) * ((nu - (f.t || nu)) / 1000)
-    f.t = nu
-    const stap = Math.floor(f.f) % 3
-    if (stap !== f.stap) {
-      f.stap = stap
-      g.dataset.f = String(stap)
-    }
-  }
-
   const start = async (veeg?: number) => {
     const l = lijstRef.current
     if (m.bezigRef.current || l.length < 2) return
@@ -178,7 +161,6 @@ export function TaartRad({ stijl, vraag, ...p }: MachineProps & { stijl: Stijl; 
     const naar = doelHoek(i, aantal, hoek.current, fractie(), rondjes, richting.current)
     m.setUitslag(null)
     m.zetBezig(true)
-    fase.current = { f: 0, t: 0, stap: -1 }
     const d = draai({
       van: hoek.current,
       naar,
@@ -188,10 +170,9 @@ export function TaartRad({ stijl, vraag, ...p }: MachineProps & { stijl: Stijl; 
       nagolf: minder ? 0 : richting.current * Math.min(4, v * u.nagolf),
       vak: v,
       onTik: tikje,
-      onFrame: (h, snelheid) => {
+      onFrame: (h) => {
         hoek.current = h
         zet(h)
-        if (stijl === 'apres') lichtjes(snelheid)
       },
     })
     lopend.current = d
@@ -200,7 +181,6 @@ export function TaartRad({ stijl, vraag, ...p }: MachineProps & { stijl: Stijl; 
     hoek.current = rond(hoek.current)
     richting.current = 1
     zet(hoek.current)
-    lampjes.current?.removeAttribute('data-f')
     if (vakOnderPijl(hoek.current, aantal) !== i) console.error('Rad landde niet op de uitslag', i)
     const pr = m.props.current
     if (pr.geluid) {
@@ -259,24 +239,7 @@ export function TaartRad({ stijl, vraag, ...p }: MachineProps & { stijl: Stijl; 
       >
         {stijl === 'apres' && (
           <svg viewBox="-110 -110 220 220" className="radm__lijst" aria-hidden="true">
-            <defs>
-              <radialGradient id="radm-gloed">
-                <stop offset="0" stopColor="#fff1c4" stopOpacity=".75" />
-                <stop offset="1" stopColor="#fff1c4" stopOpacity="0" />
-              </radialGradient>
-            </defs>
             <circle r="113" fill="#0d0058" stroke="#2c2380" strokeWidth="1.2" />
-            <g ref={lampjes} className="radm__lampjes">
-              {Array.from({ length: 24 }, (_, k) => {
-                const [x, y] = punt(108.6, k * 15 + 7.5)
-                return (
-                  <g key={k}>
-                    <circle className="gloed" cx={x} cy={y} r="7" />
-                    <circle className="peer" cx={x} cy={y} r="2.6" />
-                  </g>
-                )
-              })}
-            </g>
           </svg>
         )}
         <div ref={draaiEl} className="radm__draai">

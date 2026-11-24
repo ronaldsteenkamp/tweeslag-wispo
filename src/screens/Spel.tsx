@@ -171,9 +171,14 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
     const personen = lees<KlassementData | null>(KLASSEMENT_CACHE, null)?.personen ?? []
     const ik = personen.find((p) => p.naam === naam)
     if (!ik) return null
-    return { plek: 1 + personen.filter((p) => p.totaal > ik.totaal).length, van: personen.length, punten: ik.totaal }
+    return { plek: 1 + personen.filter((p) => p.totaal > ik.totaal).length, van: personen.length, punten: ik.totaal, correcties: ik.correcties ?? 0 }
     // nu: af en toe opnieuw lezen, want het klassement wordt op de achtergrond bijgewerkt
   }, [nieuweKop, naam, nu])
+
+  // Zelfde totaal als bij Stand: wat je hier deed plus de bonuspunten en correcties van de beheerders
+  // (die staan alleen op de server, in het klassement)
+  const correcties = mijnPlek?.correcties ?? 0
+  const totaal = challengePunten + bingo.totaal + correcties
 
   const stempelen = (id: string) => {
     setNetGedaan(id)
@@ -189,13 +194,23 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         <SchermKop
           titel="Spel"
           boven={naam ? `Score van ${toon(naam)}` : 'Jouw score'}
-          ondertitel={`Challenges ${challengePunten} · Busbingo ${bingo.totaal}`}
+          ondertitel={`Challenges ${challengePunten} · Busbingo ${bingo.totaal}${correcties ? ` · ${correcties > 0 ? 'Bonus' : 'Correctie'} ${correcties > 0 ? '+' : ''}${correcties}` : ''}`}
           rechts={
-            <span aria-live="polite">
-              <span className="schermkop__groot">{challengePunten + bingo.totaal}</span>
-              <br />
+            // Tik op je punten: naar de stand
+            <button
+              type="button"
+              className="schermkop__knop"
+              onClick={() => {
+                if (onderdeel !== 'stand') klank('tik', geluid)
+                setOnderdeel('stand')
+              }}
+            >
+              <span className="schermkop__groot" aria-live="polite">
+                {totaal}
+              </span>
               <span className="schermkop__klein">punten</span>
-            </span>
+              <span className="verborgen">. Naar de stand</span>
+            </button>
           }
         >
           <Segmenten
@@ -350,7 +365,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         <Geplaatst
           challenge={challengeInfo.get(teVieren.challenge_id)!}
           inzending={teVieren}
-          totaal={challengePunten + bingo.totaal}
+          totaal={totaal}
           geluid={geluid}
           onSluit={() => {
             setGevierd([...(gevierd ?? []), teVieren.id])

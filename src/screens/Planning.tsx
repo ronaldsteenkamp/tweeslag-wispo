@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { SchermKop } from '../components/SchermKop'
@@ -125,6 +125,13 @@ function kern(dag: Dag) {
   return doorgaand.filter((i) => gekozen.includes(i)).map((i) => i.titel).join(', ')
 }
 
+/** Deel van een lopend onderdeel dat al voorbij is (0 tot 1) */
+function voortgang(item: ItemMetStatus): number {
+  const totaal = (item.einde.getTime() - item.start.getTime()) / 60_000
+  if (totaal <= 0) return 1
+  return Math.min(1, Math.max(0, 1 - item.totEinde / totaal))
+}
+
 function Punt({ item }: { item: ItemMetStatus }) {
   const { status } = item
   const hoog = item.gewicht === 'hoog' && status !== 'voorbij'
@@ -138,6 +145,8 @@ function Punt({ item }: { item: ItemMetStatus }) {
     <li
       className={`punt punt--${status}${item.gewicht === 'hoog' ? ' punt--hoog' : ''}${item.optioneel ? ' punt--optioneel' : ''}`}
       aria-current={status === 'bezig' ? 'time' : undefined}
+      // Hoe ver het lopende onderdeel is: de streep links vult zich mee (planning.css .punt--bezig)
+      style={status === 'bezig' ? ({ '--punt-voortgang': voortgang(item) } as CSSProperties) : undefined}
     >
       {status === 'voorbij' && (
         <span className="punt__vinkje" aria-hidden="true">
@@ -158,7 +167,7 @@ function Punt({ item }: { item: ItemMetStatus }) {
       <div className="punt__inhoud">
         {status === 'bezig' && (
           <p className="punt__kantlijn punt__kantlijn--nu">
-            <b>Nu</b> nog {duur(item.totEinde)}
+            <b>Nu</b> bezig, nog {duur(item.totEinde)}
           </p>
         )}
         {status === 'straks' && <p className="punt__kantlijn">Hierna · over {duur(item.totBegin)}</p>}

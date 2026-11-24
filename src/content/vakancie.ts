@@ -167,6 +167,6 @@ export const vakancie = {
   /** Helemaal onderaan */
   voet: {
     /** Bij wie je terechtkunt als er iets niet werkt */
-    contact: 'Werkt er iets niet, of klopt er iets niet? Laat het Ronald weten, bijvoorbeeld in de groepsapp.',
+    contact: 'Werkt er iets niet, of klopt er iets niet? Laat het Ronald weten!',
   },
 } as const

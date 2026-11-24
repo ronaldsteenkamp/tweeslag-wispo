@@ -286,40 +286,6 @@
   transform-origin: 50% 14%;
 }
 
-/* Lampjes: staan stil op de lijst; tijdens het draaien loopt het licht rond */
-.radm__lampjes .gloed {
-  fill: url(#radm-gloed);
-  opacity: 0.35;
-}
-
-.radm__lampjes .peer {
-  fill: #8f826a;
-}
-
-.radm__lampjes:not([data-f]) .peer,
-.radm__lampjes[data-f='0'] g:nth-child(3n + 1) .peer,
-.radm__lampjes[data-f='1'] g:nth-child(3n + 2) .peer,
-.radm__lampjes[data-f='2'] g:nth-child(3n + 3) .peer {
-  fill: #fff1c4;
-}
-
-.radm__lampjes:not([data-f]) .gloed,
-.radm__lampjes[data-f='0'] g:nth-child(3n + 1) .gloed,
-.radm__lampjes[data-f='1'] g:nth-child(3n + 2) .gloed,
-.radm__lampjes[data-f='2'] g:nth-child(3n + 3) .gloed {
-  opacity: 1;
-}
-
-.is-uitslag .radm__lampjes {
-  animation: radm-knipper 0.26s steps(2, jump-none) 6;
-}
-
-@keyframes radm-knipper {
-  50% {
-    opacity: 0.25;
-  }
-}
-
 /* Affiche met de uitslag */
 .radm--apres .radm__uitslag {
   left: 4%;
