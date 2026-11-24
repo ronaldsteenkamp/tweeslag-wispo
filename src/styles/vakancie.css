@@ -1,0 +1,669 @@
+/*
+ * De VakanCie (screens/VakanCie.tsx) en het logo als knop (components/LogoKnop.tsx).
+ * Als de binnenkant van de kaft van het clubblad: papier, een afdruk met witte rand, kleine
+ * kapitalen, een stempel en handtekeningen. Alleen tokens uit theme.css; dark mode volgt vanzelf.
+ * Classes: vk-* (pagina), logoknop* (Home en Instellingen).
+ */
+
+/* ================================================================ logo als knop */
+
+.logoknop {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 10px 4px;
+  border: 0;
+  border-radius: var(--rond-blok);
+  background: none;
+  color: var(--ijsblauw-inkt);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logoknop img {
+  display: block;
+  border-radius: 15px;
+  transition: transform var(--duur-tik) var(--gemak);
+}
+
+.home__voet .logoknop img {
+  /* Home zet de maat op de img; hier niets veranderen */
+  margin: 0;
+}
+
+.logoknop__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 600 12px/1 var(--font-smal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Een klein pijltje na de hint, als in een inhoudsopgave */
+.logoknop__hint::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.logoknop:active img {
+  transform: scale(0.94) rotate(-3deg);
+}
+
+@media (hover: hover) {
+  .logoknop:hover img {
+    transform: rotate(-3deg);
+  }
+}
+
+/* ================================================================ pagina */
+
+.vk {
+  --vk-print: var(--tweeslag-donkerblauw); /* tekst op de witte fotorand: ook in donker donker */
+  --vk-print-zacht: color-mix(in srgb, var(--tweeslag-donkerblauw) 72%, var(--foto-rand));
+  --vk-inkt-pen: var(--ijsblauw-inkt); /* handtekeningen en stempel: blauwe pen */
+  gap: 34px;
+  color: var(--inkt);
+}
+
+.vk p {
+  margin: 0;
+}
+
+.vk-klein {
+  font: 700 12px/1 var(--font-smal);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+.vk-zacht {
+  color: var(--inkt-zacht);
+}
+
+/* Nog in te vullen: geel gemarkeerd, als een memo */
+.vk-invullen {
+  padding: 0 0.2em;
+  border-radius: 3px;
+  background: var(--memo);
+  color: var(--memo-inkt);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Kopje als in een jaarboek: kleine kapitalen tussen twee lijnen */
+.vk-kopje {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  font: 700 15px/1 var(--font-smal);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--inkt);
+}
+
+.vk-kopje::before,
+.vk-kopje::after {
+  content: '';
+  flex: 1;
+  height: 0;
+  border-top: 1px solid var(--lijn-sterk);
+  opacity: 0.5;
+}
+
+.vk-kopje::before {
+  flex: 0 0 18px;
+}
+
+/* ---------------------------------------------------------------- groepsfoto */
+
+.vk-fotoplek {
+  display: grid;
+  gap: 14px;
+  margin-top: -6px;
+}
+
+.vk-afdruk {
+  --scheef: -1.4deg;
+  position: relative;
+  margin: 0 4px;
+  padding: 10px 10px 0;
+  background: var(--foto-rand);
+  box-shadow:
+    0 1px 0 var(--foto-rand-lijn),
+    0 12px 26px -8px color-mix(in srgb, var(--tweeslag-donkerblauw) 28%, transparent),
+    0 2px 6px color-mix(in srgb, var(--tweeslag-donkerblauw) 10%, transparent);
+  transform: rotate(var(--scheef));
+  animation: vk-val 760ms var(--gemak) both;
+}
+
+/* De foto valt zacht op zijn plek */
+@keyframes vk-val {
+  from {
+    opacity: 0;
+    transform: translateY(-22px) rotate(-5deg) scale(1.02);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    transform: rotate(var(--scheef));
+  }
+}
+
+.vk-afdruk__beeld {
+  display: block;
+  width: 100%;
+  min-height: 160px;
+  padding: 0;
+  border: 0;
+  background: var(--papier-diep);
+  cursor: zoom-in;
+}
+
+.vk-afdruk__beeld img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vk-afdruk__vlak {
+  position: relative;
+}
+
+/* Fotohoekjes, zoals in een album: ze houden de foto vast */
+.vk-hoekje {
+  position: absolute;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  background: var(--lucht);
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.vk-hoekje--lb {
+  top: -4px;
+  left: -4px;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.vk-hoekje--rb {
+  top: -4px;
+  right: -4px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.vk-hoekje--lo {
+  bottom: -4px;
+  left: -4px;
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+.vk-hoekje--ro {
+  bottom: -4px;
+  right: -4px;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.vk-afdruk figcaption {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 6px 10px;
+  font: 600 13px/1.25 var(--font-smal);
+  letter-spacing: 0.1em;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  text-align: center;
+  color: var(--vk-print-zacht);
+}
+
+/* Lege plek: een afdruk die nog ontwikkeld moet worden */
+.vk-afdruk__leeg {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  aspect-ratio: 3 / 2;
+  padding: 20px;
+  border: 2px dashed color-mix(in srgb, var(--vk-print) 28%, var(--foto-rand));
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 10px,
+      color-mix(in srgb, var(--vk-print) 4%, transparent) 10px 20px
+    ),
+    color-mix(in srgb, var(--vk-print) 5%, var(--foto-rand));
+  color: var(--vk-print-zacht);
+  text-align: center;
+}
+
+.vk-afdruk__leeg b {
+  font: 700 22px/1.05 var(--font-smal);
+  letter-spacing: 0.02em;
+  color: var(--vk-print);
+}
+
+.vk-afdruk__leeg span {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* Beheer onder de foto */
+.vk-beheer {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px dashed var(--lijn-sterk);
+  border-radius: var(--rond-blok);
+}
+
+.vk-beheer__knoppen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.vk-beheer__knoppen .knop {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.vk-beheer__knoppen .tekstknop {
+  min-height: 44px;
+}
+
+.vk-beheer__melding {
+  font-weight: 600;
+}
+
+.vk-beheer__melding.is-fout {
+  color: var(--piste-rood);
+}
+
+.vk-beheer__uitleg {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--inkt-zacht);
+}
+
+/* ---------------------------------------------------------------- waarom */
+
+.vk-brief p {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.vk-brief p + p {
+  margin-top: 0.8em;
+}
+
+/* Eerste letters in kleine kapitalen, zoals de opening van een stuk in het clubblad */
+.vk-brief__eerste::first-line {
+  font-variant: small-caps;
+  letter-spacing: 0.03em;
+}
+
+.vk-ondertekening {
+  position: relative;
+  margin-top: 22px;
+  padding-right: 96px;
+  min-height: 110px;
+}
+
+.vk-brief .vk-ondertekening__groet {
+  font-size: 15px;
+  color: var(--inkt-zacht);
+}
+
+.vk-handtekeningen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vk-handtekeningen li {
+  position: relative;
+  padding: 0 4px 6px;
+  font: italic 600 24px/1.1 var(--font-smal);
+  color: var(--vk-inkt-pen);
+  transform: rotate(-3deg);
+}
+
+.vk-handtekeningen li:nth-child(even) {
+  transform: rotate(-1deg) translateY(4px);
+}
+
+.vk-handtekeningen svg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 8px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.vk-stempel {
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  width: 104px;
+  height: 104px;
+  color: var(--vk-inkt-pen);
+  stroke: currentColor;
+  opacity: 0.82;
+  transform: rotate(-14deg);
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-thema='licht']) .vk-stempel {
+    mix-blend-mode: normal;
+  }
+}
+:root[data-thema='donker'] .vk-stempel {
+  mix-blend-mode: normal;
+}
+
+.vk-stempel text {
+  fill: currentColor;
+  stroke: none;
+  font: 700 10.4px var(--font-smal);
+  letter-spacing: 0.06em;
+}
+
+.vk-stempel__berg {
+  fill: currentColor;
+  stroke: none;
+}
+
+.vk-stempel__sneeuw {
+  fill: var(--papier);
+  stroke: none;
+}
+
+/* ---------------------------------------------------------------- leden */
+
+.vk-leden > .vk-zacht {
+  margin: -4px 0 16px;
+  font-size: 15px;
+}
+
+.vk-ledenlijst {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vk-lid__vak {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  color: inherit;
+}
+
+button.vk-lid__vak {
+  cursor: pointer;
+}
+
+.vk-pasfoto {
+  position: relative;
+  display: block;
+  margin-bottom: 8px;
+  padding: 6px;
+  background: var(--foto-rand);
+  box-shadow:
+    0 1px 0 var(--foto-rand-lijn),
+    0 8px 18px -8px color-mix(in srgb, var(--tweeslag-donkerblauw) 30%, transparent);
+  transform: rotate(-1.2deg);
+  transition: transform var(--duur-tik) var(--gemak);
+}
+
+.vk-lid:nth-child(even) .vk-pasfoto {
+  transform: rotate(1.1deg);
+}
+
+button.vk-lid__vak:active .vk-pasfoto {
+  transform: rotate(0deg) scale(0.97);
+}
+
+.vk-pasfoto img,
+.vk-pasfoto__leeg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+
+.vk-pasfoto__leeg {
+  position: relative;
+  overflow: hidden;
+  background: var(--lucht);
+}
+
+.vk-pasfoto__leeg b {
+  position: absolute;
+  inset: 14% 0 40%;
+  display: grid;
+  place-items: center;
+  color: var(--op-lucht);
+  font: 700 3rem/1 var(--font-smal);
+}
+
+.vk-pasfoto__leeg svg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 38%;
+}
+
+.vk-pasfoto__berg {
+  fill: var(--ijsblauw);
+}
+
+.vk-pasfoto__sneeuw {
+  fill: var(--berg-sneeuwrand);
+}
+
+/* Lege plek voor een lid dat nog ingevuld moet worden */
+.vk-lid div.vk-lid__vak .vk-pasfoto__leeg {
+  background: color-mix(in srgb, var(--lucht) 12%, var(--foto-rand));
+}
+
+.vk-lid div.vk-lid__vak .vk-pasfoto__leeg b {
+  color: var(--vk-print-zacht);
+}
+
+.vk-lid div.vk-lid__vak .vk-pasfoto__berg {
+  fill: color-mix(in srgb, var(--lucht) 20%, var(--foto-rand));
+}
+
+.vk-pasfoto__piste {
+  position: absolute;
+  right: -6px;
+  bottom: -8px;
+  font-size: 15px;
+}
+
+.vk-lid__naam {
+  font: 700 21px/1.05 var(--font-smal);
+  overflow-wrap: anywhere;
+}
+
+.vk-lid__echt {
+  font-size: 13px;
+  color: var(--inkt-zacht);
+}
+
+.vk-lid__rol {
+  margin-top: 2px;
+  font: 600 13px/1.25 var(--font-smal);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ijsblauw-inkt);
+}
+
+/* ---------------------------------------------------------------- cijfers */
+
+.vk-cijfers ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid var(--lijn-sterk);
+}
+
+.vk-cijfers li {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 12px 10px 14px 0;
+  border-bottom: 1px solid var(--lijn);
+}
+
+.vk-cijfers li:nth-child(even) {
+  padding-left: 14px;
+  border-left: 1px solid var(--lijn);
+}
+
+.vk-cijfers b {
+  font: 700 40px/1 var(--font-smal);
+  font-variant-numeric: tabular-nums;
+  color: var(--inkt);
+}
+
+.vk-cijfers b .vk-invullen {
+  font-size: 22px;
+  vertical-align: middle;
+}
+
+.vk-cijfers span {
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--inkt-zacht);
+}
+
+/* ---------------------------------------------------------------- dank */
+
+.vk-dank {
+  display: grid;
+  gap: 12px;
+}
+
+.vk-dank .vk-kopje {
+  margin-bottom: 2px;
+}
+
+.vk-dank p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.vk-dank .vk-dank__groot {
+  font: 600 20px/1.3 var(--font-smal);
+}
+
+.vk-bronnen {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--lijn);
+}
+
+.vk-bronnen li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 0 4px;
+  border-bottom: 1px solid var(--lijn);
+}
+
+.vk-bronnen b {
+  font: 700 13px/1.2 var(--font-smal);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.vk-bronnen span {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--inkt-zacht);
+}
+
+.vk-bronnen a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: start;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ijsblauw-inkt);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------- colofon */
+
+.vk-colofon {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 18px 8px 4px;
+  border-top: 2px solid var(--lijn-sterk);
+  text-align: center;
+}
+
+.vk-colofon p {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.vk-colofon .vk-colofon__slot {
+  font: 600 12px/1.3 var(--font-smal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+
+/* ---------------------------------------------------------------- minder beweging */
+
+@media (prefers-reduced-motion: reduce) {
+  .vk-afdruk {
+    animation: none;
+  }
+  .logoknop img,
+  .vk-pasfoto {
+    transition: none;
+  }
+}

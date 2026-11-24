@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { DataStatus } from '../components/DataStatus'
 import { Icoon, type IcoonNaam } from '../components/Icoon'
 import { InstallatieBanner } from '../components/InstallatieBanner'
+import { LogoKnop } from '../components/LogoKnop'
 import { IcoonMelding } from '../components/IcoonMelding'
 import { FotoStrip } from '../components/FotoStrip'
 import { Bergen, MEIJE, cameraVoor } from '../components/Bergen'
@@ -70,7 +71,17 @@ function Bord({ kleur, icoon, vierkant = false }: { kleur: Kleur; icoon: IcoonNa
   )
 }
 
-export default function Home({ naarTab, naarWeer, naarInstellingen }: { naarTab: (t: Tab) => void; naarWeer: () => void; naarInstellingen: () => void }) {
+export default function Home({
+  naarTab,
+  naarWeer,
+  naarInstellingen,
+  naarVakancie,
+}: {
+  naarTab: (t: Tab) => void
+  naarWeer: () => void
+  naarInstellingen: () => void
+  naarVakancie: () => void
+}) {
   const nu = useNu(10_000)
   const { data: planning, fout } = useData('planning')
   const [naam] = useOpgeslagen<string | null>('naam', null)
@@ -209,7 +220,7 @@ export default function Home({ naarTab, naarWeer, naarInstellingen }: { naarTab:
         </section>
 
         <footer className="home__voet">
-          <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" width={68} height={68} loading="lazy" />
+          <LogoKnop grootte={68} onKlik={naarVakancie} />
           <p>Tweeslag · Wispo 2027 · {config.bestemming}</p>
         </footer>
       </div>

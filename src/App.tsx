@@ -23,6 +23,7 @@ import { useFotos } from './lib/fotos'
 import Spel from './screens/Spel'
 import Weer from './screens/Weer'
 import Instellingen from './screens/Instellingen'
+import VakanCie from './screens/VakanCie'
 
 // Wat niet bij het openen nodig is, laadt pas als je erheen gaat (kleinere eerste bundel)
 const Kaart = lazy(() => import('./screens/Kaart'))
@@ -30,10 +31,11 @@ const Verdelen = lazy(() => import('./screens/Verdelen'))
 const Beheer = lazy(() => import('./screens/Beheer'))
 
 /** Alle schermen: de tabs van de balk en de subschermen daaronder */
-type Scherm = Tab | 'verdelen' | 'weer' | 'beheer' | 'instellingen'
-const SCHERMEN: Scherm[] = ['home', 'planning', 'paklijst', 'kaart', 'fotos', 'spel', 'groep', 'verdelen', 'weer', 'beheer', 'instellingen']
+type Scherm = Tab | 'verdelen' | 'weer' | 'beheer' | 'instellingen' | 'vakancie'
+const SCHERMEN: Scherm[] = ['home', 'planning', 'paklijst', 'kaart', 'fotos', 'spel', 'groep', 'verdelen', 'weer', 'beheer', 'instellingen', 'vakancie']
 
-type Stap = { subscherm?: boolean; tabStap?: boolean; van?: Tab } | null
+/** vanScherm: een subscherm geopend vanuit een ander subscherm (de VakanCie vanuit Instellingen) */
+type Stap = { subscherm?: boolean; tabStap?: boolean; van?: Tab; vanScherm?: Scherm } | null
 /** Staat er een geschiedenis-stap onder dit subscherm (gezet door kies of bij het opstarten)? */
 const isSubschermStap = () => (window.history.state as Stap)?.subscherm === true
 /** Staat er Home onder deze tab in de geschiedenis? */
@@ -153,9 +155,20 @@ export default function App() {
       }
       const { pathname, search } = window.location
       const adres = `${pathname}${search}#${t}`
-      // Terug van een subscherm naar zijn tab: een stap terug (de hashchange zet de tab)
+      // Terug van een subscherm naar zijn tab: een stap terug (de hashchange zet de tab). Ligt er nog
+      // een subscherm onder (de VakanCie vanuit Instellingen), dan twee stappen.
       if (isSubscherm(tab) && t === basisTab(tab) && isSubschermStap()) {
-        window.history.back()
+        window.history.go((window.history.state as Stap)?.vanScherm ? -2 : -1)
+        return
+      }
+      // Naar de VakanCie vanuit een ander subscherm (Instellingen): een stap erbovenop, zodat terug
+      // weer bij dat subscherm uitkomt
+      if (t === 'vakancie' && isSubscherm(tab)) {
+        const stap: Stap = { subscherm: true, van: basisTab(tab), vanScherm: tab }
+        window.history.pushState(stap, '', adres)
+        setVan(stap.van)
+        setTab(t)
+        window.scrollTo(0, 0)
         return
       }
       if (isSubscherm(t) && !isSubscherm(tab)) {
@@ -225,11 +238,29 @@ export default function App() {
   const scherm = (s: Scherm) => {
     switch (s) {
       case 'home':
-        return <Home naarTab={kies} naarWeer={() => kies('weer')} naarInstellingen={() => kies('instellingen')} />
+        return (
+          <Home
+            naarTab={kies}
+            naarWeer={() => kies('weer')}
+            naarInstellingen={() => kies('instellingen')}
+            naarVakancie={() => kies('vakancie')}
+          />
+        )
       case 'weer':
         return <Weer terug={() => kies(basisTab('weer'))} />
       case 'instellingen':
-        return <Instellingen terug={() => kies('home')} />
+        return <Instellingen terug={() => kies('home')} naarVakancie={() => kies('vakancie')} />
+      case 'vakancie': {
+        // Terug naar waar je vandaan kwam: Home, of Instellingen als je daar op het logo tikte
+        const onder = (window.history.state as Stap)?.vanScherm
+        return (
+          <VakanCie
+            terug={() => (isSubschermStap() ? window.history.back() : kies('home'))}
+            terugLabel={onder === 'instellingen' ? 'Instellingen' : 'Home'}
+            aantalSchermen={SCHERMEN.length}
+          />
+        )
+      }
       case 'beheer':
         return <Beheer terug={() => kies('groep')} />
       case 'planning':
