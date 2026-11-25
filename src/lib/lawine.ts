@@ -58,7 +58,9 @@ async function haal() {
 
 function vernieuw(forceer = false) {
   const b = lees<Bewaard | null>(BEWAARD, null)
-  if (!forceer && b && Date.now() - b.opgehaald < OPNIEUW_NA) return
+  // Bewaard door een eerdere versie (nog zonder vertaling): meteen opnieuw, niet pas na een half uur
+  const zonderVertaling = !!b && b.samenvattingNl === undefined
+  if (!forceer && b && !zonderVertaling && Date.now() - b.opgehaald < OPNIEUW_NA) return
   if (bezig) return
   bezig = haal()
     .catch(() => {
