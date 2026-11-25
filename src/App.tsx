@@ -207,10 +207,10 @@ export default function App() {
 
   // Vegen tussen de tabs van de tabbalk (niet tijdens het welkomstscherm). Vanuit een
   // subscherm ga je naar de buren van de tab waar het onder valt, behalve vanuit de subschermen
-  // van Home (Weer, Instellingen, de VakanCie, en Kaart of Paklijst als ze niet in de balk staan):
-  // daar kun je niet naar Planning vegen, alleen terug met de knop.
+  // van Home (Weer, Instellingen, de VakanCie, en Kaart of Paklijst als ze niet in de balk staan)
+  // en vanuit Weer (ook als het vanaf Planning geopend is): daar alleen terug met de knop.
   const tabIndex = TABS.indexOf(basisTab(tab))
-  const magVegen = !(isSubscherm(tab) && basisTab(tab) === 'home')
+  const magVegen = !(isSubscherm(tab) && (basisTab(tab) === 'home' || tab === 'weer'))
   // Tijdens het vegen: het buurscherm dat naast het huidige ligt (zie tabswipe.ts)
   const [buur, setBuur] = useState<1 | -1 | null>(null)
   const buurTab = buur ? TABS[tabIndex + buur] : undefined
