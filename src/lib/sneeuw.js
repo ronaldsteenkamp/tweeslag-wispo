@@ -1094,6 +1094,7 @@ export function startSneeuw(eigen = {}) {
 
   // html.sneeuw-aan: de CSS gebruikt dit om blokken zonder sneeuw (en dus zonder onderlaag) dicht te maken
   let verborgen = false // zetZichtbaar(false): bijv. op een scherm met een kaart over de hele breedte
+  let stilGezet = !!cfg.stil // zetStil(true): wel getekend, maar (nog) niet bewegen
   const zetAanKlasse = () => cfg.vast && document.documentElement.classList.toggle('sneeuw-aan', aan && !verborgen)
 
   function isStil() {
@@ -1101,7 +1102,15 @@ export function startSneeuw(eigen = {}) {
   }
   function draai() {
     zetAanKlasse()
-    if (raf || !aan || verborgen || !inBeeld || document.hidden) return
+    if (raf || !aan || verborgen || document.hidden) return
+    if (stilGezet) {
+      // klaargezet (bijv. in het buurscherm bij vegen): één beeld, ook als het nog buiten beeld ligt
+      canvas.style.display = 'block'
+      meetIjs()
+      teken()
+      return
+    }
+    if (!inBeeld) return
     if (isStil()) {
       canvas.style.display = 'block'
       meetIjs()
@@ -1264,6 +1273,13 @@ export function startSneeuw(eigen = {}) {
         canvas.style.display = aan ? 'block' : 'none'
         draai()
       }
+    },
+    /** Stilstaand beeld (true) of weer laten vallen (false); het weer loopt gewoon door. */
+    zetStil(waarde) {
+      if (stilGezet === !!waarde) return
+      stilGezet = !!waarde
+      pauzeer()
+      draai()
     },
     pauzeer,
     hervat: draai,

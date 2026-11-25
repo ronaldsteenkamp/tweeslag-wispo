@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useOpgeslagen } from '../lib/opslag'
-import { startSneeuw } from '../lib/sneeuw'
+import { startSneeuw, type Sneeuw as SneeuwLaag } from '../lib/sneeuw'
 import { minderBeweging, useZuinig } from '../lib/zuinig'
 
 // Sterren in het bovenste deel van de lucht (boven de bergen), die zacht twinkelen
@@ -31,23 +31,31 @@ export function Sneeuw({ aantal = 28, maan = false }: { aantal?: number; maan?: 
   useEffect(() => {
     const el = vak.current
     if (!sneeuwAan || zuinig || !el || minderBeweging()) return
-    // In het buurscherm tijdens het vegen nog niet starten (dat laat het vegen haperen), maar pas
-    // als dit vak na het wisselen het huidige scherm is geworden: zelfde element, 'buurpaneel' eraf
-    const buur = el.closest<HTMLElement>('.buurpaneel')
-    if (!buur) return begin(el)
-    let stop: (() => void) | null = null
+    // In een buurscherm (klaargezet naast het huidige, of in beeld tijdens het vegen) staat de
+    // sneeuw stil: één getekend beeld, zodat de kop tijdens het vegen al besneeuwd is. Zodra het
+    // vak het huidige scherm wordt (zelfde element, 'buurpaneel' eraf) gaat hij meteen vallen.
+    // Opbouwen in het buurscherm in een rustig moment, niet midden in een veeg (dat hapert).
+    const paneel = el.closest<HTMLElement>('.inhoud')
+    const isBuur = () => !!paneel?.classList.contains('buurpaneel')
+    let sneeuw: SneeuwLaag | null = null
+    const start = () => {
+      cancel()
+      if (!sneeuw) sneeuw = begin(el, isBuur())
+    }
+    const ric = typeof window.requestIdleCallback === 'function'
     let wacht = 0
+    const cancel = () => (ric ? window.cancelIdleCallback(wacht) : clearTimeout(wacht))
+    if (isBuur()) wacht = ric ? window.requestIdleCallback(start, { timeout: 1000 }) : window.setTimeout(start, 300)
+    else start()
     const mo = new MutationObserver(() => {
-      if (buur.classList.contains('buurpaneel')) return
-      mo.disconnect()
-      // nog even wachten: het opruimen na het inschuiven loopt dan eerst af
-      wacht = window.setTimeout(() => (stop = begin(el)), 120)
+      if (!isBuur()) start()
+      sneeuw?.zetStil(isBuur())
     })
-    mo.observe(buur, { attributes: true, attributeFilter: ['class'] })
+    if (paneel) mo.observe(paneel, { attributes: true, attributeFilter: ['class'] })
     return () => {
       mo.disconnect()
-      clearTimeout(wacht)
-      stop?.()
+      cancel()
+      sneeuw?.vernietig()
     }
   }, [sneeuwAan, zuinig])
 
@@ -80,12 +88,13 @@ export function Sneeuw({ aantal = 28, maan = false }: { aantal?: number; maan?: 
   )
 }
 
-/** De sneeuw in een kop starten; geeft de opruimfunctie terug */
-function begin(el: HTMLElement) {
-  const sneeuw = startSneeuw({
+/** De sneeuw in een kop starten (stil = eerst als stilstaand beeld) */
+function begin(el: HTMLElement, stil: boolean): SneeuwLaag {
+  return startSneeuw({
     doel: el,
     vast: false,
     aan: true,
+    stil,
     opslagSleutel: null,
     // Een kop is klein en heeft witte tekst: minder vlokken, geen grote vlok vooraan en de
     // dichtste laag wat kleiner, zodat een vlok achter een cijfer de tekst niet wegvaagt
@@ -109,5 +118,4 @@ function begin(el: HTMLElement) {
       tekst: '',
     },
   })
-  return () => sneeuw.vernietig()
 }
