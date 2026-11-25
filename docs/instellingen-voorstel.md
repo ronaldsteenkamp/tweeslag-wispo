@@ -221,3 +221,4 @@ voet: logo · "Vragen? De VakanCie helpt" · versie
 - Akkoord op PR 1 en PR 2.
 - **Zuinig op de berg** mag vanzelf aan bij weinig batterij.
 - Berichten **van de organisatie** komen altijd door.
+- Na live gaan (25-11-2026): het lijstje *Klaar voor de berg?* en de Medische ID-tip gaan er weer uit. *App verversen* blijft, als los blok "Doet Wispo raar?" onderaan Instellingen.
