@@ -218,7 +218,7 @@ export default function Home({
                   ? zuinig.door === 'batterij'
                     ? 'Zuinig staat vanzelf aan: batterij bijna leeg'
                     : 'Zuinig op de berg staat aan'
-                  : 'Thema, zuinig, meldingen en offline'}
+                  : 'Thema, zuinig en meldingen'}
               </small>
             </span>
             <Icoon naam="pijl" grootte={18} className="homerij__pijl" />

@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 import { BevestigDialoog } from '../components/BevestigDialoog'
 import { Icoon } from '../components/Icoon'
-import { InstallatieUitleg } from '../components/InstallatieBanner'
 import { LogoKnop } from '../components/LogoKnop'
 import { MeldingenKaart } from '../components/Meldingen'
 import { SchermKop } from '../components/SchermKop'
 import { SneeuwRij } from '../components/SneeuwRij'
 import { config } from '../config'
 import { opsomming } from '../lib/kamerligging'
-import { useBereik, useKlaarVoorDeBerg, verversApp, type Controle } from '../lib/offline'
+import { useBereik, verversApp } from '../lib/offline'
 import { useOpgeslagen } from '../lib/opslag'
 import { GELUID_SLEUTEL } from '../lib/spelgeluid'
 import { useZuinig, ZUINIG_ONDER, zetZuinig } from '../lib/zuinig'
@@ -22,8 +21,7 @@ export function zetThema(t: Thema) {
 }
 
 /**
- * Instellingen: thema, sneeuw, zuinig, meldingen, geluid, wat er offline op je telefoon staat
- * en wie wat ziet.
+ * Instellingen: thema, sneeuw, zuinig, meldingen, geluid, wie wat ziet en de app verversen.
  */
 export default function Instellingen({ terug, naarVakancie }: { terug: () => void; naarVakancie: () => void }) {
   // Standaard licht (index.html zet hetzelfde vóór het tekenen)
@@ -75,8 +73,6 @@ export default function Instellingen({ terug, naarVakancie }: { terug: () => voi
         <GeluidRij />
       </section>
 
-      <KlaarVoorDeBerg />
-
       <section className="instellingen__groep" aria-labelledby="inst-naam">
         <h2 className="home__kopje" id="inst-naam">
           Bij je naam
@@ -108,6 +104,8 @@ export default function Instellingen({ terug, naarVakancie }: { terug: () => voi
           </p>
         </div>
       </section>
+
+      <VerversApp />
 
       <footer className="home__voet">
         <LogoKnop grootte={56} onKlik={naarVakancie} />
@@ -177,96 +175,17 @@ function GeluidRij() {
   )
 }
 
-/** Wat te doen als iets nog niet op de telefoon staat */
-function hoe(c: Controle) {
-  switch (c.id) {
-    case 'app':
-      return 'Open Wispo één keer met bereik en wacht even; daarna werkt hij ook zonder.'
-    case 'planning':
-    case 'paklijst':
-    case 'kamers':
-      return `Open ${c.naam === 'Kamers' ? 'Kamers (onder Groep)' : `de ${c.naam}`} één keer met bereik.`
-    case 'kaart':
-      return 'Open de Kaart één keer met bereik.'
-    case 'weer':
-      return 'Open het weer één keer met bereik (tik op het weer op Home).'
-    case 'fotos':
-      return "Blader met bereik door het clubblad: de laatste 150 foto's die je bekijkt, blijven bewaard."
-    case 'meldingen':
-      return 'Zet ze aan bij Meldingen hierboven. Op een iPhone moet Wispo eerst op je beginscherm staan.'
-    case 'beginscherm':
-      return null
-  }
-}
-
-/** "Klaar voor de berg?": wat staat er op deze telefoon voor als er geen bereik is */
-function KlaarVoorDeBerg() {
-  const { lijst, opnieuw } = useKlaarVoorDeBerg()
+/** Doet Wispo raar? De nieuwste versie ophalen en de bewaarde gegevens en foto's opnieuw laden */
+function VerversApp() {
   const bereik = useBereik()
-  const [open, setOpen] = useState<Controle['id'] | null>(null)
   const [vraag, setVraag] = useState(false)
   const [bezig, setBezig] = useState(false)
 
   return (
-    <section className="instellingen__groep" aria-labelledby="inst-berg">
-      <h2 className="home__kopje" id="inst-berg">
-        Klaar voor de berg?
+    <section className="instellingen__groep" aria-labelledby="inst-verversen">
+      <h2 className="home__kopje" id="inst-verversen">
+        Doet Wispo raar?
       </h2>
-      <p className="instellingen__uitleg instellingen__intro">
-        Dit staat op je telefoon, dus het werkt ook zonder bereik in de lift of op de gletsjer.
-      </p>
-      {lijst && (
-        <ul className="klaarlijst">
-          {lijst.map((c) => (
-            <li key={c.id} className={c.ok ? 'is-ok' : 'is-open'}>
-              {c.ok ? (
-                <div className="klaarlijst__rij">
-                  <span className="klaarlijst__teken" aria-hidden="true">
-                    <Icoon naam="vink" grootte={16} />
-                  </span>
-                  <span className="klaarlijst__naam">
-                    {c.naam}
-                    <span className="verborgen"> staat op je telefoon</span>
-                  </span>
-                  {c.extra && <small>{c.extra}</small>}
-                </div>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className="klaarlijst__rij"
-                    aria-expanded={open === c.id}
-                    onClick={() => setOpen(open === c.id ? null : c.id)}
-                  >
-                    <span className="klaarlijst__teken" aria-hidden="true" />
-                    <span className="klaarlijst__naam">
-                      {c.naam}
-                      <span className="verborgen"> nog niet</span>
-                    </span>
-                    <small>Hoe?</small>
-                  </button>
-                  {open === c.id && (
-                    <div className="klaarlijst__hoe">
-                      {c.id === 'beginscherm' ? (
-                        <>
-                          <p>Dan opent Wispo schermvullend, werkt hij beter zonder bereik en kunnen er meldingen komen.</p>
-                          <InstallatieUitleg direct />
-                        </>
-                      ) : (
-                        <p>{hoe(c)}</p>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="instellingen__memo">
-        <b>Tip:</b> vul de noodinfo van je telefoon in (iPhone: Medische ID, Android: Noodinformatie). Die zien
-        hulpverleners ook op een vergrendeld scherm. In deze app hoort dat niet: iedereen met de link kan meekijken.
-      </p>
       <button
         type="button"
         className="knop knop--secundair knop--breed"
@@ -277,8 +196,8 @@ function KlaarVoorDeBerg() {
       </button>
       <p className="instellingen__uitleg instellingen__onder">
         {bereik
-          ? 'Doet Wispo raar? Dit haalt de nieuwste versie op en laadt de gegevens en foto’s opnieuw. Je naam, paklijst en spel blijven staan.'
-          : 'Geen bereik: verversen kan straks weer. Alles met een vinkje werkt nu gewoon.'}
+          ? 'Haalt de nieuwste versie op en laadt de gegevens en foto’s opnieuw. Je naam, paklijst en spel blijven staan.'
+          : 'Geen bereik: verversen kan straks weer. Zonder bereik werkt de app gewoon.'}
       </p>
       <BevestigDialoog
         open={vraag}
@@ -289,10 +208,7 @@ function KlaarVoorDeBerg() {
         onBevestig={() => {
           setVraag(false)
           setBezig(true)
-          verversApp().catch(() => {
-            setBezig(false)
-            opnieuw()
-          })
+          verversApp().catch(() => setBezig(false))
         }}
       />
     </section>
