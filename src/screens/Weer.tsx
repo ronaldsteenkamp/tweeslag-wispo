@@ -585,13 +585,13 @@ function hellingTekst(h: readonly Richting[]) {
 }
 
 function Lawine({ nu }: { nu: Date }) {
-  const { bulletin: b, opgehaald, laden, geen } = useLawine()
+  const { bulletin: b, samenvattingNl, opgehaald, laden, geen } = useLawine()
   const nuLokaal = `${datumISO(nu)}T${tijdUUMM(nu)}`
   const verlopen = b !== null && b.geldigTot !== '' && nuLokaal > b.geldigTot
   return (
     <section className="weer__blok" aria-labelledby="h-lawine">
       <h2 id="h-lawine" className="weer__kop">
-        Lawinerisico <small>buiten de pistes</small>
+        Lawinerisico
       </h2>
       <div className="lawine">
         {b && (b.onder !== null || b.boven !== null) ? (
@@ -614,14 +614,20 @@ function Lawine({ nu }: { nu: Date }) {
             </div>
             {b.samenvatting && (
               <figure className="lawine__frans">
-                <figcaption>Samenvatting van Météo-France (Frans)</figcaption>
-                <blockquote lang="fr">{b.samenvatting}</blockquote>
+                <figcaption>
+                  {samenvattingNl ? 'Samenvatting van Météo-France (vertaald)' : 'Samenvatting van Météo-France (Frans)'}
+                </figcaption>
+                {samenvattingNl ? (
+                  <blockquote lang="nl">{samenvattingNl}</blockquote>
+                ) : (
+                  <blockquote lang="fr">{b.samenvatting}</blockquote>
+                )}
               </figure>
             )}
             <p className="lawine__klein">
               {verlopen ? <strong>Verlopen: gold tot {bulletinTijd(b.geldigTot)}. </strong> : null}
               Bulletin {b.massif} van {bulletinTijd(b.uitgegeven)}, geldig tot {bulletinTijd(b.geldigTot)}
-              {opgehaald && !verlopen && laden ? ' · nieuw bulletin ophalen…' : ''}. Het nieuwe bulletin verschijnt elke dag rond 16 uur.
+              {opgehaald && !verlopen && laden ? ' · nieuw bulletin ophalen…' : ''}.
             </p>
           </>
         ) : (
@@ -630,10 +636,9 @@ function Lawine({ nu }: { nu: Date }) {
               ? 'Lawinebulletin ophalen…'
               : geen
                 ? 'Buiten het skiseizoen geeft Météo-France geen lawinebulletin uit.'
-                : 'Het officiële lawinebulletin (BERA) van Météo-France voor het massief Oisans, waar Les Deux Alpes onder valt, verschijnt elke dag rond 16 uur voor de volgende dag. Het risico staat op de Europese schaal van 1 (gering) tot 5 (zeer groot).'}
+                : 'Het officiële lawinebulletin (BERA) van Météo-France voor het massief Oisans, waar Les Deux Alpes onder valt. Het risico staat op de Europese schaal van 1 (gering) tot 5 (zeer groot).'}
           </p>
         )}
-        <p className="lawine__klein">Het bulletin gaat over terrein buiten de pistes. Op de open pistes zorgt het skigebied voor de veiligheid.</p>
         <a href={config.weer.lawineUrl} target="_blank" rel="noopener noreferrer">
           Lees het hele bulletin <WeerIcoon naam="link" grootte={18} />
           <span className="verborgen"> (Météo-France, opent in een nieuw venster)</span>
