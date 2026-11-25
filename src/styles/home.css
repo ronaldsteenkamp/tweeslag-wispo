@@ -840,37 +840,6 @@
   align-items: flex-start;
 }
 
-/* Meldingen per soort (Instellingen): ingesprongen onder de schakelaar Meldingen */
-.meldingsoorten {
-  padding-left: 48px;
-  border-bottom: 1px solid var(--h-lijn);
-}
-
-.homerij--sub {
-  min-height: 56px;
-}
-
-.homerij--sub b {
-  font-size: 16px;
-}
-
-.homerij--sub small {
-  font-size: 14px;
-}
-
-.meldingsoorten__altijd {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 2px 12px;
-  font: 14px/1.4 var(--h-tekst);
-  color: var(--h-zacht);
-}
-
-.meldingsoorten__altijd svg {
-  flex: none;
-}
-
 .homerij strong {
   color: var(--h-inkt);
 }
@@ -909,6 +878,37 @@
   margin-top: 4px;
   font: 14px/1.4 var(--h-tekst);
   color: var(--h-zacht);
+}
+
+/* Meldingen per soort (Instellingen): ingesprongen onder de schakelaar Meldingen */
+.meldingsoorten {
+  padding-left: 48px;
+  border-bottom: 1px solid var(--h-lijn);
+}
+
+.homerij--sub {
+  min-height: 56px;
+}
+
+.homerij--sub b {
+  font-size: 16px;
+}
+
+.homerij--sub small {
+  font-size: 14px;
+}
+
+.meldingsoorten__altijd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 2px 12px;
+  font: 14px/1.4 var(--h-tekst);
+  color: var(--h-zacht);
+}
+
+.meldingsoorten__altijd svg {
+  flex: none;
 }
 
 .home__knop {
