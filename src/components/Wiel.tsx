@@ -5,7 +5,9 @@ import { useCallback, useEffect, useRef } from 'react'
  * tikgeluidje als er een vak langs de pijl gaat, en prefers-reduced-motion (dan meteen klaar).
  */
 
-export const minderBeweging = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+// Minder beweging van de telefoon, of Zuinig op de berg (Instellingen)
+import { minderBeweging } from '../lib/zuinig'
+export { minderBeweging }
 
 /** Loopt langzaam uit, zoals een rad dat wordt losgelaten */
 const uitlopen = (t: number) => 1 - Math.pow(1 - t, 4)

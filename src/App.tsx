@@ -11,6 +11,7 @@ import { verwerkKopSchakelaar } from './lib/nieuweKoppen'
 import { useNu } from './lib/nu'
 import { lees, schrijfEnMeld, useOpgeslagen } from './lib/opslag'
 import { useSchermWakker } from './lib/wakker'
+import { useZuinig } from './lib/zuinig'
 import { useTabSwipe } from './lib/tabswipe'
 import { useToetsenbord } from './lib/toetsenbord'
 import Home from './screens/Home'
@@ -102,7 +103,9 @@ export default function App() {
   // Op de kaart, bij het rad en bij de busbingo gaat het scherm niet op slot (elders wel, voor de batterij)
   const [spelOnderdeel] = useOpgeslagen<string>('spel.onderdeel', 'challenges')
   const [groepOnderdeel] = useOpgeslagen<string>('groep.onderdeel', 'kamers')
-  useSchermWakker(tab === 'kaart' || (tab === 'spel' && (spelOnderdeel === 'bingo' || spelOnderdeel === 'rad')))
+  // ...behalve als Zuinig op de berg aan staat (Instellingen)
+  const zuinig = useZuinig().aan
+  useSchermWakker(!zuinig && (tab === 'kaart' || (tab === 'spel' && (spelOnderdeel === 'bingo' || spelOnderdeel === 'rad'))))
   useToetsenbord()
 
   // Badge op de tabbalk: nieuwe kiekjes in het clubblad (nog niet geopend, en niet van jezelf)

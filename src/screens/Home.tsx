@@ -24,6 +24,7 @@ import { paklijstZin } from '../lib/paklijstZinnen'
 import { datumISO, datumLabel, lokaalNaarDate, resterend } from '../lib/tijd'
 import { cm, graden, useWeer, weerTekst } from '../lib/weer'
 import { netjes } from '../lib/typografie'
+import { useZuinig } from '../lib/zuinig'
 import { FotoGroot, GEZIEN, useKamerLabel } from './Fotomuur'
 import { beeldVoor, soortActiviteit } from './Planning'
 import '../styles/barlow.css'
@@ -87,6 +88,7 @@ export default function Home({
   const profiel = useMijnProfiel()
   const [overgenomen] = useOpgeslagen<string | null>(NAAM_OVERGENOMEN, null)
   const pak = usePaklijstStand()
+  const zuinig = useZuinig()
 
   const dagen = planning?.dagen ?? []
   const vandaag = datumISO(nu)
@@ -211,7 +213,13 @@ export default function Home({
             </span>
             <span className="homerij__tekst">
               <b>Instellingen</b>
-              <small>Thema, sneeuw en meldingen</small>
+              <small>
+                {zuinig.aan
+                  ? zuinig.door === 'batterij'
+                    ? 'Zuinig staat vanzelf aan: batterij bijna leeg'
+                    : 'Zuinig op de berg staat aan'
+                  : 'Thema, zuinig, meldingen en offline'}
+              </small>
             </span>
             <Icoon naam="pijl" grootte={18} className="homerij__pijl" />
           </button>

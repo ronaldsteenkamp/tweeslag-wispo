@@ -21,6 +21,7 @@ import { startStukjesWachtrij } from './lib/stukjes'
 import { startStemming } from './lib/stemming'
 import { startBadges } from './lib/badgesTelefoon'
 import { startRadUitslagen } from './lib/radUitslagen'
+import { startZuinig } from './lib/zuinig'
 import './styles/theme.css'
 import './styles/app.css'
 
@@ -29,6 +30,8 @@ document.addEventListener('gesturestart', (e) => e.preventDefault())
 
 // Zo vroeg mogelijk, anders missen we het beforeinstallprompt-event van Chrome
 vangInstallatieMelding()
+// Zuinig op de berg: zelf aangezet, of vanzelf bij weinig batterij (zie lib/zuinig.ts)
+startZuinig()
 // Vóór het welkomstscherm: is dit een app die er al stond met het oude icoon? (zie icoonversie.ts)
 bepaalIcoonVersie()
 // Gedeelde functies (alleen als Supabase is ingesteld; anders gebeurt er niets)

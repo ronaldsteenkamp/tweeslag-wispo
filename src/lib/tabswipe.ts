@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { flushSync } from 'react-dom'
+import { minderBeweging } from './zuinig'
 
 /*
  * Vegen tussen tabs zoals in Instagram: het buurscherm ligt (echt, niet als plaatje) direct
@@ -25,10 +26,6 @@ const AFLOOP = 'cubic-bezier(0.22, 1, 0.36, 1)'
 /** Elementen met een eigen veeggebaar of vensters (ook de raderen). De kaart alleen als je ingezoomd bent. */
 const EIGEN_GEBAAR =
   '.kaartvak:not([data-uitgezoomd]), .foto-groot, .bijsnijder__kader, [role="dialog"], [data-eigen-gebaar], input, textarea, select'
-
-function minderBeweging() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
 
 /** Het element dat meeschuift: de inhoud, of op de kaart het vaste kaartscherm */
 export function wisselPaneel(): HTMLElement | null {

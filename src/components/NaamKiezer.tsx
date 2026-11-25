@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useToonNaam } from '../lib/bijnamen'
 import { alleDeelnemers, type Kamers } from '../lib/data'
+import { minderBeweging } from '../lib/zuinig'
 import { Icoon } from './Icoon'
 
 /** Kleine letters en zonder accenten, zodat 'esmee' ook 'Esmée' vindt */
@@ -53,7 +54,7 @@ export function NaamKiezer({
     if (skipas) {
       // Even de stempel laten zien; zonder beweging (reduced motion) meteen door
       setGestempeld(n)
-      const rustig = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      const rustig = minderBeweging()
       window.setTimeout(() => doorMet(n), rustig ? 0 : 650)
       return
     }

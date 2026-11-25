@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useOpgeslagen } from '../lib/opslag'
 import { startSneeuw, type Sneeuw as SneeuwLaag } from '../lib/sneeuw'
+import { minderBeweging, useZuinig } from '../lib/zuinig'
 
 // Sterren in het bovenste deel van de lucht (boven de bergen), die zacht twinkelen
 const STERREN = Array.from({ length: 22 }, () => ({
@@ -23,11 +24,13 @@ const STERREN = Array.from({ length: 22 }, () => ({
  */
 export function Sneeuw({ aantal = 28, maan = false }: { aantal?: number; maan?: boolean }) {
   const [sneeuwAan] = useOpgeslagen('sneeuw.aan', true)
+  // Zuinig op de berg (Instellingen): geen sneeuw, ook geen twinkelende sterren (zie app.css)
+  const zuinig = useZuinig().aan
   const vak = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = vak.current
-    if (!sneeuwAan || !el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!sneeuwAan || zuinig || !el || minderBeweging()) return
     // In een buurscherm (klaargezet naast het huidige, of in beeld tijdens het vegen) staat de
     // sneeuw stil: één getekend beeld, zodat de kop tijdens het vegen al besneeuwd is. Zodra het
     // vak het huidige scherm wordt (zelfde element, 'buurpaneel' eraf) gaat hij meteen vallen.
@@ -54,7 +57,7 @@ export function Sneeuw({ aantal = 28, maan = false }: { aantal?: number; maan?: 
       cancel()
       sneeuw?.vernietig()
     }
-  }, [sneeuwAan])
+  }, [sneeuwAan, zuinig])
 
   return (
     <div ref={vak} className="sneeuw" aria-hidden="true">

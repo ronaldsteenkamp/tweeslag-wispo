@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { minderBeweging } from '../lib/zuinig'
 
 /*
  * Groot feest over het hele scherm: een regen van confetti en vuurwerk dat op verschillende
@@ -60,7 +61,7 @@ export function Feestregen({ duur: eigenDuur, klein = false, onKlaar }: { duur?:
   useEffect(() => {
     const c = canvas.current
     const ctx = c?.getContext('2d')
-    if (!c || !ctx || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (!c || !ctx || minderBeweging()) {
       klaar.current?.()
       return
     }
