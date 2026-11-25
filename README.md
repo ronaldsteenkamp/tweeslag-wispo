@@ -348,6 +348,15 @@ Kleine badges op het profielkaartje en in *Jouw profiel* (onder de naam; tik ero
 - Migraties (SQL Editor → New query → plak het bestand → Run; mogen vaker):
   - `0011_badges.sql` (na 0010): kolom `ingepakt` in `voortgang`.
   - **`0012_meer_badges.sql` (na 0011): kolommen `badges` en `ingepakt_op` in `voortgang` en de tabel `rad_uitslagen`.** Zonder deze migratie werkt de app gewoon, maar zien anderen de badges van je telefoon niet en zijn 🐦 Vroege vogel en 🎡 Lot uit de loterij niet te halen.
+### Lawinebulletin
+Edge Function: `supabase/functions/lawine/` (alleen `index.ts`). Op de Weer-pagina staat het officiële lawinebulletin (BERA) van Météo-France voor het massief **Oisans** (nummer 15), waar Les Deux Alpes onder valt: het risico boven en onder de hoogtegrens (Europese schaal, in de officiële kleuren), de hellingen waar het het grootst is, de verwachting voor morgen en de samenvatting in het Frans. Geen eigen oordeel: alleen wat Météo-France zegt, met de link naar het hele bulletin. Het laatste bulletin blijft op de telefoon bewaard (ook zonder bereik), met uitgifte en geldigheid erbij; de app vraagt hooguit eens per half uur een nieuw, de functie onthoudt het 20 minuten.
+
+- **Sleutel:** een gratis account op het [API-portaal van Météo-France](https://portail-api.meteofrance.fr/) (gebruikersnaam `ronaldsteenkamp`), geabonneerd op *Données Publiques BRA*, met een sleutel van het type *API Key*. Die staat als geheim **`METEOFRANCE_APIKEY`** in Supabase (*Edge Functions → Secrets*). **Aangemaakt op 25 november 2026, 2 jaar geldig** (tot november 2028); daarna een nieuwe maken via *Use → API Key → Generate Token* en het geheim vervangen.
+- **Online zetten:** *Edge Functions → Deploy a new function → Via Editor*, naam `lawine`, de inhoud van `index.ts`. *Verify JWT* mag aan blijven.
+- **Uitlezen:** `src/lib/lawinebulletin.ts` (getest met een echt bulletin in `scripts/voorbeelden/`), ophalen en bewaren: `src/lib/lawine.ts`.
+- **Licentie:** Licence Ouverte (Etalab), bron *Météo-France*. Buiten het seizoen (ongeveer juni tot november) is er geen bulletin; dan staat er de uitleg met de link.
+- Het open archief op data.gouv.fr is niet bruikbaar: dat krijgt het bulletin pas een dag later binnen.
+
 ### Let op: gratis project pauzeert
 Een gratis Supabase-project wordt **na een week zonder gebruik gepauzeerd**. De app laat dan *Geen verbinding* zien (de rest werkt door). Je zet het weer aan via het Supabase-dashboard → project → *Restore project* (duurt een paar minuten). **Controleer dit een paar dagen voor vertrek** en open de app daarna af en toe; tijdens de reis houdt het gebruik het project vanzelf actief.
 

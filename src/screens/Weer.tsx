@@ -3,6 +3,8 @@ import { SchermKop } from '../components/SchermKop'
 import { WeerIcoon } from '../components/WeerIcoon'
 import { config } from '../config'
 import { useData } from '../lib/data'
+import { useLawine } from '../lib/lawine'
+import { NIVEAUS, RICHTINGEN, type Richting } from '../lib/lawinebulletin'
 import { useNu } from '../lib/nu'
 import { NIVEAU_WOORD, skidag, versSneeuw } from '../lib/skidag'
 import { datumISO, datumLabel, lokaalNaarDate, tijdUUMM } from '../lib/tijd'
@@ -138,7 +140,7 @@ export default function Weer({ terug }: { terug: () => void }) {
         </>
       )}
 
-      <Lawine />
+      <Lawine nu={nu} />
 
       {weer && gletsjer && dorp && <Dagen gletsjer={gletsjer} dorp={dorp} vandaag={vandaag} reisdagen={reisdagen} voorVertrek={nu < vertrek} />}
 
@@ -528,22 +530,112 @@ function PerUur({ gletsjer, dorp, datum, avond }: { gletsjer: WeerLocatie; dorp:
   )
 }
 
-// ---------- Lawinerisico: alleen verwijzen naar de officiële bron ----------
+// ---------- Lawinerisico: het officiële bulletin van Météo-France, zonder eigen oordeel ----------
 
-function Lawine() {
+/** 'JJJJ-MM-DDTUU:MM' (tijd in de Alpen, gelijk aan Nederland) → 'di 25, 16:00' */
+const bulletinTijd = (t: string) => `${datumLabel(t.slice(0, 10), 'kort')}, ${t.slice(11, 16)}`
+
+/** De acht hellingen als roos; de gevaarlijkste ingekleurd */
+function HellingRoos({ hellingen }: { hellingen: readonly Richting[] }) {
+  return (
+    <svg className="lawine__roos" viewBox="-50 -50 100 100" aria-hidden="true">
+      {RICHTINGEN.map((r, i) => {
+        const hoek = (i * 45 - 90) * (Math.PI / 180)
+        const half = 22.5 * (Math.PI / 180)
+        const punt = (h: number, straal: number) => `${(Math.cos(h) * straal).toFixed(1)} ${(Math.sin(h) * straal).toFixed(1)}`
+        return (
+          <path
+            key={r}
+            className={hellingen.includes(r) ? 'is-gevaar' : undefined}
+            d={`M ${punt(hoek - half, 12)} L ${punt(hoek - half, 40)} A 40 40 0 0 1 ${punt(hoek + half, 40)} L ${punt(hoek + half, 12)} A 12 12 0 0 0 ${punt(hoek - half, 12)} Z`}
+          />
+        )
+      })}
+      <text x="0" y="-43">
+        N
+      </text>
+    </svg>
+  )
+}
+
+function Niveau({ niveau, later, waar }: { niveau: number | null; later: number | null; waar: string }) {
+  if (niveau === null) return null
+  return (
+    <div className="lawine__niveau">
+      <b className={`lawine__cijfer lawine__cijfer--${niveau}`}>{niveau}</b>
+      <span>
+        <strong>{hoofdletter(NIVEAUS[niveau])}</strong>
+        <small>{waar}</small>
+        {later !== null && later !== niveau && (
+          <small>
+            later op de dag {later} ({NIVEAUS[later]})
+          </small>
+        )}
+      </span>
+    </div>
+  )
+}
+
+const hoofdletter = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+function hellingTekst(h: readonly Richting[]) {
+  if (h.length === 0) return 'Geen hellingen extra aangegeven'
+  if (h.length === RICHTINGEN.length) return 'Alle hellingen'
+  return `Vooral ${h.length === 1 ? h[0] : `${h.slice(0, -1).join(', ')} en ${h[h.length - 1]}`}`
+}
+
+function Lawine({ nu }: { nu: Date }) {
+  const { bulletin: b, opgehaald, laden, geen } = useLawine()
+  const nuLokaal = `${datumISO(nu)}T${tijdUUMM(nu)}`
+  const verlopen = b !== null && b.geldigTot !== '' && nuLokaal > b.geldigTot
   return (
     <section className="weer__blok" aria-labelledby="h-lawine">
       <h2 id="h-lawine" className="weer__kop">
         Lawinerisico <small>buiten de pistes</small>
       </h2>
       <div className="lawine">
-        <p>
-          Het officiële lawinebulletin (BERA) van Météo-France voor het massief Oisans, waar Les Deux Alpes onder valt, verschijnt elke dag rond 16
-          uur voor de volgende dag. Het risico staat op de Europese schaal van 1 (laag) tot 5 (zeer groot).
-        </p>
+        {b && (b.onder !== null || b.boven !== null) ? (
+          <>
+            <div className="lawine__niveaus">
+              <Niveau niveau={b.boven} later={b.bovenLater} waar={`boven ${meters(b.grens ?? 0)}`} />
+              <Niveau niveau={b.onder} later={b.onderLater} waar={b.grens !== null ? `onder ${meters(b.grens)}` : 'op de hele berg'} />
+            </div>
+            <div className="lawine__hellingen">
+              <HellingRoos hellingen={b.hellingen} />
+              <p>
+                <b>{hellingTekst(b.hellingen)}</b>
+                <small>daar is het risico het grootst</small>
+                {b.morgen !== null && (
+                  <small>
+                    Morgen: {b.morgen} ({NIVEAUS[b.morgen]})
+                  </small>
+                )}
+              </p>
+            </div>
+            {b.samenvatting && (
+              <figure className="lawine__frans">
+                <figcaption>Samenvatting van Météo-France (Frans)</figcaption>
+                <blockquote lang="fr">{b.samenvatting}</blockquote>
+              </figure>
+            )}
+            <p className="lawine__klein">
+              {verlopen ? <strong>Verlopen: gold tot {bulletinTijd(b.geldigTot)}. </strong> : null}
+              Bulletin {b.massif} van {bulletinTijd(b.uitgegeven)}, geldig tot {bulletinTijd(b.geldigTot)}
+              {opgehaald && !verlopen && laden ? ' · nieuw bulletin ophalen…' : ''}. Het nieuwe bulletin verschijnt elke dag rond 16 uur.
+            </p>
+          </>
+        ) : (
+          <p>
+            {laden
+              ? 'Lawinebulletin ophalen…'
+              : geen
+                ? 'Buiten het skiseizoen geeft Météo-France geen lawinebulletin uit.'
+                : 'Het officiële lawinebulletin (BERA) van Météo-France voor het massief Oisans, waar Les Deux Alpes onder valt, verschijnt elke dag rond 16 uur voor de volgende dag. Het risico staat op de Europese schaal van 1 (gering) tot 5 (zeer groot).'}
+          </p>
+        )}
         <p className="lawine__klein">Het bulletin gaat over terrein buiten de pistes. Op de open pistes zorgt het skigebied voor de veiligheid.</p>
         <a href={config.weer.lawineUrl} target="_blank" rel="noopener noreferrer">
-          Lees het bulletin <WeerIcoon naam="link" grootte={18} />
+          Lees het hele bulletin <WeerIcoon naam="link" grootte={18} />
           <span className="verborgen"> (Météo-France, opent in een nieuw venster)</span>
         </a>
       </div>

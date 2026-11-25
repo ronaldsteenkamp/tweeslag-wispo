@@ -506,6 +506,107 @@
   color: var(--w-inkt);
 }
 
+/* Niveaus: boven en onder de hoogtegrens, als op de berg zelf (boven staat bovenaan) */
+.lawine__niveaus {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--w-lijn);
+}
+
+.lawine__niveau {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lawine__niveau strong {
+  display: block;
+  font: 700 1.25rem/1.1 var(--w-smal);
+}
+
+.lawine__niveau small,
+.lawine__hellingen small {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--w-zacht);
+}
+
+/* Het cijfer in de officiële kleur van de Europese schaal (EAWS): betekenis, geen versiering */
+.lawine__cijfer {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--w-inkt);
+  border-radius: 6px;
+  font: 700 1.6rem/1 var(--w-smal);
+  color: #0d0058;
+}
+
+.lawine__cijfer--1 { background: #ccff66; }
+.lawine__cijfer--2 { background: #ffff00; }
+.lawine__cijfer--3 { background: #ff9900; }
+.lawine__cijfer--4 { background: #ff0000; color: #fff; }
+.lawine__cijfer--5 { background: repeating-conic-gradient(#ff0000 0 25%, #000 0 50%) 0 0 / 14px 14px; color: #fff; text-shadow: 0 0 3px #000; }
+
+/* Hellingen: roos met de gevaarlijkste windrichtingen ingekleurd */
+.lawine__hellingen {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 10px;
+  border-bottom: 1px solid var(--w-lijn);
+}
+
+.lawine__hellingen b {
+  font-weight: 600;
+}
+
+.lawine__roos {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+}
+
+.lawine__roos path {
+  fill: var(--w-papier);
+  stroke: var(--w-inkt);
+  stroke-width: 1.5;
+}
+
+.lawine__roos path.is-gevaar {
+  fill: var(--w-inkt);
+}
+
+.lawine__roos text {
+  font: 700 10px/1 var(--w-smal);
+  fill: var(--w-zacht);
+  text-anchor: middle;
+}
+
+/* Samenvatting in het Frans, zoals Météo-France hem schrijft */
+.lawine__frans {
+  margin: 0;
+}
+
+.lawine__frans figcaption {
+  font: 600 0.78rem/1.2 var(--w-smal);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--w-zacht);
+}
+
+.lawine__frans blockquote {
+  margin: 4px 0 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--w-lijn);
+  white-space: pre-line;
+  font-style: italic;
+}
+
 /* ---------- Dagen ---------- */
 
 .dagen {

@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { stuurTestmelding, useMeldingen, zetMeldingenAan } from '../lib/meldingen'
+import { stuurTestmelding, useMeldingen, zetMeldingenAan, zetMeldingenUit } from '../lib/meldingen'
 import { Icoon } from './Icoon'
 
 /**
- * Op Home, helemaal onderaan: meldingen aanzetten (pas na een tik wordt om toestemming gevraagd).
- * Uit: een rij met een rood bord en een schakelaar, zoals de andere rijen op Home.
- * Na aanzetten komt er meteen een testmelding en verdwijnt het blok. Uitzetten kan via de
- * instellingen van de telefoon. Alleen als de testmelding niet lukt, blijft er een regel staan
- * met 'Opnieuw proberen' (zet het abonnement opnieuw op de server en stuurt weer een test).
+ * In Instellingen: meldingen aan- en uitzetten (pas na een tik wordt om toestemming gevraagd).
+ * Een rij met een rood bord en een schakelaar, zoals Sneeuw. Na aanzetten komt er meteen een
+ * testmelding en blijft de rij staan met de schakelaar aan; nog een tik zet ze weer uit.
+ * Lukt de testmelding niet, dan staat er een regel onder met 'Opnieuw proberen' (zet het
+ * abonnement opnieuw op de server en stuurt weer een test).
  * Opmaak in styles/home.css (.homerij, .schakelaar, .meldingen-stil).
  */
 export function MeldingenKaart() {
@@ -36,18 +36,39 @@ export function MeldingenKaart() {
     }
   }
 
+  const uit = async () => {
+    setBezig(true)
+    setTekst(null)
+    setTestMislukt(false)
+    await zetMeldingenUit()
+    setBezig(false)
+  }
+
   if (status === 'aan') {
-    if (!testMislukt) return null
     return (
-      <section className="meldingen-stil" aria-label="Meldingen">
-        <p>
-          <Icoon naam="bel" grootte={16} /> Meldingen staan aan, maar de testmelding kwam niet aan
-          <span aria-hidden="true"> · </span>
-          <button type="button" onClick={() => void aan()} disabled={bezig}>
-            {bezig ? 'Even geduld…' : 'Opnieuw proberen'}
-          </button>
-        </p>
-        {tekst && <p className="meldingen-stil__tekst">{tekst}</p>}
+      <section aria-label="Meldingen">
+        <button type="button" role="switch" aria-checked={true} className="homerij" onClick={() => void uit()} disabled={bezig}>
+          <span className="bord bord--rood" aria-hidden="true">
+            <Icoon naam="bel" grootte={19} />
+          </span>
+          <span className="homerij__tekst">
+            <b>Meldingen</b>
+            <small>{bezig ? 'Even geduld…' : 'Staan aan: seintje voor de bus, nieuwe challenges en de uitslag van de stemming'}</small>
+          </span>
+          <span className="schakelaar is-aan" aria-hidden="true" />
+        </button>
+        {testMislukt && (
+          <div className="meldingen-stil">
+            <p>
+              <Icoon naam="bel" grootte={16} /> De testmelding kwam niet aan
+              <span aria-hidden="true"> · </span>
+              <button type="button" onClick={() => void aan()} disabled={bezig}>
+                {bezig ? 'Even geduld…' : 'Opnieuw proberen'}
+              </button>
+            </p>
+            {tekst && <p className="meldingen-stil__tekst">{tekst}</p>}
+          </div>
+        )}
       </section>
     )
   }
