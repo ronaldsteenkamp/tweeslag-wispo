@@ -6,6 +6,10 @@
 //   { soort: 'bericht', titel, tekst, url? }   → bericht aan iedereen (alleen beheerders)
 //   { soort: 'gepland' }                       → wat nu aan de beurt is (elke 5 minuten via pg_cron)
 //
+// Per apparaat kun je in de app soorten uitzetten (kolom push_abonnementen.soorten, migratie 0022):
+// planning, challenges, uitslag en redactie. Berichten van de beheerder en de testmelding komen
+// altijd door.
+//
 // Instellingen in Supabase: "Verify JWT" UIT. De functie controleert zelf wie er belt;
 // 'gepland' verstuurt alleen wat aan de beurt is en nog niet verstuurd is, dus dat mag iedereen.
 // De VAPID-sleutels maakt de functie zelf aan bij de eerste aanroep (tabel push_sleutels).
@@ -52,6 +56,30 @@ interface Abonnement {
   endpoint: string
   p256dh: string
   auth: string
+  /** Welke soorten dit apparaat wil (migratie 0022); ontbreekt = alles */
+  soorten?: string[] | null
+}
+
+/** Soorten die je in Instellingen kunt uitzetten. 'bericht' en 'test' komen altijd door. */
+type Keuzesoort = 'planning' | 'challenges' | 'uitslag' | 'redactie'
+
+/** Alleen de apparaten die deze soort willen */
+const willen = (abonnementen: Abonnement[], soort: Keuzesoort) =>
+  abonnementen.filter((a) => !Array.isArray(a.soorten) || a.soorten.includes(soort))
+
+/**
+ * Abonnementen met hun gekozen soorten. Bestaat de kolom nog niet (migratie 0022 nog niet
+ * gedraaid), dan zonder: iedereen krijgt dan alles, zoals voorheen.
+ */
+async function abonnementenWaar(filter?: { userIds: string[] }): Promise<Abonnement[]> {
+  const vraag = (kolommen: string) => {
+    const q = db.from('push_abonnementen').select(kolommen)
+    return filter ? q.in('user_id', filter.userIds) : q
+  }
+  let { data, error } = await vraag('endpoint, p256dh, auth, soorten')
+  if (error?.code === '42703') ({ data, error } = await vraag('endpoint, p256dh, auth'))
+  if (error) throw error
+  return (data ?? []) as unknown as Abonnement[]
 }
 
 async function verstuur(abonnementen: Abonnement[], bericht: { titel: string; tekst: string; url: string; tag?: string }) {
@@ -83,11 +111,7 @@ async function verstuur(abonnementen: Abonnement[], bericht: { titel: string; te
   return { gelukt, mislukt: abonnementen.length - gelukt, opgeruimd: weg.length, fouten: fouten.slice(0, 5) }
 }
 
-async function alleAbonnementen(): Promise<Abonnement[]> {
-  const { data, error } = await db.from('push_abonnementen').select('endpoint, p256dh, auth')
-  if (error) throw error
-  return data ?? []
-}
+const alleAbonnementen = () => abonnementenWaar()
 
 /** Legt de melding vast; false als hij al eerder verstuurd is */
 async function claim(m: Melding): Promise<number | null> {
@@ -189,11 +213,10 @@ async function redactieMeldingen() {
   for (const [naam, fotos] of perNaam) {
     const { data: apparaten } = await db.from('deelnemers').select('user_id').ilike('naam', naam)
     const ids = (apparaten ?? []).map((a) => a.user_id)
-    const { data: abo } = ids.length
-      ? await db.from('push_abonnementen').select('endpoint, p256dh, auth').in('user_id', ids)
-      : { data: [] }
+    // Alleen apparaten die deze melding willen (Instellingen → "Jouw kiekje of stukje")
+    const abo = ids.length ? willen(await abonnementenWaar({ userIds: ids }), 'redactie') : []
     const m = redactieMelding(fotos)
-    if (abo?.length) gelukt += (await verstuur(abo, { ...m, url: './#spel', tag: `redactie-${naam}` })).gelukt
+    if (abo.length) gelukt += (await verstuur(abo, { ...m, url: './#spel', tag: `redactie-${naam}` })).gelukt
     // Ook zonder telefoon met meldingen: als gemeld zetten, anders blijft hij elke 5 minuten terugkomen
     const nu = new Date().toISOString()
     const fotoIds = fotos.filter((f) => f.soort !== 'stukje').map((f) => f.id)
@@ -219,7 +242,8 @@ async function gepland() {
   for (const m of lijst) {
     const id = await claim(m)
     if (id === null) continue
-    const r = await verstuur(abonnementen, { titel: m.titel, tekst: m.tekst, url: m.url, tag: m.sleutel })
+    // Per soort alleen de apparaten die hem willen (Instellingen)
+    const r = await verstuur(willen(abonnementen, m.soort), { titel: m.titel, tekst: m.tekst, url: m.url, tag: m.sleutel })
     await db.from('meldingen').update({ aantal: r.gelukt }).eq('id', id)
     verstuurd.push({ sleutel: m.sleutel, ...r })
   }

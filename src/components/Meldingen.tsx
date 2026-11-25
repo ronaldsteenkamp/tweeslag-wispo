@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { stuurTestmelding, useMeldingen, zetMeldingenAan, zetMeldingenUit } from '../lib/meldingen'
+import {
+  gekozenSoorten,
+  MELDINGSOORTEN,
+  stuurTestmelding,
+  useMeldingen,
+  zetMeldingenAan,
+  zetMeldingenUit,
+  zetSoort,
+} from '../lib/meldingen'
 import { Icoon } from './Icoon'
 
 /**
@@ -10,6 +18,41 @@ import { Icoon } from './Icoon'
  * abonnement opnieuw op de server en stuurt weer een test).
  * Opmaak in styles/home.css (.homerij, .schakelaar, .meldingen-stil).
  */
+/**
+ * Onder de schakelaar Meldingen (als ze aan staan): per soort aan of uit, voor deze telefoon.
+ * Berichten van de organisatie komen altijd door.
+ */
+function MeldingSoorten() {
+  useMeldingen() // opnieuw tekenen na een keuze
+  const gekozen = gekozenSoorten()
+  return (
+    <div className="meldingsoorten" role="group" aria-label="Welke meldingen">
+      {MELDINGSOORTEN.map((s) => {
+        const aan = gekozen.includes(s.id)
+        return (
+          <button
+            key={s.id}
+            type="button"
+            role="switch"
+            aria-checked={aan}
+            className="homerij homerij--sub"
+            onClick={() => zetSoort(s.id, !aan)}
+          >
+            <span className="homerij__tekst">
+              <b>{s.titel}</b>
+              <small>{s.uitleg}</small>
+            </span>
+            <span className={`schakelaar${aan ? ' is-aan' : ''}`} aria-hidden="true" />
+          </button>
+        )
+      })}
+      <p className="meldingsoorten__altijd">
+        <Icoon naam="info" grootte={16} /> Berichten van de organisatie komen altijd door.
+      </p>
+    </div>
+  )
+}
+
 export function MeldingenKaart() {
   const status = useMeldingen()
   const [bezig, setBezig] = useState(false)
@@ -53,10 +96,12 @@ export function MeldingenKaart() {
           </span>
           <span className="homerij__tekst">
             <b>Meldingen</b>
-            <small>{bezig ? 'Even geduld…' : 'Staan aan: seintje voor de bus, nieuwe challenges en de uitslag van de stemming'}</small>
+            <small>{bezig ? 'Even geduld…' : 'Staan aan op deze telefoon. Kies hieronder welke je wilt.'}</small>
           </span>
           <span className="schakelaar is-aan" aria-hidden="true" />
         </button>
+        <MeldingSoorten />
+
         {testMislukt && (
           <div className="meldingen-stil">
             <p>
