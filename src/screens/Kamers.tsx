@@ -53,7 +53,13 @@ export default function Kamers({ naarVerdelen, naarBeheer, keuze }: { naarVerdel
   if (!data) {
     return (
       <div className="scherm">
-        {nieuweKop ? <SchermKop titel="Appartementen">{keuze}</SchermKop> : <h1>Kamers</h1>}
+        {nieuweKop ? (
+          <SchermKop titel="Appartementen" boven={config.bestemming} ondertitel="Even laden…">
+            {keuze}
+          </SchermKop>
+        ) : (
+          <h1>Kamers</h1>
+        )}
         <DataStatus fout={fout} />
       </div>
     )
@@ -64,7 +70,13 @@ export default function Kamers({ naarVerdelen, naarBeheer, keuze }: { naarVerdel
   if (!naamBekend) {
     return (
       <div className="scherm">
-        {nieuweKop ? <SchermKop titel="Wie ben jij?" boven="Groep">{keuze}</SchermKop> : <h1>Wie ben jij?</h1>}
+        {nieuweKop ? (
+          <SchermKop titel="Wie ben jij?" boven={config.bestemming} ondertitel="Kies je naam">
+            {keuze}
+          </SchermKop>
+        ) : (
+          <h1>Wie ben jij?</h1>
+        )}
         <p>
           {naam !== null
             ? 'Je naam staat niet meer in de kamerlijst. Kies hem opnieuw.'
@@ -95,12 +107,16 @@ export default function Kamers({ naarVerdelen, naarBeheer, keuze }: { naarVerdel
   const geopend = plekken.find((p) => p.kamer.nummer === open) ?? null
   const mensen = plekken.reduce((s, p) => s + p.kamer.bewoners.length, 0) + data.zonderKamer.length
   const vrij = plekken.reduce((s, p) => s + p.vrij, 0)
+  // Vast en kort; de aantallen staan al direct onder de kop
+  const kopRegel = 'Wie slaapt waar'
 
   return (
     <div className="scherm ks">
       <Duotoon />
       {nieuweKop ? (
-        <SchermKop titel="Appartementen" boven={config.bestemming} ondertitel={kopZin}>
+        // Eén korte, vaste regel: met wie je slaapt staat al op je eigen bladzijde. Een langere
+        // regel maakte de kop hoger dan die van het clubblad, en dan versprong het beeld bij wisselen.
+        <SchermKop titel="Appartementen" boven={config.bestemming} ondertitel={kopRegel}>
           {keuze}
         </SchermKop>
       ) : (

@@ -4071,6 +4071,16 @@ html[data-zuinig] .sneeuw {
   opacity: 0.9;
 }
 
+/* Bovenregel en subkop altijd op één regel: anders wordt de kop hoger en verspringt het beeld
+   bij het wisselen tussen onderdelen van dezelfde tab (bijv. Appartementen en Clubblad) */
+.schermkop__boven,
+.schermkop__onder {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .schermkop__rechts {
   flex: none;
   display: flex;
