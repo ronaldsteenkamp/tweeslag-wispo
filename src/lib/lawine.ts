@@ -16,10 +16,14 @@ interface Bewaard {
   xml: string
   /** Wanneer de app het bulletin binnenkreeg (ms) */
   opgehaald: number
+  /** Nederlandse vertaling van de samenvatting (van de Edge Function), als die gelukt is */
+  samenvattingNl?: string | null
 }
 
 export interface LawineStand {
   bulletin: Bulletin | null
+  /** De samenvatting in het Nederlands; null = alleen het Frans beschikbaar */
+  samenvattingNl: string | null
   opgehaald: number | null
   laden: boolean
   /** Buiten het seizoen geeft Météo-France geen bulletin */
@@ -41,10 +45,15 @@ async function haal() {
     fout = 'Het bulletin kon niet worden opgehaald.'
     return
   }
-  const d = data as { xml?: string; opgehaald?: number; geen?: boolean; fout?: string }
+  const d = data as { xml?: string; opgehaald?: number; geen?: boolean; fout?: string; samenvattingNl?: string | null }
   geen = d.geen === true
   fout = d.fout ?? null
-  if (d.xml && leesBulletin(d.xml)) schrijf<Bewaard>(BEWAARD, { xml: d.xml, opgehaald: Date.now() })
+  if (d.xml && leesBulletin(d.xml)) {
+    // Is het vertalen deze keer niet gelukt, maar hadden we dezelfde tekst al vertaald: die houden
+    const oud = lees<Bewaard | null>(BEWAARD, null)
+    const nl = d.samenvattingNl ?? (oud?.xml === d.xml ? (oud.samenvattingNl ?? null) : null)
+    schrijf<Bewaard>(BEWAARD, { xml: d.xml, opgehaald: Date.now(), samenvattingNl: nl })
+  }
 }
 
 function vernieuw(forceer = false) {
@@ -64,7 +73,14 @@ function vernieuw(forceer = false) {
 
 function stand(): LawineStand {
   const b = lees<Bewaard | null>(BEWAARD, null)
-  return { bulletin: b ? leesBulletin(b.xml) : null, opgehaald: b?.opgehaald ?? null, laden: bezig !== null, geen, fout }
+  return {
+    bulletin: b ? leesBulletin(b.xml) : null,
+    samenvattingNl: b?.samenvattingNl ?? null,
+    opgehaald: b?.opgehaald ?? null,
+    laden: bezig !== null,
+    geen,
+    fout,
+  }
 }
 
 export function useLawine(): LawineStand & { vernieuw: () => void } {
