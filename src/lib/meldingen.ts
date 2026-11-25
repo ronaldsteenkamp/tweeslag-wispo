@@ -49,6 +49,66 @@ function uitgezet(): boolean {
 /** Opnieuw aanmelden zonder tik lukte niet (sommige browsers willen een tik): dan de knop tonen */
 let herstelMislukt = false
 
+// ---------- Soorten (Instellingen) ----------
+
+/**
+ * Soorten meldingen die je per apparaat kunt uitzetten. Berichten van de organisatie en de
+ * testmelding komen altijd door. De keuze staat op deze telefoon ('meldingen.soorten') en op de
+ * server bij het abonnement (kolom soorten, migratie 0022), want daar wordt verstuurd.
+ */
+export const MELDINGSOORTEN = [
+  { id: 'planning', titel: 'Bus en planning', uitleg: 'Een half uur voor de bus en andere vaste momenten' },
+  { id: 'challenges', titel: 'Nieuwe challenges', uitleg: 'Als de challenges van de dag opengaan' },
+  { id: 'uitslag', titel: 'Uitslag van de stemming', uitleg: 'Als een stemming dicht is en de winnaar bekend' },
+  { id: 'redactie', titel: 'Jouw kiekje of stukje', uitleg: 'Als de redactie het geplaatst of teruggestuurd heeft' },
+] as const
+
+export type Meldingsoort = (typeof MELDINGSOORTEN)[number]['id']
+
+const ALLE_SOORTEN: Meldingsoort[] = MELDINGSOORTEN.map((s) => s.id)
+const SOORTEN = 'meldingen.soorten'
+/** Welke keuze (en voor welk abonnement) al op de server staat */
+const SOORTEN_OP_SERVER = 'meldingen.soortenOpServer'
+
+export const gekozenSoorten = (): Meldingsoort[] => {
+  const s = lees<Meldingsoort[] | null>(SOORTEN, null)
+  return Array.isArray(s) ? ALLE_SOORTEN.filter((x) => s.includes(x)) : ALLE_SOORTEN
+}
+
+/** Na een tik in Instellingen: bewaren en (zodra het kan) op de server zetten */
+export function zetSoort(soort: Meldingsoort, aan: boolean) {
+  const nu = gekozenSoorten()
+  schrijf(SOORTEN, aan ? ALLE_SOORTEN.filter((x) => x === soort || nu.includes(x)) : nu.filter((x) => x !== soort))
+  meld()
+  void stuurSoorten()
+}
+
+let soortenBezig = false
+
+/**
+ * Zet de keuze bij het abonnement van deze telefoon op de server, als die daar nog niet staat.
+ * Lukt het niet (geen bereik, of migratie 0022 nog niet gedraaid), dan bij de volgende herstel.
+ */
+async function stuurSoorten(endpoint?: string) {
+  const b = backendStand()
+  const cb = supabase()
+  if (soortenBezig || !cb || b.status !== 'verbonden' || !b.userId || !ondersteund()) return
+  soortenBezig = true
+  try {
+    const ep = endpoint ?? (await (await navigator.serviceWorker.ready).pushManager.getSubscription())?.endpoint
+    if (!ep) return
+    const soorten = gekozenSoorten()
+    const sleutel = `${b.userId}|${ep}|${soorten.join(',')}`
+    if (lees<string | null>(SOORTEN_OP_SERVER, null) === sleutel) return
+    const { error } = await (await cb).rpc('zet_meldingsoorten', { p_endpoint: ep, p_soorten: soorten })
+    if (!error) schrijf(SOORTEN_OP_SERVER, sleutel)
+  } catch {
+    // Volgende keer opnieuw
+  } finally {
+    soortenBezig = false
+  }
+}
+
 const ondersteund = () =>
   typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
 
@@ -125,6 +185,9 @@ async function bewaarOpServer(sub: PushSubscription) {
   const { error } = await c.rpc('bewaar_abonnement', { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth })
   if (error) throw error
   schrijf(GEKOPPELD, { sleutel: `${backendStand().userId}|${j.endpoint}`, tijd: Date.now() })
+  // De gekozen soorten er (opnieuw) bij zetten: een nieuw abonnement krijgt op de server alles
+  schrijf(SOORTEN_OP_SERVER, null)
+  await stuurSoorten(j.endpoint)
 }
 
 /** Het abonnement van deze browser, met de goede sleutel; maakt er een als dat zonder tik kan */
@@ -270,7 +333,8 @@ async function herstel(altijd = false) {
   }
   const g = lees<{ sleutel?: string; tijd?: number } | string | null>(GEKOPPELD, null)
   const opServer = typeof g === 'object' && g?.sleutel === `${b.userId}|${sub.endpoint}` && Date.now() - (g.tijd ?? 0) < OPNIEUW_MS
-  if (!altijd && opServer) return
+  // Staat het abonnement er al: alleen nog de gekozen soorten (als die nog niet verstuurd zijn)
+  if (!altijd && opServer) return void stuurSoorten(sub.endpoint)
   try {
     await bewaarOpServer(sub)
   } catch {
