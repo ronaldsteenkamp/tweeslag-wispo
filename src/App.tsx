@@ -206,8 +206,11 @@ export default function App() {
   )
 
   // Vegen tussen de tabs van de tabbalk (niet tijdens het welkomstscherm). Vanuit een
-  // subscherm ga je naar de buren van de tab waar het onder valt.
+  // subscherm ga je naar de buren van de tab waar het onder valt, behalve vanuit de subschermen
+  // van Home (Weer, Instellingen, de VakanCie, en Kaart of Paklijst als ze niet in de balk staan):
+  // daar kun je niet naar Planning vegen, alleen terug met de knop.
   const tabIndex = TABS.indexOf(basisTab(tab))
+  const magVegen = !(isSubscherm(tab) && basisTab(tab) === 'home')
   // Tijdens het vegen: het buurscherm dat naast het huidige ligt (zie tabswipe.ts)
   const [buur, setBuur] = useState<1 | -1 | null>(null)
   const buurTab = buur ? TABS[tabIndex + buur] : undefined
@@ -227,10 +230,10 @@ export default function App() {
   const [vorigeTab, setVorigeTab] = useState<string | null>(null)
   const klaarBuren = ([-1, 1] as const)
     .map((r) => ({ r, id: TABS[tabIndex + r] }))
-    .filter((b): b is { r: -1 | 1; id: Tab } => !!b.id && b.id !== 'kaart' && (klaarVoor === tab || b.id === vorigeTab))
+    .filter((b): b is { r: -1 | 1; id: Tab } => magVegen && !!b.id && b.id !== 'kaart' && (klaarVoor === tab || b.id === vorigeTab))
   useTabSwipe({
     aan: welkomGehad,
-    kan: (richting) => !!TABS[tabIndex + richting],
+    kan: (richting) => magVegen && !!TABS[tabIndex + richting],
     onBuur: setBuur,
     onWissel: (richting) => {
       setBuur(null)
