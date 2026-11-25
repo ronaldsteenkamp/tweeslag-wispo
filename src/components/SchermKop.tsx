@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react'
 import { Bergstrook } from './Bergen'
 import { Icoon } from './Icoon'
 import { Sneeuw } from './Sneeuw'
+import { minderBeweging } from '../lib/zuinig'
 
 /*
  * Kop van een scherm (alles behalve Home): een kleine versie van de Home-kop, donkerblauw met de
@@ -66,7 +67,7 @@ export function SchermKop({ titel, boven, ondertitel, rechts, terug, children, b
   }, [])
 
   const naarBoven = () => {
-    const zacht = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const zacht = !minderBeweging()
     window.scrollTo({ top: 0, behavior: zacht ? 'smooth' : 'auto' })
   }
 

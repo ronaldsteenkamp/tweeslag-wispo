@@ -8,7 +8,9 @@
  * Alleen `transform` per beeld, geen React-renders tijdens het draaien.
  */
 
-export const minderBeweging = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+// Minder beweging van de telefoon, of Zuinig op de berg (Instellingen)
+import { minderBeweging } from './zuinig'
+export { minderBeweging }
 
 export interface DraaiOpties {
   van: number

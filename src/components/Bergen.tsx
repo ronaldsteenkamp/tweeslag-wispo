@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { PANORAMA as P } from '../lib/bergen-bijgestuurd'
 import { tabsVoor } from '../lib/navigatie'
+import { minderBeweging } from '../lib/zuinig'
 import '../styles/bergen.css'
 
 /*
@@ -244,7 +245,7 @@ export function Bergen({
   // parallax bij scrollen: verre lagen blijven iets achter
   useEffect(() => {
     const el = vak.current
-    if (!el || !parallax || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!el || !parallax || minderBeweging()) return
     if (el.closest('.buurpaneel')) return
     const groepen = [...el.querySelectorAll<SVGGElement>('.laag')]
     let wacht = 0

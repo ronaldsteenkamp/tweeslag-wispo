@@ -14,7 +14,7 @@ import { BevestigDialoog } from '../components/BevestigDialoog'
 import { useNu } from '../lib/nu'
 import { lees, schrijfEnMeld } from '../lib/opslag'
 import { StukjeSchrijven } from '../components/Bewijs'
-import { useSpelGeluid } from '../lib/spelgeluid'
+import { minderBeweging, useSpelGeluid } from '../lib/spelgeluid'
 import { useGeplaatsteStukjes, useStukjesWachtrij, type Stukje } from '../lib/stukjes'
 import { useTerugSluit } from '../lib/terugknop'
 import { datumISO, datumLabel, tijdUUMM } from '../lib/tijd'
@@ -867,7 +867,6 @@ export function markeerGezien(ids: string[]) {
   if (nieuw.length) schrijfEnMeld(GEZIEN, [...nieuw, ...oud].slice(0, 1000))
 }
 
-const minderBeweging = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
 interface Zoom {
   s: number

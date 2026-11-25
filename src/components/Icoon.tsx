@@ -65,6 +65,8 @@ const paden = {
   geluid: 'M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11',
   stil: 'M4 9.5h3.5L12 5.5v13l-4.5-4H4zM16 9.5l5 5M21 9.5l-5 5',
   opslaan: 'M5 4.5h11l3 3v12H5zM8 4.5v5h7v-5M8 19.5v-6h8v6',
+  // Zuinig op de berg (Instellingen)
+  batterij: 'M3.5 8h15v8h-15zM18.5 10.5H21v3h-2.5M6.5 11v2M9.5 11v2',
   offline:'M12 18.5h.01M8.8 15.2a4.5 4.5 0 0 1 6.4 0M5.6 12a9 9 0 0 1 12.8 0M2.5 8.8a13.5 13.5 0 0 1 19 0M3 3l18 18',
 } as const
 

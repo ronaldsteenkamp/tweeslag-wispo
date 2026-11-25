@@ -840,6 +840,17 @@
   align-items: flex-start;
 }
 
+/* Even niet te gebruiken (Sneeuw zolang Zuinig aan staat) */
+.homerij:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.homerij:disabled .bord,
+.homerij:disabled .schakelaar {
+  opacity: 0.45;
+}
+
 .homerij strong {
   color: var(--h-inkt);
 }

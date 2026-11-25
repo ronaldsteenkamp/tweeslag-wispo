@@ -18,6 +18,7 @@ import { nu } from '../lib/nu'
 import { lees, schrijfEnMeld, useOpgeslagen } from '../lib/opslag'
 import { lokaalNaarDate } from '../lib/tijd'
 import { netjes } from '../lib/typografie'
+import { minderBeweging } from '../lib/zuinig'
 import '../styles/barlow.css'
 import '../styles/paklijst.css'
 
@@ -54,7 +55,7 @@ const sleutel = (categorie: string, item: string) => `${categorie}::${item}`
 const eigenSleutel = (id: string) => `eigen::${id}`
 const nl = (n: number) => n.toLocaleString('nl-NL')
 const kleur = (i: number) => KLEUREN[i % KLEUREN.length]
-const zacht = () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const zacht = () => !minderBeweging()
 const tril = (patroon: number | number[]) => {
   try {
     navigator.vibrate?.(patroon)

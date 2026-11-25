@@ -20,6 +20,10 @@
         t = JSON.parse(localStorage.getItem('tweeslag-wispo.thema') || '"licht"')
       } catch (e) {}
       if (t === 'licht' || t === 'donker') document.documentElement.dataset.thema = t
+      // Zuinig op de berg, als je hem zelf aanzette (vanzelf bij weinig batterij: zie src/lib/zuinig.ts)
+      try {
+        if (localStorage.getItem('tweeslag-wispo.zuinig') === 'true') document.documentElement.setAttribute('data-zuinig', '')
+      } catch (e) {}
     </script>
     <style>
       /* Voorkomt een wit flitsje voordat de app geladen is */

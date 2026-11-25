@@ -3032,6 +3032,20 @@ body:has(.huidig .kaartbalk) .toast {
   }
 }
 
+/* Zuinig op de berg (Instellingen, lib/zuinig.ts): net als minder beweging, plus geen sneeuw */
+html[data-zuinig] *,
+html[data-zuinig] *::before,
+html[data-zuinig] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-zuinig] .sneeuw {
+  display: none;
+}
+
 /* ---------- Profielen ---------- */
 
 /* Namen die je kunt aantikken voor iemands profiel */
@@ -4851,6 +4865,92 @@ button.badge {
   min-height: 44px;
   font-family: var(--font);
   font-weight: 600;
+}
+
+/* Klaar voor de berg? (wat er offline op de telefoon staat) */
+.instellingen__intro {
+  margin: 2px 0 6px;
+}
+
+.klaarlijst {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--lijn);
+}
+
+.klaarlijst li {
+  border-bottom: 1px solid var(--lijn);
+}
+
+.klaarlijst__rij {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 2px;
+  border: 0;
+  background: none;
+  color: var(--inkt);
+  font: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.klaarlijst__teken {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--piste-groen);
+  color: #fff;
+}
+
+.is-open .klaarlijst__teken {
+  background: none;
+  border: 2px dashed var(--inkt-zacht);
+}
+
+.klaarlijst__naam {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.klaarlijst__rij small {
+  flex: none;
+  font-size: 0.9rem;
+  color: var(--inkt-zacht);
+}
+
+.is-open .klaarlijst__rij small {
+  color: var(--inkt);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.klaarlijst__hoe {
+  display: grid;
+  gap: 10px;
+  padding: 0 2px 14px 40px;
+  font-size: 0.95rem;
+  color: var(--inkt-zacht);
+}
+
+.instellingen__memo {
+  margin: 14px 0;
+  padding: 10px 12px;
+  border-radius: var(--rond-bord);
+  background: var(--memo);
+  color: var(--memo-inkt);
+  font-size: 0.95rem;
+}
+
+.instellingen__onder {
+  margin: 8px 0 12px;
 }
 
 /* Kaart en Paklijst als subscherm (niet in de tabbalk): terug naar Home */
