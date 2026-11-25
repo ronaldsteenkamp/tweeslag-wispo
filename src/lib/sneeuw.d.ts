@@ -64,6 +64,8 @@ export interface SneeuwConfig {
   aan: boolean | null
   opslagSleutel: string | null
   seed: number | null
+  /** Beginnen als stilstaand beeld (zie zetStil) */
+  stil?: boolean
 }
 
 export interface SneeuwStatus {
@@ -89,6 +91,7 @@ export interface Sneeuw {
   zetAan(waarde: boolean): void
   isAan(): boolean
   zetZichtbaar(waarde: boolean): void
+  zetStil(waarde: boolean): void
   pauzeer(): void
   hervat(): void
   storm(richting?: 'links' | 'rechts'): void
