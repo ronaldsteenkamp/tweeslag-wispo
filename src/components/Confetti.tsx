@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { fractie } from '../lib/rad'
 
-const CONFETTI_KLEUREN = ['#f3d36b', '#ffffff', '#099fc4', '#d7263d', '#7fd3ea']
+// Goud, rood en wit, zoals de tafel
+const CONFETTI_KLEUREN = ['#f3d36b', '#ffffff', '#c0262d', '#fbe58f']
 
 /** Een handvol confetti over het rad of de speltafel (bij minder beweging meteen weer weg) */
 export function Confetti() {

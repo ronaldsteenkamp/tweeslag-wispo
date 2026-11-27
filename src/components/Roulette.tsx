@@ -87,6 +87,9 @@ function stapel(bedrag: number): number[] {
   return uit.reverse()
 }
 
+/** Een stapel verspringt een beetje, zoals echte fiches (px opzij per fiche) */
+const VERSPRING = [0, 1.5, -1]
+
 /** Lange namen kleiner, over twee regels; het nummer blijft altijd even groot */
 const LANG = 9
 
@@ -129,7 +132,7 @@ export function Roulette({
   const raster = useRef<HTMLDivElement>(null)
   const [geluidAan, setGeluidAan] = useOpgeslagen('rad.geluid', true)
   const wiel = useRef<SVGGElement>(null)
-  const bal = useRef<SVGCircleElement>(null)
+  const bal = useRef<SVGGElement>(null)
   const staart = useRef<SVGPathElement>(null)
   // Waar wiel en balletje nu zijn (graden, 0 = boven); een nieuwe draai begint daar.
   // Het balletje ligt in rust in een vakje (null = nog nooit gedraaid: in het vakje van 0).
@@ -279,9 +282,9 @@ export function Roulette({
     balHoek.current = st.bal
     balStraal.current = st.straal
     wiel.current?.setAttribute('transform', `rotate(${st.wiel})`)
+    // Het balletje beweegt met een transform (geen cx/cy), met zijn glans en schaduw erin
     const [bx, by] = punt(st.straal, st.bal)
-    bal.current?.setAttribute('cx', String(bx))
-    bal.current?.setAttribute('cy', String(by))
+    bal.current?.setAttribute('transform', `translate(${bx} ${by})`)
     // Bewegingsstaart: zo ziet een snel balletje er ook op 60 beelden per seconde vloeiend uit
     const lengte = Math.min(30, Math.abs(st.balSnelheid) * 0.03)
     if (lengte < 2) staart.current?.setAttribute('d', '')
@@ -448,7 +451,8 @@ export function Roulette({
               uitslag={uitslag?.getal ?? null}
             />
           </div>
-          {uitslag && uitslag.uitbetaald > uitslag.ingezet && <Confetti key={ronde} />}
+          {/* Confetti alleen bij een flinke winst: minstens drie keer de inzet terug (een getal raak) */}
+          {uitslag && uitslag.uitbetaald >= 3 * uitslag.ingezet && !minderBeweging() && <Confetti key={ronde} />}
 
           <div className={`casino__veld${uitslag ? ' is-uitslag' : ''}`}>
             <Vak sleutel="0" label="0, iedereen drinkt" klasse="casino__vak casino__vak--nul" inzet={inzet} winnend={winnend('0')} onZet={zet} uit={uit}>
@@ -678,7 +682,7 @@ function Vak({
       {bedrag > 0 && (
         <span className="stapel" aria-hidden="true">
           {stapel(bedrag).map((f, i) => (
-            <span key={i} className={`fiche fiche--mini fiche--${f}`} style={{ top: -i * 3 }} />
+            <span key={i} className={`fiche fiche--mini fiche--${f}`} style={{ top: 8 - i * 3, left: 3 + VERSPRING[i] }} />
           ))}
           <span className="stapel__bedrag">{bedrag}</span>
         </span>
@@ -688,8 +692,19 @@ function Vak({
 }
 
 
-const WIELKLEUR: Record<Kleur, string> = { groen: '#1d8a4a', rood: '#b8141d', zwart: '#181818', blauw: '#2563b0' }
+const WIELKLEUR: Record<Kleur, string> = { groen: '#17804a', rood: '#b3121b', zwart: '#151515', blauw: '#2360ad' }
 
+/** Boogje op een cirkel van `van` tot `tot` graden (voor lichtstrepen) */
+const boog = (r: number, van: number, tot: number) => {
+  const [x1, y1] = punt(r, van)
+  const [x2, y2] = punt(r, tot)
+  return `M${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2}`
+}
+
+/*
+ * Het wiel: een vaste laag (rand, kom, ruiten, licht) en het draaiende deel. Alles is verloop en
+ * vorm, geen filters: tijdens het draaien wordt het wiel elk beeld opnieuw getekend.
+ */
 function RouletteWiel({
   n,
   wiel,
@@ -702,7 +717,7 @@ function RouletteWiel({
 }: {
   n: number
   wiel: React.RefObject<SVGGElement>
-  bal: React.RefObject<SVGCircleElement>
+  bal: React.RefObject<SVGGElement>
   staart: React.RefObject<SVGPathElement>
   hoek: number
   balHoek: number
@@ -712,74 +727,159 @@ function RouletteWiel({
 }) {
   const vakken = n + 1
   const vak = 360 / vakken
-  const letter = vakken <= 13 ? 8.5 : vakken <= 25 ? 7.5 : 6.5
+  const letter = vakken <= 13 ? 9 : vakken <= 25 ? 8 : 7
   const kleur = (g: number) => WIELKLEUR[kleurVan(g, n)]
   const ring = useMemo(() => wielVolgorde(n), [n])
   const [bx, by] = punt(balStraal, balHoek)
+  const winst = uitslag !== null && ring.includes(uitslag) ? taartpunt(88.3, ring.indexOf(uitslag) * vak, (ring.indexOf(uitslag) + 1) * vak, 63) : null
   return (
     <svg className="casino__wiel" viewBox="-118 -118 236 236" role="img" aria-label={`Roulettewiel met 0 tot en met ${n}${n % 2 ? `; ${n} is blauw` : ''}`}>
       <defs>
-        <radialGradient id="rw-rand" cx="0" cy="0" r="117" gradientUnits="userSpaceOnUse">
-          <stop offset="92%" stopColor="#6e3f1b" />
-          <stop offset="96%" stopColor="#8a5428" />
-          <stop offset="100%" stopColor="#3d210c" />
+        <radialGradient id="rw-schaduw" cx="0" cy="0" r="118" gradientUnits="userSpaceOnUse">
+          <stop offset="88%" stopColor="#000" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0" />
         </radialGradient>
-        {/* Vaste deel: de baan langs de rand en de schuine helling naar het wiel */}
-        <radialGradient id="rw-kom" cx="0" cy="0" r="108" gradientUnits="userSpaceOnUse">
-          <stop offset="81%" stopColor="#1c120a" />
-          <stop offset="89%" stopColor="#4a3020" />
-          <stop offset="90.5%" stopColor="#2b1a0d" />
-          <stop offset="96%" stopColor="#5c3b20" />
-          <stop offset="100%" stopColor="#24150a" />
+        {/* Hout van de rand: banen nerf, zoals gedraaid hout */}
+        <radialGradient id="rw-hout" cx="0" cy="0" r="116" gradientUnits="userSpaceOnUse">
+          <stop offset="93.3%" stopColor="#2e1808" />
+          <stop offset="94.2%" stopColor="#5e3616" />
+          <stop offset="95.1%" stopColor="#83501f" />
+          <stop offset="95.7%" stopColor="#6f411b" />
+          <stop offset="96.6%" stopColor="#9a6331" />
+          <stop offset="97.2%" stopColor="#8a5629" />
+          <stop offset="98%" stopColor="#a56d38" />
+          <stop offset="98.8%" stopColor="#7a4720" />
+          <stop offset="99.5%" stopColor="#55300f" />
+          <stop offset="100%" stopColor="#2a1505" />
         </radialGradient>
-        <radialGradient id="rw-kegel" cx="40%" cy="35%" r="70%">
-          <stop offset="0%" stopColor="#a8703a" />
-          <stop offset="55%" stopColor="#6e4220" />
-          <stop offset="100%" stopColor="#3a210e" />
-        </radialGradient>
-        <radialGradient id="rw-goud" cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stopColor="#fff4c4" />
-          <stop offset="50%" stopColor="#e2b752" />
-          <stop offset="100%" stopColor="#8a6420" />
+        {/* Lak: licht van boven, de onderkant in de schaduw */}
+        <linearGradient id="rw-lak" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.38" />
+          <stop offset="30%" stopColor="#fff" stopOpacity="0.06" />
+          <stop offset="62%" stopColor="#000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.28" />
+        </linearGradient>
+        {/* Kom: schaduw onder de rand, gepolijste baan, lip, helling en de spleet naar de rotor */}
+        <radialGradient id="rw-kom" cx="0" cy="0" r="108.5" gradientUnits="userSpaceOnUse">
+          <stop offset="82.2%" stopColor="#0e0803" />
+          <stop offset="83.2%" stopColor="#2a1a0c" />
+          <stop offset="88%" stopColor="#4c321b" />
+          <stop offset="90.4%" stopColor="#2b1a0c" />
+          <stop offset="91%" stopColor="#7a5430" />
+          <stop offset="91.6%" stopColor="#3a2411" />
+          <stop offset="93.5%" stopColor="#5b3c1f" />
+          <stop offset="96%" stopColor="#4a2f18" />
+          <stop offset="98.4%" stopColor="#1e1208" />
+          <stop offset="100%" stopColor="#080402" />
         </radialGradient>
         <linearGradient id="rw-chroom" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="50%" stopColor="#b9bec4" />
-          <stop offset="100%" stopColor="#6d737a" />
+          <stop offset="45%" stopColor="#c3c8ce" />
+          <stop offset="55%" stopColor="#8d949b" />
+          <stop offset="100%" stopColor="#e6e9ec" />
+        </linearGradient>
+        <linearGradient id="rw-ruit" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="48%" stopColor="#cfd4d9" />
+          <stop offset="52%" stopColor="#7d848b" />
+          <stop offset="100%" stopColor="#b9bfc5" />
         </linearGradient>
         {/* Diepte in de vakjes: donkerder aan de randen */}
         <radialGradient id="rw-diepte" cx="0" cy="0" r="88" gradientUnits="userSpaceOnUse">
-          <stop offset="71.5%" stopColor="#000" stopOpacity="0.55" />
-          <stop offset="78%" stopColor="#000" stopOpacity="0" />
-          <stop offset="84%" stopColor="#000" stopOpacity="0.05" />
-          <stop offset="87.5%" stopColor="#000" stopOpacity="0.5" />
-          <stop offset="88%" stopColor="#000" stopOpacity="0" />
+          <stop offset="71.5%" stopColor="#000" stopOpacity="0.6" />
+          <stop offset="77%" stopColor="#000" stopOpacity="0" />
+          <stop offset="83%" stopColor="#000" stopOpacity="0.08" />
+          <stop offset="87.4%" stopColor="#000" stopOpacity="0.55" />
+          <stop offset="87.6%" stopColor="#000" stopOpacity="0" />
+        </radialGradient>
+        {/* Kegel in het midden: gedraaid hout */}
+        <radialGradient id="rw-kegel" cx="0" cy="0" r="63.5" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#b98048" />
+          <stop offset="30%" stopColor="#a06a37" />
+          <stop offset="31%" stopColor="#8c5a2c" />
+          <stop offset="55%" stopColor="#7a4b24" />
+          <stop offset="56%" stopColor="#6a3f1d" />
+          <stop offset="80%" stopColor="#5a3317" />
+          <stop offset="81%" stopColor="#4a2a12" />
+          <stop offset="94%" stopColor="#3a200d" />
+          <stop offset="100%" stopColor="#1e1006" />
+        </radialGradient>
+        {/* Gepolijst messing */}
+        <linearGradient id="rw-arm" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#6e4c15" />
+          <stop offset="30%" stopColor="#e9c868" />
+          <stop offset="42%" stopColor="#fff6d2" />
+          <stop offset="58%" stopColor="#d4a640" />
+          <stop offset="100%" stopColor="#5e3f10" />
+        </linearGradient>
+        <radialGradient id="rw-messing" cx="36%" cy="30%" r="72%">
+          <stop offset="0%" stopColor="#fffbe6" />
+          <stop offset="22%" stopColor="#f6dc8a" />
+          <stop offset="55%" stopColor="#c99a33" />
+          <stop offset="100%" stopColor="#6e4c15" />
         </radialGradient>
         <radialGradient id="rw-licht" cx="35%" cy="22%" r="65%">
-          <stop offset="0%" stopColor="#fff" stopOpacity="0.22" />
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.2" />
           <stop offset="100%" stopColor="#fff" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="rw-bal" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="60%" stopColor="#ecebe6" />
-          <stop offset="100%" stopColor="#a9a8a2" />
+        {/* Ivoor */}
+        <radialGradient id="rw-bal" cx="36%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="#fffef9" />
+          <stop offset="45%" stopColor="#f4eedd" />
+          <stop offset="100%" stopColor="#b9ae92" />
+        </radialGradient>
+        <radialGradient id="rw-balschaduw" cx="50%" cy="50%" r="50%">
+          <stop offset="40%" stopColor="#000" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="rw-glans" cx="34%" cy="28%" r="60%">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.55" />
+          <stop offset="45%" stopColor="#fff" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <circle r="117" fill="url(#rw-rand)" />
-      <circle r="108.5" fill="url(#rw-kom)" stroke="#e8c463" strokeWidth="1" />
-      <circle r={R_BAAN - 5.2} fill="none" stroke="#000" strokeOpacity="0.35" strokeWidth="0.8" />
-      {DIAMANTEN.map((d, i) => (
-        <polygon
-          key={d}
-          points={i % 2 ? '-4.5,0 0,-1.8 4.5,0 0,1.8' : '0,-4.5 1.8,0 0,4.5 -1.8,0'}
-          fill="url(#rw-chroom)"
-          stroke="#4b4f55"
-          strokeWidth="0.4"
-          transform={`rotate(${d}) translate(0 ${-R_DIAMANT})`}
-        />
-      ))}
+
+      {/* Schaduw van het wiel op het vilt (een verloop, geen filter) */}
+      <circle cy="3" r="118" fill="url(#rw-schaduw)" />
+
+      {/* Houten rand: nerf, lak en een lichtstreep */}
+      <circle r="116" fill="url(#rw-hout)" />
+      <g fill="none" stroke="#2a1405" strokeWidth="0.35" strokeOpacity="0.35">
+        <circle r="110.6" strokeDasharray="38 5 14 3 60 7 22 4" />
+        <circle r="112.3" strokeDasharray="25 6 48 3 18 9 40 5" />
+        <circle r="114.4" strokeDasharray="52 4 20 6 33 3" />
+      </g>
+      <path
+        d="M0 -116 A116 116 0 1 1 0 116 A116 116 0 1 1 0 -116 Z M0 -108.5 A108.5 108.5 0 1 0 0 108.5 A108.5 108.5 0 1 0 0 -108.5 Z"
+        fill="url(#rw-lak)"
+        fillRule="evenodd"
+      />
+      <path d={boog(113.4, -62, -18)} fill="none" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.1" strokeLinecap="round" />
+      <circle r="116" fill="none" stroke="#1c0e04" strokeWidth="0.8" />
+
+      {/* Kom met de baan van het balletje, lager dan de rand */}
+      <circle r="108.5" fill="url(#rw-kom)" />
+      <circle r="108.6" fill="none" stroke="#e8c463" strokeWidth="0.6" strokeOpacity="0.9" />
+      <path d={boog(R_BAAN, -64, -14)} fill="none" stroke="#fff" strokeOpacity="0.09" strokeWidth="4" strokeLinecap="round" />
+
+      {/* Ruiten van chroom, met een slagschaduw en een lichtrug */}
+      {DIAMANTEN.map((d, i) => {
+        const [x, y] = punt(R_DIAMANT, d)
+        const vorm = i % 2 ? '-4.8,0 0,-1.9 4.8,0 0,1.9' : '0,-4.8 1.9,0 0,4.8 -1.9,0'
+        return (
+          <g key={d} transform={`translate(${x} ${y}) rotate(${d})`}>
+            <polygon points={vorm} fill="#000" fillOpacity="0.45" transform="translate(0.7 0.9)" />
+            <polygon points={vorm} fill="url(#rw-ruit)" stroke="#3d4248" strokeWidth="0.35" />
+            {i % 2 ? (
+              <line x1="-4.2" x2="4.2" y1="0" y2="0" stroke="#fff" strokeOpacity="0.75" strokeWidth="0.35" />
+            ) : (
+              <line x1="0" x2="0" y1="-4.2" y2="4.2" stroke="#fff" strokeOpacity="0.75" strokeWidth="0.35" />
+            )}
+          </g>
+        )
+      })}
+
       <g ref={wiel} transform={`rotate(${hoek})`}>
-        <circle r="89" fill="url(#rw-chroom)" />
+        <circle r="89.2" fill="url(#rw-chroom)" />
         {ring.map((g, i) => (
           <g key={g}>
             {/* Getallenring buiten, vakjes binnen (zoals bij een echt wiel) */}
@@ -787,7 +887,7 @@ function RouletteWiel({
             <path d={taartpunt(77, i * vak, (i + 1) * vak, 63)} fill={kleur(g)} />
             <text
               transform={`rotate(${(i + 0.5) * vak})`}
-              y={-82.5}
+              y={-82.6}
               textAnchor="middle"
               dominantBaseline="central"
               fontSize={letter}
@@ -802,49 +902,63 @@ function RouletteWiel({
         {Array.from({ length: vakken }, (_, g) => {
           const [x1, y1] = punt(88, g * vak)
           const [x2, y2] = punt(77, g * vak)
-          const [x3, y3] = punt(63, g * vak)
+          const [x3, y3] = punt(63.5, g * vak)
           return (
             <g key={g}>
-              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#e8c463" strokeWidth="0.5" />
-              {/* Schotje tussen twee vakjes */}
-              <line x1={x2} y1={y2} x2={x3} y2={y3} stroke="#d4d8dc" strokeWidth="1.6" strokeLinecap="round" />
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#e8c463" strokeWidth="0.45" />
+              {/* Metalen wandje tussen twee vakjes: donkere kant met een lichte rug */}
+              <line x1={x2} y1={y2} x2={x3} y2={y3} stroke="#2e3238" strokeWidth="1.9" strokeLinecap="round" />
+              <line x1={x2} y1={y2} x2={x3} y2={y3} stroke="#eef1f4" strokeWidth="0.9" strokeLinecap="round" />
             </g>
           )
         })}
-        <circle r="77" fill="none" stroke="#e8c463" strokeWidth="1.2" />
-        {/* Na de worp licht het winnende vakje op (het draait mee met het wiel) */}
-        {uitslag !== null && ring.includes(uitslag) && (
-          <path
-            className="casino__wielwinst"
-            d={taartpunt(88.5, ring.indexOf(uitslag) * vak, (ring.indexOf(uitslag) + 1) * vak, 62.5)}
-            fill="#fff"
-            fillOpacity="0.18"
-            stroke="#f3d36b"
-            strokeWidth="2.4"
-            strokeLinejoin="round"
-          />
+        <circle r="88" fill="none" stroke="#e8c463" strokeWidth="0.5" />
+        <circle r="77" fill="none" stroke="#2e3238" strokeWidth="1.8" />
+        <circle r="77" fill="none" stroke="#dfe3e7" strokeWidth="0.9" />
+        {/* Na de worp licht het winnende vakje één keer op (het draait mee met het wiel) */}
+        {winst && (
+          <>
+            <path className="casino__wielwinst-gloed" d={winst} fill="none" stroke="#f3d36b" strokeWidth="4.5" strokeOpacity="0.45" strokeLinejoin="round" />
+            <path d={winst} fill="#fff" fillOpacity="0.14" stroke="#f8e49a" strokeWidth="1.4" strokeLinejoin="round" />
+          </>
         )}
-        <circle r="63.5" fill="url(#rw-kegel)" stroke="#c9ced3" strokeWidth="2" />
-        <circle r="50" fill="none" stroke="#000" strokeOpacity="0.25" strokeWidth="0.8" />
-        <circle r="30" fill="none" stroke="#000" strokeOpacity="0.25" strokeWidth="0.8" />
-        {/* Het kruis in het midden waaraan de croupier het wiel draait */}
+        <circle r="63.5" fill="url(#rw-kegel)" />
+        <circle r="63.5" fill="none" stroke="#2e3238" strokeWidth="2.4" />
+        <circle r="63.5" fill="none" stroke="url(#rw-chroom)" strokeWidth="1.3" />
+        <circle r="40" fill="none" stroke="#000" strokeOpacity="0.18" strokeWidth="0.6" />
+        <circle r="26" fill="none" stroke="#000" strokeOpacity="0.18" strokeWidth="0.6" />
+        {/* Het kruis van messing in het midden waaraan de croupier het wiel draait */}
         {[0, 90, 180, 270].map((a) => (
           <g key={a} transform={`rotate(${a})`}>
-            <rect x="-2.2" y="-38" width="4.4" height="30" rx="2.2" fill="url(#rw-goud)" stroke="#7a561a" strokeWidth="0.4" />
-            <circle cy="-40" r="4.6" fill="url(#rw-goud)" stroke="#7a561a" strokeWidth="0.4" />
+            <rect x="-3.2" y="-39" width="6.4" height="31" rx="3.2" fill="#000" fillOpacity="0.28" />
+            <rect x="-2.3" y="-38" width="4.6" height="30" rx="2.3" fill="url(#rw-arm)" stroke="#5e3f10" strokeWidth="0.35" />
+            <circle cy="-40.5" r="6" fill="#000" fillOpacity="0.25" />
+            <circle cy="-40.5" r="4.8" fill="url(#rw-messing)" stroke="#5e3f10" strokeWidth="0.35" />
           </g>
         ))}
-        <circle r="11" fill="url(#rw-goud)" stroke="#7a561a" strokeWidth="0.6" />
-        <circle r="5" fill="url(#rw-goud)" stroke="#7a561a" strokeWidth="0.4" />
+        <circle r="13.5" fill="#000" fillOpacity="0.3" />
+        <circle r="12" fill="url(#rw-messing)" stroke="#5e3f10" strokeWidth="0.5" />
+        <circle r="8.4" fill="none" stroke="#7a561a" strokeWidth="0.5" strokeOpacity="0.7" />
+        <circle r="5.6" fill="url(#rw-messing)" stroke="#5e3f10" strokeWidth="0.4" />
       </g>
-      {/* Licht van boven: draait niet mee, zoals een echte weerspiegeling */}
+      {/* Lichtvlek op de messing kop en licht van boven: draaien niet mee, zoals een echte weerspiegeling */}
+      <ellipse cx="-3.6" cy="-4.4" rx="3.4" ry="2.2" fill="#fff" fillOpacity="0.55" transform="rotate(-35 -3.6 -4.4)" />
       <circle r="108" fill="url(#rw-licht)" pointerEvents="none" />
       <path ref={staart} d="" fill="none" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="6" strokeLinecap="round" />
-      <circle ref={bal} cx={bx} cy={by} r="4.2" fill="url(#rw-bal)" className="casino__bal" />
+      {/* Ivoren balletje met een schaduwtje en een glansvlek; beweegt met een transform */}
+      <g ref={bal} transform={`translate(${bx} ${by})`}>
+        <ellipse cx="0.9" cy="1.6" rx="5" ry="4.4" fill="url(#rw-balschaduw)" />
+        <circle r="4.2" fill="url(#rw-bal)" />
+        <circle cx="-1.4" cy="-1.5" r="1.1" fill="#fff" fillOpacity="0.9" />
+      </g>
       {uitslag !== null && (
         <g className="casino__wieluitslag" aria-hidden="true">
-          <circle r="27" fill={WIELKLEUR[kleurVan(uitslag, n)]} stroke="#e8c463" strokeWidth="3" />
-          <text textAnchor="middle" dominantBaseline="central" fontSize="30" fill="#ffffff" className="casino__wielgetal">
+          <circle r="29" fill="#000" fillOpacity="0.35" />
+          <circle r="27" fill={WIELKLEUR[kleurVan(uitslag, n)]} />
+          <circle r="27" fill="url(#rw-glans)" />
+          <circle r="27" fill="none" stroke="#f3d36b" strokeWidth="2.2" />
+          <circle r="28.6" fill="none" stroke="#5e3f10" strokeWidth="0.8" />
+          <text textAnchor="middle" dominantBaseline="central" fontSize="32" fill="#ffffff" className="casino__wielgetal">
             {uitslag}
           </text>
         </g>
