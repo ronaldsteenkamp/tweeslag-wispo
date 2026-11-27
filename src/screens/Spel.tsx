@@ -90,10 +90,8 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   const [gedaan, setGedaan] = useOpgeslagen<string[]>('spel.challenges', [])
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
-  // Bij het casino een compactere kop (zonder de uitsplitsing en de notitie), zodat de tafel
-  // hoger begint; de andere radden houden de gewone kop
-  const [radSoort] = useOpgeslagen<string>('rad.soort', 'klos')
-  const compacteKop = onderdeel === 'rad' && radSoort === 'casino'
+  // Bij Rad staat de keuze van het rad in de kop, op de plek van de notitie (zie RadOnderdeel)
+  const [radKeuzePlek, setRadKeuzePlek] = useState<HTMLDivElement | null>(null)
   const toon = useToonNaam()
   const [geluid, setGeluid] = useSpelGeluid()
   // Bewijs insturen (fotoVoor) of je eigen kiekje bekijken (blad), per challenge-id
@@ -167,7 +165,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
     : data.challenges.flatMap((d) => d.items).reduce((som, c) => som + (gedaanSet.has(c.id) ? c.punten : 0), 0)
   const bingo = bingoScore(kaart, gemarkeerdSet, data.punten)
 
-  // Voor de nieuwe kop: je plek in het klassement, zoals het laatst is opgehaald (als dat er is)
+  // Je stand in het klassement, zoals het laatst is opgehaald (als dat er is): voor de correcties
   const nieuweKop = useNieuweKoppen()
   const mijnPlek = useMemo(() => {
     // Zonder backend is er geen klassement (een oude bewaarde stand niet tonen)
@@ -198,7 +196,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         <SchermKop
           titel="Spel"
           boven={naam ? `Score van ${toon(naam)}` : 'Jouw score'}
-          ondertitel={compacteKop ? undefined : `Challenges ${challengePunten} · Busbingo ${bingo.totaal}${correcties ? ` · ${correcties > 0 ? 'Bonus' : 'Correctie'} ${correcties > 0 ? '+' : ''}${correcties}` : ''}`}
+          ondertitel={`Challenges ${challengePunten} · Busbingo ${bingo.totaal}${correcties ? ` · ${correcties > 0 ? 'Bonus' : 'Correctie'} ${correcties > 0 ? '+' : ''}${correcties}` : ''}`}
           rechts={
             // Tik op je punten: naar de stand
             <button
@@ -226,15 +224,20 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
               setOnderdeel(o)
             }}
           />
-          {!compacteKop && (
-          <p className="schermkop__notitie">
-            {mijnPlek
-              ? `${mijnPlek.plek}e plek van ${mijnPlek.van} in het klassement`
-              : backendIngesteld
-                ? 'Je score telt mee in het klassement.'
-                : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
-          </p>
-          )}
+          {/* Eén regel van vaste hoogte: de notitie, of bij Rad de keuze van het rad. Zo is de kop
+              bij elk onderdeel even hoog en staan de bergen overal op dezelfde plek. */}
+          <div className="spel__kopregel">
+            {onderdeel === 'rad' ? (
+              <div className="schermkop__keuze" ref={setRadKeuzePlek} />
+            ) : (
+              <p className="schermkop__notitie">
+                {/* Geen plek in het klassement hier: die staat bij Stand */}
+                {backendIngesteld
+                  ? 'Je score telt mee in het klassement.'
+                  : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
+              </p>
+            )}
+          </div>
         </SchermKop>
       ) : (
         <h1>Spel</h1>
@@ -258,7 +261,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
           <Stemmen />
         </>
       ) : onderdeel === 'rad' ? (
-        <RadOnderdeel />
+        <RadOnderdeel keuzePlek={nieuweKop ? radKeuzePlek : null} />
       ) : onderdeel === 'challenges' ? (
         <Challenges
           dagen={data.challenges}
