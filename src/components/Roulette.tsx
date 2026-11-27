@@ -226,7 +226,9 @@ export function Roulette({
     // Even wachten: de Spel-kop wordt bij het casino eerst compacter, daarna ligt de tafel pas vast
     const id = window.setTimeout(() => {
       const t = tafel.current
-      if (!t) return
+      // Niet in een buurscherm (het Spel-scherm naast Groep of Kaart, klaar om naartoe te vegen):
+      // dat zou de pagina van de tab die je nu ziet laten scrollen
+      if (!t || t.closest('.buurpaneel')) return
       const r = t.getBoundingClientRect()
       const tabbalk = document.querySelector('.tabbalk')?.getBoundingClientRect().top ?? window.innerHeight
       if (r.top >= 40 && r.bottom <= tabbalk + 1) return
