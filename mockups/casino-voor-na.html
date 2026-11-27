@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jaccasino voor en na</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<style>
+  .vn__keuze { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; margin: 4px 0 18px; }
+  .vn__keuze fieldset { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; border: 0; }
+  .vn__keuze legend { float: left; margin-right: 8px; color: var(--inkt-zacht); font: 600 .8125rem/44px var(--font-smal); letter-spacing: .1em; text-transform: uppercase; }
+  .vn__keuze label { position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1.5px solid var(--lijn); border-radius: 12px; font: 700 1rem var(--font-smal); cursor: pointer; }
+  .vn__keuze input { position: absolute; opacity: 0; }
+  .vn__keuze label:has(input:checked) { border-color: var(--tweeslag-lichtblauw); background: rgba(9, 159, 196, .12); }
+  .vn__keuze label:has(input:focus-visible) { outline: 3px solid var(--tweeslag-lichtblauw); outline-offset: 2px; }
+  .vn__rij { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 760px; margin-bottom: 28px; }
+  .vn__rij figure { margin: 0; }
+  .vn__rij img { display: block; width: 100%; height: auto; border: 1px solid var(--lijn); border-radius: 16px; }
+  .vn__rij figcaption { margin-bottom: 6px; font: 700 1.05rem var(--font-smal); }
+  .vn__lijst li { margin-bottom: 6px; }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <div class="doc-kop__binnen">
+    <p class="kop__boven"><a href="index.html" style="color:inherit">Alle mockups</a> · Jaccasino</p>
+    <h1>Jaccasino, voor en na</h1>
+    <p>Dezelfde tafel (vilt, houten rand, goud, wiel en logo), beter afgewerkt. Screenshots met Playwright tegen <code>npm run dev</code>, na het kiezen van een naam in het welkomstscherm. Branch <code>casino-afwerking</code>.</p>
+  </div>
+</header>
+<main class="doc">
+  <h2>Wat er veranderd is</h2>
+  <ol class="vn__lijst">
+    <li><b>Past op één scherm.</b> De tafel is precies zo hoog als de ruimte tussen kopbalk en tabbalk en schuift bij het openen zelf in beeld. Het wiel krijgt wat overblijft (185 px op 360×740, 289 px op 390×844). De bediening ligt vast onderaan de tafel.</li>
+    <li><b>Compactere kop.</b> Bij Casino laat de Spel-kop de uitsplitsing (Challenges · Busbingo) en de notitie weg. De andere radden houden de gewone kop.</li>
+    <li><b>Draaiknop.</b> Uitgeschakeld is een gestippelde gouden lijn met <i>Eerst inzetten</i> of <i>Rolt…</i>; <i>Rien ne va plus!</i> is een gevulde gouden knop.</li>
+    <li><b>Inzet en saldo.</b> <i>Inzet</i> en <i>Terugnemen</i> staan in de bediening. Ingezette fiches liggen als stapeltje met bedrag rechtsboven in het vak; de tekst schuift op als dat nodig is.</li>
+    <li><b>Speelveld.</b> Rood, Zwart, Laag en Hoog zijn allemaal gevuld, met de getallen eronder (<i>1, 3 … 23</i>, <i>13–24</i>). Lange namen lopen kleiner over twee regels; het nummer blijft even groot. Overal dezelfde gouden rand van 1,5 px.</li>
+    <li><b>Geluid</b> en <b>Spelers</b> zijn ronde knoppen in de kopregel, naast het saldo.</li>
+    <li><b>Spelers</b> opent een blad (dialoog met Escape en focus). Het aantal getrokken bakken staat onder het saldo.</li>
+    <li><b>Uitslag.</b> Eerst licht het winnende vak op (de rest wordt zachter) en schuift het raster ernaartoe; daarna verschijnt de uitslag op de plek van de bediening, in dezelfde vilt-en-goudstijl. Wiel en vakken blijven zichtbaar.</li>
+    <li><b>Blauw vak.</b> Bij een oneven aantal spelers is het hoogste getal blauw: dat telt niet mee voor Rood, Zwart, Laag of Hoog (zo stond het al in roulette.ts). Dat staat nu in het spelersblad, in de schermlezertekst en blijkt uit de getallen onder de buiteninzetten. Na de worp licht het winnende vakje op het wiel op.</li>
+    <li><b>Donker thema.</b> Tafel blijft groen; spelersblad, melding en toast gebruiken de gewone themakleuren.</li>
+    <li><b>Toegankelijkheid.</b> Alle knoppen in het casino zijn minstens 44 px. Tekst haalt minstens 4,5 : 1 (goud op de bediening 6,2; het 10-fiche heeft nu een donkerblauw getal). Witte focusrand met het toetsenbord.</li>
+  </ol>
+
+  <h2>Naast elkaar</h2>
+  <div class="vn__keuze">
+    <fieldset><legend>Scherm</legend><label><input type="radio" name="maat" value="390x844" checked>390×844</label><label><input type="radio" name="maat" value="360x740">360×740</label></fieldset>
+    <fieldset><legend>Thema</legend><label><input type="radio" name="thema" value="licht" checked>Licht</label><label><input type="radio" name="thema" value="donker">Donker</label></fieldset>
+  </div>
+  <div id="rijen"></div>
+  <p class="klein zacht">‘Voor’ is gemaakt bovenaan de pagina, zoals het casino toen opende; ‘na’ zoals het nu opent (tafel ingeschoven). De uitslag is per screenshot willekeurig.</p>
+</main>
+<script>
+const TOESTANDEN = [['1-leeg', 'Leeg'], ['2-inzet', 'Met inzet'], ['3-rollen', 'Tijdens het rollen'], ['4-uitslag', 'De uitslag'], ['5-fiches-op', 'Fiches op (een bak trekken)'], ['6-spelers', 'Spelers open']]
+function teken() {
+  const maat = document.querySelector('[name=maat]:checked').value
+  const thema = document.querySelector('[name=thema]:checked').value
+  document.getElementById('rijen').innerHTML = TOESTANDEN.map(([t, naam]) => `
+    <h3>${naam}</h3>
+    <div class="vn__rij">
+      ${['voor', 'na'].map((k) => `<figure><figcaption>${k === 'voor' ? 'Voor' : 'Na'}</figcaption>
+        <img src="casino-voor-na/${k}/${maat}-${thema}-${t}.webp" alt="${naam}, ${k}, ${maat}, ${thema}" loading="lazy"></figure>`).join('')}
+    </div>`).join('')
+}
+document.querySelectorAll('.vn__keuze input').forEach((i) => i.addEventListener('change', teken))
+teken()
+</script>
+</body>
+</html>

@@ -45,10 +45,21 @@ const LENING = 500
 const GELUK: Record<string, number> = { jacco: 0.7, josje: -0.3 }
 const sleutelNaam = (s: string) => s.trim().toLocaleLowerCase('nl')
 
-const BUITEN_LABEL:Record<Buiten, string> = { rood: 'Rood', zwart: 'Zwart', laag: 'Laag', hoog: 'Hoog' }
-/** Welke getallen Laag en Hoog zijn, klein onder de knop */
-const bereik = (b: Buiten, n: number) =>
-  b === 'laag' ? `1–${helft(n)}` : b === 'hoog' ? `${helft(n) + 1}–${2 * helft(n)}` : null
+const BUITEN_LABEL: Record<Buiten, string> = { rood: 'Rood', zwart: 'Zwart', laag: 'Laag', hoog: 'Hoog' }
+/**
+ * Welke getallen bij een buiteninzet horen, klein onder de knop. Zo is ook te zien dat het blauwe
+ * getal (bij een oneven aantal spelers) bij geen van de vier hoort.
+ */
+function bereik(b: Buiten, n: number): string {
+  const h = helft(n)
+  if (b === 'laag') return h === 1 ? '1' : `1–${h}`
+  if (b === 'hoog') return h === 1 ? '2' : `${h + 1}–${2 * h}`
+  const eerste = b === 'rood' ? 1 : 2
+  const laatste = 2 * h - (b === 'rood' ? 1 : 0)
+  if (laatste === eerste) return String(eerste)
+  if (laatste === eerste + 2) return `${eerste}, ${laatste}`
+  return `${eerste}, ${eerste + 2} … ${laatste}`
+}
 
 /**
  * Iedereen opnieuw laten beginnen (fiches terug naar START, bakken op 0): verander deze
@@ -66,14 +77,18 @@ export function resetCasinoAlsNodig() {
 }
 
 const fiches = (n: number) => n.toLocaleString('nl-NL')
+const hoofdletter = (s: string) => s.charAt(0).toLocaleUpperCase('nl') + s.slice(1)
 const som = (inzet: Record<string, number>) => Object.values(inzet).reduce((s, x) => s + x, 0)
 
-/** Een bedrag als stapeltje fiches (grootste eerst), voor op het speelveld */
+/** Een bedrag als stapeltje fiches (grootste boven), voor op het speelveld; hoogstens drie */
 function stapel(bedrag: number): number[] {
   const uit: number[] = []
-  for (const f of [...FICHES].reverse()) while (bedrag >= f && uit.length < 6) (uit.push(f), (bedrag -= f))
-  return uit
+  for (const f of [...FICHES].reverse()) while (bedrag >= f && uit.length < 3) (uit.push(f), (bedrag -= f))
+  return uit.reverse()
 }
+
+/** Lange namen kleiner, over twee regels; het nummer blijft altijd even groot */
+const LANG = 9
 
 interface Uitslag {
   getal: number
@@ -107,6 +122,11 @@ export function Roulette({
   const [ronde, setRonde] = useState(0)
   const [melding, setMelding] = useState<string | null>(null)
   const popup = useDialoogFocus<HTMLDivElement>(uitslag !== null && toonPopup)
+  // Wie er meedoen: een blad dat opent vanuit de kopregel van de tafel
+  const [spelersOpen, setSpelersOpen] = useState(false)
+  const spelersBlad = useDialoogFocus<HTMLDivElement>(spelersOpen)
+  const tafel = useRef<HTMLElement>(null)
+  const raster = useRef<HTMLDivElement>(null)
   const [geluidAan, setGeluidAan] = useOpgeslagen('rad.geluid', true)
   const wiel = useRef<SVGGElement>(null)
   const bal = useRef<SVGCircleElement>(null)
@@ -185,6 +205,48 @@ export function Roulette({
     const id = window.setTimeout(() => setMelding(null), 2500)
     return () => window.clearTimeout(id)
   }, [melding])
+
+  // Spelersblad: Escape sluit, en de pagina eronder ligt stil
+  useEffect(() => {
+    if (!spelersOpen) return
+    const html = document.documentElement
+    html.classList.add('venster-open')
+    const opToets = (e: KeyboardEvent) => e.key === 'Escape' && setSpelersOpen(false)
+    window.addEventListener('keydown', opToets)
+    return () => {
+      html.classList.remove('venster-open')
+      window.removeEventListener('keydown', opToets)
+    }
+  }, [spelersOpen])
+
+  // De tafel is zo hoog als het scherm tussen de kopbalk en de tabbalk. Bij het openen van het
+  // casino schuift hij daar in beeld (alleen als hij nog niet helemaal te zien is).
+  const heeftTafel = n >= 2
+  useEffect(() => {
+    // Even wachten: de Spel-kop wordt bij het casino eerst compacter, daarna ligt de tafel pas vast
+    const id = window.setTimeout(() => {
+      const t = tafel.current
+      if (!t) return
+      const r = t.getBoundingClientRect()
+      const tabbalk = document.querySelector('.tabbalk')?.getBoundingClientRect().top ?? window.innerHeight
+      if (r.top >= 40 && r.bottom <= tabbalk + 1) return
+      // Zelf uitrekenen: scroll-margin-top (de kopbalk) wordt niet overal meegenomen
+      const marge = parseFloat(getComputedStyle(t).scrollMarginTop) || 0
+      window.scrollTo({ top: window.scrollY + r.top - marge, behavior: minderBeweging() ? 'auto' : 'smooth' })
+    }, 150)
+    return () => window.clearTimeout(id)
+  }, [heeftTafel])
+
+  // Na de worp: het winnende getal in het raster in beeld schuiven (bij veel spelers scrolt het)
+  useEffect(() => {
+    const r = raster.current
+    if (!uitslag || !r || uitslag.getal === 0) return
+    const vak = r.querySelector<HTMLElement>(`[data-getal="${uitslag.getal}"]`)
+    if (!vak) return
+    const boven = vak.offsetTop // het raster is position: relative
+    if (boven >= r.scrollTop && boven + vak.offsetHeight <= r.scrollTop + r.clientHeight) return
+    r.scrollTo({ top: boven - (r.clientHeight - vak.offsetHeight) / 2, behavior: minderBeweging() ? 'auto' : 'smooth' })
+  }, [uitslag])
 
   const zet = (sleutel: string) => {
     if (bezig || uitslag) return
@@ -316,33 +378,62 @@ export function Roulette({
     return /^\d+$/.test(sleutel) ? Number(sleutel) === uitslag.getal : uitbetaling(sleutel, 1, uitslag.getal, n) > 0
   }
 
+  const uit = !!uitslag || bezig
+  const fichesOp = saldo === 0 && totaal === 0 && !bezig && !uitslag
+
   return (
     <div className="casino">
       {n < 2 ? (
-        <p className="melding">Kies minstens twee spelers (tik hieronder op Spelers).</p>
+        <div className="melding casino__tekort">
+          <p>Kies minstens twee spelers om aan tafel te gaan.</p>
+          <button type="button" className="knop knop--secundair knop--klein" onClick={() => setSpelersOpen(true)}>
+            <Icoon naam="groep" grootte={20} /> Spelers kiezen
+          </button>
+        </div>
       ) : (
-        <section className="casino__tafel" aria-label="Jaccasino">
+        <section className="casino__tafel" aria-label="Jaccasino" ref={tafel}>
+          {/* Kopregel: logo, saldo (met de getrokken bakken) en de twee knoppen van de tafel */}
           <div className="casino__kopregel">
             <h2 className="casino__titel">
               <CasinoLogo />
             </h2>
-            <p className="casino__saldo" aria-label={`${fiches(saldo)} fiches`}>
-              <span className="casino__fiche" aria-hidden="true" /> {fiches(saldo)}
+            <p className="casino__saldo">
+              <span className="casino__bedrag">
+                <span className="casino__fiche" aria-hidden="true" /> {fiches(saldo)}
+                <span className="verborgen"> fiches</span>
+              </span>
+              <span className="casino__bakken">
+                <Icoon naam="bier" grootte={13} /> {geleend} {geleend === 1 ? 'bak' : 'bakken'}
+              </span>
             </p>
+            <button
+              type="button"
+              className="casino__rond"
+              onClick={() => setGeluidAan(!geluidAan)}
+              aria-pressed={geluidAan}
+              aria-label={geluidAan ? 'Geluid en trillen uitzetten' : 'Geluid en trillen aanzetten'}
+              title={geluidAan ? 'Geluid en trillen aan' : 'Geluid en trillen uit'}
+            >
+              <Icoon naam={geluidAan ? 'geluid' : 'stil'} grootte={20} />
+            </button>
+            <button
+              type="button"
+              className="casino__rond casino__spelersknop"
+              onClick={() => setSpelersOpen(true)}
+              aria-haspopup="dialog"
+              aria-label={`Spelers kiezen, nu ${spelers.length}`}
+              title="Spelers"
+              // Niets aan te passen zolang het balletje rolt
+              disabled={bezig}
+            >
+              <Icoon naam="groep" grootte={20} />
+              <span className="casino__aantal" aria-hidden="true">
+                {spelers.length}
+              </span>
+            </button>
           </div>
-          {/* Onder de fiche van het logo, in de lege hoek naast het ronde wiel */}
-          <button
-            type="button"
-            className="casino__geluid"
-            onClick={() => setGeluidAan(!geluidAan)}
-            aria-pressed={geluidAan}
-            aria-label={geluidAan ? 'Geluid en trillen uitzetten' : 'Geluid en trillen aanzetten'}
-            title={geluidAan ? 'Geluid en trillen aan' : 'Geluid en trillen uit'}
-          >
-            <Icoon naam={geluidAan ? 'geluid' : 'stil'} grootte={20} />
-          </button>
 
-          {/* Het wiel vult de ruimte die de tafel over heeft, zodat de tafel tot de tabbalk reikt */}
+          {/* Het wiel vult de ruimte die de tafel over heeft */}
           <div className="casino__wielplek">
             <RouletteWiel
               n={n}
@@ -357,27 +448,30 @@ export function Roulette({
           </div>
           {uitslag && uitslag.uitbetaald > uitslag.ingezet && <Confetti key={ronde} />}
 
-          <div className="casino__veld">
-            <Vak sleutel="0" label="0, iedereen drinkt" klasse="casino__vak casino__vak--nul" inzet={inzet} winnend={winnend('0')} onZet={zet} uit={!!uitslag || bezig}>
+          <div className={`casino__veld${uitslag ? ' is-uitslag' : ''}`}>
+            <Vak sleutel="0" label="0, iedereen drinkt" klasse="casino__vak casino__vak--nul" inzet={inzet} winnend={winnend('0')} onZet={zet} uit={uit}>
               <strong>0</strong>
               <span>Iedereen drinkt</span>
             </Vak>
-            <div className="casino__raster">
+            <div className="casino__raster" ref={raster}>
               {volgorde.map((speler, i) => {
                 const g = i + 1
+                const kleur = kleurVan(g, n)
+                const tekst = toonNaam(speler)
                 return (
                   <Vak
                     key={g}
+                    getal={g}
                     sleutel={String(g)}
-                    label={`${g}, ${toonNaam(speler)}`}
-                    klasse={`casino__vak casino__vak--${kleurVan(g, n)}`}
+                    label={`${g}, ${tekst}${kleur === 'blauw' ? ', blauw: telt niet voor rood, zwart, laag of hoog' : ''}`}
+                    klasse={`casino__vak casino__vak--${kleur}${tekst.length > LANG ? ' is-lang' : ''}`}
                     inzet={inzet}
                     winnend={winnend(String(g))}
                     onZet={zet}
-                    uit={!!uitslag || bezig}
+                    uit={uit}
                   >
                     <strong>{g}</strong>
-                    <span>{toonNaam(speler)}</span>
+                    <span>{tekst}</span>
                   </Vak>
                 )
               })}
@@ -387,117 +481,151 @@ export function Roulette({
                 <Vak
                   key={b}
                   sleutel={b}
-                  label={bereik(b, n) ? `${BUITEN_LABEL[b]}, ${bereik(b, n)}` : BUITEN_LABEL[b]}
+                  label={`${BUITEN_LABEL[b]}, ${bereik(b, n)}`}
                   klasse={`casino__vak casino__vak--buiten casino__vak--${b}`}
                   inzet={inzet}
                   winnend={winnend(b)}
                   onZet={zet}
-                  uit={!!uitslag || bezig}
+                  uit={uit}
                 >
                   <strong>{BUITEN_LABEL[b]}</strong>
-                  {bereik(b, n) && <span>{bereik(b, n)}</span>}
+                  <span>{bereik(b, n)}</span>
                 </Vak>
               ))}
             </div>
           </div>
 
-          {saldo === 0 && totaal === 0 && !bezig && !uitslag ? (
-            <div className="casino__bank">
-              <button
-                type="button"
-                className="knop knop--breed casino__knop"
-                onClick={() => {
-                  setSaldo(LENING)
-                  setGeleend(geleend + 1)
-                }}
-              >
-                <Icoon naam="bier" grootte={20} /> Trek een bak voor {fiches(LENING)} nieuwe fiches
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="casino__bediening">
-                <div
-                  className="casino__fiches"
-                  role="radiogroup"
-                  aria-label="Fiche"
-                  onKeyDown={tabToetsen<number>(FICHES, fiche, setFiche)}
-                >
-                  {FICHES.map((f) => (
-                    <button
-                      key={f}
-                      type="button"
-                      role="radio"
-                      aria-checked={fiche === f}
-                      tabIndex={fiche === f ? 0 : -1}
-                      className={`fiche fiche--${f}${fiche === f ? ' is-gekozen' : ''}`}
-                      onClick={() => setFiche(f)}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
+          {/* De bediening ligt vast onderaan de tafel, net boven de tabbalk */}
+          <div className="casino__rail">
+            {fichesOp ? (
+              <div className="casino__bank">
+                <p className="casino__railregel">Je fiches zijn op.</p>
                 <button
                   type="button"
                   className="knop casino__knop casino__draai"
-                  onClick={() => void draaiWiel()}
-                  disabled={bezig || totaal === 0 || !!uitslag}
+                  onClick={() => {
+                    setSaldo(LENING)
+                    setGeleend(geleend + 1)
+                  }}
                 >
-                  {bezig ? 'Rolt…' : totaal === 0 ? 'Zet in' : 'Rien ne va plus!'}
+                  <Icoon naam="bier" grootte={20} /> Trek een bak voor {fiches(LENING)} fiches
                 </button>
               </div>
-              <p className="casino__inzetregel">
-                Inzet <strong>{fiches(totaal)}</strong>
-                {totaal > 0 && !bezig && (
-                  <button type="button" className="tekstknop casino__terug" onClick={inzetTerug}>
-                    terugnemen
+            ) : (
+              <>
+                <div className="casino__railregel">
+                  <span>
+                    Inzet <strong className="casino__inzet">{fiches(totaal)}</strong>
+                  </span>
+                  {totaal > 0 && !bezig ? (
+                    <button type="button" className="tekstknop casino__terug" onClick={inzetTerug}>
+                      <Icoon naam="herstel" grootte={16} /> Terugnemen
+                    </button>
+                  ) : (
+                    <span className="casino__hint">{bezig ? 'Rien ne va plus' : uitslag ? '' : 'Kies een fiche en tik op een vak'}</span>
+                  )}
+                </div>
+                <div className="casino__bediening">
+                  <div
+                    className="casino__fiches"
+                    role="radiogroup"
+                    aria-label="Fiche"
+                    onKeyDown={tabToetsen<number>(FICHES, fiche, setFiche)}
+                  >
+                    {FICHES.map((f) => (
+                      <button
+                        key={f}
+                        type="button"
+                        role="radio"
+                        aria-checked={fiche === f}
+                        tabIndex={fiche === f ? 0 : -1}
+                        className={`fiche fiche--${f}${fiche === f ? ' is-gekozen' : ''}`}
+                        onClick={() => setFiche(f)}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="knop casino__knop casino__draai"
+                    onClick={() => void draaiWiel()}
+                    disabled={bezig || totaal === 0 || !!uitslag}
+                  >
+                    {bezig
+                      ? 'Rolt…'
+                      : uitslag
+                        ? `${uitslag.getal} · ${hoofdletter(kleurVan(uitslag.getal, n))}`
+                        : totaal === 0
+                          ? 'Eerst inzetten'
+                          : 'Rien ne va plus!'}
                   </button>
-                )}
-              </p>
-            </>
-          )}
+                </div>
+              </>
+            )}
+
+            {uitslag && toonPopup && (
+              // Op de plek van de bediening: wiel en winnend vak blijven zichtbaar
+              <div
+                ref={popup}
+                className="casino__popup"
+                role="dialog"
+                aria-modal="false"
+                aria-label="Uitslag"
+              >
+                <div className="casino__uitslagrij">
+                  <span className={`casino__bol casino__bol--${kleurVan(uitslag.getal, n)}`} aria-hidden="true">
+                    {uitslag.getal}
+                  </span>
+                  <div className="casino__uitslagtekst">
+                    <p className={`casino__klos${(uitslag.naam?.length ?? 0) > 14 ? ' is-lang' : ''}`}>{uitslag.naam ? `${uitslag.naam} neemt een slok!` : 'Iedereen drinkt!'}</p>
+                    <p className="casino__winst">
+                      {uitslag.uitbetaald > uitslag.ingezet
+                        ? `Je wint ${fiches(uitslag.uitbetaald - uitslag.ingezet)} fiches!`
+                        : uitslag.uitbetaald === uitslag.ingezet
+                          ? 'Quitte: je krijgt je inzet terug.'
+                          : `Je verliest ${fiches(uitslag.ingezet - uitslag.uitbetaald)} fiches.`}
+                    </p>
+                  </div>
+                </div>
+                <button type="button" className="knop casino__knop casino__draai casino__volgende" onClick={volgendeRonde}>
+                  Volgende ronde
+                </button>
+              </div>
+            )}
+          </div>
           <p className="verborgen" aria-live="polite">
             {uitslag ? uitslagTekst(uitslag) : ''}
           </p>
         </section>
       )}
 
-      <details className="kaartje casino__spelers">
-        <summary>Spelers ({spelers.length})</summary>
-        {/* Niets aan te passen zolang het balletje rolt */}
-        <fieldset className="radinstellingen" disabled={bezig}>
-          <DeelnemersKiezer kamers={kamers} naam={naam} />
-        </fieldset>
-      </details>
-      <p className="klein casino__bakken">
-        <Icoon naam="bier" grootte={18} /> {geleend} {geleend === 1 ? 'bak' : 'bakken'} getrokken
-      </p>
-
-      {uitslag && toonPopup && (
-        // Onderin en licht, zodat wiel en winnend vak zichtbaar blijven
-        <div className="dialoog-achtergrond dialoog-achtergrond--licht" onClick={volgendeRonde}>
+      {spelersOpen && (
+        <div className="dialoog-achtergrond" onClick={() => setSpelersOpen(false)}>
           <div
-            ref={popup}
-            className="dialoog casino__popup"
+            ref={spelersBlad}
+            className="dialoog dialoog--hoog casino__spelersblad"
             role="dialog"
             aria-modal="true"
-            aria-label="Uitslag"
+            aria-labelledby="casino-spelers-titel"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="casino__getal">
-              <span className={`casino__bol casino__bol--${kleurVan(uitslag.getal, n)}`}>{uitslag.getal}</span>
-              {kleurVan(uitslag.getal, n)}
+            <div className="casino__bladkop">
+              <h2 id="casino-spelers-titel">Spelers ({spelers.length})</h2>
+              <button type="button" className="icoonknop" aria-label="Sluiten" onClick={() => setSpelersOpen(false)}>
+                <Icoon naam="kruis" grootte={20} />
+              </button>
+            </div>
+            <p className="klein">
+              Elke speler is een getal op het wiel, per ronde opnieuw verdeeld. Bij een oneven aantal is het hoogste getal
+              blauw: dat telt niet mee voor Rood, Zwart, Laag of Hoog.
             </p>
-            <p className="casino__klos">{uitslag.naam ? `${uitslag.naam} neemt een slok!` : 'Iedereen drinkt!'}</p>
-            <p>
-              {uitslag.uitbetaald > uitslag.ingezet
-                ? `Je wint ${fiches(uitslag.uitbetaald - uitslag.ingezet)} fiches!`
-                : uitslag.uitbetaald === uitslag.ingezet
-                  ? 'Quitte: je krijgt je inzet terug.'
-                  : `Je verliest ${fiches(uitslag.ingezet - uitslag.uitbetaald)} fiches.`}
-            </p>
-            <button type="button" className="knop knop--breed casino__knop" onClick={volgendeRonde}>
-              Volgende ronde
+            {/* Niets aan te passen zolang het balletje rolt */}
+            <fieldset className="radinstellingen" disabled={bezig}>
+              <DeelnemersKiezer kamers={kamers} naam={naam} />
+            </fieldset>
+            <button type="button" className="knop knop--primair knop--breed" onClick={() => setSpelersOpen(false)}>
+              Klaar
             </button>
           </div>
         </div>
@@ -514,6 +642,7 @@ export function Roulette({
 
 function Vak({
   sleutel,
+  getal,
   label,
   klasse,
   inzet,
@@ -523,6 +652,7 @@ function Vak({
   children,
 }: {
   sleutel: string
+  getal?: number
   label: string
   klasse: string
   inzet: Record<string, number>
@@ -535,16 +665,18 @@ function Vak({
   return (
     <button
       type="button"
-      className={`${klasse}${winnend ? ' is-winnend' : ''}`}
+      className={`${klasse}${winnend ? ' is-winnend' : ''}${bedrag > 0 ? ' heeft-inzet' : ''}`}
       onClick={() => onZet(sleutel)}
       aria-disabled={uit}
       aria-label={`${label}${bedrag ? `, ingezet ${bedrag}` : ''}`}
+      data-getal={getal}
     >
       {children}
+      {/* Het stapeltje ligt binnen het vak, rechtsboven, met het bedrag erop */}
       {bedrag > 0 && (
         <span className="stapel" aria-hidden="true">
           {stapel(bedrag).map((f, i) => (
-            <span key={i} className={`fiche fiche--mini fiche--${f}`} style={{ bottom: i * 3 }} />
+            <span key={i} className={`fiche fiche--mini fiche--${f}`} style={{ top: -i * 3 }} />
           ))}
           <span className="stapel__bedrag">{bedrag}</span>
         </span>
@@ -583,7 +715,7 @@ function RouletteWiel({
   const ring = useMemo(() => wielVolgorde(n), [n])
   const [bx, by] = punt(balStraal, balHoek)
   return (
-    <svg className="casino__wiel" viewBox="-118 -118 236 236" role="img" aria-label={`Roulettewiel met 0 tot en met ${n}`}>
+    <svg className="casino__wiel" viewBox="-118 -118 236 236" role="img" aria-label={`Roulettewiel met 0 tot en met ${n}${n % 2 ? `; ${n} is blauw` : ''}`}>
       <defs>
         <radialGradient id="rw-rand" cx="0" cy="0" r="117" gradientUnits="userSpaceOnUse">
           <stop offset="92%" stopColor="#6e3f1b" />
@@ -678,6 +810,18 @@ function RouletteWiel({
           )
         })}
         <circle r="77" fill="none" stroke="#e8c463" strokeWidth="1.2" />
+        {/* Na de worp licht het winnende vakje op (het draait mee met het wiel) */}
+        {uitslag !== null && ring.includes(uitslag) && (
+          <path
+            className="casino__wielwinst"
+            d={taartpunt(88.5, ring.indexOf(uitslag) * vak, (ring.indexOf(uitslag) + 1) * vak, 62.5)}
+            fill="#fff"
+            fillOpacity="0.18"
+            stroke="#f3d36b"
+            strokeWidth="2.4"
+            strokeLinejoin="round"
+          />
+        )}
         <circle r="63.5" fill="url(#rw-kegel)" stroke="#c9ced3" strokeWidth="2" />
         <circle r="50" fill="none" stroke="#000" strokeOpacity="0.25" strokeWidth="0.8" />
         <circle r="30" fill="none" stroke="#000" strokeOpacity="0.25" strokeWidth="0.8" />
