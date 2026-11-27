@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jaccasino: materialen en diepte</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<style>
+  /* ---------- Pagina van de mockup ---------- */
+  .mk__rij { display: grid; grid-template-columns: repeat(2, minmax(0, 390px)); gap: 18px; margin: 10px 0 30px; align-items: start; }
+  .mk__rij figure { margin: 0; min-width: 0; }
+  .mk__rij figcaption { margin-bottom: 6px; font: 700 1.05rem var(--font-smal); }
+  .mk__rij img { display: block; width: 100%; height: auto; border-radius: 14px; }
+  .mk__bak { padding: 14px; border-radius: 18px; background: var(--papier); }
+  .mk__bak.is-nacht { background: #0b1230; }
+  .mk__knoppen { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+  .mk__knoppen button { min-height: 44px; padding: 0 14px; border: 1.5px solid var(--lijn); border-radius: 12px; background: var(--papier-vlak); color: var(--inkt); font: 700 .95rem var(--font-smal); cursor: pointer; }
+  .mk__knoppen button[aria-pressed='true'] { border-color: var(--tweeslag-lichtblauw); background: rgba(9, 159, 196, .12); }
+  .mk__lijst li { margin-bottom: 6px; }
+  .mk__noot { max-width: 760px; color: var(--inkt-zacht); }
+  .casino h2 { border: 0; padding: 0; } .casino p, .casino .casino__uitslagtekst p { margin: 0; max-width: none; }
+  @media (max-width: 820px) { .mk__rij { grid-template-columns: minmax(0, 1fr); } }
+
+  /* =====================================================================================
+   * HET NIEUWE CASINO (zo komt het in src/styles/app.css)
+   * ===================================================================================== */
+  .casino {
+    --goud: #f3d36b;
+    --goud-licht: #f8e49a;
+    --goud-donker: #b8902f;
+    --vilt: #126b3f;
+    --vilt-donker: #0b4f2d;
+    --hout: #6b3f1c;
+    /* Gedrukte lijnen op het vilt: crème met een zweem goud */
+    --druklijn: rgba(246, 226, 166, 0.78);
+    /* Goud zoals in het logo: licht, een harde overgang in het midden, weer licht */
+    --metaalgoud: linear-gradient(180deg, #fff6c8 0%, #f9df7f 24%, #f0c445 47%, #d9a52e 53%, #ecc556 78%, #fbe58f 100%);
+    /* Fijne stofstructuur van het vilt: klein herhaald SVG-patroon (statisch) */
+    --vilt-ruis: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 -.32'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+    font-family: var(--font);
+    color: #fff;
+  }
+
+  .casino__tafel {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 720px;
+    /* De houten rand is geen border meer maar banen schaduw binnen de tafel (zelfde 8 px) */
+    padding: 16px 16px 8px;
+    border-radius: 24px;
+    background:
+      var(--vilt-ruis),
+      repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 3px),
+      /* Lamp boven de tafel */
+      radial-gradient(ellipse 80% 55% at 50% 36%, rgba(255, 255, 255, 0.14), transparent 72%),
+      /* Naar de randen donkerder */
+      radial-gradient(ellipse 115% 95% at 50% 42%, transparent 52%, rgba(0, 0, 0, 0.34) 100%),
+      var(--vilt);
+    box-shadow:
+      /* Gelakte bovenkant van de houten rand */
+      inset 0 1.5px 0 rgba(255, 230, 190, 0.5),
+      /* Houten rand: banen nerf, buiten donker, in het midden licht, naar binnen weer donker */
+      inset 0 0 0 1px #2a1606,
+      inset 0 0 0 2px #5c3415,
+      inset 0 0 0 3px #8a5428,
+      inset 0 0 0 4px #9c6431,
+      inset 0 0 0 5px #7f4a22,
+      inset 0 0 0 6px #8f5a2a,
+      inset 0 0 0 7px #6b3c19,
+      inset 0 0 0 8px #3a1f0b,
+      /* Een dun goudlijntje tussen hout en vilt */
+      inset 0 0 0 9px rgba(243, 211, 107, 0.85),
+      /* Zachte schaduw van de rand op het vilt */
+      inset 0 0 14px 9px rgba(0, 0, 0, 0.42),
+      0 10px 24px rgba(13, 0, 88, 0.22);
+  }
+
+  .casino__kopregel { flex: none; display: flex; align-items: center; gap: 4px; width: 100%; min-height: 44px; padding: 0 2px; }
+  .casino__titel { flex: 0 1 180px; min-width: 96px; margin: 0 auto 0 0; line-height: 0; }
+  .casino-logo { width: 100%; height: auto; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5)); }
+  .casino-logo text { font-family: var(--font); }
+  .casino-logo__lampje { animation: casino-lampje 1.2s steps(1) infinite; }
+  .casino-logo__lampje.is-om { animation-delay: -0.6s; }
+  @keyframes casino-lampje { 50% { opacity: 0.35; } }
+
+  .casino__saldo {
+    flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 44px; margin: 0 2px 0 0; padding: 2px 10px;
+    border: 1.5px solid var(--goud); border-radius: 14px;
+    background: linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.22));
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.08);
+    font-family: var(--font); line-height: 1.1; font-variant-numeric: tabular-nums;
+  }
+  .casino__bedrag { display: flex; align-items: center; gap: 5px; font-size: 1.05rem; font-weight: 700; color: var(--goud); }
+  .casino__bakken { font-size: 0.72rem; font-weight: 600; }
+  .casino__rond {
+    position: relative; flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+    border: 1.5px solid rgba(243, 211, 107, 0.6); border-radius: 50%;
+    background: linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.22));
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4); color: #fff;
+  }
+  .casino__aantal { position: absolute; right: -4px; bottom: -4px; min-width: 20px; padding: 0 4px; border-radius: 999px; background: var(--metaalgoud); box-shadow: 0 0 0 1px #8a6420; color: #3a2408; font-size: 0.7rem; font-weight: 700; line-height: 18px; text-align: center; }
+
+  .casino__wielplek { flex: 1 1 0; align-self: stretch; min-height: 120px; container-type: size; display: flex; align-items: center; justify-content: center; }
+  /* Eigen laag: het draaien tekent het vilt eronder niet opnieuw. Geen filter op het wiel zelf. */
+  .casino__wiel { width: min(100cqw, 100cqh); height: auto; will-change: transform; }
+  .casino__wielgetal { font-family: var(--font-smal); font-weight: 700; }
+
+  /* Het winnende vakje op het wiel: één zachte gouden puls, daarna blijft het gemarkeerd */
+  .casino__wielwinst-gloed { animation: wielpuls 1.4s ease-out 1 both; }
+  @keyframes wielpuls { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0.35; } }
+
+  /* ---- Speelveld: gedrukt op het vilt ---- */
+  .casino__veld { flex: none; display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .casino__raster { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 44px; gap: 4px; height: calc(3 * 44px + 2 * 4px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(243, 211, 107, 0.6) transparent; }
+  .casino__buiten { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+
+  .casino__vak {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 0; min-height: 44px; padding: 2px 4px;
+    /* Overal dezelfde dunne gedrukte lijn */
+    border: 1px solid var(--druklijn);
+    border-radius: 4px;
+    /* Doorschijnend, zodat het vilt er net doorheen komt: gedrukt, geen knop */
+    background: rgba(0, 0, 0, 0.12);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.28);
+    color: #fff;
+    text-align: center;
+    font: inherit;
+    cursor: pointer;
+  }
+  .casino__vak strong {
+    font-family: var(--font-smal);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  }
+  .casino__vak > span:not(.stapel) { max-width: 100%; font-size: 0.72rem; line-height: 1.15; color: rgba(255, 255, 255, 0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .casino__vak.is-lang > span:not(.stapel) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 0.62rem; line-height: 1.05; white-space: normal; }
+  .casino__vak.is-lang strong { font-size: 1.05rem; }
+  .casino__vak--rood { background: rgba(158, 22, 31, 0.93); }
+  .casino__vak--zwart { background: rgba(17, 17, 17, 0.9); }
+  .casino__vak--blauw { background: rgba(33, 90, 160, 0.93); }
+
+  /* De 0: een eigen vak met een dubbele lijn en het getal in een ringetje */
+  .casino__vak--nul {
+    flex-direction: row; gap: 10px;
+    background: rgba(26, 122, 67, 0.88);
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.22), inset 0 0 0 3px var(--druklijn), inset 0 1px 6px rgba(0, 0, 0, 0.3);
+  }
+  .casino__vak--nul strong { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--druklijn); border-radius: 50%; font-size: 1.15rem; }
+  .casino__vak--nul > span:not(.stapel) { font-size: 0.85rem; }
+
+  .casino__vak--buiten strong { font-size: 1.05rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .casino__vak--buiten > span:not(.stapel) { font-size: 0.68rem; }
+
+  /* Uitslag: de rest zakt weg, het winnende vak houdt een gouden lijn (ook zonder animatie) */
+  .casino__veld.is-uitslag .casino__vak:not(.is-winnend) { filter: saturate(0.55) brightness(0.7); }
+  .casino__vak.is-winnend {
+    z-index: 1;
+    border-color: var(--goud-licht);
+    box-shadow: inset 0 0 0 1px var(--goud), 0 0 0 1px var(--goud), 0 0 8px rgba(243, 211, 107, 0.5);
+  }
+  /* De puls is een aparte laag die alleen in doorzichtigheid verandert (goedkoop) */
+  .casino__vak.is-winnend::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 6px; pointer-events: none;
+    box-shadow: 0 0 18px 5px rgba(243, 211, 107, 0.75), inset 0 0 14px rgba(255, 240, 190, 0.55);
+    opacity: 0;
+    animation: vakpuls 1.4s ease-out 1;
+  }
+  @keyframes vakpuls { 30% { opacity: 1; } 100% { opacity: 0; } }
+
+  /* ---- Fiches: zelfde materiaal als de fiche in het logo ---- */
+  .fiche {
+    --kleur: #c0262d; --blok: #f7f3ea; --zijkant: #6a070c; --cijfer: #a3121b;
+    display: grid; place-items: center;
+    width: 44px; height: 44px; padding: 0;
+    border: 0; border-radius: 50%;
+    background:
+      /* Glans */
+      radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 38%),
+      /* Inlegvlak met een goudlijntje */
+      radial-gradient(circle closest-side, #fffdf6 0, #ece2c8 54%, #c9a24a 55%, #f3d36b 58%, transparent 59%),
+      /* Een dun streepje tussen inleg en rand */
+      radial-gradient(circle closest-side, transparent 66%, rgba(0, 0, 0, 0.25) 67%, transparent 69%),
+      /* Zes randblokjes */
+      repeating-conic-gradient(from -11deg, var(--blok) 0 22deg, var(--kleur) 22deg 60deg);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+      /* Zijkant: een dun randje dikte */
+      0 3px 0 var(--zijkant),
+      0 5px 7px rgba(0, 0, 0, 0.45);
+    color: var(--cijfer);
+    font-family: var(--font-smal);
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  }
+  .fiche--10 { --kleur: #099fc4; --zijkant: #05607a; --cijfer: #0d0058; }
+  .fiche--25 { --kleur: #c0262d; --zijkant: #6a070c; --cijfer: #a3121b; }
+  .fiche--100 { --kleur: #1b1b1b; --blok: #f3d36b; --zijkant: #000; --cijfer: #1b1b1b; }
+  /* Gekozen: opgetild, grotere schaduw, gouden ring */
+  .fiche.is-gekozen {
+    transform: translateY(-5px);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+      0 3px 0 var(--zijkant),
+      0 0 0 2.5px var(--goud),
+      0 0 0 3.5px rgba(58, 36, 8, 0.6),
+      0 12px 14px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Ingezet: een stapeltje echte fiches met een dun randje, schaduw op het vilt en een label */
+  .stapel { position: absolute; top: 2px; right: 2px; width: 27px; height: 24px; pointer-events: none; }
+  .casino__vak--buiten.heeft-inzet, .casino__vak--nul.heeft-inzet { padding-right: 26px; }
+  .casino__vak.is-lang.heeft-inzet { padding-right: 16px; }
+  .stapel .fiche--mini {
+    position: absolute; left: 3px; top: 8px;
+    width: 15px; height: 15px; font-size: 0;
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 40%),
+      radial-gradient(circle closest-side, #f7f0de 0 48%, var(--kleur) 52%, transparent 53%),
+      repeating-conic-gradient(from -11deg, var(--blok) 0 22deg, var(--kleur) 22deg 60deg);
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.35), 0 1.5px 0 var(--zijkant), 0 2px 2px rgba(0, 0, 0, 0.5);
+    transition: none;
+  }
+  .stapel__bedrag {
+    position: absolute; z-index: 1; top: 0; right: 0;
+    min-width: 20px; padding: 0 3px; border-radius: 999px;
+    background: var(--metaalgoud);
+    box-shadow: 0 0 0 0.5px #8a6420, 0 1px 2px rgba(0, 0, 0, 0.45);
+    color: #3a2408; font-size: 0.62rem; font-weight: 700; line-height: 14px; text-align: center;
+  }
+
+  /* ---- Bediening ---- */
+  .casino__rail {
+    position: relative; flex: none; display: flex; flex-direction: column; gap: 2px; justify-content: center;
+    width: calc(100% + 16px); height: 108px; margin: 2px -8px 0; padding: 0 10px 4px;
+    border-top: 1px solid var(--goud);
+    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 6px 10px -6px rgba(0, 0, 0, 0.5);
+  }
+  .casino__railregel { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 34px; margin: 0; font-size: 0.9rem; }
+  .casino__inzet { display: inline-block; min-width: 4ch; margin-left: 4px; color: var(--goud); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+  .casino__hint { font-size: 0.8rem; opacity: 0.85; }
+  .casino__terug { color: var(--goud); font: 600 0.9rem var(--font); background: none; border: 0; }
+  .casino__bediening { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .casino__fiches { display: flex; gap: 7px; padding-top: 2px; }
+
+  /* De gouden draaiknop: licht bol, zoals het goud van het logo */
+  .casino__knop {
+    border: 1px solid #9a7020;
+    background: var(--metaalgoud);
+    color: #3a2408;
+    text-shadow: 0 1px 0 rgba(255, 250, 225, 0.55);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -3px 4px rgba(122, 86, 26, 0.3),
+      0 3px 0 #8a6420,
+      0 6px 12px rgba(0, 0, 0, 0.35);
+  }
+  .casino__draai { flex: 1; min-width: 0; min-height: 48px; padding: 8px 10px; border-radius: 14px; font: italic 700 1.1rem var(--font); white-space: nowrap; cursor: pointer; }
+  .casino__draai:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -2px 3px rgba(122, 86, 26, 0.3), 0 1px 0 #8a6420, 0 2px 6px rgba(0, 0, 0, 0.3); }
+  /* Uitgeschakeld: dof goud, plat, gewone letter; duidelijk 'nog niet' */
+  .casino__draai:disabled {
+    border: 1px solid rgba(243, 211, 107, 0.42);
+    background: linear-gradient(rgba(243, 211, 107, 0.16), rgba(243, 211, 107, 0.08));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.86);
+    text-shadow: none;
+    font-style: normal; font-size: 0.95rem; font-weight: 600;
+    cursor: default;
+  }
+
+  /* ---- Uitslag: een bordje van de tafel ---- */
+  .casino__popup {
+    position: absolute; inset: 5px 6px 6px; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center; gap: 6px;
+    padding: 5px 10px 6px;
+    border: 1.5px solid var(--goud);
+    border-radius: 12px;
+    background:
+      var(--vilt-ruis),
+      radial-gradient(ellipse 90% 80% at 50% 20%, rgba(255, 255, 255, 0.1), transparent 70%),
+      linear-gradient(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.16)),
+      var(--vilt);
+    box-shadow:
+      /* Houten lijst om het bordje */
+      0 0 0 2.5px #7f4a22,
+      0 0 0 3.5px #2a1606,
+      0 -2px 0 3.5px rgba(255, 230, 190, 0.25),
+      0 6px 14px rgba(0, 0, 0, 0.45),
+      inset 0 0 10px rgba(0, 0, 0, 0.35);
+    animation: omhoog 0.2s ease-out;
+  }
+  @keyframes omhoog { from { transform: translateY(10px); opacity: 0; } }
+  .casino__uitslagrij { display: flex; align-items: center; gap: 10px; }
+  .casino__uitslagtekst p { margin: 0; }
+  /* Het getal als balletje in de kleur van het vak */
+  .casino__bol {
+    flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 42%), var(--bolkleur);
+    box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.4), 0 0 0 1.5px var(--goud), 0 0 0 2.5px rgba(58, 36, 8, 0.6), 0 3px 5px rgba(0, 0, 0, 0.45);
+    font: 700 1.25rem var(--font-smal); color: #fff; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+  }
+  .casino__bol--rood { --bolkleur: #b8141d; }
+  .casino__bol--zwart { --bolkleur: #1b1b1b; }
+  .casino__bol--groen { --bolkleur: #1a7a43; }
+  .casino__bol--blauw { --bolkleur: #2563b0; }
+  .casino__klos { font-size: 1.1rem; font-weight: 700; line-height: 1.15; color: var(--goud); }
+  .casino__winst { font-size: 0.9rem; line-height: 1.25; }
+  .casino__volgende { flex: none; min-height: 44px; padding: 6px 10px; font-style: normal; }
+
+  .confetti { position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none; }
+  .confetti span { position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px; opacity: 0; animation: confetti cubic-bezier(0.3, 0.6, 0.6, 1) forwards; }
+  @keyframes confetti { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--opzij), 420px) rotate(var(--draai)); } }
+
+  .casino :focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .casino__vak.is-winnend::after, .casino__wielwinst-gloed, .casino__popup, .casino-logo__lampje { animation: none; }
+    .casino__wielwinst-gloed { opacity: 0.35; }
+    .confetti { display: none; }
+  }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <div class="doc-kop__binnen">
+    <p class="kop__boven"><a href="index.html" style="color:inherit">Alle mockups</a> · Jaccasino</p>
+    <h1>Jaccasino: materialen en diepte</h1>
+    <p>Dezelfde tafel en dezelfde indeling, maar het hout, het vilt, het metaal en de fiches zien er echt uit. Links de huidige versie (screenshot, 390×844), rechts het voorstel. Het voorstel rechts is echte HTML, CSS en SVG zoals het in de app komt.</p>
+  </div>
+</header>
+<main class="doc">
+  <h2>De hele tafel</h2>
+  <p class="mk__noot">Speel de toestanden na met de knoppen. De tafel is hier 720 px hoog, zoals op een telefoon van 390×844.</p>
+  <div class="mk__knoppen" role="group" aria-label="Toestand">
+    <button type="button" data-stand="leeg">Leeg</button>
+    <button type="button" data-stand="inzet" aria-pressed="true">Met inzet</button>
+    <button type="button" data-stand="rollen">Draai</button>
+    <button type="button" data-stand="uitslag">Uitslag (winst)</button>
+    <button type="button" data-stand="op">Fiches op</button>
+    <button type="button" id="nacht">Donker thema</button>
+  </div>
+  <div class="mk__rij">
+    <figure>
+      <figcaption>Nu</figcaption>
+      <img id="voor-tafel" src="casino-visueel/voor-licht-2-inzet.webp" alt="Huidige casinotafel met inzet">
+    </figure>
+    <figure>
+      <figcaption>Voorstel</figcaption>
+      <div class="mk__bak" id="bak"><div class="casino" id="tafel"></div></div>
+    </figure>
+  </div>
+
+  <h2>Het wiel van dichtbij</h2>
+  <div class="mk__rij">
+    <figure><figcaption>Nu</figcaption><img src="casino-visueel/voor-licht-7-wiel.webp" alt="Huidig wiel"></figure>
+    <figure><figcaption>Voorstel</figcaption><div class="casino" id="wielgroot" style="background:#126b3f;border-radius:14px;padding:6px"></div></figure>
+  </div>
+  <ul class="mk__lijst">
+    <li><b>Houten rand</b> met banen nerf (licht en donker), een gelakte glans aan de bovenkant en een schaduw naar binnen.</li>
+    <li><b>Kom</b>: de baan van het balletje ligt dieper dan de rand, met een donkere schaduw langs de buitenkant en een randje licht op de lip.</li>
+    <li><b>Vakjes</b> met dunne metalen wandjes (licht met een donkere kant) en een metalen ring tussen getallen en vakjes.</li>
+    <li><b>Getallen</b> in Barlow Condensed (de smalle letter van de app), vet, altijd op dezelfde afstand van de rand. Geen nieuw lettertype.</li>
+    <li><b>Ruiten</b> van chroom met een lichtrug en een kleine slagschaduw.</li>
+    <li><b>Draaiknop</b> van gepolijst messing: armen met een lichtstreep, bolletjes met een lichtvlek, en een vaste lichtvlek op de kop die niet meedraait.</li>
+    <li><b>Balletje</b> ivoorwit met een glansvlekje en een schaduwtje. Het beweegt nu met een transform (een translate), de staart blijft zoals hij is.</li>
+    <li><b>Sneller</b>: de drop-shadow-filters op het wiel en het balletje gaan eraf (die moesten elk beeld opnieuw); de schaduw onder het wiel is een verloop. Het wiel krijgt een eigen laag.</li>
+  </ul>
+
+  <h2>Speelveld en fiches</h2>
+  <div class="mk__rij">
+    <figure><figcaption>Nu</figcaption><img src="casino-visueel/voor-licht-8-vakken.webp" alt="Huidig speelveld met inzet"></figure>
+    <figure><figcaption>Voorstel</figcaption><div class="casino" id="veldgroot"></div></figure>
+  </div>
+  <ul class="mk__lijst">
+    <li><b>Gedrukt op vilt</b>: dieper rood en zwart, licht doorschijnend zodat de stofstructuur er doorheen komt, een dun crèmegouden lijntje van 1 px rondom (overal even dik) en bijna rechte hoeken.</li>
+    <li><b>0</b> heeft een eigen vak: dubbele lijn en het getal in een ringetje.</li>
+    <li><b>Nummers</b> in Barlow Condensed, groter en vet; de namen rustig en iets zachter wit. <b>Rood, Zwart, Laag, Hoog</b> in kapitalen, zoals op een tafel.</li>
+    <li><b>Fiches op tafel</b>: echte minifiches met randblokjes, inleg, een randje dikte en schaduw; een stapel verspringt een beetje. Het bedrag staat als klein goudlabel ernaast.</li>
+  </ul>
+
+  <h2>Bediening en uitslag</h2>
+  <div class="mk__rij">
+    <figure><figcaption>Nu</figcaption><img src="casino-visueel/voor-licht-9-bediening.webp" alt="Huidige bediening"><br><img src="casino-visueel/voor-licht-10-popup.webp" alt="Huidige uitslag"></figure>
+    <figure><figcaption>Voorstel</figcaption><div class="casino" id="railgroot"></div></figure>
+  </div>
+  <ul class="mk__lijst">
+    <li><b>Fichekeuze</b> in hetzelfde materiaal als de fiche in het logo: randblokjes, inlegvlak met goudlijn, glans. De gekozen fiche ligt opgetild met een grotere schaduw en een gouden ring.</li>
+    <li><b>Rien ne va plus!</b> in het goud van het logo, licht bol. Uitgeschakeld: dof, plat goud met witte gewone letter (geen stippellijn meer).</li>
+    <li><b>Uitslag als bordje</b>: vilt, gouden lijn en een houten lijst, het getal als glanzend balletje in de kleur van het vak, de knop in dezelfde goudstijl. Zelfde plek en grootte als nu.</li>
+    <li><b>Licht</b>: het winnende vak en het vakje op het wiel lichten één keer zacht goud op en houden daarna een gouden lijn (nu knippert het drie of vier keer).</li>
+    <li><b>Confetti</b> alleen bij een flinke winst (minstens drie keer je inzet terug, dus een getal raak, niet alleen een kleur), in goud, rood en wit. Bij <i>minder beweging</i>: geen puls en geen confetti, alleen de gouden lijn.</li>
+    <li><b>Contrast</b>: wit op het nieuwe rood 7,6 : 1, op zwart 18 : 1; goud op het vilt van de bediening 6,4 : 1; donkerbruin op het knopgoud 6,8 : 1 of hoger.</li>
+  </ul>
+</main>
+
+<script>
+/* ---------- Hulpfuncties (zoals in Wiel.tsx) ---------- */
+const punt = (r, g) => { const a = ((g - 90) * Math.PI) / 180; return [r * Math.cos(a), r * Math.sin(a)] }
+function taartpunt(r, van, tot, binnen = 0) {
+  const [x1, y1] = punt(r, van), [x2, y2] = punt(r, tot), groot = tot - van > 180 ? 1 : 0
+  if (!binnen) return `M0 0 L${x1} ${y1} A${r} ${r} 0 ${groot} 1 ${x2} ${y2} Z`
+  const [x3, y3] = punt(binnen, tot), [x4, y4] = punt(binnen, van)
+  return `M${x1} ${y1} A${r} ${r} 0 ${groot} 1 ${x2} ${y2} L${x3} ${y3} A${binnen} ${binnen} 0 ${groot} 0 ${x4} ${y4} Z`
+}
+const kleurVan = (g, n) => (g === 0 ? 'groen' : n % 2 && g === n ? 'blauw' : g % 2 ? 'rood' : 'zwart')
+function wielVolgorde(n) {
+  const gs = Array.from({ length: n }, (_, i) => i + 1)
+  const rood = gs.filter((g) => kleurVan(g, n) === 'rood'), zwart = gs.filter((g) => kleurVan(g, n) === 'zwart')
+  let zaad = n
+  const toeval = (m) => { zaad = (Math.imul(zaad, 1664525) + 1013904223) >>> 0; return Math.floor((zaad / 0x100000000) * m) }
+  const schud = (l) => { const a = [...l]; for (let i = a.length - 1; i > 0; i--) { const j = toeval(i + 1); [a[i], a[j]] = [a[j], a[i]] } return a }
+  let beste = [], minste = Infinity
+  for (let p = 0; p < 5000 && minste > 0; p++) {
+    const r = schud(rood), z = schud(zwart), ring = r.flatMap((g, i) => [g, z[i]])
+    if (n % 2) ring.splice(2 * Math.floor(r.length / 2), 0, n)
+    const w = [0, ...ring], b = w.filter((g, i) => Math.abs(g - w[(i + 1) % w.length]) === 1).length
+    if (b < minste) { minste = b; beste = w }
+  }
+  return beste
+}
+const R_BAAN = 103, R_DIAMANT = 94, R_VAKJE = 70
+const DIAMANTEN = [0, 45, 90, 135, 180, 225, 270, 315].map((a) => a + 22.5)
+const WIELKLEUR = { groen: '#17804a', rood: '#b3121b', zwart: '#151515', blauw: '#2360ad' }
+
+/* ---------- Het nieuwe wiel (wordt RouletteWiel in Roulette.tsx) ---------- */
+function wielSvg(n, { hoek = 0, balHoek, balStraal = R_VAKJE, uitslag = null, id = 'a' } = {}) {
+  const vakken = n + 1, vak = 360 / vakken
+  const letter = vakken <= 13 ? 9 : vakken <= 25 ? 8 : 7
+  const ring = wielVolgorde(n)
+  balHoek ??= hoek + vak / 2
+  const [bx, by] = punt(balStraal, balHoek)
+  const u = (s) => `${s}-${id}`
+  let s = `<svg class="casino__wiel" viewBox="-118 -118 236 236" role="img" aria-label="Roulettewiel">
+  <defs>
+    <radialGradient id="${u('schaduw')}" cx="0" cy="0" r="118" gradientUnits="userSpaceOnUse">
+      <stop offset="88%" stop-color="#000" stop-opacity=".5"/><stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Hout van de rand: banen nerf, zoals gedraaid hout -->
+    <radialGradient id="${u('hout')}" cx="0" cy="0" r="116" gradientUnits="userSpaceOnUse">
+      <stop offset="93.3%" stop-color="#2e1808"/><stop offset="94.2%" stop-color="#5e3616"/>
+      <stop offset="95.1%" stop-color="#83501f"/><stop offset="95.7%" stop-color="#6f411b"/>
+      <stop offset="96.6%" stop-color="#9a6331"/><stop offset="97.2%" stop-color="#8a5629"/>
+      <stop offset="98%" stop-color="#a56d38"/><stop offset="98.8%" stop-color="#7a4720"/>
+      <stop offset="99.5%" stop-color="#55300f"/><stop offset="100%" stop-color="#2a1505"/>
+    </radialGradient>
+    <!-- Lak: licht van boven, onderkant in de schaduw -->
+    <linearGradient id="${u('lak')}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".38"/><stop offset="30%" stop-color="#fff" stop-opacity=".06"/>
+      <stop offset="62%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".28"/>
+    </linearGradient>
+    <!-- Kom: schaduw onder de rand, gepolijste baan, lip, helling, spleet naar de rotor -->
+    <radialGradient id="${u('kom')}" cx="0" cy="0" r="108.5" gradientUnits="userSpaceOnUse">
+      <stop offset="82.2%" stop-color="#0e0803"/><stop offset="83.2%" stop-color="#2a1a0c"/>
+      <stop offset="88%" stop-color="#4c321b"/><stop offset="90.4%" stop-color="#2b1a0c"/>
+      <stop offset="91%" stop-color="#7a5430"/><stop offset="91.6%" stop-color="#3a2411"/>
+      <stop offset="93.5%" stop-color="#5b3c1f"/><stop offset="96%" stop-color="#4a2f18"/>
+      <stop offset="98.4%" stop-color="#1e1208"/><stop offset="100%" stop-color="#080402"/>
+    </radialGradient>
+    <linearGradient id="${u('chroom')}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#c3c8ce"/><stop offset="55%" stop-color="#8d949b"/><stop offset="100%" stop-color="#e6e9ec"/>
+    </linearGradient>
+    <linearGradient id="${u('ruit')}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="48%" stop-color="#cfd4d9"/><stop offset="52%" stop-color="#7d848b"/><stop offset="100%" stop-color="#b9bfc5"/>
+    </linearGradient>
+    <radialGradient id="${u('diepte')}" cx="0" cy="0" r="88" gradientUnits="userSpaceOnUse">
+      <stop offset="71.5%" stop-color="#000" stop-opacity=".6"/><stop offset="77%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="83%" stop-color="#000" stop-opacity=".08"/><stop offset="87.4%" stop-color="#000" stop-opacity=".55"/>
+      <stop offset="87.6%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Kegel in het midden: gedraaid hout -->
+    <radialGradient id="${u('kegel')}" cx="0" cy="0" r="63.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#b98048"/><stop offset="30%" stop-color="#a06a37"/>
+      <stop offset="31%" stop-color="#8c5a2c"/><stop offset="55%" stop-color="#7a4b24"/>
+      <stop offset="56%" stop-color="#6a3f1d"/><stop offset="80%" stop-color="#5a3317"/>
+      <stop offset="81%" stop-color="#4a2a12"/><stop offset="94%" stop-color="#3a200d"/><stop offset="100%" stop-color="#1e1006"/>
+    </radialGradient>
+    <!-- Messing -->
+    <linearGradient id="${u('arm')}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6e4c15"/><stop offset="30%" stop-color="#e9c868"/><stop offset="42%" stop-color="#fff6d2"/>
+      <stop offset="58%" stop-color="#d4a640"/><stop offset="100%" stop-color="#5e3f10"/>
+    </linearGradient>
+    <radialGradient id="${u('messing')}" cx="36%" cy="30%" r="72%">
+      <stop offset="0%" stop-color="#fffbe6"/><stop offset="22%" stop-color="#f6dc8a"/><stop offset="55%" stop-color="#c99a33"/><stop offset="100%" stop-color="#6e4c15"/>
+    </radialGradient>
+    <radialGradient id="${u('licht')}" cx="35%" cy="22%" r="65%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".2"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="${u('bal')}" cx="36%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#fffef9"/><stop offset="45%" stop-color="#f4eedd"/><stop offset="100%" stop-color="#b9ae92"/>
+    </radialGradient>
+    <radialGradient id="${u('balschaduw')}" cx="50%" cy="50%" r="50%">
+      <stop offset="40%" stop-color="#000" stop-opacity=".55"/><stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="${u('glans')}" cx="34%" cy="28%" r="60%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".55"/><stop offset="45%" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Schaduw van het wiel op het vilt (een verloop, geen filter) -->
+  <circle cy="3" r="118" fill="url(#${u('schaduw')})"/>
+  <!-- Houten rand -->
+  <circle r="116" fill="url(#${u('hout')})"/>
+  <g fill="none" stroke="#2a1405" stroke-width=".35" stroke-opacity=".35">
+    <circle r="110.6" stroke-dasharray="38 5 14 3 60 7 22 4"/>
+    <circle r="112.3" stroke-dasharray="25 6 48 3 18 9 40 5"/>
+    <circle r="114.4" stroke-dasharray="52 4 20 6 33 3"/>
+  </g>
+  <path d="M0 -116 A116 116 0 1 1 0 116 A116 116 0 1 1 0 -116 Z M0 -108.5 A108.5 108.5 0 1 0 0 108.5 A108.5 108.5 0 1 0 0 -108.5 Z" fill="url(#${u('lak')})" fill-rule="evenodd"/>
+  <path d="${(() => { const [x1, y1] = punt(113.4, -62), [x2, y2] = punt(113.4, -18); return `M${x1} ${y1} A113.4 113.4 0 0 1 ${x2} ${y2}` })()}" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.1" stroke-linecap="round"/>
+  <circle r="116" fill="none" stroke="#1c0e04" stroke-width=".8"/>
+  <!-- Kom met de baan -->
+  <circle r="108.5" fill="url(#${u('kom')})"/>
+  <circle r="108.6" fill="none" stroke="#e8c463" stroke-width=".6" stroke-opacity=".9"/>
+  <path d="${(() => { const [x1, y1] = punt(R_BAAN, -64), [x2, y2] = punt(R_BAAN, -14); return `M${x1} ${y1} A${R_BAAN} ${R_BAAN} 0 0 1 ${x2} ${y2}` })()}" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="4" stroke-linecap="round"/>`
+  // Ruiten: chroom met een slagschaduw
+  for (const [i, d] of DIAMANTEN.entries()) {
+    const pts = i % 2 ? '-4.8,0 0,-1.9 4.8,0 0,1.9' : '0,-4.8 1.9,0 0,4.8 -1.9,0'
+    const [sx, sy] = punt(R_DIAMANT, d)
+    s += `<g transform="translate(${sx} ${sy}) rotate(${d})">
+      <polygon points="${pts}" fill="#000" fill-opacity=".45" transform="translate(.7 .9)" />
+      <polygon points="${pts}" fill="url(#${u('ruit')})" stroke="#3d4248" stroke-width=".35"/>
+      <line ${i % 2 ? 'x1="-4.2" x2="4.2" y1="0" y2="0"' : 'y1="-4.2" y2="4.2" x1="0" x2="0"'} stroke="#fff" stroke-opacity=".75" stroke-width=".35"/>
+    </g>`
+  }
+  // Het draaiende deel
+  s += `<g class="wielrotor" transform="rotate(${hoek})">
+    <circle r="89.2" fill="url(#${u('chroom')})"/>`
+  ring.forEach((g, i) => {
+    const k = WIELKLEUR[kleurVan(g, n)]
+    s += `<path d="${taartpunt(88, i * vak, (i + 1) * vak, 77)}" fill="${k}"/>
+      <path d="${taartpunt(77, i * vak, (i + 1) * vak, 63)}" fill="${k}"/>
+      <text transform="rotate(${(i + 0.5) * vak})" y="-82.6" text-anchor="middle" dominant-baseline="central" font-size="${letter}" fill="#fff" class="casino__wielgetal">${g}</text>`
+  })
+  s += `<circle r="88" fill="url(#${u('diepte')})"/>`
+  for (let g = 0; g < vakken; g++) {
+    const [x1, y1] = punt(88, g * vak), [x2, y2] = punt(77, g * vak), [x3, y3] = punt(63.5, g * vak)
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#e8c463" stroke-width=".45"/>
+      <line x1="${x2}" y1="${y2}" x2="${x3}" y2="${y3}" stroke="#2e3238" stroke-width="1.9" stroke-linecap="round"/>
+      <line x1="${x2}" y1="${y2}" x2="${x3}" y2="${y3}" stroke="#eef1f4" stroke-width=".9" stroke-linecap="round"/>`
+  }
+  s += `<circle r="88" fill="none" stroke="#e8c463" stroke-width=".5"/>
+    <circle r="77" fill="none" stroke="#2e3238" stroke-width="1.8"/>
+    <circle r="77" fill="none" stroke="#dfe3e7" stroke-width=".9"/>`
+  if (uitslag !== null) {
+    const i = ring.indexOf(uitslag)
+    const d = taartpunt(88.3, i * vak, (i + 1) * vak, 63)
+    s += `<path d="${d}" fill="none" stroke="#f3d36b" stroke-width="4.5" stroke-opacity=".45" stroke-linejoin="round" class="casino__wielwinst-gloed"/>
+      <path d="${d}" fill="#fff" fill-opacity=".14" stroke="#f8e49a" stroke-width="1.4" stroke-linejoin="round"/>`
+  }
+  s += `<circle r="63.5" fill="url(#${u('kegel')})"/>
+    <circle r="63.5" fill="none" stroke="#2e3238" stroke-width="2.4"/>
+    <circle r="63.5" fill="none" stroke="url(#${u('chroom')})" stroke-width="1.3"/>
+    <circle r="40" fill="none" stroke="#000" stroke-opacity=".18" stroke-width=".6"/>
+    <circle r="26" fill="none" stroke="#000" stroke-opacity=".18" stroke-width=".6"/>`
+  // Draaiknop: vier armen van messing
+  for (const a of [0, 90, 180, 270]) {
+    s += `<g transform="rotate(${a})">
+      <rect x="-3.2" y="-39" width="6.4" height="31" rx="3.2" fill="#000" fill-opacity=".28"/>
+      <rect x="-2.3" y="-38" width="4.6" height="30" rx="2.3" fill="url(#${u('arm')})" stroke="#5e3f10" stroke-width=".35"/>
+      <circle cy="-40.5" r="6" fill="#000" fill-opacity=".25"/>
+      <circle cy="-40.5" r="4.8" fill="url(#${u('messing')})" stroke="#5e3f10" stroke-width=".35"/>
+    </g>`
+  }
+  s += `<circle r="13.5" fill="#000" fill-opacity=".3"/>
+    <circle r="12" fill="url(#${u('messing')})" stroke="#5e3f10" stroke-width=".5"/>
+    <circle r="8.4" fill="none" stroke="#7a561a" stroke-width=".5" stroke-opacity=".7"/>
+    <circle r="5.6" fill="url(#${u('messing')})" stroke="#5e3f10" stroke-width=".4"/>
+  </g>
+  <!-- Vaste lichtvlek op de messing kop: draait niet mee -->
+  <ellipse cx="-3.6" cy="-4.4" rx="3.4" ry="2.2" fill="#fff" fill-opacity=".55" transform="rotate(-35 -3.6 -4.4)"/>
+  <circle r="108" fill="url(#${u('licht')})" pointer-events="none"/>
+  <path d="" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="6" stroke-linecap="round" class="staart"/>
+  <g class="bal" transform="translate(${bx} ${by})">
+    <ellipse cx=".9" cy="1.6" rx="5" ry="4.4" fill="url(#${u('balschaduw')})"/>
+    <circle r="4.2" fill="url(#${u('bal')})"/>
+    <circle cx="-1.4" cy="-1.5" r="1.1" fill="#fff" fill-opacity=".9"/>
+  </g>`
+  if (uitslag !== null) {
+    const k = WIELKLEUR[kleurVan(uitslag, n)]
+    s += `<g class="casino__wieluitslag" aria-hidden="true">
+      <circle r="29" fill="#000" fill-opacity=".35"/>
+      <circle r="27" fill="${k}"/>
+      <circle r="27" fill="url(#${u('glans')})"/>
+      <circle r="27" fill="none" stroke="#f3d36b" stroke-width="2.2"/>
+      <circle r="28.6" fill="none" stroke="#5e3f10" stroke-width=".8"/>
+      <text text-anchor="middle" dominant-baseline="central" font-size="32" fill="#fff" class="casino__wielgetal">${uitslag}</text>
+    </g>`
+  }
+  return s + '</svg>'
+}
+
+/* ---------- Logo (ongewijzigd, CasinoLogo.tsx) ---------- */
+function logo() {
+  let s = `<svg class="casino-logo" viewBox="0 0 210 54" role="img" aria-label="Jaccasino"><defs>
+    <linearGradient id="cl-goud" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff6c8"/><stop offset="45%" stop-color="#f5cd4f"/><stop offset="55%" stop-color="#d9a52e"/><stop offset="100%" stop-color="#fbe58f"/></linearGradient>
+    <radialGradient id="cl-fiche" cx="50%" cy="50%" r="50%"><stop offset="70%" stop-color="#c8141e"/><stop offset="100%" stop-color="#8a0b12"/></radialGradient>
+    <radialGradient id="cl-inleg" cx="42%" cy="38%" r="65%"><stop offset="0%" stop-color="#fffdf6"/><stop offset="100%" stop-color="#e8dcc0"/></radialGradient>
+    <radialGradient id="cl-glans" cx="32%" cy="25%" r="75%"><stop offset="0%" stop-color="#fff" stop-opacity=".4"/><stop offset="45%" stop-color="#fff" stop-opacity=".06"/><stop offset="100%" stop-color="#000" stop-opacity=".18"/></radialGradient>
+    <radialGradient id="cl-lampje" cx="40%" cy="35%" r="60%"><stop offset="0%" stop-color="#fff"/><stop offset="60%" stop-color="#ffe07a"/><stop offset="100%" stop-color="#d79a1e"/></radialGradient>
+  </defs><g transform="translate(28 26.5) rotate(-12)">
+    <ellipse cx="1.5" cy="3" rx="25.5" ry="25" fill="#000" opacity=".35"/><circle cy="1.6" r="25" fill="#6a070c"/><circle r="25" fill="url(#cl-fiche)"/>`
+  for (const a of [0, 60, 120, 180, 240, 300]) {
+    s += `<path d="${taartpunt(25, a - 10, a + 10, 18.5)}" fill="#f7f3ea"/>`
+    for (const d of [-4, 4]) { const [x1, y1] = punt(24.4, a + d), [x2, y2] = punt(19.1, a + d); s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c8141e" stroke-width="1.1"/>` }
+  }
+  s += `<circle r="18.5" fill="none" stroke="#6a070c" stroke-width=".8"/><circle r="16.6" fill="none" stroke="#f7f3ea" stroke-width=".7" stroke-dasharray="2.2 1.9"/>
+    <circle r="14.4" fill="url(#cl-inleg)" stroke="url(#cl-goud)" stroke-width="1.4"/><circle r="11.8" fill="none" stroke="#c8141e" stroke-width=".5"/>
+    <text x="-3" y="-1.9" text-anchor="middle" dominant-baseline="central" font-size="17" font-weight="700" font-style="italic" fill="#b3121b">J</text>
+    <text x="4.2" y="2.1" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" font-style="italic" fill="url(#cl-goud)" stroke="#7a0a10" stroke-width=".9" paint-order="stroke" transform="rotate(14 4.2 2.1)">A</text>
+    <circle r="25" fill="url(#cl-glans)"/></g>`
+  for (let i = 0; i < 12; i++) s += `<circle cx="${64 + i * 11}" cy="5.6" r="2.1" fill="url(#cl-lampje)" class="casino-logo__lampje${i % 2 ? ' is-om' : ''}"/>`
+  s += `<text x="59" y="36" font-size="28" font-weight="700" font-style="italic" textLength="132" lengthAdjust="spacingAndGlyphs" fill="url(#cl-goud)" stroke="#3d2405" stroke-width="1.4" paint-order="stroke">Jaccasino</text>
+    <path d="M197 0 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z" fill="#fff6c8"/></svg>`
+  return s
+}
+
+/* ---------- Tafel ---------- */
+const NAMEN = ['Bente', 'Heert', 'Renske', 'Marije', 'Sten', 'Ilse', 'Joey Levi', 'Roos', 'Ruby', 'Amy', 'Selma', 'Catharina Anna Elena', 'Jelle', 'Nanne', 'Josje', 'Jorrit', 'Laura', 'Rachel', 'Iepie Leah', 'Jacco', 'Bas', 'Lotte', 'Sanne', 'Daan', 'Mees']
+const N = NAMEN.length
+const ICOON = {
+  geluid: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>',
+  groep: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5"/></svg>',
+  bier: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 7h11v13H5zM16 10h3v6h-3M5 7c0-2 2-3 4-2 1-2 5-2 6 1"/></svg>',
+}
+const STAPEL = (bedrag) => { const uit = []; for (const f of [100, 25, 10]) while (bedrag >= f && uit.length < 3) { uit.push(f); bedrag -= f } return uit.reverse() }
+const VERSPRING = [0, 1.5, -1]
+
+function vak({ sleutel, klasse, inhoud, inzet, winnend, label }) {
+  const b = inzet[sleutel] ?? 0
+  const st = b ? `<span class="stapel" aria-hidden="true">${STAPEL(b).map((f, i) => `<span class="fiche fiche--mini fiche--${f}" style="top:${8 - i * 3}px;left:${3 + VERSPRING[i]}px"></span>`).join('')}<span class="stapel__bedrag">${b}</span></span>` : ''
+  return `<button type="button" class="${klasse}${winnend ? ' is-winnend' : ''}${b ? ' heeft-inzet' : ''}" aria-label="${label}">${inhoud}${st}</button>`
+}
+
+function veldHtml({ inzet = {}, uitslag = null }) {
+  const win = (k) => uitslag !== null && (/^\d+$/.test(k) ? +k === uitslag : uitslag !== 0 && uitslag !== N && (k === 'rood' ? uitslag % 2 : k === 'zwart' ? uitslag % 2 === 0 : k === 'laag' ? uitslag <= 12 : uitslag > 12))
+  let s = `<div class="casino__veld${uitslag !== null ? ' is-uitslag' : ''}">`
+  s += vak({ sleutel: '0', klasse: 'casino__vak casino__vak--nul', inhoud: '<strong>0</strong><span>Iedereen drinkt</span>', inzet, winnend: win('0'), label: '0, iedereen drinkt' })
+  s += '<div class="casino__raster">'
+  NAMEN.forEach((nm, i) => {
+    const g = i + 1
+    s += vak({ sleutel: String(g), klasse: `casino__vak casino__vak--${kleurVan(g, N)}${nm.length > 9 ? ' is-lang' : ''}`, inhoud: `<strong>${g}</strong><span>${nm}</span>`, inzet, winnend: win(String(g)), label: `${g}, ${nm}` })
+  })
+  s += '</div><div class="casino__buiten">'
+  for (const [k, t, r] of [['rood', 'Rood', '1, 3 … 23'], ['zwart', 'Zwart', '2, 4 … 24'], ['laag', 'Laag', '1–12'], ['hoog', 'Hoog', '13–24']])
+    s += vak({ sleutel: k, klasse: `casino__vak casino__vak--buiten casino__vak--${k}`, inhoud: `<strong>${t}</strong><span>${r}</span>`, inzet, winnend: win(k), label: `${t}, ${r}` })
+  return s + '</div></div>'
+}
+
+function railHtml({ stand, totaal, uitslag }) {
+  if (stand === 'op') return `<div class="casino__rail"><p class="casino__railregel" style="justify-content:center">Je fiches zijn op.</p><button type="button" class="casino__knop casino__draai" style="flex:none;font-style:normal;font-size:1rem">Trek een bak voor 500 fiches</button></div>`
+  const fiches = [10, 25, 100].map((f) => `<button type="button" role="radio" aria-checked="${f === 25}" class="fiche fiche--${f}${f === 25 ? ' is-gekozen' : ''}">${f}</button>`).join('')
+  const knop = stand === 'rollen' ? ['Rolt…', true] : stand === 'uitslag' ? ['3 · Rood', true] : totaal ? ['Rien ne va plus!', false] : ['Eerst inzetten', true]
+  let s = `<div class="casino__rail"><div class="casino__railregel"><span>Inzet <strong class="casino__inzet">${totaal}</strong></span>${
+    totaal && stand === 'inzet' ? '<button type="button" class="casino__terug">↺ Terugnemen</button>' : `<span class="casino__hint">${stand === 'rollen' ? 'Rien ne va plus' : stand === 'leeg' ? 'Kies een fiche en tik op een vak' : ''}</span>`
+  }</div><div class="casino__bediening"><div class="casino__fiches" role="radiogroup" aria-label="Fiche">${fiches}</div>
+    <button type="button" class="casino__knop casino__draai"${knop[1] ? ' disabled' : ''}>${knop[0]}</button></div>`
+  if (uitslag) s += `<div class="casino__popup" role="dialog" aria-label="Uitslag"><div class="casino__uitslagrij"><span class="casino__bol casino__bol--${kleurVan(uitslag, N)}">${uitslag}</span>
+    <div class="casino__uitslagtekst"><p class="casino__klos">${NAMEN[uitslag - 1]} neemt een slok!</p><p class="casino__winst">Je wint 1.825 fiches!</p></div></div>
+    <button type="button" class="casino__knop casino__draai casino__volgende">Volgende ronde</button></div>`
+  return s + '</div>'
+}
+
+function confetti() {
+  const kl = ['#f3d36b', '#ffffff', '#c0262d', '#fbe58f']
+  let s = '<div class="confetti" aria-hidden="true">'
+  for (let i = 0; i < 28; i++) s += `<span style="left:${10 + Math.random() * 80}%;background:${kl[i % 4]};animation-delay:${Math.random() * 0.25}s;animation-duration:${1.3 + Math.random() * 0.8}s;--opzij:${(Math.random() - 0.5) * 120}px;--draai:${(Math.random() - 0.5) * 900}deg"></span>`
+  return s + '</div>'
+}
+
+const INZET = { 3: 75, 10: 25, rood: 25 }
+let rolId = 0
+function teken(stand) {
+  cancelAnimationFrame(rolId)
+  const inzet = stand === 'inzet' || stand === 'rollen' ? INZET : {}
+  const totaal = Object.values(inzet).reduce((a, b) => a + b, 0)
+  const uitslag = stand === 'uitslag' ? 3 : null
+  const ring = wielVolgorde(N), vak = 360 / (N + 1)
+  const hoek = 24
+  const balHoek = uitslag ? hoek + (ring.indexOf(3) + 0.5) * vak : undefined
+  document.getElementById('tafel').innerHTML = `<section class="casino__tafel" aria-label="Jaccasino">
+    <div class="casino__kopregel"><h2 class="casino__titel" style="margin:0 auto 0 0">${logo()}</h2>
+      <p class="casino__saldo" style="margin:0 2px 0 0"><span class="casino__bedrag"><span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:var(--metaalgoud);box-shadow:0 0 0 1px #8a6420"></span> ${stand === 'op' ? 0 : stand === 'uitslag' ? '2.700' : 875}</span><span class="casino__bakken">${ICOON.bier} 0 bakken</span></p>
+      <button type="button" class="casino__rond" aria-label="Geluid">${ICOON.geluid}</button>
+      <button type="button" class="casino__rond" aria-label="Spelers">${ICOON.groep}<span class="casino__aantal">25</span></button></div>
+    <div class="casino__wielplek">${wielSvg(N, { hoek, balHoek, uitslag, id: 't' })}</div>
+    ${uitslag ? confetti() : ''}
+    ${veldHtml({ inzet, uitslag })}
+    ${railHtml({ stand, totaal, uitslag })}
+  </section>`
+  document.getElementById('voor-tafel').src = `casino-visueel/voor-licht-${stand === 'uitslag' ? '4a-uitslag-tafel' : '2-inzet'}.webp`
+  if (stand === 'rollen') rollen()
+}
+
+/* Alleen om te laten zien hoe het beweegt: wiel en balletje met transforms, staart als boogje */
+function rollen() {
+  const svg = document.querySelector('#tafel .casino__wiel')
+  const rotor = svg.querySelector('.wielrotor'), bal = svg.querySelector('.bal'), staart = svg.querySelector('.staart')
+  const begin = performance.now()
+  const stap = (nu) => {
+    const t = Math.min(1, (nu - begin) / 5000), e = 1 - Math.pow(1 - t, 3)
+    const w = 24 + e * 400, b = 90 - e * 1500, v = (1 - t) * 900
+    const r = t < 0.7 ? R_BAAN : R_BAAN - ((t - 0.7) / 0.3) * (R_BAAN - R_VAKJE)
+    rotor.setAttribute('transform', `rotate(${w})`)
+    const [x, y] = punt(r, b)
+    bal.setAttribute('transform', `translate(${x} ${y})`)
+    const l = Math.min(30, v * 0.03)
+    if (l < 2) staart.setAttribute('d', '')
+    else { const [x1, y1] = punt(r, b + l); staart.setAttribute('d', `M${x1} ${y1} A${r} ${r} 0 0 0 ${x} ${y}`) }
+    if (t < 1) rolId = requestAnimationFrame(stap)
+  }
+  rolId = requestAnimationFrame(stap)
+}
+
+document.querySelectorAll('[data-stand]').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-stand]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+  teken(b.dataset.stand)
+}))
+document.getElementById('nacht').addEventListener('click', (e) => {
+  const aan = document.getElementById('bak').classList.toggle('is-nacht')
+  e.currentTarget.setAttribute('aria-pressed', String(aan))
+})
+teken('inzet')
+
+// Close-ups
+document.getElementById('wielgroot').innerHTML = wielSvg(N, { hoek: 0, id: 'g' }).replace('class="casino__wiel"', 'class="casino__wiel" style="width:100%"')
+document.getElementById('veldgroot').innerHTML = `<div class="casino__tafel" style="height:auto;padding:16px">${veldHtml({ inzet: { 0: 10, 3: 135, 10: 25, rood: 25, 12: 100 } })}</div>`
+document.getElementById('railgroot').innerHTML = `<div class="casino__tafel" style="height:auto;padding:16px 16px 8px;gap:14px">
+  ${railHtml({ stand: 'inzet', totaal: 125 })}${railHtml({ stand: 'leeg', totaal: 0 })}
+  <div style="position:relative;width:calc(100% + 16px);margin:0 -8px;height:108px">${railHtml({ stand: 'uitslag', totaal: 125, uitslag: 3 }).replace('class="casino__rail"', 'class="casino__rail" style="margin:0;width:100%"')}</div>
+  <div style="position:relative;width:calc(100% + 16px);margin:0 -8px;height:108px">${railHtml({ stand: 'uitslag', totaal: 125, uitslag: 2 }).replace('class="casino__rail"', 'class="casino__rail" style="margin:0;width:100%"').replace('1.825 fiches!', '75 fiches.').replace('Je wint', 'Je verliest')}</div>
+</div>`
+</script>
+</body>
+</html>

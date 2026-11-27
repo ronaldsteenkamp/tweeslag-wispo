@@ -26,43 +26,42 @@
   <div class="doc-kop__binnen">
     <p class="kop__boven"><a href="index.html" style="color:inherit">Alle mockups</a> · Jaccasino</p>
     <h1>Jaccasino, voor en na</h1>
-    <p>Dezelfde tafel (vilt, houten rand, goud, wiel en logo), beter afgewerkt. Screenshots met Playwright tegen <code>npm run dev</code>, na het kiezen van een naam in het welkomstscherm. Branch <code>casino-afwerking</code>.</p>
+    <p>Dezelfde tafel en dezelfde indeling, maar met echt hout, metaal, vilt en fiches. Screenshots met Playwright tegen <code>npm run dev</code> op 390×844. Branch <code>casino-visueel</code>. Ontwerp: <a href="casino-visueel.html" style="color:inherit">casino-visueel.html</a>. De vorige ronde: <a href="casino-voor-na-afwerking.html" style="color:inherit">afwerking</a>.</p>
   </div>
 </header>
 <main class="doc">
   <h2>Wat er veranderd is</h2>
   <ol class="vn__lijst">
-    <li><b>Past op één scherm.</b> De tafel is precies zo hoog als de ruimte tussen kopbalk en tabbalk en schuift bij het openen zelf in beeld. Het wiel krijgt wat overblijft (185 px op 360×740, 289 px op 390×844). De bediening ligt vast onderaan de tafel.</li>
-    <li><b>Compactere kop.</b> Bij Casino laat de Spel-kop de uitsplitsing (Challenges · Busbingo) en de notitie weg. De andere radden houden de gewone kop.</li>
-    <li><b>Draaiknop.</b> Uitgeschakeld is een gestippelde gouden lijn met <i>Eerst inzetten</i> of <i>Rolt…</i>; <i>Rien ne va plus!</i> is een gevulde gouden knop.</li>
-    <li><b>Inzet en saldo.</b> <i>Inzet</i> en <i>Terugnemen</i> staan in de bediening. Ingezette fiches liggen als stapeltje met bedrag rechtsboven in het vak; de tekst schuift op als dat nodig is.</li>
-    <li><b>Speelveld.</b> Rood, Zwart, Laag en Hoog zijn allemaal gevuld, met de getallen eronder (<i>1, 3 … 23</i>, <i>13–24</i>). Lange namen lopen kleiner over twee regels; het nummer blijft even groot. Overal dezelfde gouden rand van 1,5 px.</li>
-    <li><b>Geluid</b> en <b>Spelers</b> zijn ronde knoppen in de kopregel, naast het saldo.</li>
-    <li><b>Spelers</b> opent een blad (dialoog met Escape en focus). Het aantal getrokken bakken staat onder het saldo.</li>
-    <li><b>Uitslag.</b> Eerst licht het winnende vak op (de rest wordt zachter) en schuift het raster ernaartoe; daarna verschijnt de uitslag op de plek van de bediening, in dezelfde vilt-en-goudstijl. Wiel en vakken blijven zichtbaar.</li>
-    <li><b>Blauw vak.</b> Bij een oneven aantal spelers is het hoogste getal blauw: dat telt niet mee voor Rood, Zwart, Laag of Hoog (zo stond het al in roulette.ts). Dat staat nu in het spelersblad, in de schermlezertekst en blijkt uit de getallen onder de buiteninzetten. Na de worp licht het winnende vakje op het wiel op.</li>
-    <li><b>Donker thema.</b> Tafel blijft groen; spelersblad, melding en toast gebruiken de gewone themakleuren.</li>
-    <li><b>Toegankelijkheid.</b> Alle knoppen in het casino zijn minstens 44 px. Tekst haalt minstens 4,5 : 1 (goud op de bediening 6,2; het 10-fiche heeft nu een donkerblauw getal). Witte focusrand met het toetsenbord.</li>
+    <li><b>Wiel.</b> Houten rand met banen nerf, gelakte glans en schaduw naar binnen; een kom waarin de baan lager ligt dan de rand; vakjes met dunne metalen wandjes; ruiten van chroom; draaiknop van gepolijst messing met een vaste lichtvlek; ivoren balletje met glans en schaduwtje. Getallen in Barlow Condensed op vaste afstand van de rand.</li>
+    <li><b>Vilt en tafelrand.</b> Fijne stofstructuur (klein SVG-patroon), lichter in het midden onder de ‘lamp’, donkerder naar de randen. De rand is hetzelfde hout, met een gelakte bovenkant, een goudlijntje en een zachte schaduw op het vilt. (De oude gouden binnenlijn werd nooit getekend: <code>var(--schaduw)</code> is <code>none</code> en maakte de hele schaduwlijst ongeldig.)</li>
+    <li><b>Speelveld.</b> Vakken gedrukt op het vilt: dieper rood en zwart, licht doorschijnend, één dun crèmegouden lijntje van 1 px. De 0 heeft een eigen vak met dubbele lijn en het getal in een ringetje. Nummers groter in Barlow Condensed, namen rustig.</li>
+    <li><b>Fiches.</b> Op tafel: minifiches met randblokjes, dikte en schaduw, de stapel verspringt een beetje, het bedrag als goudlabel. Fichekeuze in het materiaal van het logo; de gekozen fiche ligt opgetild met een gouden ring.</li>
+    <li><b>Knoppen.</b> <i>Rien ne va plus!</i> in het goud van het logo, licht bol. Uitgeschakeld: dof plat goud met een witte gewone letter.</li>
+    <li><b>Uitslag.</b> Een bordje van de tafel: vilt, gouden lijn, houten lijst, het getal als glanzend balletje. Zelfde plek en grootte.</li>
+    <li><b>Licht en beweging.</b> Winnend vak en wielvakje lichten één keer zacht goud op (was drie of vier keer knipperen) en houden een gouden lijn. Confetti alleen bij minstens drie keer de inzet terug, in goud, rood en wit. Minder beweging: geen puls, geen confetti.</li>
+    <li><b>Prestaties.</b> Geen drop-shadow-filters meer op het draaiende wiel en het balletje; het balletje beweegt met een transform; het wiel is een eigen laag. Met 4× CPU-vertraging (headless Chrome, 3× pixeldichtheid, vijf worpen): mediaan 52 beelden per seconde, voorheen 53. Het wiel is dus rijker zonder trager te worden; 60 haalde ook de oude versie in deze test niet.</li>
+    <li><b>Toegankelijkheid.</b> Contrast (laagste per soort): namen op rood 7,0, op Laag/Hoog 5,1, op de 0 5,3; goud op de bediening 6,5; letter op het knopgoud 6,5; uitgeschakelde knop 6,2; getallen op de fiches 6,1. Focusrand en aria-labels ongewijzigd.</li>
   </ol>
-
   <h2>Naast elkaar</h2>
   <div class="vn__keuze">
-    <fieldset><legend>Scherm</legend><label><input type="radio" name="maat" value="390x844" checked>390×844</label><label><input type="radio" name="maat" value="360x740">360×740</label></fieldset>
     <fieldset><legend>Thema</legend><label><input type="radio" name="thema" value="licht" checked>Licht</label><label><input type="radio" name="thema" value="donker">Donker</label></fieldset>
   </div>
   <div id="rijen"></div>
-  <p class="klein zacht">‘Voor’ is gemaakt bovenaan de pagina, zoals het casino toen opende; ‘na’ zoals het nu opent (tafel ingeschoven). De uitslag is per screenshot willekeurig.</p>
+  <p class="klein zacht">De spelers en de uitslag zijn per screenshot willekeurig (elke ronde wordt opnieuw geschud).</p>
 </main>
 <script>
-const TOESTANDEN = [['1-leeg', 'Leeg'], ['2-inzet', 'Met inzet'], ['3-rollen', 'Tijdens het rollen'], ['4-uitslag', 'De uitslag'], ['5-fiches-op', 'Fiches op (een bak trekken)'], ['6-spelers', 'Spelers open']]
+const TOESTANDEN = [
+  ['1-leeg', 'Leeg'], ['2-inzet', 'Met inzet'], ['3-rollen', 'Tijdens het rollen'], ['4a-uitslag-tafel', 'Uitslag op de tafel'],
+  ['4b-uitslag', 'Uitslag met het bordje'], ['5-fiches-op', 'Fiches op (een bak trekken)'],
+  ['7-wiel', 'Het wiel van dichtbij'], ['8-vakken', 'Vakken met inzet'], ['9-bediening', 'Bediening'], ['10-popup', 'Het uitslagbordje'],
+]
 function teken() {
-  const maat = document.querySelector('[name=maat]:checked').value
   const thema = document.querySelector('[name=thema]:checked').value
   document.getElementById('rijen').innerHTML = TOESTANDEN.map(([t, naam]) => `
     <h3>${naam}</h3>
     <div class="vn__rij">
       ${['voor', 'na'].map((k) => `<figure><figcaption>${k === 'voor' ? 'Voor' : 'Na'}</figcaption>
-        <img src="casino-voor-na/${k}/${maat}-${thema}-${t}.webp" alt="${naam}, ${k}, ${maat}, ${thema}" loading="lazy"></figure>`).join('')}
+        <img src="casino-voor-na/visueel/${k}/${thema}-${t}.webp" alt="${naam}, ${k}, ${thema}" loading="lazy"></figure>`).join('')}
     </div>`).join('')
 }
 document.querySelectorAll('.vn__keuze input').forEach((i) => i.addEventListener('change', teken))

@@ -3440,6 +3440,12 @@ html[data-zuinig] .sneeuw {
   --vilt: #126b3f;
   --vilt-donker: #0b4f2d;
   --hout: #6b3f1c;
+  /* Gedrukte lijnen op het vilt: crème met een zweem goud */
+  --druklijn: rgba(246, 226, 166, 0.78);
+  /* Goud zoals in het logo: licht, een harde overgang in het midden, weer licht */
+  --metaalgoud: linear-gradient(180deg, #fff6c8 0%, #f9df7f 24%, #f0c445 47%, #d9a52e 53%, #ecc556 78%, #fbe58f 100%);
+  /* Fijne stofstructuur van het vilt: een klein herhaald SVG-patroon (alleen op stilstaande lagen) */
+  --vilt-ruis: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 -.32'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* De tafel is precies zo hoog als het scherm tussen de smalle kopbalk en de tabbalk (met 8 px
@@ -3455,17 +3461,35 @@ html[data-zuinig] .sneeuw {
   /* Op een heel laag scherm (liggend) scrolt de pagina liever dan dat alles te krap wordt */
   min-height: 520px;
   max-height: 940px;
-  padding: 8px 8px 0;
-  border: 8px solid var(--hout);
+  /* De houten rand (8 px) zijn banen schaduw binnen de tafel, daarom 8 px extra binnenruimte */
+  padding: 16px 16px 8px;
   border-radius: 24px;
   background:
-    radial-gradient(ellipse at 50% 25%, rgba(255, 255, 255, 0.12), transparent 60%),
-    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.04) 0 2px, transparent 2px 4px),
+    var(--vilt-ruis),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 3px),
+    /* Lamp boven de tafel */
+    radial-gradient(ellipse 80% 55% at 50% 36%, rgba(255, 255, 255, 0.14), transparent 72%),
+    /* Naar de randen donkerder */
+    radial-gradient(ellipse 115% 95% at 50% 42%, transparent 52%, rgba(0, 0, 0, 0.34) 100%),
     var(--vilt);
   box-shadow:
-    inset 0 0 0 2px var(--goud),
-    inset 0 6px 18px rgba(0, 0, 0, 0.35),
-    var(--schaduw);
+    /* Gelakte bovenkant van de houten rand */
+    inset 0 1.5px 0 rgba(255, 230, 190, 0.5),
+    /* Houten rand: banen nerf, buiten donker, in het midden licht, naar binnen weer donker */
+    inset 0 0 0 1px #2a1606,
+    inset 0 0 0 2px #5c3415,
+    inset 0 0 0 3px #8a5428,
+    inset 0 0 0 4px #9c6431,
+    inset 0 0 0 5px #7f4a22,
+    inset 0 0 0 6px #8f5a2a,
+    inset 0 0 0 7px #6b3c19,
+    inset 0 0 0 8px #3a1f0b,
+    /* Een dun goudlijntje tussen hout en vilt */
+    inset 0 0 0 9px rgba(243, 211, 107, 0.85),
+    /* Zachte schaduw van de rand op het vilt */
+    inset 0 0 14px 9px rgba(0, 0, 0, 0.42),
+    /* Niet var(--schaduw): die is 'none' en maakt de hele lijst ongeldig */
+    0 6px 16px rgba(0, 0, 0, 0.22);
   color: #fff;
   scroll-margin-top: calc(var(--schermkop-balk) + 8px);
 }
@@ -3537,9 +3561,12 @@ html[data-zuinig] .sneeuw {
   min-height: 44px;
   margin: 0 2px 0 0;
   padding: 2px 10px;
-  border: 2px solid var(--goud);
+  border: 1.5px solid var(--goud);
   border-radius: 14px;
-  background: rgba(0, 0, 0, 0.25);
+  background: linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.22));
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.08);
   font-family: var(--font-kop);
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -3572,9 +3599,10 @@ html[data-zuinig] .sneeuw {
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 2px solid rgba(243, 211, 107, 0.55);
+  border: 1.5px solid rgba(243, 211, 107, 0.6);
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.25);
+  background: linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.22));
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
   color: #fff;
   touch-action: manipulation;
 }
@@ -3594,7 +3622,8 @@ html[data-zuinig] .sneeuw {
   min-width: 20px;
   padding: 0 4px;
   border-radius: 999px;
-  background: var(--goud);
+  background: var(--metaalgoud);
+  box-shadow: 0 0 0 1px #8a6420;
   color: #3a2408;
   font-family: var(--font-kop);
   font-size: 0.7rem;
@@ -3616,27 +3645,31 @@ html[data-zuinig] .sneeuw {
 .casino__wiel {
   width: min(100cqw, 100cqh);
   height: auto;
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+  /* Eigen laag: het draaien tekent het vilt eronder niet opnieuw. Geen filters op het wiel:
+     de schaduw eronder is een verloop in de SVG. */
+  will-change: transform;
 }
 
+/* Getallen in de smalle letter van de app: strak en goed leesbaar */
 .casino__wielgetal {
-  font-family: var(--font-kop);
+  font-family: var(--font-smal);
   font-weight: 700;
 }
 
-.casino__bal {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+/* Het winnende vakje op het wiel: één zachte gouden puls, daarna blijft het gemarkeerd */
+.casino__wielwinst-gloed {
+  animation: wielpuls 1.4s ease-out 1 both;
 }
 
-/* Het winnende vakje op het wiel licht op */
-.casino__wielwinst {
-  filter: drop-shadow(0 0 3px #f3d36b);
-  animation: wielwinst 0.8s ease-in-out 4;
-}
-
-@keyframes wielwinst {
-  50% {
-    fill-opacity: 0.45;
+@keyframes wielpuls {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.35;
   }
 }
 
@@ -3680,6 +3713,8 @@ html[data-zuinig] .sneeuw {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* Vakken zijn gedrukt op het vilt, geen knoppen: licht doorschijnend, een dunne crèmegouden
+   lijn van 1 px (overal even dik) en bijna rechte hoeken */
 .casino__vak {
   position: relative;
   display: flex;
@@ -3689,26 +3724,33 @@ html[data-zuinig] .sneeuw {
   min-width: 0;
   min-height: 44px;
   padding: 2px 4px;
-  /* Overal dezelfde gouden rand: 1,5 px */
-  border: 1.5px solid var(--goud);
-  border-radius: 8px;
-  background: var(--vilt-donker);
+  border: 1px solid var(--druklijn);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.28);
   color: #fff;
   font-family: var(--font-kop);
   text-align: center;
   touch-action: manipulation;
 }
 
+/* Nummers in de smalle letter, zoals de cijfers op een speeltafel */
 .casino__vak strong {
-  font-size: 1.05rem;
+  font-family: var(--font-smal);
+  font-size: 1.2rem;
   font-weight: 700;
   line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
+/* Namen rustig: iets zachter wit (op rood nog ruim 4,5 : 1) */
 .casino__vak > span:not(.stapel) {
   max-width: 100%;
   font-size: 0.72rem;
-  line-height: 1.1;
+  line-height: 1.15;
+  color: rgba(255, 255, 255, 0.9);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3729,42 +3771,56 @@ html[data-zuinig] .sneeuw {
   font-size: 0.95rem;
 }
 
+/* De 0: een eigen vak met een dubbele lijn en het getal in een ringetje */
 .casino__vak--nul {
   flex-direction: row;
   gap: 10px;
-  background: #1a7a43;
+  background: rgba(26, 122, 67, 0.88);
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 3px var(--druklijn),
+    inset 0 1px 6px rgba(0, 0, 0, 0.3);
+}
+
+.casino__vak--nul strong {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--druklijn);
+  border-radius: 50%;
+  font-size: 1.15rem;
 }
 
 .casino__vak--nul > span:not(.stapel) {
   font-size: 0.85rem;
+  /* Helemaal wit: op het lichtere groen van de 0 haalt het zo ruim 4,5 : 1 */
+  color: #fff;
 }
 
+/* Rood en zwart iets dieper en minder fel dan op het wiel */
 .casino__vak--rood {
-  background: #c0262d;
+  background: rgba(158, 22, 31, 0.93);
 }
 
 .casino__vak--zwart {
-  background: #1b1b1b;
+  background: rgba(17, 17, 17, 0.9);
 }
 
 /* Bij een oneven aantal spelers: het hoogste getal (niet rood, niet zwart, niet laag, niet hoog) */
 .casino__vak--blauw {
-  background: #2563b0;
+  background: rgba(33, 90, 160, 0.93);
 }
 
-/* Rood, Zwart, Laag en Hoog: één familie (gevuld, zelfde rand, naam met de getallen eronder) */
+/* Rood, Zwart, Laag en Hoog: één familie, in kapitalen zoals op een tafel */
 .casino__vak--buiten strong {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .casino__vak--buiten > span:not(.stapel) {
   font-size: 0.68rem;
-  opacity: 0.92;
-}
-
-.casino__vak--laag,
-.casino__vak--hoog {
-  background: var(--vilt-donker);
 }
 
 .casino__vak:active:not([aria-disabled='true']) {
@@ -3773,40 +3829,56 @@ html[data-zuinig] .sneeuw {
 
 /* Tijdens de worp en bij de uitslag: de rest wat zachter, zodat het winnende vak opvalt */
 .casino__veld.is-uitslag .casino__vak:not(.is-winnend) {
-  filter: saturate(0.6) brightness(0.75);
+  filter: saturate(0.55) brightness(0.7);
 }
 
+/* Het winnende vak houdt een gouden lijn (ook zonder animatie) */
 .casino__vak.is-winnend {
   z-index: 1;
   border-color: var(--goud-licht);
   box-shadow:
-    inset 0 0 0 2px var(--goud),
-    0 0 12px var(--goud);
-  animation: winnend 0.8s ease-in-out 3;
+    inset 0 0 0 1px var(--goud),
+    0 0 0 1px var(--goud),
+    0 0 8px rgba(243, 211, 107, 0.5);
 }
 
-@keyframes winnend {
-  50% {
-    box-shadow:
-      inset 0 0 0 3px var(--goud-licht),
-      0 0 18px var(--goud);
+/* Eén zachte gouden puls na de worp: een eigen laag die alleen in doorzichtigheid verandert */
+.casino__vak.is-winnend::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 6px;
+  pointer-events: none;
+  box-shadow:
+    0 0 18px 5px rgba(243, 211, 107, 0.75),
+    inset 0 0 14px rgba(255, 240, 190, 0.55);
+  opacity: 0;
+  animation: vakpuls 1.4s ease-out 1;
+}
+
+@keyframes vakpuls {
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
-/* Fiches op een vak: een stapeltje rechtsboven in het vak, met het bedrag erop */
+/* Fiches op een vak: een stapeltje rechtsboven in het vak, met het bedrag als labeltje */
 .stapel {
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 24px;
-  height: 21px;
+  width: 27px;
+  height: 24px;
   pointer-events: none;
 }
 
 /* Rood, Zwart, Laag, Hoog en 0: de tekst schuift wat op, zodat het stapeltje er niet over valt */
 .casino__vak--buiten.heeft-inzet,
 .casino__vak--nul.heeft-inzet {
-  padding-right: 24px;
+  padding-right: 26px;
 }
 
 .casino__vak--buiten.heeft-inzet > span:not(.stapel) {
@@ -3818,14 +3890,20 @@ html[data-zuinig] .sneeuw {
   padding-right: 16px;
 }
 
+/* Een echte minifiche: randblokjes, inleg, een randje dikte en schaduw op het vilt */
 .stapel .fiche--mini {
   position: absolute;
-  left: 6px;
-  margin-top: 7px;
-  width: 14px;
-  height: 14px;
-  border-width: 2px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  width: 15px;
+  height: 15px;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 40%),
+    radial-gradient(circle closest-side, #f7f0de 0 48%, var(--kleur) 52%, transparent 53%),
+    repeating-conic-gradient(from -11deg, var(--blok) 0 22deg, var(--kleur) 22deg 60deg);
+  box-shadow:
+    inset 0 0 0 0.5px rgba(0, 0, 0, 0.35),
+    0 1.5px 0 var(--zijkant),
+    0 2px 2px rgba(0, 0, 0, 0.5);
+  transition: none;
 }
 
 .stapel__bedrag {
@@ -3836,13 +3914,15 @@ html[data-zuinig] .sneeuw {
   min-width: 20px;
   padding: 0 3px;
   border-radius: 999px;
-  background: var(--goud);
+  background: var(--metaalgoud);
   color: #3a2408;
   font-size: 0.62rem;
   font-weight: 700;
-  line-height: 15px;
+  line-height: 14px;
   text-align: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 0.5px #8a6420,
+    0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 /* ---- Bediening: vast onderaan de tafel, als de rand van de croupier ---- */
@@ -3859,8 +3939,11 @@ html[data-zuinig] .sneeuw {
   height: 108px;
   margin: 2px -8px 0;
   padding: 0 10px 4px;
-  border-top: 1.5px solid var(--goud);
-  background: rgba(0, 0, 0, 0.22);
+  border-top: 1px solid var(--goud);
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 6px 10px -6px rgba(0, 0, 0, 0.5);
 }
 
 .casino__railregel {
@@ -3907,24 +3990,28 @@ html[data-zuinig] .sneeuw {
 
 .casino__fiches {
   display: flex;
-  gap: 6px;
+  gap: 7px;
+  padding-top: 2px;
 }
 
 .casino__fiches .fiche {
   width: 44px;
   height: 44px;
   flex: none;
-  border-width: 3px;
   font-size: 0.85rem;
 }
 
-/* De gouden hoofdknop van de tafel */
+/* De gouden hoofdknop van de tafel: licht bol, in het goud van het logo */
 .casino__knop {
-  background: linear-gradient(180deg, var(--goud-licht), var(--goud) 55%, #e3bd4f);
+  border: 1px solid #9a7020;
+  background: var(--metaalgoud);
   color: #3a2408;
+  text-shadow: 0 1px 0 rgba(255, 250, 225, 0.55);
   box-shadow:
-    0 3px 0 var(--goud-donker),
-    0 5px 10px rgba(0, 0, 0, 0.3);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -3px 4px rgba(122, 86, 26, 0.3),
+    0 3px 0 #8a6420,
+    0 6px 12px rgba(0, 0, 0, 0.35);
 }
 
 .casino__draai {
@@ -3932,7 +4019,6 @@ html[data-zuinig] .sneeuw {
   min-width: 0;
   min-height: 48px;
   padding: 8px 10px;
-  border: 0;
   border-radius: 14px;
   font-family: var(--font-kop);
   font-size: 1.1rem;
@@ -3944,17 +4030,20 @@ html[data-zuinig] .sneeuw {
 .casino__draai:active:not(:disabled) {
   transform: translateY(2px);
   box-shadow:
-    0 1px 0 var(--goud-donker),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -2px 3px rgba(122, 86, 26, 0.3),
+    0 1px 0 #8a6420,
     0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* Uitgeschakeld: duidelijk 'nog niet', niet kapot: een gestippelde gouden lijn op het vilt */
+/* Uitgeschakeld: dof, plat goud met een gewone witte letter; duidelijk 'nog niet' */
 .casino__draai:disabled {
   opacity: 1;
-  border: 2px dashed rgba(243, 211, 107, 0.7);
-  background: rgba(0, 0, 0, 0.15);
-  box-shadow: none;
-  color: #fff;
+  border: 1px solid rgba(243, 211, 107, 0.42);
+  background: linear-gradient(rgba(243, 211, 107, 0.16), rgba(243, 211, 107, 0.08));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: none;
   font-style: normal;
   font-size: 0.95rem;
 }
@@ -3977,26 +4066,32 @@ html[data-zuinig] .sneeuw {
   font-style: normal;
 }
 
-/* De uitslag ligt op de plek van de bediening, zodat wiel en winnend vak zichtbaar blijven */
+/* De uitslag ligt op de plek van de bediening, zodat wiel en winnend vak zichtbaar blijven.
+   Het is een bordje van de tafel: vilt, een gouden lijn en een houten lijst. */
 .casino__popup {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  min-height: 100%;
+  inset: 5px 6px 6px;
   box-sizing: border-box;
   z-index: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 6px;
-  padding: 8px 10px;
-  border-top: 2px solid var(--goud);
+  padding: 5px 10px 6px;
+  border: 1.5px solid var(--goud);
+  border-radius: 12px;
   background:
+    var(--vilt-ruis),
+    radial-gradient(ellipse 90% 80% at 50% 20%, rgba(255, 255, 255, 0.1), transparent 70%),
     /* Zelfde tint als de bediening: goud op dit groen haalt 4,5 : 1 */
     linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22)),
     var(--vilt);
-  box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 0 2.5px #7f4a22,
+    0 0 0 3.5px #2a1606,
+    0 -2px 0 3.5px rgba(255, 230, 190, 0.25),
+    0 6px 14px rgba(0, 0, 0, 0.45),
+    inset 0 0 10px rgba(0, 0, 0, 0.35);
   color: #fff;
   animation: omhoog 0.2s ease-out;
 }
@@ -4015,34 +4110,43 @@ html[data-zuinig] .sneeuw {
   margin: 0;
 }
 
+/* Het getal als balletje in de kleur van het vak */
 .casino__bol {
   flex: none;
   display: grid;
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 2px solid var(--goud);
   border-radius: 50%;
-  font-family: var(--font-kop);
-  font-size: 1.2rem;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 42%),
+    var(--bolkleur);
+  box-shadow:
+    inset 0 -3px 5px rgba(0, 0, 0, 0.4),
+    0 0 0 1.5px var(--goud),
+    0 0 0 2.5px rgba(58, 36, 8, 0.6),
+    0 3px 5px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-smal);
+  font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
 }
 
 .casino__bol--rood {
-  background: #c0262d;
+  --bolkleur: #b8141d;
 }
 
 .casino__bol--zwart {
-  background: #1b1b1b;
+  --bolkleur: #1b1b1b;
 }
 
 .casino__bol--groen {
-  background: #1a7a43;
+  --bolkleur: #1a7a43;
 }
 
 .casino__bol--blauw {
-  background: #2563b0;
+  --bolkleur: #2563b0;
 }
 
 .casino__klos {
@@ -4099,39 +4203,71 @@ html[data-zuinig] .sneeuw {
   margin: 0;
 }
 
-/* Fiches: rond met een gestippelde rand, zoals echte casinofiches */
+/* Fiches: hetzelfde materiaal als de fiche in het logo (randblokjes, inlegvlak, glans, dikte) */
 .fiche {
+  --kleur: #c0262d;
+  --blok: #f7f3ea;
+  --zijkant: #6a070c;
+  --cijfer: #a3121b;
   display: grid;
   place-items: center;
   width: 52px;
   height: 52px;
-  border: 4px dashed rgba(255, 255, 255, 0.9);
+  padding: 0;
+  border: 0;
   border-radius: 50%;
-  font-family: var(--font-kop);
+  background:
+    /* Glans */
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 38%),
+    /* Inlegvlak met een goudlijntje */
+    radial-gradient(circle closest-side, #fffdf6 0, #ece2c8 54%, #c9a24a 55%, #f3d36b 58%, transparent 59%),
+    /* Een dun streepje tussen inleg en rand */
+    radial-gradient(circle closest-side, transparent 66%, rgba(0, 0, 0, 0.25) 67%, transparent 69%),
+    /* Zes randblokjes */
+    repeating-conic-gradient(from -11deg, var(--blok) 0 22deg, var(--kleur) 22deg 60deg);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+    /* Zijkant: een dun randje dikte */
+    0 3px 0 var(--zijkant),
+    0 5px 7px rgba(0, 0, 0, 0.45);
+  /* Het getal staat op het crème inlegvlak (alle drie ruim boven 4,5 : 1) */
+  color: var(--cijfer);
+  font-family: var(--font-smal);
   font-weight: 700;
-  color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   touch-action: manipulation;
+  transition:
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out;
 }
 
 .fiche--10 {
-  background: var(--tweeslag-lichtblauw);
-  /* Donkerblauw getal: wit haalt op lichtblauw geen 4,5 : 1 */
-  color: var(--tweeslag-donkerblauw);
+  --kleur: var(--tweeslag-lichtblauw);
+  --zijkant: #05607a;
+  --cijfer: var(--tweeslag-donkerblauw);
 }
 
 .fiche--25 {
-  background: #c0262d;
+  --kleur: #c0262d;
+  --zijkant: #6a070c;
+  --cijfer: #a3121b;
 }
 
 .fiche--100 {
-  background: #1b1b1b;
-  border-color: var(--goud);
+  --kleur: #1b1b1b;
+  --blok: var(--goud);
+  --zijkant: #000;
+  --cijfer: #1b1b1b;
 }
 
+/* Gekozen: opgetild, met een grotere schaduw en een gouden ring */
 .fiche.is-gekozen {
-  outline: 3px solid var(--goud);
-  outline-offset: 2px;
+  transform: translateY(-5px);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 3px 0 var(--zijkant),
+    0 0 0 2.5px var(--goud),
+    0 0 0 3.5px rgba(58, 36, 8, 0.6),
+    0 12px 14px rgba(0, 0, 0, 0.5);
 }
 
 /* Toetsenbord: altijd een duidelijke witte focusrand, ook op groen, rood en goud */
@@ -4147,16 +4283,23 @@ html[data-zuinig] .sneeuw {
 
 .fiche.is-gekozen:focus-visible {
   outline-color: #fff;
-  box-shadow:
-    0 0 0 5px var(--goud),
-    0 2px 4px rgba(0, 0, 0, 0.4);
+  outline-offset: 5px;
 }
 
+/* Minder beweging: geen puls en geen confetti (die wordt dan ook niet getekend), alleen de gouden lijn */
 @media (prefers-reduced-motion: reduce) {
-  .casino__vak.is-winnend,
-  .casino__wielwinst,
+  .casino__vak.is-winnend::after,
+  .casino__wielwinst-gloed,
   .casino__popup {
     animation: none;
+  }
+
+  .casino__wielwinst-gloed {
+    opacity: 0.35;
+  }
+
+  .fiche {
+    transition: none;
   }
 }
 
@@ -4170,7 +4313,7 @@ html[data-zuinig] .sneeuw {
     align-items: start;
     height: auto;
     min-height: 0;
-    padding-bottom: 0;
+    padding-bottom: 8px;
   }
 
   .casino__kopregel {
