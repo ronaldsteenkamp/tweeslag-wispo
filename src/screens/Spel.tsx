@@ -90,6 +90,10 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
   const [gedaan, setGedaan] = useOpgeslagen<string[]>('spel.challenges', [])
   const [gemarkeerd, setGemarkeerd] = useOpgeslagen<string[]>('spel.bingo.vinkjes', [])
   const [naam] = useOpgeslagen<string | null>('naam', null)
+  // Bij het casino een compactere kop (zonder de uitsplitsing en de notitie), zodat de tafel
+  // hoger begint; de andere radden houden de gewone kop
+  const [radSoort] = useOpgeslagen<string>('rad.soort', 'klos')
+  const compacteKop = onderdeel === 'rad' && radSoort === 'casino'
   const toon = useToonNaam()
   const [geluid, setGeluid] = useSpelGeluid()
   // Bewijs insturen (fotoVoor) of je eigen kiekje bekijken (blad), per challenge-id
@@ -194,7 +198,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
         <SchermKop
           titel="Spel"
           boven={naam ? `Score van ${toon(naam)}` : 'Jouw score'}
-          ondertitel={`Challenges ${challengePunten} · Busbingo ${bingo.totaal}${correcties ? ` · ${correcties > 0 ? 'Bonus' : 'Correctie'} ${correcties > 0 ? '+' : ''}${correcties}` : ''}`}
+          ondertitel={compacteKop ? undefined : `Challenges ${challengePunten} · Busbingo ${bingo.totaal}${correcties ? ` · ${correcties > 0 ? 'Bonus' : 'Correctie'} ${correcties > 0 ? '+' : ''}${correcties}` : ''}`}
           rechts={
             // Tik op je punten: naar de stand
             <button
@@ -222,6 +226,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
               setOnderdeel(o)
             }}
           />
+          {!compacteKop && (
           <p className="schermkop__notitie">
             {mijnPlek
               ? `${mijnPlek.plek}e plek van ${mijnPlek.van} in het klassement`
@@ -229,6 +234,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
                 ? 'Je score telt mee in het klassement.'
                 : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
           </p>
+          )}
         </SchermKop>
       ) : (
         <h1>Spel</h1>

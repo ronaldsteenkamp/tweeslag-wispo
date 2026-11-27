@@ -3426,17 +3426,24 @@ html[data-zuinig] .sneeuw {
   align-items: center;
 }
 
-/* ---------- Casino: alles (wiel, speelveld en inzet) op één scherm ---------- */
+/* ---------- Casino: alles (wiel, speelveld en bediening) op één scherm ---------- */
 
 .casino {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Ruimte onder de tafel, zodat de pagina ver genoeg scrolt om hem onder de kopbalk te zetten */
+  padding-bottom: 32px;
   --goud: #f3d36b;
+  --goud-licht: #f8e49a;
+  --goud-donker: #b8902f;
   --vilt: #126b3f;
+  --vilt-donker: #0b4f2d;
   --hout: #6b3f1c;
 }
 
+/* De tafel is precies zo hoog als het scherm tussen de smalle kopbalk en de tabbalk (met 8 px
+   lucht erboven en eronder). Het wiel krijgt wat het speelveld en de bediening overlaten. */
 .casino__tafel {
   position: relative;
   overflow: hidden;
@@ -3444,7 +3451,11 @@ html[data-zuinig] .sneeuw {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 8px 10px 10px;
+  height: calc(100dvh - var(--schermkop-balk) - var(--tabbalk-hoogte) - var(--onder) - 16px);
+  /* Op een heel laag scherm (liggend) scrolt de pagina liever dan dat alles te krap wordt */
+  min-height: 520px;
+  max-height: 940px;
+  padding: 8px 8px 0;
   border: 8px solid var(--hout);
   border-radius: 24px;
   background:
@@ -3456,29 +3467,30 @@ html[data-zuinig] .sneeuw {
     inset 0 6px 18px rgba(0, 0, 0, 0.35),
     var(--schaduw);
   color: #fff;
+  scroll-margin-top: calc(var(--schermkop-balk) + 8px);
 }
 
+/* Kopregel: logo links; saldo, geluid en spelers rechts, op een vaste plek */
 .casino__kopregel {
-  position: relative;
-  z-index: 1;
+  flex: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
-  /* Logo en saldo liggen over de lege hoeken naast het ronde wiel (niet verder: anders
-     raakt CASINO de rand van het wiel) */
-  margin-bottom: -12px;
+  min-height: 44px;
+  padding: 0 2px;
 }
 
 .casino__titel {
-  margin: 0;
+  /* Het logo krijgt wat overblijft (tot 180 px), zodat saldo en knoppen er altijd naast passen */
+  flex: 0 1 180px;
+  min-width: 96px;
+  margin: 0 auto 0 0;
   line-height: 0;
 }
 
 .casino-logo {
-  /* Smal genoeg dat geluidsknop en saldo er op 360 px nog naast passen */
-  width: clamp(140px, 40vw, 190px);
+  width: 100%;
   height: auto;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 }
@@ -3515,46 +3527,86 @@ html[data-zuinig] .sneeuw {
   }
 }
 
-.casino__geluid {
-  position: absolute;
-  top: 54px;
-  left: 10px;
-  z-index: 1;
+/* Saldo als gouden plaatje, met de getrokken bakken eronder */
+.casino__saldo {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0 2px 0 0;
+  padding: 2px 10px;
+  border: 2px solid var(--goud);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.25);
+  font-family: var(--font-kop);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.casino__bedrag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--goud);
+}
+
+.casino__bakken {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Ronde knoppen in de kopregel (geluid, spelers): 44 px, zelfde stijl */
+.casino__rond {
+  position: relative;
+  flex: none;
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 0;
+  padding: 0;
+  border: 2px solid rgba(243, 211, 107, 0.55);
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.25);
-  font-size: 1.1rem;
+  color: #fff;
   touch-action: manipulation;
 }
 
-.casino__saldo {
-  flex: none;
-  margin: 0;
-  padding: 2px 10px;
-  border: 2px solid var(--goud);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.25);
-  font-family: var(--font-kop);
-  font-weight: 700;
-  color: var(--goud);
-  font-variant-numeric: tabular-nums;
+.casino__rond:active {
+  background: rgba(0, 0, 0, 0.4);
 }
 
-/* Het wiel groeit mee met de schermhoogte, zodat alles op één scherm past */
-/* De tafel is precies zo hoog als het scherm tussen de smalle kopbalk en de tabbalk; het wiel
-   krijgt alle ruimte die het speelveld overlaat (zo groot als past in breedte en hoogte) */
-.casino__tafel {
-  min-height: calc(100dvh - var(--schermkop-balk, var(--boven)) - var(--tabbalk-hoogte) - var(--onder) - 20px);
+.casino__rond:disabled {
+  opacity: 0.5;
+}
+
+.casino__aantal {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--goud);
+  color: #3a2408;
+  font-family: var(--font-kop);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
 }
 
 .casino__wielplek {
   flex: 1 1 0;
   align-self: stretch;
-  min-height: 150px;
+  min-height: 120px;
   container-type: size;
   display: flex;
   align-items: center;
@@ -3576,31 +3628,56 @@ html[data-zuinig] .sneeuw {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
 }
 
+/* Het winnende vakje op het wiel licht op */
+.casino__wielwinst {
+  filter: drop-shadow(0 0 3px #f3d36b);
+  animation: wielwinst 0.8s ease-in-out 4;
+}
+
+@keyframes wielwinst {
+  50% {
+    fill-opacity: 0.45;
+  }
+}
+
+/* ---- Speelveld ---- */
+
 .casino__veld {
+  flex: none;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   width: 100%;
 }
 
 .casino__raster {
+  position: relative;
   display: grid;
-  /* Vier naast elkaar: twaalf spelers in drie rijen, zodat het wiel groter kan */
-  /* minmax(0, …): altijd vier even brede kolommen; een lange naam wordt afgekapt (…) */
+  /* Vier naast elkaar, altijd even breed */
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-auto-rows: 44px;
   gap: 4px;
   /* Drie rijen zichtbaar; bij meer spelers scrolt het raster */
-  max-height: calc(3 * 44px + 2 * 4px + 4px);
+  height: calc(3 * 44px + 2 * 4px);
   overflow-y: auto;
-  padding: 2px;
   overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(243, 211, 107, 0.6) transparent;
+}
+
+/* Minder dan drie rijen: niet hoger dan nodig */
+.casino__raster:not(:has(> :nth-child(9))) {
+  height: auto;
 }
 
 .casino__buiten {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.casino__buiten:not(:has(> :nth-child(3))) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .casino__vak {
@@ -3609,37 +3686,57 @@ html[data-zuinig] .sneeuw {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
   min-width: 0;
   min-height: 44px;
-  padding: 1px 4px;
-  border: 2px solid var(--goud);
-  border-radius: 9px;
-  background: transparent;
+  padding: 2px 4px;
+  /* Overal dezelfde gouden rand: 1,5 px */
+  border: 1.5px solid var(--goud);
+  border-radius: 8px;
+  background: var(--vilt-donker);
   color: #fff;
   font-family: var(--font-kop);
+  text-align: center;
   touch-action: manipulation;
 }
 
 .casino__vak strong {
-  font-size: 1rem;
-  line-height: 1.05;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .casino__vak > span:not(.stapel) {
   max-width: 100%;
-  overflow: hidden;
-  font-size: 0.68rem;
-  line-height: 1.15;
-  text-overflow: ellipsis;
+  font-size: 0.72rem;
+  line-height: 1.1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Lange namen: kleiner en over twee regels, nooit afgekapt midden in een woord */
+.casino__vak.is-lang > span:not(.stapel) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.62rem;
+  line-height: 1.05;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.casino__vak.is-lang strong {
+  font-size: 0.95rem;
 }
 
 .casino__vak--nul {
   flex-direction: row;
   gap: 10px;
-  min-height: 44px;
-  background: #1f8a4c;
+  background: #1a7a43;
+}
+
+.casino__vak--nul > span:not(.stapel) {
+  font-size: 0.85rem;
 }
 
 .casino__vak--rood {
@@ -3655,28 +3752,152 @@ html[data-zuinig] .sneeuw {
   background: #2563b0;
 }
 
-.casino__vak--buiten {
-  min-height: 44px;
+/* Rood, Zwart, Laag en Hoog: één familie (gevuld, zelfde rand, naam met de getallen eronder) */
+.casino__vak--buiten strong {
+  font-size: 0.95rem;
 }
 
-.casino__vak--buiten strong {
-  font-size: 0.82rem;
+.casino__vak--buiten > span:not(.stapel) {
+  font-size: 0.68rem;
+  opacity: 0.92;
+}
+
+.casino__vak--laag,
+.casino__vak--hoog {
+  background: var(--vilt-donker);
+}
+
+.casino__vak:active:not([aria-disabled='true']) {
+  filter: brightness(1.15);
+}
+
+/* Tijdens de worp en bij de uitslag: de rest wat zachter, zodat het winnende vak opvalt */
+.casino__veld.is-uitslag .casino__vak:not(.is-winnend) {
+  filter: saturate(0.6) brightness(0.75);
 }
 
 .casino__vak.is-winnend {
+  z-index: 1;
+  border-color: var(--goud-licht);
   box-shadow:
-    0 0 0 3px var(--goud),
-    0 0 16px var(--goud);
+    inset 0 0 0 2px var(--goud),
+    0 0 12px var(--goud);
   animation: winnend 0.8s ease-in-out 3;
 }
 
 @keyframes winnend {
   50% {
-    transform: scale(1.06);
+    box-shadow:
+      inset 0 0 0 3px var(--goud-licht),
+      0 0 18px var(--goud);
   }
 }
 
-/* Fiches en de draaiknop naast elkaar */
+/* Fiches op een vak: een stapeltje rechtsboven in het vak, met het bedrag erop */
+.stapel {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 24px;
+  height: 21px;
+  pointer-events: none;
+}
+
+/* Rood, Zwart, Laag, Hoog en 0: de tekst schuift wat op, zodat het stapeltje er niet over valt */
+.casino__vak--buiten.heeft-inzet,
+.casino__vak--nul.heeft-inzet {
+  padding-right: 24px;
+}
+
+.casino__vak--buiten.heeft-inzet > span:not(.stapel) {
+  font-size: 0.6rem;
+}
+
+/* Lange naam over twee regels: ook die schuift een stukje op */
+.casino__vak.is-lang.heeft-inzet {
+  padding-right: 16px;
+}
+
+.stapel .fiche--mini {
+  position: absolute;
+  left: 6px;
+  margin-top: 7px;
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.stapel__bedrag {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  min-width: 20px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--goud);
+  color: #3a2408;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Bediening: vast onderaan de tafel, als de rand van de croupier ---- */
+
+.casino__rail {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  width: calc(100% + 16px);
+  /* Vaste hoogte: de uitslag ligt er precies overheen, het wiel verspringt niet */
+  height: 108px;
+  margin: 2px -8px 0;
+  padding: 0 10px 4px;
+  border-top: 1.5px solid var(--goud);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.casino__railregel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 34px;
+  margin: 0;
+  font-family: var(--font-kop);
+  font-size: 0.9rem;
+}
+
+.casino__inzet {
+  display: inline-block;
+  min-width: 4ch;
+  margin-left: 4px;
+  color: var(--goud);
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.casino__hint {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.casino__terug {
+  gap: 4px;
+  /* 44 px hoog, maar zonder dat de regel hoger wordt */
+  margin: -5px -6px;
+  padding: 0 6px;
+  color: var(--goud);
+  font-family: var(--font-kop);
+  font-size: 0.9rem;
+}
+
 .casino__bediening {
   display: flex;
   align-items: center;
@@ -3697,116 +3918,113 @@ html[data-zuinig] .sneeuw {
   font-size: 0.85rem;
 }
 
+/* De gouden hoofdknop van de tafel */
 .casino__knop {
-  background: var(--goud);
+  background: linear-gradient(180deg, var(--goud-licht), var(--goud) 55%, #e3bd4f);
   color: #3a2408;
+  box-shadow:
+    0 3px 0 var(--goud-donker),
+    0 5px 10px rgba(0, 0, 0, 0.3);
 }
 
 .casino__draai {
   flex: 1;
+  min-width: 0;
   min-height: 48px;
   padding: 8px 10px;
-  font-size: 1rem;
-  font-style: italic;
-}
-
-.casino__inzetregel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: -2px 0 0;
-  /* Vaste hoogte, ook als de knop 'terugnemen' verschijnt: anders krimpt het wiel bij inzetten */
-  height: 32px;
+  border: 0;
+  border-radius: 14px;
   font-family: var(--font-kop);
-  font-size: 0.9rem;
-  /* Niets mag verschuiven: de regel is even breed als de tafel, het bedrag heeft een vaste
-     breedte en 'terugnemen' staat los aan de rechterkant */
-  position: relative;
-  justify-content: center;
-  width: 100%;
+  font-size: 1.1rem;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
-.casino__inzetregel strong {
-  min-width: 6ch;
-  font-variant-numeric: tabular-nums;
-  text-align: left;
+.casino__draai:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 var(--goud-donker),
+    0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-.casino__terug {
-  position: absolute;
-  right: 0;
-  top: 0;
-  min-height: 32px;
-  color: var(--goud);
+/* Uitgeschakeld: duidelijk 'nog niet', niet kapot: een gestippelde gouden lijn op het vilt */
+.casino__draai:disabled {
+  opacity: 1;
+  border: 2px dashed rgba(243, 211, 107, 0.7);
+  background: rgba(0, 0, 0, 0.15);
+  box-shadow: none;
+  color: #fff;
+  font-style: normal;
+  font-size: 0.95rem;
 }
 
 .casino__bank {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  /* Even hoog als bediening (48) + tussenruimte (6) + inzetregel (32, marge -2), zodat het wiel gelijk blijft */
-  min-height: 84px;
+  gap: 2px;
   width: 100%;
-  text-align: center;
 }
 
-.casino__bank .klein {
-  color: inherit;
-  opacity: 0.85;
+.casino__bank .casino__railregel {
+  justify-content: center;
 }
 
-.casino__spelers {
-  padding-top: 4px;
-  padding-bottom: 4px;
+.casino__bank .casino__draai {
+  flex: none;
+  padding: 8px;
+  font-size: 1rem;
+  font-style: normal;
 }
 
-.casino__spelers summary {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  font-family: var(--font-kop);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.casino__spelers[open] summary {
-  margin-bottom: 10px;
-}
-
-.casino__bakken {
-  text-align: center;
-}
-
-/* De uitslag als popup, op het vilt */
+/* De uitslag ligt op de plek van de bediening, zodat wiel en winnend vak zichtbaar blijven */
 .casino__popup {
-  align-items: center;
-  text-align: center;
-  border: 3px solid var(--goud);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 100%;
+  box-sizing: border-box;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 2px solid var(--goud);
   background:
-    radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.14), transparent 65%),
+    /* Zelfde tint als de bediening: goud op dit groen haalt 4,5 : 1 */
+    linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22)),
     var(--vilt);
+  box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.3);
   color: #fff;
+  animation: omhoog 0.2s ease-out;
 }
 
-.casino__getal {
+.casino__uitslagrij {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-kop);
-  font-size: 1.2rem;
-  font-weight: 700;
-  text-transform: capitalize;
+}
+
+.casino__uitslagtekst {
+  min-width: 0;
+}
+
+.casino__uitslagtekst p {
+  margin: 0;
 }
 
 .casino__bol {
+  flex: none;
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
-  border: 3px solid var(--goud);
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--goud);
   border-radius: 50%;
-  font-size: 1.5rem;
+  font-family: var(--font-kop);
+  font-size: 1.2rem;
   font-weight: 700;
   color: #fff;
 }
@@ -3820,7 +4038,7 @@ html[data-zuinig] .sneeuw {
 }
 
 .casino__bol--groen {
-  background: #1f8a4c;
+  background: #1a7a43;
 }
 
 .casino__bol--blauw {
@@ -3829,9 +4047,56 @@ html[data-zuinig] .sneeuw {
 
 .casino__klos {
   font-family: var(--font-kop);
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 700;
+  line-height: 1.15;
   color: var(--goud);
+}
+
+.casino__klos.is-lang {
+  font-size: 0.95rem;
+  line-height: 1.1;
+}
+
+.casino__winst {
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.casino__volgende {
+  flex: none;
+  min-height: 44px;
+  padding: 6px 10px;
+  font-style: normal;
+}
+
+/* Te weinig spelers */
+.casino__tekort {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.casino__tekort p {
+  margin: 0;
+}
+
+/* Spelersblad */
+.casino__bladkop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -8px -10px -4px 0;
+}
+
+.casino__bladkop h2 {
+  margin: 0;
+}
+
+.casino__spelersblad .klein {
+  margin: 0;
 }
 
 /* Fiches: rond met een gestippelde rand, zoals echte casinofiches */
@@ -3851,6 +4116,8 @@ html[data-zuinig] .sneeuw {
 
 .fiche--10 {
   background: var(--tweeslag-lichtblauw);
+  /* Donkerblauw getal: wit haalt op lichtblauw geen 4,5 : 1 */
+  color: var(--tweeslag-donkerblauw);
 }
 
 .fiche--25 {
@@ -3864,83 +4131,75 @@ html[data-zuinig] .sneeuw {
 
 .fiche.is-gekozen {
   outline: 3px solid var(--goud);
-  outline-offset: 3px;
-  transform: translateY(-3px);
+  outline-offset: 2px;
 }
 
-.stapel {
-  position: absolute;
-  right: 3px;
-  bottom: 3px;
-  width: 26px;
-  height: 34px;
-  pointer-events: none;
+/* Toetsenbord: altijd een duidelijke witte focusrand, ook op groen, rood en goud */
+.casino :focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
 }
 
-/* Bij Rood/Zwart/Even/Oneven ligt het stapeltje op de rand, anders bedekt het de tekst */
-.casino__vak--buiten .stapel {
-  right: -8px;
-  bottom: auto;
-  top: -16px;
-  z-index: 1;
+.casino__vak:focus-visible {
+  outline-offset: -4px;
+  box-shadow: inset 0 0 0 5px rgba(0, 0, 0, 0.6);
 }
 
-.fiche--mini {
-  position: absolute;
-  left: 3px;
-  width: 20px;
-  height: 20px;
-  border-width: 2px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+.fiche.is-gekozen:focus-visible {
+  outline-color: #fff;
+  box-shadow:
+    0 0 0 5px var(--goud),
+    0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-.stapel__bedrag {
-  position: absolute;
-  right: -2px;
-  top: -4px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: var(--goud);
-  color: #3a2408;
-  font-size: 0.65rem;
-  font-weight: 700;
-  line-height: 1.4;
+@media (prefers-reduced-motion: reduce) {
+  .casino__vak.is-winnend,
+  .casino__wielwinst,
+  .casino__popup {
+    animation: none;
+  }
 }
 
-/* Breed scherm (liggend, tablet, desktop): wiel links, speelveld rechts */
+/* Breed scherm (liggend, tablet, desktop): wiel links, speelveld en bediening rechts */
 @media (min-width: 640px) {
   .casino__tafel {
     display: grid;
     grid-template-columns: auto 1fr;
+    grid-template-rows: auto 1fr auto;
     column-gap: 18px;
     align-items: start;
+    height: auto;
+    min-height: 0;
+    padding-bottom: 0;
   }
 
   .casino__kopregel {
     grid-column: 1 / -1;
-    margin-bottom: 0;
-  }
-
-  .casino__tafel {
-    min-height: 0;
   }
 
   .casino__wielplek {
     grid-column: 1;
-    grid-row: 2 / span 4;
+    grid-row: 2 / span 2;
     container-type: normal;
     min-height: 0;
+    align-self: center;
   }
 
   .casino__wiel {
-    width: clamp(200px, calc(100dvh - 330px), 320px);
+    width: clamp(220px, calc(100dvh - 300px), 340px);
   }
 
-  .casino__veld,
-  .casino__bediening,
-  .casino__inzetregel,
-  .casino__bank {
+  .casino__veld {
     grid-column: 2;
+    grid-row: 2;
+  }
+
+  .casino__rail {
+    grid-column: 2;
+    grid-row: 3;
+    width: auto;
+    margin: 6px -8px 0 0;
+    border-top-left-radius: 12px;
   }
 }
 
