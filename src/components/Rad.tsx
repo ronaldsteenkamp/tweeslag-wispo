@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Icoon } from './Icoon'
 import { PISTE_KLEUREN, useData, type Kamers, type PisteKleur, type Rad as RadData } from '../lib/data'
 import { useToonNaam } from '../lib/bijnamen'
@@ -47,9 +48,13 @@ const hoofdletter = (s: string) => s.charAt(0).toLocaleUpperCase('nl') + s.slice
  * Het tabblad Rad: vier raderen en het casino (voor iedereen). Elk rad heeft een eigen uitvoering:
  * Klos het après-rad, Piste het liftbord, Drankje het pisteboord en Eigen het kompas (zie rad/).
  * Met `kop` tekent de aanroeper zelf de schermkop, met de keuze van het rad erin (nieuwe koppen);
- * zonder `kop` staat de keuzebalk gewoon bovenaan.
+ * zonder `kop` staat de keuzebalk gewoon bovenaan. Met `keuzePlek` (een element in de kop van Spel)
+ * komt de keuzebalk daar te staan.
  */
-export function RadOnderdeel({ kop }: { kop?: (keuzebalk?: ReactNode) => ReactNode } = {}) {
+export function RadOnderdeel({
+  kop,
+  keuzePlek,
+}: { kop?: (keuzebalk?: ReactNode) => ReactNode; keuzePlek?: HTMLElement | null } = {}) {
   const { data: rad, fout } = useData('rad')
   const { data: kamers } = useData('kamers')
   const [naam] = useOpgeslagen<string | null>('naam', null)
@@ -61,7 +66,7 @@ export function RadOnderdeel({ kop }: { kop?: (keuzebalk?: ReactNode) => ReactNo
         <DataStatus fout={fout} />
       </>
     )
-  return <Rad rad={rad} kamers={kamers} naam={naam} kop={kop} />
+  return <Rad rad={rad} kamers={kamers} naam={naam} kop={kop} keuzePlek={keuzePlek} />
 }
 
 function Rad({
@@ -69,11 +74,13 @@ function Rad({
   kamers,
   naam,
   kop,
+  keuzePlek,
 }: {
   rad: RadData
   kamers?: Kamers
   naam: string | null
   kop?: (keuzebalk?: ReactNode) => ReactNode
+  keuzePlek?: HTMLElement | null
 }) {
   const [soort, setSoort] = useOpgeslagen<Soort>('rad.soort', 'klos')
   const [keuze] = useDeelnemersKeuze()
@@ -185,7 +192,7 @@ function Rad({
   if (soort === 'casino') {
     return (
       <>
-        {kop ? kop(keuzebalk) : keuzebalk}
+        {kop ? kop(keuzebalk) : keuzePlek ? createPortal(keuzebalk, keuzePlek) : keuzebalk}
         <Roulette naam={naam} kamers={kamers} onBezig={setCasinoBezig} />
       </>
     )
@@ -195,7 +202,7 @@ function Rad({
 
   return (
     <>
-      {kop ? kop(keuzebalk) : keuzebalk}
+      {kop ? kop(keuzebalk) : keuzePlek ? createPortal(keuzebalk, keuzePlek) : keuzebalk}
 
       {soort === 'klos' && (
         <TaartRad
