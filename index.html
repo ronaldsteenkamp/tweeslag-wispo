@@ -38,10 +38,16 @@
        * will-change: meteen een eigen laag. Anders maakt iOS die pas bij het begin van het vervagen
        * aan, en tekent het een nog niet geschilderd stuk (linksboven) heel even zwart.
        */
-      #laden { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #0d0058; transition: opacity 0.3s ease-out; will-change: opacity; }
-      #laden svg { display: block; width: min(65vw, 65vh); height: auto; }
+      /*
+       * Wegvagen zoals een gewone app opent: het logo groeit naar je toe en lost op, terwijl Home
+       * eronder van iets kleiner naar volledig scherm groeit (main.tsx). Afremmende curve: snel
+       * begin, zacht einde, net als de opstartanimatie van Android zelf.
+       */
+      #laden { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #0d0058; transition: opacity 0.34s cubic-bezier(0.3, 0, 0.2, 1); will-change: opacity; }
+      #laden svg { display: block; width: min(65vw, 65vh); height: auto; transition: transform 0.42s cubic-bezier(0.2, 0, 0, 1); will-change: transform; }
       #laden.weg { opacity: 0; pointer-events: none; }
-      @media (prefers-reduced-motion: reduce) { #laden { transition-duration: 0.01s; } }
+      #laden.weg svg { transform: scale(1.35); }
+      @media (prefers-reduced-motion: reduce) { #laden, #laden svg { transition-duration: 0.01s; } #laden.weg svg { transform: none; } }
     </style>
   </head>
   <body>
