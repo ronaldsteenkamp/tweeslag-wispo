@@ -1131,3 +1131,16 @@
     transform: none;
   }
 }
+
+/* Onderste regel van de Spel-kop: de notitie, of bij Rad de keuze van het rad. Altijd even hoog
+   (zo hoog als die keuzebalk), zodat de kop en de bergen op elk onderdeel gelijk blijven. */
+.spel__kopregel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: var(--spel-kopregel, 54px);
+}
+
+.spel__kopregel .schermkop__notitie {
+  margin: 0;
+}
