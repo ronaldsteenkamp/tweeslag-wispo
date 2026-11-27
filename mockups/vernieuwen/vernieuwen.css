@@ -1,0 +1,131 @@
+/*
+ * Gedeeld voor de drie ontwerpen van de update-melding (vernieuwen-a/b/c.html).
+ * Tokens: kopie van src/styles/theme.css (licht met data-papier="sneeuw", zoals live), per telefoon
+ * als .thema-licht / .thema-donker zodat licht en donker naast elkaar kunnen staan.
+ */
+
+@font-face { font-family: 'Barlow'; font-weight: 400; font-display: swap; src: url('../../src/assets/fonts/barlow-400.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow'; font-weight: 600; font-display: swap; src: url('../../src/assets/fonts/barlow-600.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 600; font-display: swap; src: url('../../src/assets/fonts/barlow-condensed-600.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 700; font-display: swap; src: url('../../src/assets/fonts/barlow-condensed-700.woff2') format('woff2'); }
+
+.tel.thema-licht {
+  --lucht: #0d0058; --op-lucht: #fff; --op-lucht-zacht: #9fe3f4;
+  --papier: #f5f8fb; --papier-vlak: #ffffff; --papier-diep: #e6edf3;
+  --inkt: #0d0058; --inkt-zacht: #4b4e6b; --lijn: #d3dde7; --lijn-sterk: #0d0058;
+  --ijsblauw: #099fc4; --ijsblauw-inkt: #05607a; --ijsblauw-zacht: #d3eff7;
+  --piste-groen: #1e7a4c; --piste-rood: #c4212f;
+  --knop: #0d0058; --op-knop: #ffffff;
+  --schaduw-zweef: 0 10px 30px rgba(13, 0, 88, 0.18), 0 2px 6px rgba(13, 0, 88, 0.08);
+  --berg-0: #5f6aa8; --berg-0-schaduw: #4f5893; --berg-1: #8e97c4; --berg-1-schaduw: #7881b3;
+  --berg-2: #c3cbe0; --berg-2-schaduw: #a9b4d0; --berg-3: #e9f1f5; --berg-3-schaduw: #cfdee8;
+  --berg-sneeuwrand: #f3f7fa; --berg-vlag: #c4212f;
+  --goud: #f3d36b; --goud-licht: #f8e49a; --goud-donker: #b8902f;
+  color-scheme: light;
+}
+.tel.thema-donker {
+  --lucht: #0d0058; --op-lucht: #fff; --op-lucht-zacht: #9fe3f4;
+  --papier: #0c0a2c; --papier-vlak: #16133d; --papier-diep: #221e54;
+  --inkt: #eef0fa; --inkt-zacht: #b4b7d4; --lijn: #302c68; --lijn-sterk: #c9cdf0;
+  --ijsblauw: #099fc4; --ijsblauw-inkt: #6fd6ef; --ijsblauw-zacht: #123a55;
+  --piste-groen: #2f9e66; --piste-rood: #e0444f;
+  --knop: #099fc4; --op-knop: #04203a;
+  --schaduw-zweef: 0 10px 30px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --berg-0: #262a63; --berg-0-schaduw: #1f2255; --berg-1: #3a3f7e; --berg-1-schaduw: #313671;
+  --berg-2: #6b72a8; --berg-2-schaduw: #5b6197; --berg-3: #c7d0e6; --berg-3-schaduw: #a7b2cf;
+  --berg-sneeuwrand: #c7d0e6; --berg-vlag: #e0444f;
+  --goud: #f3d36b; --goud-licht: #f8e49a; --goud-donker: #b8902f;
+  color-scheme: dark;
+}
+.tel {
+  --font: Barlow, 'Trebuchet MS', system-ui, sans-serif;
+  --font-smal: 'Barlow Condensed', 'Trebuchet MS', system-ui, sans-serif;
+  --rond-blok: 14px;
+  --gemak: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --tabbalk: 60px; /* hoogte van de tabbalk op 390 × 844 */
+}
+
+/* ------------------------------------------------------------ PAGINA */
+.toestanden { display: grid; gap: 40px; margin-top: 18px; }
+.toestand h3 { font: 700 1.5rem/1.1 var(--font-smal, 'Barlow Condensed'); margin: 0 0 4px; }
+.toestand > p { margin: 0 0 12px; max-width: 70ch; }
+.paar-tel { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.paar-tel figure { margin: 0; display: grid; gap: 8px; justify-items: center; }
+.paar-tel figcaption { font-size: .9rem; color: var(--inkt-zacht); }
+.tel-kader { zoom: 0.72; border: 9px solid #111; border-radius: 46px; overflow: hidden; background: #111; box-shadow: 0 10px 30px rgba(13, 0, 88, .18); }
+.bediening { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin: 14px 0 0; }
+.bediening button { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--lijn-sterk); background: var(--papier-vlak); color: var(--inkt); font: 600 1rem var(--font, Barlow); cursor: pointer; }
+.bediening label { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; }
+.bediening input { width: 20px; height: 20px; }
+
+/* ------------------------------------------------------------ TELEFOON */
+.tel { position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--papier); color: var(--inkt); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+.tel__scherm { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* Los: alleen één telefoon op ware grootte, voor de screenshots (?los=verschijn-licht) */
+body.los { margin: 0; background: #000; }
+body.los > :not(.los-tel) { display: none !important; }
+body.los .los-tel { display: block; }
+
+/* ------------------------------------------------------------ DE MELDING (gedeeld skelet) */
+.vm {
+  position: absolute; left: 12px; right: 12px; bottom: calc(var(--tabbalk) + 12px);
+  background: var(--papier-vlak); color: var(--inkt);
+  border: 1.5px solid var(--lijn-sterk); border-radius: var(--rond-blok);
+  box-shadow: var(--schaduw-zweef); overflow: hidden;
+  animation: melding-in 420ms var(--gemak) both;
+}
+@keyframes melding-in { from { transform: translateY(28px); opacity: 0; } }
+.vm__tekening { position: relative; display: block; width: 100%; height: 104px; background: var(--lucht); overflow: hidden; }
+.vm__tekening svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.vm__binnen { padding: 12px 14px 14px; display: grid; gap: 10px; }
+.vm__boven { font: 700 .82rem/1 var(--font-smal); letter-spacing: .12em; text-transform: uppercase; color: var(--ijsblauw-inkt); margin: 0; }
+.vm__kop { font: 700 1.5rem/1.02 var(--font-smal); margin: 2px 0 0; letter-spacing: .005em; }
+.vm__nieuw { margin: 0; padding: 8px 10px 9px; border-radius: 10px; background: var(--papier-diep); }
+.vm__nieuw h3 { font: 700 .78rem/1 var(--font-smal); letter-spacing: .12em; text-transform: uppercase; color: var(--inkt-zacht); margin: 0 0 5px; }
+.vm__nieuw ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: .92rem; line-height: 1.3; }
+.vm__nieuw li { position: relative; padding-left: 15px; }
+.vm__nieuw li::before { content: ''; position: absolute; left: 1px; top: .5em; width: 7px; height: 7px; border-radius: 2px; transform: rotate(45deg); background: var(--ijsblauw); }
+.vm__bewaard { margin: 0; display: flex; gap: 7px; align-items: flex-start; font-size: .9rem; line-height: 1.3; color: var(--inkt-zacht); }
+.vm__bewaard svg { flex: none; width: 18px; height: 18px; margin-top: 1px; color: var(--piste-groen); }
+.vm__knoppen { display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+.vm .vm-knop { min-height: 46px; padding: 0 18px; border-radius: 999px; font: 700 1.12rem/1 var(--font-smal); letter-spacing: .02em; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.vm .vm-knop--later { background: transparent; color: var(--inkt); border: 1.5px solid var(--lijn-sterk); }
+.vm .vm-knop--ga { background: var(--knop); color: var(--op-knop); border: 1.5px solid var(--knop); }
+.vm .vm-knop svg { width: 20px; height: 20px; }
+.vm .vm-knop:focus-visible, .terug:focus-visible { outline: 3px solid var(--ijsblauw); outline-offset: 3px; }
+
+/* Tijdens het herladen: alleen tekening + één regel, knoppen weg */
+.vm--bezig .vm__tekening { height: 150px; }
+.vm--bezig .vm__binnen { gap: 4px; padding-block: 12px 14px; }
+.vm--bezig { animation: none; }
+
+/* Na Later: klein knopje rechtsonder */
+.terug {
+  position: absolute; right: 12px; bottom: calc(var(--tabbalk) + 12px);
+  display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px 0 6px;
+  border-radius: 999px; border: 1.5px solid var(--lijn-sterk); background: var(--papier-vlak); color: var(--inkt);
+  box-shadow: var(--schaduw-zweef); font: 700 1.05rem/1 var(--font-smal); letter-spacing: .02em; cursor: pointer;
+  animation: terug-in 520ms var(--gemak) both;
+}
+.terug__plaatje { width: 38px; height: 38px; border-radius: 999px; background: var(--lucht); overflow: hidden; display: block; }
+.terug__plaatje svg { width: 100%; height: 100%; display: block; }
+.terug__stip { position: absolute; top: -3px; right: -3px; width: 13px; height: 13px; border-radius: 999px; background: var(--piste-rood); border: 2px solid var(--papier-vlak); }
+@keyframes terug-in { 0% { transform: translateY(16px) scale(.7); opacity: 0; } 60% { transform: translateY(-3px) scale(1.04); opacity: 1; } }
+
+/* Panorama-lagen (zelfde kleuren als bergen.css) */
+.pan .l0 { fill: var(--berg-0); } .pan .s0 { fill: var(--berg-0-schaduw); }
+.pan .l1 { fill: var(--berg-1); } .pan .s1 { fill: var(--berg-1-schaduw); }
+.pan .l2 { fill: var(--berg-2); } .pan .s2 { fill: var(--berg-2-schaduw); }
+.pan .l3 { fill: var(--berg-3); } .pan .s3 { fill: var(--berg-3-schaduw); }
+
+/* Minder beweging: dezelfde tekening, in de eindstand, zonder beweging */
+@media (prefers-reduced-motion: reduce) {
+  .tel *, .tel *::before, .tel *::after { animation: none !important; transition: none !important; }
+}
+.rustig .tel *, .rustig .tel *::before, .rustig .tel *::after { animation: none !important; transition: none !important; }
+
+/* Documentkoppen (doc.css: .doc h2/h3) niet in de telefoons laten lekken */
+.doc .tel h2, .doc .tel h3 { border: 0; padding: 0; }
+.doc .tel .vm__kop { font: 700 1.5rem/1.02 var(--font-smal); margin: 2px 0 0; }
+.doc .tel .vm__nieuw h3 { font: 700 .78rem/1 var(--font-smal); margin: 0 0 5px; }

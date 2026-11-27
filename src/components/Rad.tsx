@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Icoon } from './Icoon'
 import { PISTE_KLEUREN, useData, type Kamers, type PisteKleur, type Rad as RadData } from '../lib/data'
@@ -8,6 +8,7 @@ import { tabToetsen } from '../lib/tabbladen'
 import { BevestigDialoog } from './BevestigDialoog'
 import { deelnemers, fractie, initialen, kies, useDeelnemersKeuze, willekeurig } from '../lib/rad'
 import { verspreid } from '../lib/radwiskunde'
+import { zetDruk } from '../lib/druk'
 import { meldKlos } from '../lib/radUitslagen'
 import { DataStatus } from './DataStatus'
 import { DeelnemersKiezer } from './DeelnemersKiezer'
@@ -97,6 +98,13 @@ function Rad({
   const [geluidAan, setGeluidAan] = useOpgeslagen('rad.geluid', true)
   const [bezig, setBezig] = useState(false)
   const [casinoBezig, setCasinoBezig] = useState(false)
+  // Zolang het rad draait of het casino rolt, wacht de update-melding (lib/druk.ts)
+  // (per rad een eigen sleutel: in het buurscherm kan er nog een staan)
+  const drukId = `rad${useId()}`
+  useEffect(() => {
+    zetDruk(drukId, bezig || casinoBezig)
+    return () => zetDruk(drukId, false)
+  }, [drukId, bezig, casinoBezig])
 
   // Per rad apart, zodat bijvoorbeeld een nieuwe kamerverdeling de pistes niet opnieuw schudt
   const toon = useToonNaam()
