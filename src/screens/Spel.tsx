@@ -165,7 +165,7 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
     : data.challenges.flatMap((d) => d.items).reduce((som, c) => som + (gedaanSet.has(c.id) ? c.punten : 0), 0)
   const bingo = bingoScore(kaart, gemarkeerdSet, data.punten)
 
-  // Voor de nieuwe kop: je plek in het klassement, zoals het laatst is opgehaald (als dat er is)
+  // Je stand in het klassement, zoals het laatst is opgehaald (als dat er is): voor de correcties
   const nieuweKop = useNieuweKoppen()
   const mijnPlek = useMemo(() => {
     // Zonder backend is er geen klassement (een oude bewaarde stand niet tonen)
@@ -231,11 +231,10 @@ function SpelOpen({ data, nu }: { data: SpelData; nu: Date }) {
               <div className="schermkop__keuze" ref={setRadKeuzePlek} />
             ) : (
               <p className="schermkop__notitie">
-                {mijnPlek
-                  ? `${mijnPlek.plek}e plek van ${mijnPlek.van} in het klassement`
-                  : backendIngesteld
-                    ? 'Je score telt mee in het klassement.'
-                    : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
+                {/* Geen plek in het klassement hier: die staat bij Stand */}
+                {backendIngesteld
+                  ? 'Je score telt mee in het klassement.'
+                  : 'Je score staat alleen op deze telefoon. Laat hem zien bij de prijsuitreiking!'}
               </p>
             )}
           </div>
