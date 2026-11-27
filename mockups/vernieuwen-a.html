@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update A · Verse sneeuw</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<link rel="stylesheet" href="vernieuwen/vernieuwen.css">
+<style>
+  /* ---------- A · Verse sneeuw ---------- */
+  .a-pan { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  .a-flok circle { fill: #fff; }
+  .a-piste { fill: var(--berg-3); }
+  .a-ribbel { stroke: var(--berg-3-schaduw); stroke-width: 1.3; }
+  .a-dek { fill: var(--berg-3); }
+  .a-rups { fill: #0d0058; }
+  .a-wiel { fill: var(--berg-2); }
+  .a-romp { fill: var(--ijsblauw); }
+  .a-raam { fill: #0d0058; }
+  .a-raam-licht { fill: #9fe3f4; }
+  .a-schild { fill: #0d0058; }
+  .a-zwaai { fill: var(--berg-vlag); }
+  .a-puf { fill: #fff; opacity: 0; }
+  .vm--bezig .a-pan { height: 80%; }
+
+  /* Beweging: alleen transform en opacity. De eindstand is de gewone stand, zodat er bij minder beweging
+     dezelfde tekening staat (bully geparkeerd, ribbels erachter). */
+  .a-rijder { animation: a-rij 2400ms cubic-bezier(.35, .1, .35, 1) 350ms both; }
+  @keyframes a-rij { from { transform: translateX(-330px); } }
+  .a-bully { animation: a-hobbel 300ms ease-in-out 350ms 8; }
+  @keyframes a-hobbel { 50% { transform: translateY(-1.2px); } }
+  .a-zwaai { animation: a-knipper 400ms steps(1) 350ms 6; }
+  @keyframes a-knipper { 50% { opacity: .15; } }
+  .a-puf { animation: a-puf 800ms ease-out 3; transform-box: fill-box; transform-origin: center; }
+  .a-puf:nth-of-type(2) { animation-delay: 400ms; }
+  .a-puf:nth-of-type(1) { animation-delay: 650ms; }
+  @keyframes a-puf { 0% { opacity: .9; transform: translate(0, 0) scale(.5); } 100% { opacity: 0; transform: translate(-10px, -9px) scale(1.4); } }
+  .a-flok circle { animation: a-val 2200ms ease-out both; }
+  .a-flok circle:nth-child(2n) { animation-delay: 300ms; }
+  .a-flok circle:nth-child(3n) { animation-delay: 650ms; }
+  @keyframes a-val { from { transform: translateY(-26px); opacity: 0; } }
+  .vm--bezig .a-rijder { animation-duration: 1900ms; animation-delay: 100ms; }
+  .vm--bezig .a-bully { animation-delay: 100ms; animation-iteration-count: 6; }
+  .terug .a-rijder { animation: a-rij-mini 900ms var(--gemak) 250ms both; }
+  @keyframes a-rij-mini { from { transform: translateX(-30px); } }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="24" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven">Tweeslag Wispo · update-melding · ontwerp A</p>
+    <h1>Verse sneeuw</h1>
+    <p>Een nieuwe versie is verse sneeuw op de piste. Een pistebully rijdt een baan en trekt ribbels. Tik je op <b>Naar de verse piste</b>, dan rijdt hij nog een baan terwijl de app herlaadt.</p>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="645"></div>
+</header>
+
+<main class="doc">
+  <p class="intro"><a href="index.html">← Alle ontwerpen</a> · <a href="vernieuwen-b.html">B · De lift</a> · <a href="vernieuwen-c.html">C · Vers getapt</a> · <a href="vernieuwen-vergelijk.html">Naast elkaar</a></p>
+  <div class="bediening">
+    <button type="button" data-opnieuw>Speel opnieuw</button>
+    <label><input type="checkbox" data-rustig> Minder beweging</label>
+    <span class="zacht">De knoppen in de telefoons werken: probeer Later en Naar de verse piste.</span>
+  </div>
+
+  <div class="toestanden">
+    <section class="toestand">
+      <h3>1 · De melding verschijnt</h3>
+      <p>Schuift boven de tabbalk in beeld; de bully rijdt in 2,4 seconden één baan en blijft dan staan. Geen waas, geen blokkade: Home blijft bruikbaar.</p>
+      <div class="paar-tel" data-toestand="verschijn"></div>
+    </section>
+    <section class="toestand">
+      <h3>2 · Na Naar de verse piste, tijdens het herladen</h3>
+      <p>De knoppen gaan weg, de tekening wordt groter en de bully rijdt een tweede baan naast de eerste. Duurt het herladen langer, dan staat hij gewoon geparkeerd.</p>
+      <div class="paar-tel" data-toestand="herladen"></div>
+    </section>
+    <section class="toestand">
+      <h3>3 · Na Later: hij komt kleiner terug</h3>
+      <p>Na <b>Later</b> verdwijnt de melding. Hij komt terug als knopje rechtsonder: bij de volgende keer openen, of na een half uur. Het bullyetje rijdt even zijn rondje in; tik erop en de grote melding staat er weer.</p>
+      <div class="paar-tel" data-toestand="later"></div>
+    </section>
+  </div>
+</main>
+
+<template id="t-verschijn">
+  <div class="vm" role="status" aria-label="Nieuwe versie van Wispo">
+    <div class="vm__tekening" aria-hidden="true">
+      <svg class="pan a-pan" data-pan="400 960 20 205"></svg>
+      <svg viewBox="0 0 363 104" preserveAspectRatio="xMidYMax slice">
+        <g class="a-flok"><circle cx="40" cy="18" r="1.6"/><circle cx="110" cy="30" r="1.3"/><circle cx="170" cy="12" r="1.8"/><circle cx="250" cy="24" r="1.4"/><circle cx="318" cy="14" r="1.7"/><circle cx="345" cy="38" r="1.2"/></g>
+        <path class="a-piste" d="M0 72C60 64 120 68 180 66S300 60 363 64V104H0Z"/>
+        <g class="a-ribbel"><path d="M0 80H363M0 83H363M0 86H363M0 89H363M0 92H363"/></g>
+        <g transform="translate(236 0)"><g class="a-rijder">
+          <rect class="a-dek" x="78" y="77" width="500" height="18"/>
+          <g class="a-bully">
+            <path class="a-schild" d="M60 76 70 72 76 95H62Z"/>
+            <rect class="a-rups" x="-12" y="83" width="12" height="9" rx="3"/>
+            <path class="a-rups" d="M-2 86H6"/>
+            <rect class="a-rups" x="2" y="82" width="58" height="13" rx="6.5"/>
+            <circle class="a-wiel" cx="10" cy="88.5" r="3"/><circle class="a-wiel" cx="22" cy="88.5" r="3"/><circle class="a-wiel" cx="34" cy="88.5" r="3"/><circle class="a-wiel" cx="46" cy="88.5" r="3"/>
+            <rect class="a-romp" x="4" y="68" width="54" height="15" rx="2"/>
+            <path class="a-romp" d="M26 69V52H47L55 69Z"/>
+            <path class="a-raam" d="M30 66V56H45L50 66Z"/>
+            <path class="a-raam-licht" d="M32 64V58H36L33 64Z"/>
+            <rect class="a-zwaai" x="34" y="48" width="7" height="4" rx="1"/>
+            <rect class="a-rups" x="10" y="62" width="3" height="7"/>
+            <circle class="a-puf" cx="11" cy="58" r="3"/><circle class="a-puf" cx="11" cy="58" r="3"/><circle class="a-puf" cx="11" cy="58" r="3"/>
+          </g>
+        </g></g>
+      </svg>
+    </div>
+    <div class="vm__binnen">
+      <div>
+        <p class="vm__boven">Nieuwe versie</p>
+        <h2 class="vm__kop">Er ligt verse sneeuw</h2>
+      </div>
+      <div class="vm__nieuw">
+        <h3>Wat is er nieuw</h3>
+        <ul><li>Het casino past nu op één scherm</li><li>Lawinegevaar bij Nu op de berg</li></ul>
+      </div>
+      <p class="vm__bewaard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19.5 7"/></svg>Je vinkjes, score en plaatje blijven gewoon liggen.</p>
+      <div class="vm__knoppen">
+        <button type="button" class="vm-knop vm-knop--later" data-naar="later">Later</button>
+        <button type="button" class="vm-knop vm-knop--ga" data-naar="herladen">Naar de verse piste <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="t-herladen">
+  <div class="vm vm--bezig" role="status" aria-live="polite" aria-busy="true">
+    <div class="vm__tekening" aria-hidden="true">
+      <svg class="pan a-pan" data-pan="400 960 20 205"></svg>
+      <svg viewBox="0 0 363 150" preserveAspectRatio="xMidYMax slice">
+        <g class="a-flok"><circle cx="40" cy="18" r="1.6"/><circle cx="110" cy="30" r="1.3"/><circle cx="170" cy="12" r="1.8"/><circle cx="250" cy="24" r="1.4"/><circle cx="318" cy="14" r="1.7"/></g>
+        <path class="a-piste" d="M0 96C60 88 120 92 180 90S300 84 363 88V150H0Z"/>
+        <g class="a-ribbel"><path d="M0 104H363M0 107H363M0 110H363M0 113H363M0 116H363"/></g>
+        <g class="a-ribbel"><path d="M0 124H363M0 127H363M0 130H363M0 133H363M0 136H363"/></g>
+        <g transform="translate(236 44)"><g class="a-rijder">
+          <rect class="a-dek" x="78" y="77" width="500" height="18"/>
+          <g class="a-bully">
+            <path class="a-schild" d="M60 76 70 72 76 95H62Z"/>
+            <rect class="a-rups" x="-12" y="83" width="12" height="9" rx="3"/>
+            <rect class="a-rups" x="2" y="82" width="58" height="13" rx="6.5"/>
+            <circle class="a-wiel" cx="10" cy="88.5" r="3"/><circle class="a-wiel" cx="22" cy="88.5" r="3"/><circle class="a-wiel" cx="34" cy="88.5" r="3"/><circle class="a-wiel" cx="46" cy="88.5" r="3"/>
+            <rect class="a-romp" x="4" y="68" width="54" height="15" rx="2"/>
+            <path class="a-romp" d="M26 69V52H47L55 69Z"/>
+            <path class="a-raam" d="M30 66V56H45L50 66Z"/>
+            <path class="a-raam-licht" d="M32 64V58H36L33 64Z"/>
+            <rect class="a-zwaai" x="34" y="48" width="7" height="4" rx="1"/>
+            <rect class="a-rups" x="10" y="62" width="3" height="7"/>
+            <circle class="a-puf" cx="11" cy="58" r="3"/><circle class="a-puf" cx="11" cy="58" r="3"/><circle class="a-puf" cx="11" cy="58" r="3"/>
+          </g>
+        </g></g>
+      </svg>
+    </div>
+    <div class="vm__binnen">
+      <p class="vm__boven">Even geduld</p>
+      <h2 class="vm__kop">De piste wordt geprepareerd</h2>
+      <p class="vm__bewaard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19.5 7"/></svg>Je vinkjes, score en plaatje rijden mee.</p>
+    </div>
+  </div>
+</template>
+
+<template id="t-later">
+  <button type="button" class="terug" data-naar="verschijn" aria-label="Nieuwe versie klaar: verse piste openen">
+    <span class="terug__plaatje" aria-hidden="true">
+      <svg viewBox="0 0 38 38">
+        <path class="a-piste" d="M0 25C10 23 26 24 38 22V38H0Z"/>
+        <g class="a-ribbel" style="stroke-width:.8"><path d="M0 28.5H38M0 30.5H38M0 32.5H38"/></g>
+        <g transform="translate(9 0)"><g class="a-rijder">
+          <rect class="a-dek" x="20" y="27" width="30" height="7"/>
+          <rect class="a-rups" x="1" y="27.5" width="18" height="5" rx="2.5"/>
+          <rect class="a-romp" x="2" y="22" width="16" height="6" rx="1"/>
+          <path class="a-romp" d="M8 22V16.5H14L17 22Z"/>
+          <path class="a-raam" d="M9.5 21V18H13.5L15 21Z"/>
+          <path class="a-schild" d="M18 25 21 24 22.5 33H18Z"/>
+          <rect class="a-zwaai" x="10" y="15" width="2.6" height="1.6"/>
+        </g></g>
+      </svg>
+    </span>
+    Verse piste
+    <span class="terug__stip" aria-hidden="true"></span>
+  </button>
+</template>
+
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script src="vernieuwen/vernieuwen.js"></script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

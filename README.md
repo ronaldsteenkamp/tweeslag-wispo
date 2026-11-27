@@ -3,7 +3,7 @@
 Web-app (PWA) voor de wintersport van G.S.B.V. Tweeslag: aftelklok, planning, paklijst, kamers, pistekaart en een spel. Na één keer openen werkt de app ook offline.
 
 > **Inhoud aanpassen zonder te programmeren**
-> Alle teksten staan in vier bestanden in `public/data/`:
+> Alle teksten staan in bestanden in `public/data/`:
 >
 > | Bestand | Wat staat erin |
 > |---|---|
@@ -12,6 +12,7 @@ Web-app (PWA) voor de wintersport van G.S.B.V. Tweeslag: aftelklok, planning, pa
 > | `kamers.json` | Kamers met nummer, naam en bewoners |
 > | `spel.json` | Dagelijkse challenges, punten en de busbingovakjes |
 > | `rad.json` | Pistes, drankjes en klosopdrachten voor het rad |
+> | `nieuw.json` | Wat is er nieuw: de regels in de melding bij een nieuwe versie |
 >
 > Pas een bestand aan, zet het op GitHub en de app haalt de nieuwe versie op zodra iemand internet heeft. Zonder internet ziet iedereen de laatst bewaarde versie.
 
@@ -105,6 +106,19 @@ Inhoud van *Spel → Rad*. Het rad staat altijd open, ook vóór de reis, geeft 
 - **Casino:** de vijfde keuze bovenin het tabblad Rad, voor iedereen. Het heet altijd het *Jaccasino*, maar iedereen speelt met eigen fiches op de eigen telefoon. De tafel is precies zo hoog als het scherm tussen de kopbalk en de tabbalk en schuift bij het openen zelf in beeld; het wiel schaalt mee met wat overblijft. In de kopregel staan je saldo (met de getrokken bakken eronder), geluid aan/uit en *Spelers*, dat een blad opent om te kiezen wie meedoet. Fiches, inzet, *Terugnemen* en de draaiknop liggen vast onderaan de tafel. Ingezette fiches liggen als stapeltje met bedrag in het vak. De getallen staan op het wiel door elkaar, met rood en zwart om en om, net als op een echt wiel. Bij een oneven aantal spelers is het hoogste getal blauw: dat telt niet mee voor Rood, Zwart, Laag of Hoog. Na de worp lichten het winnende vak en het vakje op het wiel op; daarna verschijnt de uitslag op de plek van de bediening, bijvoorbeeld *Tom neemt een slok!*. De Spel-kop is bij het casino compacter (zonder uitsplitsing en notitie).
 - **Roulette:** een groene 0 en de getallen 1 tot het aantal spelers (zelfde keuze als bij *Klos*). Oneven is rood, even zwart; elk getal hoort bij één naam, elke ronde opnieuw geschud. De 0 betekent *Iedereen drinkt*. Inzetten met fiches van 10, 25 of 100 op een getal, de 0, rood/zwart of even/oneven, en dan *Rien ne va plus!*. Uitbetaling: rood/zwart/even/oneven 1:1, een getal of de 0 (aantal spelers − 1):1; valt de 0, dan verliezen rood/zwart/even/oneven. De fiches (start 1000) zijn nep en staan alleen op de telefoon. Zijn ze op, dan verschijnt *Trek een bak voor 500 nieuwe fiches*, met een teller hoeveel bakken er al getrokken zijn.
 - **Geluid en beweging:** bij het draaien klinkt een tikje (uit te zetten met het knopje linksboven op het rad). Staat op de telefoon *minder beweging* aan, dan verschijnt de uitslag meteen, zonder draaien.
+
+### nieuw.json
+Het blokje *Wat is er nieuw* in de melding die verschijnt als er een nieuwe versie van de app klaarstaat (*Er ligt verse sneeuw*).
+```json
+{ "versie": "2026-11-28",
+  "regels": ["Lawinegevaar bij Nu op de berg", "Het casino past op één scherm"] }
+```
+- **`regels`:** 1 tot 3 korte regels; meer worden niet getoond. Kort houden: één regel per nieuwigheid, zonder punt aan het eind.
+- **`versie`:** verander deze (bijvoorbeeld in de datum) als je nieuwe regels schrijft. Wie dit nieuws al zag bij een vorige update, krijgt het blokje niet nog eens; zo blijft oud nieuws niet hangen als je het bestand een keer vergeet.
+- Pas het bestand aan **in dezelfde commit** als de verandering in de app. De app haalt het vers op zodra er een nieuwe versie klaarstaat.
+- Geen bestand, een lege lijst of een fout erin: dan valt het blokje weg. De melding zelf (met *Later* en *Naar de verse piste*) komt altijd.
+
+De melding zelf staat in `src/components/UpdateMelding.tsx` (ontwerp: `mockups/vernieuwen-a.html`). Hij verschijnt niet terwijl een rad draait of het casino rolt, en niet boven een open dialoog of blad: dan wacht hij tot dat klaar is. Na *Later* komt hij terug als klein knopje *Verse piste* rechtsonder, de volgende keer dat je de app opent of na een half uur.
 
 ### Weer en sneeuw
 Het weerbericht komt van [Open-Meteo](https://open-meteo.com) (gratis, geen key nodig) voor twee plekken: het **dorp** (45,010 N 6,124 E, 1650 m) en de **gletsjer** bij de Dôme de Puy Salié (44,997 N 6,223 E, 3400 m). De coördinaten en hoogtes staan in `src/config.ts` onder `weer`; de hoogte wordt meegestuurd, zodat de temperatuur klopt voor die plek.

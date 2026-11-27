@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update-melding naast elkaar</title>
+<link rel="stylesheet" href="gedeeld/stijlbasis.css">
+<link rel="stylesheet" href="gedeeld/doc.css">
+<style>
+  .doc { max-width: 1400px; }
+  .knoppen-thema { display: flex; gap: 8px; margin: 18px 0; }
+  .knoppen-thema button { min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid var(--lijn-sterk); background: var(--papier-vlak); color: var(--inkt); font: 600 1rem var(--font, Barlow); cursor: pointer; }
+  .knoppen-thema button[aria-pressed='true'] { background: var(--knop); color: var(--op-knop); border-color: var(--knop); }
+  .vrij { margin: 26px 0 0; }
+  .vrij h2 { margin: 0 0 4px; }
+  .vrij > p { margin: 0 0 12px; max-width: 75ch; }
+  .vier { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .vier figure { margin: 0; display: grid; gap: 6px; }
+  .vier figcaption { font: 700 1.05rem/1.1 var(--font-smal, 'Barlow Condensed'); }
+  .vier img { width: 100%; height: auto; display: block; border-radius: 22px; border: 6px solid #111; background: #111; cursor: zoom-in; }
+  .leeg { aspect-ratio: 390 / 844; border-radius: 22px; border: 2px dashed var(--lijn); display: grid; place-items: center; padding: 16px; text-align: center; color: var(--inkt-zacht); font-size: .92rem; }
+  @media (max-width: 900px) { .vier { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+</head>
+<body class="wispo">
+<header class="doc-kop">
+  <canvas class="sneeuwveld" data-aantal="24" style="color: var(--vlok)"></canvas>
+  <div class="doc-kop__binnen">
+    <p class="kop__boven">Tweeslag Wispo · update-melding</p>
+    <h1>Naast elkaar</h1>
+    <p>De huidige melding en de drie ontwerpen, op 390 × 844. Screenshots met Playwright van de echte app (Home) en van de mockups. Tik op een plaatje om het groot te zien.</p>
+  </div>
+  <div class="doc-kop__bergen" data-bergen="645"></div>
+</header>
+
+<main class="doc">
+  <p class="intro"><a href="index.html">← Alle ontwerpen</a> · <a href="vernieuwen-a.html">A · Verse sneeuw</a> · <a href="vernieuwen-b.html">B · De lift</a> · <a href="vernieuwen-c.html">C · Vers getapt</a></p>
+  <div class="knoppen-thema" role="group" aria-label="Thema">
+    <button type="button" data-th="licht" aria-pressed="true">Licht</button>
+    <button type="button" data-th="donker" aria-pressed="false">Donker</button>
+  </div>
+  <div id="rijen"></div>
+
+  <h2>Voor alle drie</h2>
+  <table class="tabel" style="margin-top:12px">
+    <tr><th>Wat is er nieuw</th><td>Uit <code>public/data/nieuw.json</code>, net als de andere JSON-bestanden zelf aan te passen: <code>{ "versie": "2026-11-28", "regels": ["Het casino past nu op één scherm", "Lawinegevaar bij Nu op de berg"] }</code>. De app haalt het bestand vers op (niet uit de cache) zodra er een nieuwe versie klaarstaat. Maximaal 3 regels. Geen bestand, een fout of geen regels: het blokje valt weg, de rest van de melding blijft.</td></tr>
+    <tr><th>Wanneer</th><td>Niet tijdens het rollen in het casino, het draaien van een rad of bovenop een open dialoog of blad: dan wacht hij tot dat klaar is. Elk uur kijkt de app of er een nieuwe versie is, zoals nu.</td></tr>
+    <tr><th>Later</th><td>Kan altijd. Het knopje komt terug bij de volgende keer openen of na een half uur; tikken opent de grote melding weer.</td></tr>
+    <tr><th>Beweging</th><td>Eén keer, 2 tot 3 seconden, alleen <code>transform</code> en <code>opacity</code>, alles in SVG en CSS. Bij minder beweging: dezelfde tekening in de eindstand, zonder beweging.</td></tr>
+    <tr><th>Toegankelijk</th><td><code>role="status"</code>, knoppen van 46 px hoog, tekst minstens 4,5 : 1 (bovenregel lichtblauw 6,3 : 1), zichtbare focusring.</td></tr>
+    <tr><th>Offline klaar</th><td>"Wispo werkt nu ook zonder bereik" wordt een klein knopje in dezelfde stijl, zonder tekening, en verdwijnt na 5 seconden.</td></tr>
+  </table>
+</main>
+
+<script src="gedeeld/panorama-data.js"></script>
+<script src="gedeeld/wispo.js"></script>
+<script>
+const RIJEN = [
+  ['verschijn-bezig', '1a · De melding komt binnen', 'Na 1,3 seconde: de animatie loopt nog. De huidige melding heeft geen animatie.', null],
+  ['verschijn', '1b · De melding staat', 'Na de animatie (3 tot 4 seconden). Zo ziet hij er ook uit bij minder beweging.', null],
+  ['herladen-bezig', '2 · Tijdens het herladen', 'Na een tik op vernieuwen, 1,3 seconde later.', 'Nu: de melding blijft onveranderd staan tot de app herladen is.'],
+  ['later', '3 · Na Later, als hij terugkomt', 'Klein knopje rechtsonder.', 'Nu: weg tot de app opnieuw opstart, dan weer de grote melding.'],
+]
+const NAAM = { a: 'A · Verse sneeuw', b: 'B · De lift', c: 'C · Vers getapt' }
+let thema = 'licht'
+function teken() {
+  document.getElementById('rijen').innerHTML = RIJEN.map(([sleutel, kop, uitleg, huidig]) => `
+    <section class="vrij"><h2>${kop}</h2><p>${uitleg}</p><div class="vier">
+      <figure><figcaption>Huidig</figcaption>${huidig ? `<div class="leeg">${huidig}</div>` : `<img src="vernieuwen/shots/huidig-${thema}.jpg" alt="Huidige melding, ${thema}" loading="lazy">`}</figure>
+      ${['a', 'b', 'c'].map((o) => `<figure><figcaption>${NAAM[o]}</figcaption><img src="vernieuwen/shots/${o}-${sleutel.replace('-bezig', '')}-${thema}${sleutel.endsWith('-bezig') ? '-bezig' : ''}.jpg" alt="${NAAM[o]}, ${kop}, ${thema}" loading="lazy"></figure>`).join('')}
+    </div></section>`).join('')
+}
+document.querySelectorAll('[data-th]').forEach((k) => k.addEventListener('click', () => {
+  thema = k.dataset.th
+  document.querySelectorAll('[data-th]').forEach((x) => x.setAttribute('aria-pressed', String(x === k)))
+  teken()
+}))
+teken()
+</script>
+<script src="gedeeld/doc.js"></script>
+</body>
+</html>

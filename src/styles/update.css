@@ -1,0 +1,335 @@
+/*
+ * Update-melding "Verse sneeuw" (components/UpdateMelding.tsx, ontwerp: mockups/vernieuwen-a.html).
+ * Zweeft boven de tabbalk zonder de app te blokkeren. Beweging alleen met transform en opacity, één
+ * keer; de eindstand is de gewone stand, zodat minder beweging en Zuinig (app.css zet de duur op
+ * bijna 0) dezelfde tekening laten zien.
+ */
+
+.vm,
+.vm-plek {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--tabbalk-hoogte) + var(--onder) + 12px);
+  z-index: 30;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+/* Op het kaartscherm boven de kaartbalk, net als de andere meldingen */
+body:has(.huidig .kaartbalk) :is(.vm, .vm-plek) {
+  bottom: calc(var(--tabbalk-hoogte) + var(--onder) + 54px + 12px);
+}
+
+/* ---------- De melding ---------- */
+.vm {
+  background: var(--papier-vlak);
+  color: var(--inkt);
+  border: 1.5px solid var(--lijn-sterk);
+  border-radius: var(--rond-blok);
+  box-shadow: var(--schaduw-zweef);
+  overflow: hidden;
+  animation: vm-in 420ms var(--gemak) both;
+}
+@keyframes vm-in {
+  from {
+    transform: translateY(28px);
+    opacity: 0;
+  }
+}
+.vm--bezig {
+  animation: none;
+}
+
+.vm__tekening {
+  position: relative;
+  height: 104px;
+  background: var(--lucht);
+  overflow: hidden;
+}
+.vm--bezig .vm__tekening {
+  height: 150px;
+}
+.vm__tekening svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.vm--bezig .vm-pan {
+  height: 80%;
+}
+
+.vm__binnen {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+.vm--bezig .vm__binnen {
+  gap: 4px;
+}
+.vm__boven {
+  margin: 0;
+  font: 700 0.82rem/1 var(--font-smal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ijsblauw-inkt);
+}
+.vm__kop {
+  margin: 2px 0 0;
+  font: 700 1.5rem/1.02 var(--font-smal);
+  color: var(--inkt);
+}
+.vm__nieuw {
+  padding: 8px 10px 9px;
+  border-radius: 10px;
+  background: var(--papier-diep);
+}
+.vm__nieuw-kop {
+  margin: 0 0 5px;
+  font: 700 0.78rem/1 var(--font-smal);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--inkt-zacht);
+}
+.vm__nieuw ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 3px;
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+.vm__nieuw li {
+  position: relative;
+  padding-left: 15px;
+}
+.vm__nieuw li::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: 0.5em;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  background: var(--ijsblauw);
+}
+.vm__bewaard {
+  margin: 0;
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  color: var(--inkt-zacht);
+}
+.vm__bewaard svg,
+.vm-terug--offline svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  fill: none;
+  stroke: var(--piste-groen);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.vm__knoppen {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+}
+.vm-knop {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font: 700 1.12rem/1 var(--font-smal);
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform var(--duur-tik) var(--gemak);
+}
+.vm-knop:active {
+  transform: scale(0.97);
+}
+.vm-knop--later {
+  background: transparent;
+  color: var(--inkt);
+  border: 1.5px solid var(--lijn-sterk);
+}
+.vm-knop--ga {
+  background: var(--knop);
+  color: var(--op-knop);
+  border: 1.5px solid var(--knop);
+}
+.vm-knop svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.vm-knop:focus-visible,
+.vm-terug:focus-visible {
+  outline: 3px solid var(--ijsblauw);
+  outline-offset: 3px;
+}
+
+/* ---------- Klein: na Later, en 'werkt zonder bereik' ---------- */
+.vm-plek {
+  left: auto;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.vm-terug {
+  pointer-events: auto;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 16px 0 6px;
+  border-radius: 999px;
+  border: 1.5px solid var(--lijn-sterk);
+  background: var(--papier-vlak);
+  color: var(--inkt);
+  box-shadow: var(--schaduw-zweef);
+  font: 700 1.05rem/1 var(--font-smal);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  animation: vm-terug-in 520ms var(--gemak) both;
+}
+.vm-terug--offline {
+  padding: 0 16px 0 12px;
+  cursor: default;
+}
+.vm-terug__plaatje {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--lucht);
+  overflow: hidden;
+  display: block;
+}
+.vm-terug__plaatje svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.vm-terug__stip {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: var(--piste-rood);
+  border: 2px solid var(--papier-vlak);
+}
+@keyframes vm-terug-in {
+  0% {
+    transform: translateY(16px) scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-3px) scale(1.04);
+    opacity: 1;
+  }
+}
+
+/* ---------- De tekening ---------- */
+.vm-l0 { fill: var(--berg-0); }
+.vm-s0 { fill: var(--berg-0-schaduw); }
+.vm-l1 { fill: var(--berg-1); }
+.vm-s1 { fill: var(--berg-1-schaduw); }
+.vm-l2 { fill: var(--berg-2); }
+.vm-s2 { fill: var(--berg-2-schaduw); }
+.vm-l3 { fill: var(--berg-3); }
+.vm-s3 { fill: var(--berg-3-schaduw); }
+.vm-vlokken circle { fill: #fff; }
+.vm-piste,
+.vm-dek { fill: var(--berg-3); }
+.vm-ribbel { stroke: var(--berg-3-schaduw); stroke-width: 1.3; fill: none; }
+.vm-rups,
+.vm-raam,
+.vm-schild { fill: var(--tweeslag-donkerblauw); }
+.vm-wiel { fill: var(--berg-2); }
+.vm-romp { fill: var(--tweeslag-lichtblauw); }
+.vm-raam-licht { fill: var(--op-lucht-zacht); }
+.vm-zwaai { fill: var(--berg-vlag); }
+.vm-puf { fill: #fff; opacity: 0; transform-box: fill-box; transform-origin: center; }
+
+/* ---------- Beweging (één keer) ---------- */
+.vm-rijder {
+  animation: vm-rij 2400ms cubic-bezier(0.35, 0.1, 0.35, 1) 350ms both;
+}
+@keyframes vm-rij {
+  from { transform: translateX(-330px); }
+}
+.vm-bully {
+  animation: vm-hobbel 300ms ease-in-out 350ms 8;
+}
+@keyframes vm-hobbel {
+  50% { transform: translateY(-1.2px); }
+}
+.vm-zwaai {
+  animation: vm-knipper 400ms steps(1) 350ms 6;
+}
+@keyframes vm-knipper {
+  50% { opacity: 0.15; }
+}
+.vm-puf {
+  animation: vm-puf 800ms ease-out 400ms 3;
+}
+.vm-puf:nth-of-type(2) { animation-delay: 650ms; }
+.vm-puf:nth-of-type(3) { animation-delay: 900ms; }
+@keyframes vm-puf {
+  0% { opacity: 0.9; transform: translate(0, 0) scale(0.5); }
+  100% { opacity: 0; transform: translate(-10px, -9px) scale(1.4); }
+}
+.vm-vlokken circle {
+  animation: vm-val 2200ms ease-out both;
+}
+.vm-vlokken circle:nth-child(2n) { animation-delay: 300ms; }
+.vm-vlokken circle:nth-child(3n) { animation-delay: 650ms; }
+@keyframes vm-val {
+  from { transform: translateY(-26px); opacity: 0; }
+}
+/* Tijdens het herladen: een tweede baan, iets vlotter */
+.vm--bezig .vm-rijder {
+  animation: vm-rij2 1900ms cubic-bezier(0.35, 0.1, 0.35, 1) 100ms both;
+}
+@keyframes vm-rij2 {
+  from { transform: translateX(-330px); }
+}
+.vm--bezig .vm-bully {
+  animation-delay: 100ms;
+  animation-iteration-count: 6;
+}
+.vm-rijder--mini {
+  animation: vm-rij-mini 900ms var(--gemak) 250ms both;
+}
+@keyframes vm-rij-mini {
+  from { transform: translateX(-30px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vm,
+  .vm *,
+  .vm-terug,
+  .vm-terug * {
+    animation: none !important;
+  }
+}
