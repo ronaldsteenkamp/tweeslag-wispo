@@ -68,6 +68,36 @@ const klaarVoorHome = Promise.all([
 ])
 
 /**
+ * Home groeit onder het vervagende laadscherm van iets kleiner naar volledig scherm, vanuit het
+ * midden van wat je ziet: zo voelt openen als een gewone app die opengaat, niet als een plaatje dat
+ * wegvaagt. Niet bij minder beweging of Zuinig op de berg (daar staan animaties uit).
+ */
+function groeiHome() {
+  const root = document.getElementById('root')
+  const html = document.documentElement
+  if (!root?.animate || html.hasAttribute('data-zuinig') || matchMedia('(prefers-reduced-motion: reduce)').matches)
+    return
+  // Tijdens het groeien zijn vaste onderdelen (tabbalk) vast ten opzichte van #root i.p.v. het scherm.
+  // Daarom #root even precies schermhoog maken, dan blijft de tabbalk onderaan het scherm staan.
+  // Bij het opstarten staat de pagina bovenaan, dus er verspringt niets.
+  if (window.scrollY > 0) return
+  const s = root.style
+  s.height = '100dvh'
+  s.overflow = 'hidden'
+  s.transformOrigin = '50% 50%'
+  const a = root.animate([{ transform: 'scale(0.94)' }, { transform: 'none' }], {
+    duration: 420,
+    easing: 'cubic-bezier(0.2, 0, 0, 1)',
+  })
+  const herstel = () => {
+    s.removeProperty('height')
+    s.removeProperty('overflow')
+    s.removeProperty('transform-origin')
+  }
+  a.finished.then(herstel, herstel)
+}
+
+/**
  * Laadscherm laten wegvagen zodra de app echt op het scherm staat: twee frames na het tekenen en
  * dan nog even, zodat iOS alles onder het laadscherm al geschilderd heeft voordat het vervagen
  * begint (anders soms heel even een zwart vlak).
@@ -79,13 +109,20 @@ function verbergLaadscherm() {
     requestAnimationFrame(() =>
       window.setTimeout(() => {
         laden.classList.add('weg')
+        groeiHome()
+        let klaar = false
         const weg = () => {
+          if (klaar) return
+          klaar = true
           laden.remove()
           // Pas nu glas (backdrop-filter) op de tabbalk: tijdens het opstarten tekent iOS dat soms zwart
           document.documentElement.classList.add('is-geladen')
         }
-        laden.addEventListener('transitionend', weg, { once: true })
-        window.setTimeout(weg, 600)
+        // Alleen het vervagen van het laadscherm zelf telt (het groeien van het logo bubbelt ook op)
+        laden.addEventListener('transitionend', (e) => {
+          if (e.target === laden && e.propertyName === 'opacity') weg()
+        })
+        window.setTimeout(weg, 700)
       }, 80),
     ),
   )
